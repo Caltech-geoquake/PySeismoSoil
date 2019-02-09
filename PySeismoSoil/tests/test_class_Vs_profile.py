@@ -14,7 +14,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
     def test_load_data(self):
 
-        data, _ = hlp._read_two_column_stuff('two_column_data_example.txt')
+        data, _ = hlp.read_two_column_stuff('two_column_data_example.txt')
         data[:, 0] *= 10
         data[:, 1] *= 100
         prof = Profile(data)

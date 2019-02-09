@@ -16,7 +16,7 @@ class Test_Class_Frequency_Spectrum(unittest.TestCase):
 
         txt_filename = 'two_column_data_example.txt'
 
-        fs_bench, df_bench = hlp._read_two_column_stuff(txt_filename)
+        fs_bench, df_bench = hlp.read_two_column_stuff(txt_filename)
         fs = FS(txt_filename, fmin=0.1, fmax=2.5, npts=20, log_scale=False)
 
         self.assertAlmostEqual(fs.raw_df, df_bench)

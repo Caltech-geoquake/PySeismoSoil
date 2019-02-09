@@ -15,7 +15,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
     #--------------------------------------------------------------------------
     def test_num_int(self):
 
-        accel, _ = hlp._read_two_column_stuff('two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff('two_column_data_example.txt')
         v, u = sr.num_int(accel)
 
         v_bench = np.array([[0.1000, 0.1000],
@@ -82,7 +82,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
     #--------------------------------------------------------------------------
     def test_response_spectra(self):
 
-        accel, _ = hlp._read_two_column_stuff('two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff('two_column_data_example.txt')
 
         T_min = 0.01
         T_max = 10
@@ -107,7 +107,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
     #--------------------------------------------------------------------------
     def test_find_f0(self):
 
-        data, _ = hlp._read_two_column_stuff('two_column_data_example.txt')
+        data, _ = hlp.read_two_column_stuff('two_column_data_example.txt')
         f0 = sr.find_f0(data)
         f0_benchmark = 0.5
         self.assertAlmostEqual(f0, f0_benchmark)
