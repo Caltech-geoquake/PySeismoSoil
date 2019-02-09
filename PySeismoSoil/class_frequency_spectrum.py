@@ -35,7 +35,7 @@ class Frequency_Spectrum():
     fmax : float
         Maximum frequency of the automatically constructed frequency array
         for interpolation
-    npts : int
+    n_pts : int
         Number of points in the automatically constructed frequency array
         for interpolation
     log_scale : bool
@@ -50,7 +50,7 @@ class Frequency_Spectrum():
         Original frequency interval as entered
     raw_data_2col : numpy.array
         Raw frequency spectrum (before interpolation) that the user provided
-    npts : int
+    n_pts : int
         Same as the input parameter
     freq : numpy.array
         The reference frequency array for interpolation
@@ -70,36 +70,33 @@ class Frequency_Spectrum():
         Is `spectrum_1col` complex or already real?
     '''
 
-    def __init__(self, data, df=None, fmin=0.1, fmax=30, npts=1000,
+    def __init__(self, data, df=None, fmin=0.1, fmax=30, n_pts=1000,
                  log_scale=True, sep='\t'):
 
         data_, df = hlp.read_two_column_stuff(data, df, sep)
         if isinstance(data, str):  # is a file name
             self.__path_name, self.__file_name = os.path.split(data)
 
-        if log_scale:
-            ref_freq = np.logspace(np.log10(fmin), np.log10(fmax), npts)
-        else:
-            ref_freq = np.linspace(fmin, fmax, npts)
-
-        ref_spect = np.interp(ref_freq, np.real_if_close(data_[:,0]), data_[:,1])
+        freq, spect = hlp.interpolate(fmin, fmax, n_pts,
+                                      np.real_if_close(data_[:, 0]),
+                                      data_[:, 1], log_scale=log_scale)
 
         self.raw_df = df
         self.raw_data_2col = data_
-        self.npts = npts
-        self.freq = ref_freq
-        self.fmin = min(ref_freq)
-        self.fmax = max(ref_freq)
-        self.spectrum = np.column_stack((ref_freq, ref_spect))
-        self.spectrum_1col = ref_spect
-        self.amplitude_1col = np.abs(ref_spect)
+        self.n_pts = n_pts
+        self.freq = freq
+        self.fmin = min(freq)
+        self.fmax = max(freq)
+        self.spectrum = np.column_stack((freq, spect))
+        self.spectrum_1col = spect
+        self.amplitude_1col = np.abs(spect)
         self.iscomplex = np.iscomplex(self.spectrum_1col).any()
 
     #--------------------------------------------------------------------------
     def __repr__(self):
 
-        text = 'df = %.2f Hz, npts = %d, f_min = %.2f Hz, f_max = %.2f Hz' \
-               % (self.df, self.npts, self.fmin, self.fmax)
+        text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' \
+               % (self.df, self.n_pts, self.fmin, self.fmax)
         return text
 
     #--------------------------------------------------------------------------
