@@ -134,7 +134,7 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
         raise ValueError("`filter_type` must be in {'highpass', 'lowpass', "
                          "'bandpass', 'bandstop'}.")
 
-    hlp._check_two_column_format(orig_signal, name='`orig_signal`')
+    hlp.check_two_column_format(orig_signal, name='`orig_signal`')
 
     x = orig_signal[:,1]
     time = orig_signal[:,0]
@@ -225,7 +225,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     Returns three variables: [t,y], t, and y
     '''
 
-    hlp._check_two_column_format(orig_signal, name='`orig_signal`')
+    hlp.check_two_column_format(orig_signal, name='`orig_signal`')
 
     a = orig_signal[:,1]
     time = orig_signal[:,0]
@@ -390,7 +390,7 @@ def fourier_transform(signal_2_col, real_val=True, double_sided=False,
     A two-column array containing [freq_array,spectrum]
     '''
 
-    hlp._check_two_column_format(signal_2_col, '`signal_2_col`')
+    hlp.check_two_column_format(signal_2_col, '`signal_2_col`')
 
     signal_ = signal_2_col
 

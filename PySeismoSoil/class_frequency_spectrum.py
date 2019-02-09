@@ -73,7 +73,7 @@ class Frequency_Spectrum():
     def __init__(self, data, df=None, fmin=0.1, fmax=30, npts=1000,
                  log_scale=True, sep='\t'):
 
-        data_, df = hlp._read_two_column_stuff(data, df, sep)
+        data_, df = hlp.read_two_column_stuff(data, df, sep)
         if isinstance(data, str):  # is a file name
             self.__path_name, self.__file_name = os.path.split(data)
 

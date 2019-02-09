@@ -3,7 +3,7 @@
 import numpy as np
 
 #%%----------------------------------------------------------------------------
-def _read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
+def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     '''
     Internal helper function. Processes "data" into a two-columned "data_".
 
@@ -62,7 +62,7 @@ def _read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     return data_, delta
 
 #%%----------------------------------------------------------------------------
-def _check_two_column_format(something, name=None):
+def check_two_column_format(something, name=None):
     '''
     Check that `something` is a 2D numpy array with two columns. Raises an
     error if `something` is the wrong format.
@@ -83,26 +83,26 @@ def _check_two_column_format(something, name=None):
         raise TypeError('%s should be a 2D numpy array.' % name)
     if something.shape[1] != 2:
         raise TypeError('%s should have two columns.' % name)
-    if _check_numbers_valid(something) == -1:
+    if check_numbers_valid(something) == -1:
         raise ValueError("%s should only contain numeric elements." % name)
-    if _check_numbers_valid(something) == -2:
+    if check_numbers_valid(something) == -2:
         raise ValueError("%s should contain no NaN values." % name)
 
     return None
 
 #%%----------------------------------------------------------------------------
-def _check_Vs_profile_format(data):
+def check_Vs_profile_format(data):
     '''
     Check that `data` is in a valid format as a Vs profile.
     '''
 
     if not isinstance(data, np.ndarray):
         raise TypeError("`data` should be a numpy array.")
-    if _check_numbers_valid(data) == -1:
+    if check_numbers_valid(data) == -1:
         raise ValueError("`data` should only contain numeric elements.")
-    if _check_numbers_valid(data) == -2:
+    if check_numbers_valid(data) == -2:
         raise ValueError("`data` should contain no NaN values.")
-    if _check_numbers_valid(data) == -3:
+    if check_numbers_valid(data) == -3:
         raise ValueError("`data` should not contain negative values.")
     if data.ndim != 2:
         raise TypeError("`data` should be a 2D numpy array.")
@@ -112,7 +112,7 @@ def _check_Vs_profile_format(data):
     return None
 
 #%%----------------------------------------------------------------------------
-def _check_numbers_valid(array):
+def check_numbers_valid(array):
     '''
     Generic helper function to check the contents in `array` is valid.
 

@@ -24,7 +24,7 @@ def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
     else:
         raise TypeError('"accel" must be a str or a 2-columned numpy array.')
 
-    hlp._check_two_column_format(accel, '`accel`')
+    hlp.check_two_column_format(accel, '`accel`')
 
     t = accel[:,0]
     a = accel[:,1]
@@ -94,7 +94,7 @@ def num_int(accel):
         Displacement time history. Same shape as the input.
     '''
 
-    hlp._check_two_column_format(accel, name='`accel`')
+    hlp.check_two_column_format(accel, name='`accel`')
 
     t = accel[:, 0]
     a = accel[:, 1]
@@ -125,7 +125,7 @@ def num_diff(veloc):
         Acceleration time history. Same shape as the input.
     '''
 
-    hlp._check_two_column_format(veloc, name='`veloc`')
+    hlp.check_two_column_format(veloc, name='`veloc`')
 
     t = veloc[:, 0]
     v = veloc[:, 1]
@@ -156,7 +156,7 @@ def find_f0(x):
         value in the 1st column of x
     '''
 
-    hlp._check_two_column_format(x)
+    hlp.check_two_column_format(x)
 
     freq = x[:, 0]
     ampl = x[:, 1]
@@ -234,7 +234,7 @@ def response_spectra(accel, T_min=0.01, T_max=10, n_pts=60, damping=0.05,
     import itertools
     import multiprocessing as mp
 
-    hlp._check_two_column_format(accel, name='`accel`')
+    hlp.check_two_column_format(accel, name='`accel`')
 
     t = accel[::subsample_interval,0]
     a = accel[::subsample_interval,1]
@@ -736,7 +736,7 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     (Rewritten into Python sometime during winter of 2016 to spring of 2017.)
     '''
 
-    hlp._check_Vs_profile_format(vs_profile)
+    hlp.check_Vs_profile_format(vs_profile)
 
     h = vs_profile[:, 0]
     Vs = vs_profile[:, 1]

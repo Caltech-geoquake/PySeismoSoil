@@ -65,7 +65,7 @@ class Vs_Profile:
         else:
             raise TypeError('"data" must be a file name or a numpy array.')
 
-        hlp._check_Vs_profile_format(data_)
+        hlp.check_Vs_profile_format(data_)
 
         if damping_unit not in ['1', '%']:
             raise ValueError('damping_unit must be ''1'' or ''%''.')

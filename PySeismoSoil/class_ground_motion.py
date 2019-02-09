@@ -82,7 +82,7 @@ class Ground_Motion:
     def __init__(self, data, unit, motion_type='accel', dt=None, sep='\t',
                  **kwargs_to_genfromtxt):
 
-        data_, dt = hlp._read_two_column_stuff(data, delta=dt, sep=sep)
+        data_, dt = hlp.read_two_column_stuff(data, delta=dt, sep=sep)
 
         if unit not in ['m', 'cm', 'ft', 'in',
                         'm/s', 'cm/s', 'ft/s', 'in/s',
