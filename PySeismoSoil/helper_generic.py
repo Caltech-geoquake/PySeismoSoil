@@ -138,6 +138,52 @@ def check_numbers_valid(array):
 
     return 0
 
+#%%----------------------------------------------------------------------------
+def interpolate(x_query_min, x_query_max, n_pts, x_ref, y_ref, log_scale=True,
+                **kwargs_to_interp):
+    '''
+    Interpolate data (x_ref and y_ref) at x query points defined by x_query_min,
+    x_query_max, and n_pts.
+
+    Parameters
+    ----------
+    x_query_min : float
+        Minimum x value at which you want to query (inclusive)
+    x_query_max : float
+        Maximum x value at which you want to query (inclusive)
+    n_pts : int
+        An array of x values are constructed between `x_query_min` and
+        `x_query_max`, at which we query the y values. `n_pts` controls the
+        length of this array.
+    x_ref : numpy.ndarray
+        Reference x values for interpolation. Must be an 1D numpy array.
+    y_ref : numpy.ndarray
+        Reference y values for interpolation. Must be an 1D numpy array.
+    log_scale : bool
+        Whether to construct the query array in log or linear scale
+    **kwargs_to_interp :
+        Extra keyword arguments to be passed to numpy.interp()
+
+    Returns
+    -------
+    x_query_array : numpy.array
+        A 1D numpy array constructed from x_query_min, x_query_max, and n_pts
+    y_query_array : numpy.array
+        The interpolation result. Same shape as x_query_array
+    '''
+    if log_scale:
+        x_query_array = np.logspace(np.log10(x_query_min),
+                                    np.log10(x_query_max), n_pts)
+    else:
+        x_query_array = np.linspace(x_query_min, x_query_max, n_pts)
+
+    y_query_array = np.interp(x_query_array, x_ref, y_ref, **kwargs_to_interp)
+
+    return x_query_array, y_query_array
+
+
+
+
 
 
 
