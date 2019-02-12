@@ -809,34 +809,26 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
 
     return freq_array, AF_ro, TF_ro, f0_ro, AF_in, TF_in, AF_bh, TF_bh, f0_bh
 
+#%%----------------------------------------------------------------------------
+def calc_damping_from_stress_strain_curve(stress_strain_curve, Gmax):
+    '''
+    Calculates the damping curve from the given stress-strain curve.
+    '''
 
+    strain = stress_strain_curve[:, 0]
+    stress = stress_strain_curve[:, 1]
+    n = len(strain)
 
+    G_Gmax = stress / (strain * Gmax)
 
+    area = np.zeros(n)
+    damping = np.zeros(n)
 
+    area[0] = 0.5 * (strain[0] * G_Gmax[0]) * strain[0]
+    damping[0] = 2. / np.pi * (2. * area[0] / G_Gmax[0] / strain[0]**2 - 1)
+    for i in range(1, n):
+        area[i] = area[i-1] + 0.5 * (strain[i-1] * G_Gmax[i-1] + \
+                  strain[i] * G_Gmax[i]) * (strain[i] - strain[i-1])
+        damping[i] = 2. / np.pi * (2 * area[i] / G_Gmax[i] / strain[i]**2 - 1)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return damping

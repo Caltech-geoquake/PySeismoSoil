@@ -62,7 +62,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     return data_, delta
 
 #%%----------------------------------------------------------------------------
-def check_two_column_format(something, name=None):
+def check_two_column_format(something, name=None, ensure_non_negative=False):
     '''
     Check that `something` is a 2D numpy array with two columns. Raises an
     error if `something` is the wrong format.
@@ -72,7 +72,9 @@ def check_two_column_format(something, name=None):
     something :
         Any Python object
     name : str or None
-        The name of `something` to be displayed in the potential error message.
+        The name of `something` to be displayed in the potential error message
+    ensure_non_negative : bool
+        Whether to ensure that all values in `something` >= 0
     '''
     if name is None:
         name = '`something`'
@@ -87,6 +89,8 @@ def check_two_column_format(something, name=None):
         raise ValueError("%s should only contain numeric elements." % name)
     if check_numbers_valid(something) == -2:
         raise ValueError("%s should contain no NaN values." % name)
+    if ensure_non_negative and check_numbers_valid(something) == -3:
+        raise ValueError('%s should be all non-negative values.' % name)
 
     return None
 
@@ -181,14 +185,26 @@ def interpolate(x_query_min, x_query_max, n_pts, x_ref, y_ref, log_scale=True,
 
     return x_query_array, y_query_array
 
+#%%----------------------------------------------------------------------------
+def mean_absolute_error(y_true, y_pred):
+    '''
+    Calculate the mean squared error between ground truth and prediction.
 
+    Parameters
+    ----------
+    y_true : numpy.array
+        Ground truth. Needs to be 1D numpy array.
+    y_pred : numpy.array
+        Prediction. Needs to be 1D numpy array.
 
-
-
-
-
-
-
-
-
-
+    Returns
+    -------
+    mse : float
+        Mean squared error
+    '''
+    if not isinstance(y_true, np.ndarray) or y_true.ndim != 1:
+        raise TypeError('`y_true` needs to be a 1D numpy array.')
+    if not isinstance(y_pred, np.ndarray) or y_true.ndim != 1:
+        raise TypeError('`y_pred` needs to be a 1D numpy array.')
+    mae = np.mean(np.abs(y_true - y_pred))
+    return mae

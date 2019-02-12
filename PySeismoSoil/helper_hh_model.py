@@ -1,0 +1,504 @@
+# Author: Jian Shi
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from . import helper_generic as hlp
+from . import helper_site_response as sr
+
+#%%----------------------------------------------------------------------------
+def tau_MKZ(x, x_ref, beta, s, Gmax):
+    '''
+    Calculate the MKZ shear stress. The MKZ model is proposed in Matasovic and
+    Vucetic (1993), and has the following form:
+
+                       Gmax * x
+        T(x) = -----------------------------
+                 1 + beta * (x / x_ref)^s
+
+    where T     = shear stress
+          x     = shear strain
+          Gmax  = initial shear modulus
+          beta  = a shape parameter of the MKZ model
+          x_ref = reference strain, another shape parameter of the MKZ model
+          s     = another shape parameter of the MKZ model
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        The shear strain array. Must be a 1D array. Its unit should be '1',
+        rather than '%'.
+    x_ref : float
+        Reference shear strain, a shape parameter of the MKZ model
+    beta : float
+        A shape parameter of the MKZ model
+    s : float
+        A shape parameter of the MKZ model
+    Gmax : float
+        Initial shear modulus. Its unit can be arbitrary, but we recommend Pa.
+
+    Returns
+    -------
+    T_MKZ : numpy.ndarray
+        The shear stress determined by the formula above. Same shape as `x`,
+        and same unit as `Gmax`.
+    '''
+
+    T_MKZ = Gmax * x / ( 1 + beta * (np.abs(x) / x_ref)**s )
+
+    return T_MKZ
+
+#%%----------------------------------------------------------------------------
+def tau_FKZ(x, Gmax, mu, d, Tmax):
+    '''
+    Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
+    (2017), in Equation (6), and has the following form:
+
+                    x^d * mu
+        T(x) = ------------------------
+                  1        x^d * mu
+                ------ + ------------
+                 Gmax        Tmax
+
+    where T     = shear stress
+          x     = shear strain
+          Gmax  = initial shear modulus
+          d     = shape parameter
+          mu    = shape parameter
+          Tmax  = shear strength of soil
+
+    Parmeters
+    ---------
+    x : numpy.ndarray
+        The shear strain array. Must be a 1D array. Its unit should be '1',
+        rather than '%'.
+    Gmax : float
+        Initial shear modulus. Its unit can be arbitrary, but we recommend Pa.
+    mu : float
+        Shape parameter of the FKZ model
+    d : float
+        Shape parameter of the FKZ model
+    Tmax : float
+        Shear strength of soil. Its unit should match that of Gmax.
+
+    Returns
+    -------
+    T_FKZ : numpy.ndarray
+        The shear stress determined by the formula above. Same shape as `x`,
+        and same unit as `Gmax`.
+    '''
+    T_FKZ = mu * Gmax * x**d / ( 1 + Gmax / Tmax * mu * np.abs(x)**d )
+
+    return T_FKZ
+
+#%%----------------------------------------------------------------------------
+def transition_function(x, a, x1):
+    '''
+    The transition function of the HH model, as defined in Equation (7) of Shi
+    & Asimaki (2017).
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        The shear strain array. Must be a 1D array. Its unit should be '1',
+        rather than '%'.
+    a : float
+        A shape parameter describing how fast the transition happens
+    x1 : float
+        Transition strain: the x value at which the transition happens
+
+    Returns
+    -------
+    w : numpy.array
+        The transition function, ranging from 0 to 1. Same shape as `x`.
+    '''
+    assert(x1 > 0)
+    w = 1 - 1. / (1 + np.power(10, -a * (np.log10(np.abs(x)/x1) - 4.039 * a**(-1.036)) ))
+
+    return w
+
+#%%----------------------------------------------------------------------------
+def tau_HH(x, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d):
+    '''
+    Calculate the HH shear stress, which is proposed in Shi & Asimaki (2017).
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        The shear strain array. Must be a 1D array. Its unit should be '1',
+        rather than '%'.
+    x_t : float
+        Transition strain: the x value at which the transition happens
+    a : float
+        A shape parameter describing how fast the transition happens
+    x_ref : float
+        Reference shear strain, a shape parameter of the MKZ model
+    beta : float
+        A shape parameter of the MKZ model
+    s : float
+        A shape parameter of the MKZ model
+    Gmax : float
+        Initial shear modulus. Its unit can be arbitrary, but we recommend Pa.
+    mu : float
+        Shape parameter of the FKZ model
+    Tmax : float
+        Shear strength of soil. Its unit should match that of Gmax.
+    d : float
+        Shape parameter of the FKZ model
+
+    Returns
+    -------
+    T_FKZ : numpy.ndarray
+        The shear stress determined by the HH model. Same shape as `x`,
+        and same unit as `Gmax`.
+    '''
+    w = transition_function(x, a, x_t)
+    T_MKZ = tau_MKZ(x, x_ref, beta, s, Gmax)
+    T_FKZ = tau_FKZ(x, Gmax, mu, d, Tmax)
+
+    T_HH = w * T_MKZ + (1 - w) * T_FKZ
+
+    return T_HH
+
+#%%----------------------------------------------------------------------------
+def calc_damping_from_HH_para(para, strain_array):
+    '''
+    Calculate damping values from HH parameters
+
+    Parameters
+    ----------
+    para : dict
+        HH model parameters
+    strain_array : numpy.ndarray
+        An 1D array of strain values. Unit: 1 (not percent).
+
+    Returns
+    -------
+    damping : numpy.ndarray
+        Damping values corresponding to each strain values.
+    '''
+
+    if not isinstance(para, dict):
+        raise TypeError('`para` needs to be a dictionary.')
+
+    x_t = para['gamma_t']
+    a = para['a']
+    x_ref = para['gamma_ref']
+    beta = para['beta']
+    s = para['s']
+    Gmax = para['Gmax']
+    mu = para['mu']
+    Tmax = para['Tmax']
+    d = para['d']
+
+    Tau_HH = tau_HH(strain_array, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d)
+    curve = np.column_stack((strain_array, Tau_HH))
+
+    damping = sr.calc_damping_from_stress_strain_curve(curve, Gmax)
+
+    return damping
+
+#%%----------------------------------------------------------------------------
+def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
+                          n_gen=100, lower_bound_power=-4, upper_bound_power=6,
+                          eta=0.1, seed=0, show_fig=False, verbose=False):
+    '''
+    Perform HH_x curve fitting for one damping curve using the genetic
+    algorithm provided in DEAP.
+
+    Parameters
+    ----------
+    damping_data_in_pct : numpy.ndarray
+        Damping data. Needs to have 2 columns (strain and damping ratio). Both
+        columns need to use % as unit.
+    population_size : int
+        The number of individuals in a generation
+    n_gen : int
+        Number of generations that the evolution lasts
+    lower_bound_power : float
+        The 10-based power of the lower bound of all the 9 parameters. For
+        example, if your desired lower bound is 0.26, then set this parameter
+        to be numpy.log10(0.26)
+    upper_bound_power : float
+        The 10-based power of the upper bound of all the 9 parameters.
+    eta : float
+        Crowding degree of the mutation or crossover. A high eta will produce
+        children resembling to their parents, while a small eta will produce
+        solutions much more different.
+    seed : int
+        Seed value for the random number generator
+    show_fig : bool
+        Whether to show the curve fitting results as a figure
+    verbose : bool
+        Whether to display information (statistics of the loss in each
+        generation) on the console
+
+    Return
+    ------
+    best_param : dict
+        The best parameters found in the optimization
+    '''
+
+    import random
+
+    import deap.creator
+    import deap.base
+    import deap.algorithms
+    import deap.tools
+
+    hlp.check_two_column_format(damping_data_in_pct, ensure_non_negative=True)
+
+    init_damping = damping_data_in_pct[0, 1]  # small-strain damping
+    damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
+    damping_data_in_1 = damping_data_in_pct / 100  # unit: percent --> 1
+
+    NDIM = 9  # number of HH model parameters; do not change this for HH model
+    N = 122  # make a denser data set which can help parameter searching
+    strain_dense = np.logspace(-6, -1, N)
+    damping_dense = np.interp(strain_dense, damping_data_in_1[:, 0],
+                              damping_data_in_1[:, 1])
+
+    damping_data_ = np.column_stack((strain_dense, damping_dense))
+
+    def damping_misfit(param):
+        '''
+        Calculate the misfit given a set of HH parameters. Note that the values
+        in `param` are actually the 10-based power of the actual HH parameters.
+        Using the powers in the genetic algorithm searching turns out to work
+        much better for this particular problem.
+        '''
+        x_t_, a_, x_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
+
+        x_t = 10 ** x_t_
+        a = 10 ** a_
+        x_ref = 10 ** x_ref_
+        beta = 10 ** beta_
+        s = 10 ** s_
+        Gmax = 10 ** Gmax_
+        mu = 10 ** mu_
+        Tmax = 10 ** Tmax_
+        d = 10 ** d_
+
+        strain = damping_data_[:, 0]
+        damping_true = damping_data_[:, 1]
+
+        Tau_HH = tau_HH(strain, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d)
+        curve = np.column_stack((strain, Tau_HH))
+        damping_pred = sr.calc_damping_from_stress_strain_curve(curve, Gmax)
+
+        error = hlp.mean_absolute_error(damping_true, damping_pred)
+
+        return error,
+
+    def uniform(low, up, size=None):
+        try:
+            return [random.uniform(a, b) for a, b in zip(low, up)]
+        except TypeError:
+            return [random.uniform(a, b) for a, b in zip([low]*size, [up]*size)]
+
+    BOUND_LOW = lower_bound_power
+    BOUND_UP = upper_bound_power
+
+    deap.creator.create("FitnessMin", deap.base.Fitness, weights=(-1.0,))
+    deap.creator.create("Individual", list, fitness=deap.creator.FitnessMin)
+
+    toolbox = deap.base.Toolbox()
+
+    toolbox.register("attr_float", uniform, BOUND_LOW, BOUND_UP, NDIM)
+    toolbox.register("individual", deap.tools.initIterate, deap.creator.Individual,
+                     toolbox.attr_float)
+    toolbox.register("population", deap.tools.initRepeat, list, toolbox.individual)
+    toolbox.register("evaluate", damping_misfit)
+    toolbox.register("mate", deap.tools.cxSimulatedBinaryBounded,
+                     low=BOUND_LOW, up=BOUND_UP, eta=eta)
+    toolbox.register("mutate", deap.tools.mutPolynomialBounded,
+                     low=BOUND_LOW, up=BOUND_UP, eta=eta, indpb=1.0/NDIM)
+    toolbox.register("select", deap.tools.selTournament, tournsize=10)
+
+    random.seed(seed)
+
+    pop = toolbox.population(n=population_size)
+    hof = deap.tools.HallOfFame(1)
+    stats = deap.tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("Avg", np.mean)
+    stats.register("Std", np.std)
+    stats.register("Min", np.min)
+    stats.register("Max", np.max)
+
+    deap.algorithms.eaSimple(pop, toolbox, cxpb=0.8, mutpb=0.8, ngen=n_gen,
+                             stats=stats, halloffame=hof, verbose=verbose)
+
+    hof_top = list(hof[0])
+
+    best_param = {}
+    best_param['gamma_t'] = 10 ** hof_top[0]
+    best_param['a'] = 10 ** hof_top[1]
+    best_param['gamma_ref'] = 10 ** hof_top[2]
+    best_param['beta'] = 10 ** hof_top[3]
+    best_param['s'] = 10 ** hof_top[4]
+    best_param['Gmax'] = 10 ** hof_top[5]
+    best_param['mu'] = 10 ** hof_top[6]
+    best_param['Tmax'] = 10 ** hof_top[7]
+    best_param['d'] = 10 ** hof_top[8]
+
+    if show_fig:
+        _plot_damping_curve_fit(damping_data_in_pct, best_param)
+
+    return best_param
+
+#%%----------------------------------------------------------------------------
+def fit_HH_x_multi_layers(curves, population_size=800, n_gen=100,
+                          lower_bound_power=-4, upper_bound_power=6,
+                          eta=0.1, seed=0, show_fig=False, verbose=False,
+                          parallel=False, n_cores=None):
+    '''
+    Perform HH_x curve fitting for multiple damping curves using the genetic
+    algorithm provided in DEAP.
+
+    Parameters
+    ----------
+    curves : numpy.ndarray or list<numpy.array>
+        Can either be a 2D array in the "curve" format, or a list of individual
+        damping curves.
+        The "curve" format is as follows:
+
+        strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
+        -----------+--------+------------+-------------+-------------+--------+ ...
+           ...     |  ...   |    ...     |    ...      |    ...      |  ...   |
+
+        The G/Gmax information is redundant for this function.
+
+    population_size : int
+        The number of individuals in a generation
+    n_gen : int
+        Number of generations that the evolution lasts
+    lower_bound_power : float
+        The 10-based power of the lower bound of all the 9 parameters. For
+        example, if your desired lower bound is 0.26, then set this parameter
+        to be numpy.log10(0.26)
+    upper_bound_power : float
+        The 10-based power of the upper bound of all the 9 parameters.
+    eta : float
+        Crowding degree of the mutation or crossover. A high eta will produce
+        children resembling to their parents, while a small eta will produce
+        solutions much more different.
+    seed : int
+        Seed value for the random number generator
+    show_fig : bool
+        Whether to show the curve fitting results as a figure
+    verbose : bool
+        Whether to display information (statistics of the loss in each
+        generation) on the console
+    parallel : bool
+        Whether to use parallel computing for each soil layer
+    n_cores : int
+        Number of CPU cores to use. If None, all cores are used. No effects
+        if `parallel` is set to False.
+
+    Return
+    ------
+    best_param : dict
+        The best parameters found in the optimization
+    '''
+
+    if isinstance(curves, np.ndarray):
+        if curves.ndim != 2:
+            raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
+        if curves.shape[1] % 4 != 0:
+            raise ValueError('If `curves` is a numpy array, its number of '
+                             'columns needs to be a multiple of 4.')
+        nr_layer = curves.shape[1] // 4
+
+        curves_list = []
+        for j in range(nr_layer):
+            curve = curves[:, j * 4 + 2 : j * 4 + 4]
+            hlp.check_two_column_format(curve,
+                                        name='Damping curve for layer #%d' % j,
+                                        ensure_non_negative=True)
+            curves_list.append(curve)
+    elif isinstance(curves, list):
+        if not all([isinstance(_, np.ndarray) for _ in curves]):
+            raise TypeError('If `curves` is a list, all its elements needs to '
+                            'be 2D numpy arrays.')
+        for j, curve in enumerate(curves):
+            hlp.check_two_column_format(curve,
+                                        name='Damping curve for layer #%d' % j,
+                                        ensure_non_negative=True)
+        curves_list = curves
+    else:
+        raise TypeError('Input data type of `curves` not recognized. '
+                        'Please check the documentation of this function.')
+
+    other_params = [(population_size, n_gen, lower_bound_power,
+                     upper_bound_power, eta, seed, show_fig, verbose)]
+
+    if parallel:
+        import itertools
+        import multiprocessing
+        p = multiprocessing.Pool(n_cores)
+        params = p.map(_fit_HH_x_loop, itertools.product(curves_list, other_params))
+        if show_fig:
+            for j, curve in enumerate(curves_list):
+                _plot_damping_curve_fit(curve, params[j])
+    else:
+        params = []
+        for j in range(nr_layer):
+            params.append(_fit_HH_x_loop((curves_list[j], other_params[0])))
+
+    return params
+
+#%%----------------------------------------------------------------------------
+def _fit_HH_x_loop(param):
+    '''
+    Loop body to be passed to the parallel pool.
+    '''
+    damping_curve, other_params = param
+
+    population_size, n_gen, lower_bound_power, upper_bound_power, eta, seed, \
+    show_fig, verbose = other_params
+
+    best_para = fit_HH_x_single_layer(damping_curve, n_gen=n_gen, eta=eta,
+                                      population_size=population_size,
+                                      lower_bound_power=lower_bound_power,
+                                      upper_bound_power=upper_bound_power,
+                                      seed=seed, show_fig=show_fig,
+                                      verbose=verbose)
+
+    return best_para
+
+#%%----------------------------------------------------------------------------
+def _plot_damping_curve_fit(damping_data_in_pct, param,
+                            min_strain_in_pct=1e-4, max_strain_in_pct=5):
+    '''
+    Plot damping data and curve-fit results together.
+
+    Parameters
+    ----------
+    damping_data_in_pct : numpy.ndarray
+        Damping data. Needs to have 2 columns (strain and damping ratio). Both
+        columns need to use % as unit.
+    param : dict
+        HH_x parameters
+    min_strain_in_pct, max_strain_in_pct : float
+        Strain limits of the curve-fit result
+    '''
+
+    fig = plt.figure()
+    ax = plt.axes()
+    init_damping = damping_data_in_pct[0, 1]
+    ax.semilogx(damping_data_in_pct[:, 0], damping_data_in_pct[:, 1],
+                marker='o', alpha=0.8, label='data')
+
+    min_strain_in_1 = min_strain_in_pct / 100.0
+    max_strain_in_1 = max_strain_in_pct / 100.0
+    strain = np.logspace(np.log10(min_strain_in_1), np.log10(max_strain_in_1))
+    damping_curve_fit = calc_damping_from_HH_para(param, strain)
+
+    ax.semilogx(strain * 100, damping_curve_fit * 100 + init_damping,
+                label='curve fit', alpha=0.8)
+    ax.legend(loc='best')
+    ax.grid(ls=':')
+    ax.set_xlabel('Strain[%]')
+    ax.set_ylabel('Damping ratio [%]')
+
+    return fig, ax
