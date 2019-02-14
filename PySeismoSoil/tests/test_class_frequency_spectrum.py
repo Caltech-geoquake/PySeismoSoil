@@ -14,7 +14,7 @@ class Test_Class_Frequency_Spectrum(unittest.TestCase):
 
     def test_load_data(self):
 
-        txt_filename = 'two_column_data_example.txt'
+        txt_filename = './files/two_column_data_example.txt'
 
         fs_bench, df_bench = hlp.read_two_column_stuff(txt_filename)
         fs = FS(txt_filename, fmin=0.1, fmax=2.5, n_pts=20, log_scale=False)
