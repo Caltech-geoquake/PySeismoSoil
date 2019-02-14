@@ -493,3 +493,30 @@ def _plot_damping_curve_fit(damping_data_in_pct, param,
     ax.set_ylabel('Damping ratio [%]')
 
     return fig, ax
+
+#%%----------------------------------------------------------------------------
+def serialize_params_to_array(param):
+    '''
+    Convert the HH parameters from a dictionary to an array, according to this
+    order:
+        gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+
+    Parameter
+    ---------
+    param : dict
+        A dictionary containing the parameters of the HH model
+
+    Returns
+    -------
+    param_array : numpy.array
+        A numpy array of shape (9,) containing the parameters of the HH model
+        in the order specified above
+    '''
+
+    order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
+    param_array = []
+    for key in order:
+        param_array.append(param[key])
+
+    return np.array(param_array)
+
