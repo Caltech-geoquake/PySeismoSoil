@@ -237,8 +237,8 @@ def extract_from_curve_format(curves):
     All G/Gmax curves are organized into a list, and all damping curves are
     organized into another list.
 
-    Parameters
-    ----------
+    Parameter
+    ---------
     curves : numpy.ndarray
         A 2D numpy array that follows the following format:
 
@@ -246,7 +246,7 @@ def extract_from_curve_format(curves):
         -----------+--------+------------+-------------+-------------+--------+ ...
            ...     |  ...   |    ...     |    ...      |    ...      |  ...   |
 
-        Such an array can be constructed by hand, or by directly reading from
+        Such an array can be constructed by hand, or by directly imported from
         a "curve_STATION_NAME.txt" file.
 
     Returns
@@ -265,11 +265,11 @@ def extract_from_curve_format(curves):
         if curves.shape[1] % 4 != 0:
             raise ValueError('If `curves` is a numpy array, its number of '
                              'columns needs to be a multiple of 4.')
-        nr_layer = curves.shape[1] // 4
+        n_layer = curves.shape[1] // 4
 
         GGmax_curves_list = []
         damping_curves_list = []
-        for j in range(nr_layer):
+        for j in range(n_layer):
             GGmax = curves[:, j * 4 + 0 : j * 4 + 2]
             damping = curves[:, j * 4 + 2 : j * 4 + 4]
             check_two_column_format(GGmax,
@@ -282,4 +282,41 @@ def extract_from_curve_format(curves):
             damping_curves_list.append(damping)
 
     return GGmax_curves_list, damping_curves_list
+
+#%%----------------------------------------------------------------------------
+def extract_from_param_format(params):
+    '''
+    Extract soil constituve model parameters from a 2D numpy array, which
+    follows the following format:
+
+        param_layer_1  |  param_layer_2  |  param_layer_3  | ...
+        ---------------+-----------------+-----------------+-----
+             1.1       |      2.2        |      3.3        | ...
+             1.2       |      2.3        |      3.4        | ...
+             ...       |      ...        |      ...        | ...
+
+    Parameter
+    ---------
+    params : numpy.ndarray
+        A 2D numpy array containing soil constitutive model parameters for each
+        soil layer. Such an array can be constructed by hand, or directly
+        imported from a "HH_x_STATION_NAME.txt" file or something similar.
+
+    Returns
+    -------
+    param_list : list<numpy.ndarray>
+        The parsed parameters for each layer. Each element of `param_list` is
+        a 1D numpy array with length N, where N is the number of parameters for
+        the particular soil constitutive model.
+    '''
+
+    if not isinstance(params, np.ndarray) or params.ndim != 2:
+        raise TypeError('`params` needs to be a 2D numpy array.')
+
+    n_layer = params.shape[1]
+    param_list = []
+    for j in range(n_layer):
+        param_list.append(params[:, j])
+
+    return param_list
 
