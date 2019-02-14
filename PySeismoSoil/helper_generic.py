@@ -208,3 +208,57 @@ def mean_absolute_error(y_true, y_pred):
         raise TypeError('`y_pred` needs to be a 1D numpy array.')
     mae = np.mean(np.abs(y_true - y_pred))
     return mae
+
+#%%----------------------------------------------------------------------------
+def extract_from_curve_format(curves):
+    '''
+    Extract G/Gmax and damping curves from a "curve formatted" 2D numpy array.
+    All G/Gmax curves are organized into a list, and all damping curves are
+    organized into another list.
+
+    Parameters
+    ----------
+    curves : numpy.ndarray
+        A 2D numpy array that follows the following format:
+
+        strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
+        -----------+--------+------------+-------------+-------------+--------+ ...
+           ...     |  ...   |    ...     |    ...      |    ...      |  ...   |
+
+        Such an array can be constructed by hand, or by directly reading from
+        a "curve_STATION_NAME.txt" file.
+
+    Returns
+    -------
+    GGmax_curves_list, damping_curves_list : list<numpy.ndarray>
+        The parsed G/Gmax and damping curves. Each element in the list is a 2D
+        numpy array with 2 columns (strain and G/Gmax, or strain and damping).
+        The units are shown in the above format.
+    '''
+
+    if not isinstance(curves, np.ndarray):
+        raise TypeError('`curves` needs to be a numpy array.')
+    else:
+        if curves.ndim != 2:
+            raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
+        if curves.shape[1] % 4 != 0:
+            raise ValueError('If `curves` is a numpy array, its number of '
+                             'columns needs to be a multiple of 4.')
+        nr_layer = curves.shape[1] // 4
+
+        GGmax_curves_list = []
+        damping_curves_list = []
+        for j in range(nr_layer):
+            GGmax = curves[:, j * 4 + 0 : j * 4 + 2]
+            damping = curves[:, j * 4 + 2 : j * 4 + 4]
+            check_two_column_format(GGmax,
+                                    name='G/Gmax curve for layer #%d' % j,
+                                    ensure_non_negative=True)
+            check_two_column_format(damping,
+                                    name='Damping curve for layer #%d' % j,
+                                    ensure_non_negative=True)
+            GGmax_curves_list.append(GGmax)
+            damping_curves_list.append(damping)
+
+    return GGmax_curves_list, damping_curves_list
+

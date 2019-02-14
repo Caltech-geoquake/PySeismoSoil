@@ -388,25 +388,12 @@ def fit_HH_x_multi_layers(curves, population_size=800, n_gen=100,
 
     Return
     ------
-    best_param : dict
-        The best parameters found in the optimization
+    params : list<dict>
+        The best parameters for each layer found in the optimization
     '''
 
     if isinstance(curves, np.ndarray):
-        if curves.ndim != 2:
-            raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
-        if curves.shape[1] % 4 != 0:
-            raise ValueError('If `curves` is a numpy array, its number of '
-                             'columns needs to be a multiple of 4.')
-        nr_layer = curves.shape[1] // 4
-
-        curves_list = []
-        for j in range(nr_layer):
-            curve = curves[:, j * 4 + 2 : j * 4 + 4]
-            hlp.check_two_column_format(curve,
-                                        name='Damping curve for layer #%d' % j,
-                                        ensure_non_negative=True)
-            curves_list.append(curve)
+        _, curves_list = hlp.extract_from_curve_format(curves)
     elif isinstance(curves, list):
         if not all([isinstance(_, np.ndarray) for _ in curves]):
             raise TypeError('If `curves` is a list, all its elements needs to '
@@ -433,8 +420,8 @@ def fit_HH_x_multi_layers(curves, population_size=800, n_gen=100,
                 _plot_damping_curve_fit(curve, params[j])
     else:
         params = []
-        for j in range(nr_layer):
-            params.append(_fit_HH_x_loop((curves_list[j], other_params[0])))
+        for curve in curves_list:
+            params.append(_fit_HH_x_loop((curve, other_params[0])))
 
     return params
 
@@ -489,7 +476,7 @@ def _plot_damping_curve_fit(damping_data_in_pct, param,
                 label='curve fit', alpha=0.8)
     ax.legend(loc='best')
     ax.grid(ls=':')
-    ax.set_xlabel('Strain[%]')
+    ax.set_xlabel('Strain [%]')
     ax.set_ylabel('Damping ratio [%]')
 
     return fig, ax
