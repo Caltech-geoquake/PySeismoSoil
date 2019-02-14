@@ -7,28 +7,28 @@ from . import helper_generic as hlp
 from . import helper_site_response as sr
 
 #%%----------------------------------------------------------------------------
-def tau_MKZ(x, x_ref, beta, s, Gmax):
+def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
     '''
     Calculate the MKZ shear stress. The MKZ model is proposed in Matasovic and
     Vucetic (1993), and has the following form:
 
-                       Gmax * x
-        T(x) = -----------------------------
-                 1 + beta * (x / x_ref)^s
+                              Gmax * gamma
+        T(gamma) = ---------------------------------------
+                      1 + beta * (gamma / gamma_ref)^s
 
-    where T     = shear stress
-          x     = shear strain
-          Gmax  = initial shear modulus
-          beta  = a shape parameter of the MKZ model
-          x_ref = reference strain, another shape parameter of the MKZ model
-          s     = another shape parameter of the MKZ model
+    where T         = shear stress
+          gamma     = shear strain
+          Gmax      = initial shear modulus
+          beta      = a shape parameter of the MKZ model
+          gamma_ref = reference strain, another shape parameter of the MKZ model
+          s         = another shape parameter of the MKZ model
 
     Parameters
     ----------
-    x : numpy.ndarray
+    gamma : numpy.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
-    x_ref : float
+    gamma_ref : float
         Reference shear strain, a shape parameter of the MKZ model
     beta : float
         A shape parameter of the MKZ model
@@ -43,25 +43,24 @@ def tau_MKZ(x, x_ref, beta, s, Gmax):
         The shear stress determined by the formula above. Same shape as `x`,
         and same unit as `Gmax`.
     '''
-
-    T_MKZ = Gmax * x / ( 1 + beta * (np.abs(x) / x_ref)**s )
+    T_MKZ = Gmax * gamma / ( 1 + beta * (np.abs(gamma) / gamma_ref)**s )
 
     return T_MKZ
 
 #%%----------------------------------------------------------------------------
-def tau_FKZ(x, Gmax, mu, d, Tmax):
+def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
     '''
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
     (2017), in Equation (6), and has the following form:
 
-                    x^d * mu
-        T(x) = ------------------------
-                  1        x^d * mu
-                ------ + ------------
-                 Gmax        Tmax
+                        gamma^d * mu
+        T(gamma) = ------------------------
+                      1        x^d * mu
+                    ------ + ------------
+                     Gmax        Tmax
 
     where T     = shear stress
-          x     = shear strain
+          gamma = shear strain
           Gmax  = initial shear modulus
           d     = shape parameter
           mu    = shape parameter
@@ -69,7 +68,7 @@ def tau_FKZ(x, Gmax, mu, d, Tmax):
 
     Parmeters
     ---------
-    x : numpy.ndarray
+    gamma : numpy.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     Gmax : float
@@ -87,24 +86,24 @@ def tau_FKZ(x, Gmax, mu, d, Tmax):
         The shear stress determined by the formula above. Same shape as `x`,
         and same unit as `Gmax`.
     '''
-    T_FKZ = mu * Gmax * x**d / ( 1 + Gmax / Tmax * mu * np.abs(x)**d )
+    T_FKZ = mu * Gmax * gamma**d / ( 1 + Gmax / Tmax * mu * np.abs(gamma)**d )
 
     return T_FKZ
 
 #%%----------------------------------------------------------------------------
-def transition_function(x, a, x1):
+def transition_function(gamma, *, a, gamma_t):
     '''
     The transition function of the HH model, as defined in Equation (7) of Shi
     & Asimaki (2017).
 
     Parameters
     ----------
-    x : numpy.ndarray
+    gamma : numpy.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     a : float
         A shape parameter describing how fast the transition happens
-    x1 : float
+    gamma_t : float
         Transition strain: the x value at which the transition happens
 
     Returns
@@ -112,26 +111,27 @@ def transition_function(x, a, x1):
     w : numpy.array
         The transition function, ranging from 0 to 1. Same shape as `x`.
     '''
-    assert(x1 > 0)
-    w = 1 - 1. / (1 + np.power(10, -a * (np.log10(np.abs(x)/x1) - 4.039 * a**(-1.036)) ))
+    assert(gamma_t > 0)
+    w = 1 - 1. / (1 + np.power(10, -a * (np.log10(np.abs(gamma)/gamma_t) \
+                                         - 4.039 * a**(-1.036)) ))
 
     return w
 
 #%%----------------------------------------------------------------------------
-def tau_HH(x, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d):
+def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
     '''
     Calculate the HH shear stress, which is proposed in Shi & Asimaki (2017).
 
     Parameters
     ----------
-    x : numpy.ndarray
+    gamma : numpy.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
-    x_t : float
+    gamma_t : float
         Transition strain: the x value at which the transition happens
     a : float
         A shape parameter describing how fast the transition happens
-    x_ref : float
+    gamma_ref : float
         Reference shear strain, a shape parameter of the MKZ model
     beta : float
         A shape parameter of the MKZ model
@@ -152,9 +152,9 @@ def tau_HH(x, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d):
         The shear stress determined by the HH model. Same shape as `x`,
         and same unit as `Gmax`.
     '''
-    w = transition_function(x, a, x_t)
-    T_MKZ = tau_MKZ(x, x_ref, beta, s, Gmax)
-    T_FKZ = tau_FKZ(x, Gmax, mu, d, Tmax)
+    w = transition_function(gamma, a=a, gamma_t=gamma_t)
+    T_MKZ = tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
+    T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)
 
     T_HH = w * T_MKZ + (1 - w) * T_FKZ
 
@@ -181,20 +181,10 @@ def calc_damping_from_HH_para(para, strain_array):
     if not isinstance(para, dict):
         raise TypeError('`para` needs to be a dictionary.')
 
-    x_t = para['gamma_t']
-    a = para['a']
-    x_ref = para['gamma_ref']
-    beta = para['beta']
-    s = para['s']
-    Gmax = para['Gmax']
-    mu = para['mu']
-    Tmax = para['Tmax']
-    d = para['d']
-
-    Tau_HH = tau_HH(strain_array, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d)
+    Tau_HH = tau_HH(strain_array, **para)
     curve = np.column_stack((strain_array, Tau_HH))
 
-    damping = sr.calc_damping_from_stress_strain_curve(curve, Gmax)
+    damping = sr.calc_damping_from_stress_strain_curve(curve, para['Gmax'])
 
     return damping
 
@@ -267,11 +257,11 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
         Using the powers in the genetic algorithm searching turns out to work
         much better for this particular problem.
         '''
-        x_t_, a_, x_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
+        gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
 
-        x_t = 10 ** x_t_
+        gamma_t = 10 ** gamma_t_
         a = 10 ** a_
-        x_ref = 10 ** x_ref_
+        gamma_ref = 10 ** gamma_ref_
         beta = 10 ** beta_
         s = 10 ** s_
         Gmax = 10 ** Gmax_
@@ -282,7 +272,8 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
         strain = damping_data_[:, 0]
         damping_true = damping_data_[:, 1]
 
-        Tau_HH = tau_HH(strain, x_t, a, x_ref, beta, s, Gmax, mu, Tmax, d)
+        Tau_HH = tau_HH(strain, gamma_t=gamma_t, a=a, gamma_ref=gamma_ref,
+                        beta=beta, s=s, Gmax=Gmax, mu=mu, Tmax=Tmax, d=d)
         curve = np.column_stack((strain, Tau_HH))
         damping_pred = sr.calc_damping_from_stress_strain_curve(curve, Gmax)
 
