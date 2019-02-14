@@ -13,7 +13,7 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
 
     def test_fourier_transform(self):
 
-        accel, _ = hlp.read_two_column_stuff('two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
         freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,

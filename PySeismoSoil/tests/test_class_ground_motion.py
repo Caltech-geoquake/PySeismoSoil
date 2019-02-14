@@ -13,7 +13,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
     def test_loading_data(self):
 
         # Two columns from file
-        gm = GM('sample_accel.txt', 'gal')
+        gm = GM('./files/sample_accel.txt', 'gal')
 
         PGA_benchmark = 294.30  # unit: cm/s/s
         PGV_benchmark = 31.46   # unit: cm/s
@@ -31,7 +31,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertAlmostEqual(gm.pga, 4)
 
         # One column from file
-        gm = GM('one_column_data_example.txt', 'g', dt=0.2)
+        gm = GM('./files/one_column_data_example.txt', 'g', dt=0.2)
         self.assertAlmostEqual(gm.pga_in_g, 12.0)
 
         # One column from numpy array
@@ -43,24 +43,21 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, error_msg):
             gm = GM(np.array([1, 2, 3, 4, 5]), 'gal')
 
-#    def test_fourier_transform(self):
-#
-#        gm = GM('two_column_data_example.txt', 'm/s/s')
-#
-#        freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
-#                      5.3333]
-#        FS_bench = [60.0000 + 0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
-#                    -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
-#                    -7.5000 + 2.4369j,   -1.5000 + 0.1577j]
-#
-#        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001))
-#        self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001))
+    def test_fourier_transform(self):
+        gm = GM('./files/two_column_data_example.txt', 'm/s/s')
+        freq, spec = gm.get_Fourier_spectrum(real_val=False).raw_data_2col.T
 
-
+        freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
+                      5.3333]
+        FS_bench = [60.0000 + 0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
+                    -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
+                    -7.5000 + 2.4369j, -1.5000 + 0.1577j]
+        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001))
+        self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001))
 
     def test_num_integration(self):
 
-        gm = GM('two_column_data_example.txt', 'm/s/s')
+        gm = GM('./files/two_column_data_example.txt', 'm/s/s')
 
         v_bench = np.array([[0.1000, 0.1000],
                             [0.2000, 0.3000],
