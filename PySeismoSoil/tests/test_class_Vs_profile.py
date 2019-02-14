@@ -12,7 +12,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
     Unit test for Vs_Profile class
     '''
 
-    def test_load_data(self):
+    def test_init(self):
 
         data, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
         data[:, 0] *= 10

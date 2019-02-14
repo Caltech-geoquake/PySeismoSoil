@@ -184,20 +184,3 @@ class Test_Helper_Site_Response(unittest.TestCase):
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Site_Response)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
