@@ -164,7 +164,7 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
     return T_HH
 
 #%%----------------------------------------------------------------------------
-def calc_damping_from_HH_para(para, strain_array):
+def calc_damping_from_param(para, strain_array):
     '''
     Calculate damping values from HH parameters
 
@@ -475,7 +475,7 @@ def _plot_damping_curve_fit(damping_data_in_pct, param,
     min_strain_in_1 = min_strain_in_pct / 100.0
     max_strain_in_1 = max_strain_in_pct / 100.0
     strain = np.logspace(np.log10(min_strain_in_1), np.log10(max_strain_in_1))
-    damping_curve_fit = calc_damping_from_HH_para(param, strain)
+    damping_curve_fit = calc_damping_from_param(param, strain)
 
     ax.semilogx(strain * 100, damping_curve_fit * 100 + init_damping,
                 label='curve fit', alpha=0.8)
