@@ -241,6 +241,9 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
     import deap.algorithms
     import deap.tools
 
+    import warnings  # suppress overflow warning when trying some parameters
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
     hlp.check_two_column_format(damping_data_in_pct, ensure_non_negative=True)
 
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
