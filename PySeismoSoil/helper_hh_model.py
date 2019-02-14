@@ -43,6 +43,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
         The shear stress determined by the formula above. Same shape as `x`,
         and same unit as `Gmax`.
     '''
+    hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_MKZ = Gmax * gamma / ( 1 + beta * (np.abs(gamma) / gamma_ref)**s )
 
     return T_MKZ
@@ -86,6 +87,7 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
         The shear stress determined by the formula above. Same shape as `x`,
         and same unit as `Gmax`.
     '''
+    hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_FKZ = mu * Gmax * gamma**d / ( 1 + Gmax / Tmax * mu * np.abs(gamma)**d )
 
     return T_FKZ
@@ -111,6 +113,7 @@ def transition_function(gamma, *, a, gamma_t):
     w : numpy.array
         The transition function, ranging from 0 to 1. Same shape as `x`.
     '''
+    hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     assert(gamma_t > 0)
     w = 1 - 1. / (1 + np.power(10, -a * (np.log10(np.abs(gamma)/gamma_t) \
                                          - 4.039 * a**(-1.036)) ))
@@ -180,6 +183,8 @@ def calc_damping_from_HH_para(para, strain_array):
 
     if not isinstance(para, dict):
         raise TypeError('`para` needs to be a dictionary.')
+
+    hlp.assert_1D_numpy_array(strain_array)
 
     Tau_HH = tau_HH(strain_array, **para)
     curve = np.column_stack((strain_array, Tau_HH))

@@ -62,6 +62,22 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     return data_, delta
 
 #%%----------------------------------------------------------------------------
+def assert_1D_numpy_array(something, name=None):
+    '''
+    Assert that `something` is a 1D numpy array
+
+    Parameters
+    ----------
+    something :
+        Any Python object
+    name : str or None
+        The name of `something` to be displayed in the potential error message
+    '''
+    if not isinstance(something, np.ndarray) or something.ndim != 1:
+        name = '`something`' if name is None else name
+        raise TypeError('%s must be a 1D numpy array.' % name)
+
+#%%----------------------------------------------------------------------------
 def check_two_column_format(something, name=None, ensure_non_negative=False):
     '''
     Check that `something` is a 2D numpy array with two columns. Raises an
@@ -181,6 +197,8 @@ def interpolate(x_query_min, x_query_max, n_pts, x_ref, y_ref, log_scale=True,
     else:
         x_query_array = np.linspace(x_query_min, x_query_max, n_pts)
 
+    assert_1D_numpy_array(x_ref, name='`x_ref`')
+    assert_1D_numpy_array(y_ref, name='`y_ref`')
     y_query_array = np.interp(x_query_array, x_ref, y_ref, **kwargs_to_interp)
 
     return x_query_array, y_query_array
@@ -202,10 +220,8 @@ def mean_absolute_error(y_true, y_pred):
     mse : float
         Mean squared error
     '''
-    if not isinstance(y_true, np.ndarray) or y_true.ndim != 1:
-        raise TypeError('`y_true` needs to be a 1D numpy array.')
-    if not isinstance(y_pred, np.ndarray) or y_true.ndim != 1:
-        raise TypeError('`y_pred` needs to be a 1D numpy array.')
+    assert_1D_numpy_array(y_true, name='`y_true`')
+    assert_1D_numpy_array(y_pred, name='`y_pred`')
     mae = np.mean(np.abs(y_true - y_pred))
     return mae
 
