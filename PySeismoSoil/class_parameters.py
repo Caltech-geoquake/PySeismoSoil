@@ -28,52 +28,15 @@ class HH_Param(collections.UserDict):
     data : dict
         HH model parameters with the keys listed above
     '''
-    def __init__(self, param_dict):#, gamma_t=None, a=None, gamma_ref=None,
-                 #beta=None, s=None, Gmax=None, mu=None, Tmax=None, d=None):
-
-#        param_list = [gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d]
-#        is_not_None = [_ is not None for _ in param_list]
-#        is_a_number = [isinstance(_, (np.number, float, int)) for _ in param_list]
-#
-#        if param_dict is not None and any(is_not_None):
-#            raise ValueError('If you provide `param_dict`, please do not pass '
-#                             'any value to the other keyword arguments.')
-#        if param_dict is None and not all(is_a_number):
-#            raise ValueError('You did not provide `param_dict`, therefore you '
-#                             'need to provide values to all other keyword '
-#                             'arguments.')
-
+    def __init__(self, param_dict):
         self.allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
-                               'nu', 'Tmax', 'd'}
+                               'mu', 'Tmax', 'd'}
         if param_dict.keys() != self.allowable_keys:
             raise ValueError("Invalid keys exist in your input data. We only "
                              "allow {'gamma_t', 'a', 'gamma_ref', 'beta', 's', "
-                             "'Gmax', 'nu', 'Tmax', 'd'}.")
+                             "'Gmax', 'mu', 'Tmax', 'd'}.")
 
         super(HH_Param, self).__init__(param_dict)
-
-
-#        self.param = dict()
-#        if param_dict is not None:
-#            self.param['gamma_t'] = param_dict['gamma_t']
-#            self.param['a'] = param_dict['a']
-#            self.param['gamma_ref'] = param_dict['gamma_ref']
-#            self.param['beta'] = param_dict['beta']
-#            self.param['s'] = param_dict['s']
-#            self.param['Gmax'] = param_dict['Gmax']
-#            self.param['mu'] = param_dict['mu']
-#            self.param['Tmax'] = param_dict['Tmax']
-#            self.param['d'] = param_dict['d']
-#        else:
-#            self.param['gamma_t'] = gamma_t
-#            self.param['a'] = a
-#            self.param['gamma_ref'] = gamma_ref
-#            self.param['beta'] = beta
-#            self.param['s'] = s
-#            self.param['Gmax'] = Gmax
-#            self.param['mu'] = mu
-#            self.param['Tmax'] = Tmax
-#            self.param['d'] = d
 
     def __repr__(self):
         return self.param
@@ -177,6 +140,18 @@ class Param_Multi_Layer():
     '''
     Class implementation of multiple curves.
 
+    Its behavior is similar to a list,
+    but with a more stringent requirement: all elements are of the same data
+    type, i.e., `element_class`.
+
+    The list-like behaviors available are:
+        - indexing: foo[3]
+        - slicing: foo[:4]
+        - setting values: foo[2] = ...
+        - length: len(foo)
+        - deleting iterm: del foo[2]
+        - checking existance: bar in foo
+
     Parameters
     ----------
     list_of_param_data : list<dict> or list<Param>
@@ -194,7 +169,7 @@ class Param_Multi_Layer():
         The number of soil layers (i.e., the length of the list)
     '''
 
-    def __init__(self, list_of_param_data, *, element_class):
+    def __init__(self, list_of_param_data, element_class):
         param_list = []
         for param_data in list_of_param_data:
             if isinstance(param_data, dict):
@@ -204,14 +179,38 @@ class Param_Multi_Layer():
             else:
                 raise TypeError('An element in `list_of_param_data` has '
                                 'invalid type.')
-
         self.param_list = param_list
         self.n_layer = len(param_list)
+
+    def __contains__(self, item): return item in self.param_list
+    def __len__(self): return self.n_layer
+    def __setitem__(self, i, item): self.param_list[i] = item
+    def __getitem__(self, i):
+        if isinstance(i, int):
+            return self.param_list[i]
+        if isinstance(i, slice):  # return an object of the same class
+            return self.__class__(self.param_list[i])  # filled with the sliced data
+        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+    def __delitem__(self, i):
+        del self.param_list[i]
+        self.n_layer -= 1
 
 #%%============================================================================
 class HH_Param_Multi_Layer(Param_Multi_Layer):
     '''
     Class implementation of multiple sets of HH parameters for multiple layers.
+
+    Its behavior is similar to a list,
+    but with a more stringent requirement: all elements are of the same data
+    type, i.e., HH_Param.
+
+    The list-like behaviors available are:
+        - indexing: foo[3]
+        - slicing: foo[:4]
+        - setting values: foo[2] = ...
+        - length: len(foo)
+        - deleting iterm: del foo[2]
+        - checking existance: bar in foo
 
     Parameters
     ----------

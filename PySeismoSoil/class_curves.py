@@ -67,15 +67,17 @@ class Curve():
         self.values = values
 
     def __repr__(self):
-        return self.raw_data
+        return '%s object:\n%s' % (self.__class__, str(self.raw_data))
 
-    def plot(self, title=None, xlabel='Strain [%]', ylabel=None, figsize=None,
-             dpi=100, **kwargs_to_matplotlib):
+    def plot(self, plot_interpolated=True, title=None, xlabel='Strain [%]',
+             ylabel=None, figsize=None, dpi=100, **kwargs_to_matplotlib):
         '''
         Plot the curve (y axis: values, x axis: strain)
 
         Parameter
         ---------
+        plot_interpolated : bool
+            Whether to plot the interpolated curve or the raw data
         title : str
             Title of plot
         xlabel : str
@@ -96,7 +98,11 @@ class Curve():
         '''
         fig = plt.figure(figsize=figsize, dpi=dpi)
         ax = plt.axes()
-        ax.semilogx(self.strain, self.values, **kwargs_to_matplotlib)
+        if plot_interpolated:
+            ax.semilogx(self.strain, self.values, **kwargs_to_matplotlib)
+        else:
+            ax.semilogx(self.raw_data[:, 0], self.raw_data[:, 1],
+                        **kwargs_to_matplotlib)
         ax.grid(ls=':')
         ax.set_xlabel('Strain [%]')
         if ylabel:
@@ -313,7 +319,8 @@ class Stress_Curve(Curve):
         super(Stress_Curve, self).__init__(data, strain_unit=strain_unit,
                                            min_strain=min_strain,
                                            max_strain=max_strain,
-                                           n_pts=n_pts, log_scale=log_scale)
+                                           n_pts=n_pts, log_scale=log_scale,
+                                           ensure_non_negative=check_values)
         self.stress = self.values
         del self.values
 
@@ -329,13 +336,22 @@ class Stress_Curve(Curve):
         else:  # GPa
             self.stress *= 1e6
 
-        if check_values and np.any(self.stress < 0):
-            raise ValueError('The provided stress values must >= 0.')
-
 #%%============================================================================
 class Multiple_Curves():
     '''
     Class implementation of multiple curves.
+
+    Its behavior is similar to a list,
+    but with a more stringent requirement: all elements are of the same data
+    type, i.e., `element_class`.
+
+    The list-like behaviors available are:
+        - indexing: foo[3]
+        - slicing: foo[:4]
+        - setting values: foo[2] = ...
+        - length: len(foo)
+        - deleting iterm: del foo[2]
+        - checking existance: bar in foo
 
     Parameters
     ----------
@@ -364,13 +380,42 @@ class Multiple_Curves():
                 raise TypeError('An element in `list_of_curves` has invalid '
                                 'type.')
 
+        self.element_class = element_class
         self.curves = curves
         self.n_layer = len(curves)
+
+    def __repr__(self):
+        return 'n_layers = %d, type: %s' % (self.n_layer, type(self.curves[0]))
+
+    def __contains__(self, item): return item in self.curves
+    def __len__(self): return self.n_layer
+    def __setitem__(self, i, item): self.curves[i] = item
+    def __getitem__(self, i):
+        if isinstance(i, int):
+            return self.curves[i]
+        if isinstance(i, slice):  # return an object of the same class
+            return self.__class__(self.curves[i])  # filled with the sliced data
+        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+    def __delitem__(self, i):
+        del self.curves[i]
+        self.n_layer -= 1
 
 #%%============================================================================
 class Multiple_Damping_Curves(Multiple_Curves):
     '''
     Class implementation of multiple damping curves.
+
+    Its behavior is similar to a list,
+    but with a more stringent requirement: all elements are of the same data
+    type, i.e., Damping_Curve.
+
+    The list-like behaviors available are:
+        - indexing: foo[3]
+        - slicing: foo[:4]
+        - setting values: foo[2] = ...
+        - length: len(foo)
+        - deleting iterm: del foo[2]
+        - checking existance: bar in foo
 
     Parameters
     ----------
@@ -450,7 +495,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         HH_x_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization
         '''
-        from class_parameters import HH_Param_Multi_Layer
+        from .class_parameters import HH_Param_Multi_Layer
 
         list_of_np_array = [_.raw_data for _ in self.curves]
         params = hh.fit_HH_x_multi_layers(list_of_np_array,
@@ -485,6 +530,18 @@ class Multiple_Damping_Curves(Multiple_Curves):
 class Multiple_GGmax_Curves(Multiple_Curves):
     '''
     Class implementation of multiple G/Gmax curves.
+
+    Its behavior is similar to a list,
+    but with a more stringent requirement: all elements are of the same data
+    type, i.e., GGmax_Curve.
+
+    The list-like behaviors available are:
+        - indexing: foo[3]
+        - slicing: foo[:4]
+        - setting values: foo[2] = ...
+        - length: len(foo)
+        - deleting iterm: del foo[2]
+        - checking existance: bar in foo
 
     Parameters
     ----------
