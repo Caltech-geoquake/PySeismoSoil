@@ -80,7 +80,7 @@ class HH_Param(collections.UserDict):
 
     def __setitem__(self, key, val):
         if key not in self.allowable_keys:
-            raise KeyError("The key '%s' is not permitted." % key)
+            raise KeyError("The HH model doesn't have a '%s' parameter." % key)
         self.data[key] = val
         return None
 
