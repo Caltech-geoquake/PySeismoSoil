@@ -512,3 +512,38 @@ def serialize_params_to_array(param):
 
     return np.array(param_array)
 
+#%%----------------------------------------------------------------------------
+def deserialize_array_to_params(array):
+    '''
+    Reconstruct a HH model parameter dictionary from an array of values.
+
+    The users needs to ensure the order of values in `array` are in this order:
+        gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+
+    Parameter
+    ---------
+    array : numpy.ndarray
+        A 1D numpy array of HH parameter values in this order: gamma_t, a,
+        gamma_ref, beta, s, Gmax, mu, Tmax, d
+
+    Returns
+    -------
+    param : dict
+        The dictionary with parameter name as keys and values as values
+    '''
+
+    hlp.assert_1D_numpy_array(array)
+    assert(len(array) == 9)
+
+    param = dict()
+    param['gamma_t'] = array[0]
+    param['a'] = array[1]
+    param['gamma_ref'] = array[2]
+    param['beta'] = array[3]
+    param['s'] = array[4]
+    param['Gmax'] = array[5]
+    param['mu'] = array[6]
+    param['Tmax'] = array[7]
+    param['d'] = array[8]
+
+    return param
