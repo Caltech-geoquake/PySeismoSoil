@@ -11,9 +11,26 @@ from . import helper_generic as hlp
 def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
     '''
     Plots acceleration, velocity, and displacement time history from a file
-    name of acceleration data.
+    name of acceleration data
 
-    Returns the figure object.
+    Parameters
+    ----------
+    accel : str or numpy.ndarray
+        Acceleration time history. Can be a file name, or a 2D numpy array with
+        two columns (time and accel)
+    unit : str
+        Unit of acceleration for displaying on the y axis label
+    title : str
+        Title of the figure (optional)
+    figsize : tuple
+        Figure size
+    dpi : float
+        DPI of the figure
+
+    Returns
+    -------
+    fig :
+        The figure object
     '''
 
     if isinstance(accel, str):
@@ -595,13 +612,21 @@ def plot_Vs_profile(vs_profile, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100,
 #%%----------------------------------------------------------------------------
 def _gen_profile_plot_array(thk, vs, zmax):
     '''
-    Generates (x, y) from three numpy arrays: THK, VS, and ZMAX
+    Generates (x, y) for plotting, from Vs profile information
 
-    THK  = thickness
-    VS   = shear wave velocity
-    ZMAX = maximum depth of the profile
+    Parameters
+    ----------
+    thk : numpy.ndarray
+        Thickness array
+    vs : numpy.array
+        Shear-wave velocity array
+    zmax : float
+        Maximum depth desired
 
-    Can use plot(x,y) to plot the profiles directly.
+    Returns
+    -------
+    x, y : numpy.ndarray
+        Two numpy arrays for plotting the Vs profile: plt.plot(x, y)
     '''
 
     hlp.assert_1D_numpy_array(thk)
@@ -810,7 +835,22 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
 def calc_damping_from_stress_strain_curve(stress_strain_curve, Gmax):
     '''
     Calculates the damping curve from the given stress-strain curve.
+
+    Parameters
+    ----------
+    stress_strain_curve : numpy.ndarray
+        Stress-strain curve. Needs to have two columns.
+    Gmax : float
+        Maximum shear modulus, whose unit needs to be identical to that of the
+        stress curve.
+
+    Returns
+    -------
+    damping : numpy.ndarray
+        An 1D numpy array of damping ratios, in the unit of "1"
     '''
+
+    hlp.check_two_column_format(stress_strain_curve)
 
     strain = stress_strain_curve[:, 0]
     stress = stress_strain_curve[:, 1]

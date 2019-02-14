@@ -106,7 +106,7 @@ def check_two_column_format(something, name=None, ensure_non_negative=False):
     if check_numbers_valid(something) == -2:
         raise ValueError("%s should contain no NaN values." % name)
     if ensure_non_negative and check_numbers_valid(something) == -3:
-        raise ValueError('%s should be all non-negative values.' % name)
+        raise ValueError('%s should have all non-negative values.' % name)
 
     return None
 
@@ -114,6 +114,11 @@ def check_two_column_format(something, name=None, ensure_non_negative=False):
 def check_Vs_profile_format(data):
     '''
     Check that `data` is in a valid format as a Vs profile.
+
+    Parameter
+    ---------
+    data :
+        Any Python object
     '''
 
     if not isinstance(data, np.ndarray):
@@ -176,9 +181,9 @@ def interpolate(x_query_min, x_query_max, n_pts, x_ref, y_ref, log_scale=True,
         `x_query_max`, at which we query the y values. `n_pts` controls the
         length of this array.
     x_ref : numpy.ndarray
-        Reference x values for interpolation. Must be an 1D numpy array.
+        Reference x values for interpolation. Must be a 1D numpy array.
     y_ref : numpy.ndarray
-        Reference y values for interpolation. Must be an 1D numpy array.
+        Reference y values for interpolation. Must be a 1D numpy array.
     log_scale : bool
         Whether to construct the query array in log or linear scale
     **kwargs_to_interp :
