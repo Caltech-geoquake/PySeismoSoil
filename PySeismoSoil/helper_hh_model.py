@@ -164,13 +164,13 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
     return T_HH
 
 #%%----------------------------------------------------------------------------
-def calc_damping_from_param(para, strain_array):
+def calc_damping_from_param(param, strain_array):
     '''
     Calculate damping values from HH parameters
 
     Parameters
     ----------
-    para : dict
+    param : dict
         HH model parameters
     strain_array : numpy.ndarray
         An 1D array of strain values. Unit: 1 (not percent).
@@ -181,15 +181,15 @@ def calc_damping_from_param(para, strain_array):
         Damping values corresponding to each strain values, in the unit of "1"
     '''
 
-    if not isinstance(para, dict):
+    if not isinstance(param, dict):
         raise TypeError('`para` needs to be a dictionary.')
 
     hlp.assert_1D_numpy_array(strain_array)
 
-    Tau_HH = tau_HH(strain_array, **para)
+    Tau_HH = tau_HH(strain_array, **param)
     curve = np.column_stack((strain_array, Tau_HH))
 
-    damping = sr.calc_damping_from_stress_strain_curve(curve, para['Gmax'])
+    damping = sr.calc_damping_from_stress_strain_curve(curve, param['Gmax'])
 
     return damping
 
