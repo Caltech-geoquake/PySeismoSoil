@@ -110,8 +110,8 @@ class Ground_Motion:
             data_[:, 1] = data_[:, 1] * 9.81  # g --> m/s/s
 
         self.dt = float(dt)  # float; unit: sec
-        self.__npts = len(data_[:,0])  # int; how many time points
-        self.time = np.linspace(0, self.dt*(self.__npts-1), num=self.__npts)
+        self.npts = len(data_[:,0])  # int; how many time points
+        self.time = np.linspace(0, self.dt*(self.npts-1), num=self.npts)
 
         self.accel = data_  # numpy array, with length unit 'm'
         self.veloc = self.get_veloc()  # numpy array, with length unit 'm'
@@ -139,7 +139,7 @@ class Ground_Motion:
         Basic information of a ground motion.
         '''
         text = 'Npts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'\
-               % (self.__npts, self.dt, self.pga_in_g, self.pga_in_gal,
+               % (self.npts, self.dt, self.pga_in_g, self.pga_in_gal,
                   self.pgv_in_cm_s, self.pgd_in_cm, self.T5_95)
 
         return text
@@ -488,7 +488,7 @@ class Ground_Motion:
         n2 = int(t2 / self.dt)
 
         if n1 < 0:           n1 = 0
-        if n2 > self.__npts: n2 = self.__npts
+        if n2 > self.npts: n2 = self.npts
 
         time_trunc = self.accel[:n2-n1, 0]
         accel_trunc = self.accel[n1:n2, 1]
