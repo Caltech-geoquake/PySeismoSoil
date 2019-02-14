@@ -178,7 +178,7 @@ def calc_damping_from_HH_para(para, strain_array):
     Returns
     -------
     damping : numpy.ndarray
-        Damping values corresponding to each strain values.
+        Damping values corresponding to each strain values, in the unit of "1"
     '''
 
     if not isinstance(para, dict):
