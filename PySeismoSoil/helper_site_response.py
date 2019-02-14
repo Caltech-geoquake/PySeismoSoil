@@ -383,10 +383,7 @@ def get_xi_rho(Vs, formula_type=3):
                (Unit of rho: kg/m3)
     '''
 
-    if not isinstance(Vs, np.ndarray):
-        raise TypeError('`Vs` should be a numpy array.')
-    if Vs.ndim > 1:
-        raise ValueError('`Vs` should be a 1D numpy array.')
+    hlp.assert_1D_numpy_array(Vs, '`Vs`')
 
     nr = len(Vs)  # number of Vs layers
     xi = np.zeros(nr)
@@ -607,6 +604,9 @@ def _gen_profile_plot_array(thk, vs, zmax):
     Can use plot(x,y) to plot the profiles directly.
     '''
 
+    hlp.assert_1D_numpy_array(thk)
+    hlp.assert_1D_numpy_array(vs)
+
     N = len(vs)
     x = np.zeros(2 * N)
     y = np.zeros(2 * N)
@@ -641,8 +641,7 @@ def thk2dep(thk, midpoint=False):
         Depth array
     '''
 
-    if not isinstance(thk, np.ndarray) or thk.ndim != 1:
-        raise TypeError('`thk` must be a 1D numpy array.')
+    hlp.assert_1D_numpy_array(thk)
 
     L = len(thk)
     z_top = np.zeros(L) # create an array with same length as h
@@ -678,9 +677,7 @@ def dep2thk(depth_array_starting_from_0):
         Thickness array
     '''
 
-    if not isinstance(depth_array_starting_from_0, np.ndarray) or \
-       depth_array_starting_from_0.ndim != 1:
-        raise TypeError('`depth_array_starting_from_0` must be a 1D numpy array.')
+    hlp.assert_1D_numpy_array(depth_array_starting_from_0)
 
     if depth_array_starting_from_0[0] != 0:
         raise ValueError('The 0th element of depth array must be 0.')

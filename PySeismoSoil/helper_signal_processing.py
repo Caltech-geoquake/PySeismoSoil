@@ -452,7 +452,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
     Parameters
     ----------
     signal : numpy.ndarray
-        The 1D signal to be smoothed.
+        The signal to be smoothed. Must be a 1D numpy array.
     win_len : int
         The length of the convolution window
     window : str
@@ -482,10 +482,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
         The smoothed signal which has the same dimension as the original signal.
     '''
 
-    if not isinstance(signal, np.ndarray):
-        raise TypeError('signal must be a numpy array.')
-    if signal.ndim > 1 and max(signal.shape) > 1:
-        raise TypeError('signal must be a 1D numpy array.')
+    hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
         raise ValueError("Input vector needs to be bigger than window size.")
     if win_len < 3:
