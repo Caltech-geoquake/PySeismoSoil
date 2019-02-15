@@ -9,7 +9,54 @@ from . import helper_hh_model as hh
 from . import helper_site_response as sr
 
 #%%============================================================================
-class HH_Param(collections.UserDict):
+class Parameter(collections.UserDict):
+    '''
+    Class implementation of parameters for different soil constitutive models.
+    Its objects have dictionary-like behaviors. The keys in the dictionary are
+    the parameter names (such as "gamma_ref", "Gmax").
+
+    Inheriting from this base class provides you the ability to control the
+    allowable keys that a potential user may provide, making it safer for
+    subsequent computations.
+
+    Parameters
+    ----------
+    param_dict : dict
+        Name-value pairs of the parameters
+    allowable_keys : set<str>
+        The allowable parameter names of the constitutive model
+
+    Attributes
+    ----------
+    data : dict
+        The original data, stored as a regular dictionary
+    allowable_keys : set<str>
+        Same as the input parameter
+    '''
+    def __init__(self, param_dict, allowable_keys=None):
+        if not isinstance(param_dict, dict):
+            raise TypeError('`param_dict` must be a dictionary.')
+        if not isinstance(allowable_keys, set) \
+           or any([type(_) != str for _ in allowable_keys]):
+            raise TypeError('`allowable_keys` should be a set of str.')
+        if param_dict.keys() != allowable_keys:
+            raise KeyError("Invalid keys exist in your input data. We only "
+                           "allow %s." % allowable_keys)
+        self.allowable_keys = allowable_keys
+        super(Parameter, self).__init__(param_dict)
+
+    def __repr__(self):
+        import json
+        return json.dumps(self.data, indent=2).replace('"', '')
+
+    def __setitem__(self, key, item):
+        if key not in self.allowable_keys:
+            raise KeyError("The model does not have a '%s' parameter." % key)
+        self.data[key] = item
+        return None
+
+#%%============================================================================
+class HH_Param(Parameter):
     '''
     Class implementation of the HH model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
@@ -29,23 +76,9 @@ class HH_Param(collections.UserDict):
         HH model parameters with the keys listed above
     '''
     def __init__(self, param_dict):
-        self.allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
-                               'mu', 'Tmax', 'd'}
-        if param_dict.keys() != self.allowable_keys:
-            raise ValueError("Invalid keys exist in your input data. We only "
-                             "allow {'gamma_t', 'a', 'gamma_ref', 'beta', 's', "
-                             "'Gmax', 'mu', 'Tmax', 'd'}.")
-
-        super(HH_Param, self).__init__(param_dict)
-
-    def __repr__(self):
-        return self.param
-
-    def __setitem__(self, key, val):
-        if key not in self.allowable_keys:
-            raise KeyError("The HH model doesn't have a '%s' parameter." % key)
-        self.data[key] = val
-        return None
+        allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
+                          'mu', 'Tmax', 'd'}
+        super(HH_Param, self).__init__(param_dict, allowable_keys=allowable_keys)
 
     def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
         '''
