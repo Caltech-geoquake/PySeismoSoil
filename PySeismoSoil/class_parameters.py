@@ -127,7 +127,7 @@ class HH_Param(Parameter):
 
         Returns
         -------
-        The damping array, with the same shape as the strain array
+        The damping array (unit: %), with the same shape as the strain array
         '''
         return hh.calc_damping_from_param(self.data, strain_in_pct/100.) * 100
 
