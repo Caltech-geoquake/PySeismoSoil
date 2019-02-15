@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
 from . import helper_hh_model as hh
+from . import helper_site_response as sr
 
 #%%============================================================================
 class HH_Param(collections.UserDict):
@@ -46,7 +47,7 @@ class HH_Param(collections.UserDict):
         self.data[key] = val
         return None
 
-    def get_stress(self, strain_array=np.logspace(-2, 1)):
+    def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
         '''
         Get the shear stress array inferred from the set of parameters
 
@@ -60,10 +61,10 @@ class HH_Param(collections.UserDict):
         The shear stress array, with the same shape as the strain array. Its
         unit is identical to the unit of Gmax (one of the HH parameters).
         '''
-        hlp.assert_1D_numpy_array(strain_array, name='`strain_array`')
-        return hh.tau_HH(strain_array / 100., **self.data)
+        hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
+        return hh.tau_HH(strain_in_pct / 100., **self.data)
 
-    def get_GGmax(self, strain_array=np.logspace(-2, 1)):
+    def get_GGmax(self, strain_in_pct=np.logspace(-2, 1)):
         '''
         Get the G/Gmax array inferred from the set of parameters
 
@@ -76,12 +77,13 @@ class HH_Param(collections.UserDict):
         -------
         The G/Gmax array, with the same shape as the strain array
         '''
-        T_HH = self.get_stress(strain_array=strain_array)
+        T_HH = self.get_stress(strain_in_pct=strain_in_pct)
         Gmax = self.data['Gmax']
-        GGmax = T_HH / Gmax
+        strain_in_1 = strain_in_pct / 100.
+        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, T_HH, Gmax=Gmax)
         return GGmax
 
-    def get_damping(self, strain_array=np.logspace(-2, 1)):
+    def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
         '''
         Get the damping array inferred from the set of parameters
 
@@ -94,7 +96,7 @@ class HH_Param(collections.UserDict):
         -------
         The damping array, with the same shape as the strain array
         '''
-        return hh.calc_damping_from_param(self.data, strain_array/100.) * 100
+        return hh.calc_damping_from_param(self.data, strain_in_pct/100.) * 100
 
     def plot_curves(self, figsize=None, dpi=100, **kwargs_to_matplotlib):
         '''

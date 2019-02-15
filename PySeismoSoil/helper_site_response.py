@@ -832,14 +832,16 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     return freq_array, AF_ro, TF_ro, f0_ro, AF_in, TF_in, AF_bh, TF_bh, f0_bh
 
 #%%----------------------------------------------------------------------------
-def calc_damping_from_stress_strain_curve(stress_strain_curve, Gmax):
+def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
     '''
     Calculates the damping curve from the given stress-strain curve.
 
     Parameters
     ----------
-    stress_strain_curve : numpy.ndarray
-        Stress-strain curve. Needs to have two columns.
+    strain_in_unit_1 : numpy.array
+        Strain array in the unit of 1. 1D numpy array
+    stress : numpy.array
+        Stress. 1D numpy array
     Gmax : float
         Maximum shear modulus, whose unit needs to be identical to that of the
         stress curve.
@@ -847,16 +849,13 @@ def calc_damping_from_stress_strain_curve(stress_strain_curve, Gmax):
     Returns
     -------
     damping : numpy.ndarray
-        An 1D numpy array of damping ratios, in the unit of "1"
+        A 1D numpy array of damping ratios, in the unit of "1"
     '''
 
-    hlp.check_two_column_format(stress_strain_curve)
-
-    strain = stress_strain_curve[:, 0]
-    stress = stress_strain_curve[:, 1]
+    strain = strain_in_unit_1
     n = len(strain)
 
-    G_Gmax = stress / (strain * Gmax)
+    G_Gmax = calc_GGmax_from_stress_strain(strain, stress, Gmax=Gmax)
 
     area = np.zeros(n)
     damping = np.zeros(n)
@@ -869,3 +868,37 @@ def calc_damping_from_stress_strain_curve(stress_strain_curve, Gmax):
         damping[i] = 2. / np.pi * (2 * area[i] / G_Gmax[i] / strain[i]**2 - 1)
 
     return damping
+
+#%%----------------------------------------------------------------------------
+def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
+    '''
+    Calculates G/Gmax curve from stress-strain curve
+
+    Parameter
+    ---------
+    stress_strain_curve : numpy.ndarray
+        Stress-strain curve. Needs to have two columns. The strain needs to
+        have unit "1".
+    Gmax : float
+        Maximum shear modulus, whose unit needs to be identical to that of the
+        stress curve. If not provided, it is automatically calculated from the
+        stress-strain curve.
+
+    Returns
+    -------
+    GGmax : numpy.ndarray
+        A 1D numpy array of G/Gmax
+    '''
+    hlp.assert_1D_numpy_array(strain_in_unit_1)
+    hlp.assert_1D_numpy_array(stress)
+
+    if strain_in_unit_1[0] == 0:
+        raise ValueError('`strain_in_unit_1` should start with a non-zero value.')
+
+    if Gmax is None:
+        Gmax = stress[0] / strain_in_unit_1[0]
+
+    G = stress / strain_in_unit_1  # secant modulus
+    GGmax = G / Gmax
+
+    return GGmax

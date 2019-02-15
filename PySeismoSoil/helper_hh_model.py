@@ -164,7 +164,7 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
     return T_HH
 
 #%%----------------------------------------------------------------------------
-def calc_damping_from_param(param, strain_array):
+def calc_damping_from_param(param, strain_in_unit_1):
     '''
     Calculate damping values from HH parameters
 
@@ -172,7 +172,7 @@ def calc_damping_from_param(param, strain_array):
     ----------
     param : dict
         HH model parameters
-    strain_array : numpy.ndarray
+    strain_in_unit_1 : numpy.ndarray
         An 1D array of strain values. Unit: 1 (not percent).
 
     Returns
@@ -184,12 +184,11 @@ def calc_damping_from_param(param, strain_array):
     if not isinstance(param, dict):
         raise TypeError('`para` needs to be a dictionary.')
 
-    hlp.assert_1D_numpy_array(strain_array)
+    hlp.assert_1D_numpy_array(strain_in_unit_1)
 
-    Tau_HH = tau_HH(strain_array, **param)
-    curve = np.column_stack((strain_array, Tau_HH))
-
-    damping = sr.calc_damping_from_stress_strain_curve(curve, param['Gmax'])
+    Tau_HH = tau_HH(strain_in_unit_1, **param)
+    damping = sr.calc_damping_from_stress_strain(strain_in_unit_1, Tau_HH,
+                                                 param['Gmax'])
 
     return damping
 
@@ -248,13 +247,13 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
 
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
     damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
-    damping_data_in_1 = damping_data_in_pct / 100  # unit: percent --> 1
+    damping_data_in_unit_1 = damping_data_in_pct / 100  # unit: percent --> 1
 
     NDIM = 9  # number of HH model parameters; do not change this for HH model
     N = 122  # make a denser data set which can help parameter searching
     strain_dense = np.logspace(-6, -1, N)
-    damping_dense = np.interp(strain_dense, damping_data_in_1[:, 0],
-                              damping_data_in_1[:, 1])
+    damping_dense = np.interp(strain_dense, damping_data_in_unit_1[:, 0],
+                              damping_data_in_unit_1[:, 1])
 
     damping_data_ = np.column_stack((strain_dense, damping_dense))
 
@@ -282,9 +281,7 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
 
         Tau_HH = tau_HH(strain, gamma_t=gamma_t, a=a, gamma_ref=gamma_ref,
                         beta=beta, s=s, Gmax=Gmax, mu=mu, Tmax=Tmax, d=d)
-        curve = np.column_stack((strain, Tau_HH))
-        damping_pred = sr.calc_damping_from_stress_strain_curve(curve, Gmax)
-
+        damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_HH, Gmax)
         error = hlp.mean_absolute_error(damping_true, damping_pred)
 
         return error,
