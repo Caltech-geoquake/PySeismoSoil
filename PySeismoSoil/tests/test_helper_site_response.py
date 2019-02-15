@@ -180,7 +180,52 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(np.allclose(x, x_benchmark))
         self.assertTrue(np.allclose(y, y_benchmark))
 
+    #--------------------------------------------------------------------------
+    def test_calc_GGmax_from_stress_strain_curve(self):
+        # Test linear stress strain: G/Gmax should be all 1's
+        strain = np.array([0.1, 0.2, 0.3])
+        stress = np.array([2, 4, 6])
+        GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
+        self.assertTrue(np.allclose(GGmax, [1, 1, 1]))
+
+        # Test a hand-calculable case:
+        stress = np.array([4, 6, 7])
+        GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
+        self.assertTrue(np.allclose(GGmax, [1., 3./4, 7./3./4]))
+
+    #--------------------------------------------------------------------------
+    def test_calc_damping_from_stress_strain(self):
+        # Test linear stress strain: damping should be 0
+        strain = np.array([0.1, 0.2, 0.3])
+        stress = np.array([2, 4, 6])
+        Gmax = stress[0] / strain[0]
+        damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
+        self.assertTrue(np.allclose(damping, [0, 0, 0]))
+
+        # Test elasto-perfectly-plastic: damping can be hand-calculated
+        #
+        #                 ^ stress
+        #                _|___________
+        #               / |    /     /
+        #              /  |   /     /
+        #             /   |  /     /
+        #            /    | /     /
+        #           /     |/     /
+        #   -------/------+-----/-----------> strain
+        #         /      O|    /
+        #        /        |   /
+        #       /         |  /
+        #      /          | /
+        #     /___________|/
+        #                 |
+        #
+        strain = np.array([0.1, 0.2, 0.3, 0.4])
+        stress = np.array([1, 2, 2, 2])
+        Gmax = stress[0] / strain[0]
+        damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
+        self.assertTrue(np.allclose(damping, [0, 0, 2./3./np.pi, 1./np.pi]))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Site_Response)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
+
