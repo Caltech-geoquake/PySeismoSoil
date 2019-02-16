@@ -972,3 +972,224 @@ def _plot_damping_curve_fit(damping_data_in_pct, param, func_stress,
 
     return fig, ax
 
+#%%----------------------------------------------------------------------------
+def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
+                           population_size=800, n_gen=100,
+                           lower_bound_power=-4, upper_bound_power=6,
+                           eta=0.1, seed=0, show_fig=False,
+                           verbose=False, parallel=False, n_cores=None):
+    '''
+    Perform damping curve fitting for multiple damping curves using the genetic
+    algorithm provided in DEAP.
+
+    Parameters
+    ----------
+    curves : numpy.ndarray or list<numpy.array>
+        Can either be a 2D array in the "curve" format, or a list of individual
+        damping curves.
+        The "curve" format is as follows:
+
+        strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
+        -----------+--------+------------+-------------+-------------+--------+ ...
+           ...     |  ...   |    ...     |    ...      |    ...      |  ...   |
+
+        The G/Gmax information is redundant for this function.
+
+    func_fit_single_layer : Python function
+        A function which fits the model parameters to a single layer in `curves`
+    func_stress : Python function
+        A function to calculate the shear stress from model parameters
+    population_size : int
+        The number of individuals in a generation
+    n_gen : int
+        Number of generations that the evolution lasts
+    lower_bound_power : float
+        The 10-based power of the lower bound of all the 9 parameters. For
+        example, if your desired lower bound is 0.26, then set this parameter
+        to be numpy.log10(0.26)
+    upper_bound_power : float
+        The 10-based power of the upper bound of all the 9 parameters.
+    eta : float
+        Crowding degree of the mutation or crossover. A high eta will produce
+        children resembling to their parents, while a small eta will produce
+        solutions much more different.
+    seed : int
+        Seed value for the random number generator
+    show_fig : bool
+        Whether to show the curve fitting results as a figure
+    verbose : bool
+        Whether to display information (statistics of the loss in each
+        generation) on the console
+    parallel : bool
+        Whether to use parallel computing for each soil layer
+    n_cores : int
+        Number of CPU cores to use. If None, all cores are used. No effects
+        if `parallel` is set to False.
+
+    Return
+    ------
+    params : list<dict>
+        The best parameters for each layer found in the optimization
+    '''
+
+    if isinstance(curves, np.ndarray):
+        _, curves_list = hlp.extract_from_curve_format(curves)
+    elif isinstance(curves, list):
+        if not all([isinstance(_, np.ndarray) for _ in curves]):
+            raise TypeError('If `curves` is a list, all its elements needs to '
+                            'be 2D numpy arrays.')
+        for j, curve in enumerate(curves):
+            hlp.check_two_column_format(curve,
+                                        name='Damping curve for layer #%d' % j,
+                                        ensure_non_negative=True)
+        curves_list = curves
+    else:
+        raise TypeError('Input data type of `curves` not recognized. '
+                        'Please check the documentation of this function.')
+
+    other_params = [(func_fit_single_layer, population_size, n_gen,
+                     lower_bound_power, upper_bound_power, eta, seed, show_fig,
+                     verbose)]
+
+    if parallel:
+        import itertools
+        import multiprocessing
+        p = multiprocessing.Pool(n_cores)
+        params = p.map(_fit_single_layer_loop,
+                       itertools.product(curves_list, other_params))
+        if show_fig:
+            for j, curve in enumerate(curves_list):
+                _plot_damping_curve_fit(curve, params[j], func_stress)
+    else:
+        params = []
+        for curve in curves_list:
+            params.append(_fit_single_layer_loop((curve, other_params[0])))
+
+    return params
+
+#%%----------------------------------------------------------------------------
+def _fit_single_layer_loop(param):
+    '''
+    Loop body to be passed to the parallel pool.
+    '''
+    damping_curve, other_params = param
+
+    func_fit_single_layer, population_size, n_gen, lower_bound_power, \
+    upper_bound_power, eta, seed, show_fig, verbose = other_params
+
+    best_para = func_fit_single_layer(damping_curve, n_gen=n_gen, eta=eta,
+                                      population_size=population_size,
+                                      lower_bound_power=lower_bound_power,
+                                      upper_bound_power=upper_bound_power,
+                                      seed=seed, show_fig=show_fig,
+                                      verbose=verbose)
+
+    return best_para
+
+#%%----------------------------------------------------------------------------
+def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
+                    population_size=800, n_gen=100, eta=0.1, seed=0, cxpb=0.8,
+                    mutpb=0.8, suppress_warnings=True, verbose=False):
+    '''
+    Perform a genetic algorithm (GA) process to fit the data.
+
+    It supports any loss function (not even differentiable or parametric), as
+    long as the loss function can map the model parameters to a loss value.
+
+    The evolutionary process that this function can generate is a mutation
+    and crossover within the specified bounds in a uniform fashion.
+
+    Parameters
+    ----------
+    n_param : int
+        Number of parameters in the model
+    lower_bound, upper_bound : float
+        Lower and upper bound of the search range (i.e., range in which the
+        evolution of parameter values are constraint). Note that all the
+        model parameters share this range. You cannot have a different range
+        for each parameter.
+    loss_function : Python function
+        Function that maps a set of parameters to a loss value. It only accepts
+        a tuple of all the parameters as input, and needs to return a tuple of
+        (loss, ), where `loss` is a float. Note that the information in the
+        training data is implicitly passed into this function via this
+        parameter.
+    population_size : int
+        The number of individuals in a generation. A larger number leads to
+        potentially better curve-fitting, but a longer computing time.
+    n_gen : int
+        Number of generations that the evolution lasts. A larger number leads
+        to potentially better curve-fitting, but a longer computing time.
+    eta : float
+        Crowding degree of the mutation or crossover. A high eta will produce
+        children resembling to their parents, while a small eta will produce
+        solutions much more different.
+    seed : int
+        Seed value for the random number generator
+    cxpb, mutpb : int
+        Probability of cross-over and mutation. Larger values introduce more
+        demographic diversity into the evolutionary process, which could help
+        escape the local minima, but at a cost of convergence time.
+    verbose : bool
+        Whether to display information (statistics of the loss in each
+        generation) on the console
+    supress_warnings : bool
+        Whether to suppress warning messages.
+
+    Returns
+    -------
+    hof : list<deap.tools.support.HallOfFame>
+        The "hall of fame" of the evolutionary process. Its 0th element is the
+        best parameter.
+    '''
+
+    import random
+
+    import deap.creator
+    import deap.base
+    import deap.algorithms
+    import deap.tools
+
+    if suppress_warnings:
+        import warnings
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+    def uniform(low, up, size=None):
+        try:
+            return [random.uniform(a, b) for a, b in zip(low, up)]
+        except TypeError:
+            return [random.uniform(a, b) for a, b in zip([low]*size, [up]*size)]
+
+    LB = lower_bound
+    UB = upper_bound
+
+    deap.creator.create("FitnessMin", deap.base.Fitness, weights=(-1.0,))
+    deap.creator.create("Individual", list, fitness=deap.creator.FitnessMin)
+
+    toolbox = deap.base.Toolbox()
+
+    toolbox.register("attr_float", uniform, LB, UB, n_param)
+    toolbox.register("individual", deap.tools.initIterate, deap.creator.Individual,
+                     toolbox.attr_float)
+    toolbox.register("population", deap.tools.initRepeat, list, toolbox.individual)
+    toolbox.register("evaluate", loss_function)
+    toolbox.register("mate", deap.tools.cxSimulatedBinaryBounded,
+                     low=LB, up=UB, eta=eta)
+    toolbox.register("mutate", deap.tools.mutPolynomialBounded,
+                     low=LB, up=UB, eta=eta, indpb=1.0/n_param)
+    toolbox.register("select", deap.tools.selTournament, tournsize=10)
+
+    random.seed(seed)
+
+    pop = toolbox.population(n=population_size)
+    hof = deap.tools.HallOfFame(1)
+    stats = deap.tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("Avg", np.mean)
+    stats.register("Std", np.std)
+    stats.register("Min", np.min)
+    stats.register("Max", np.max)
+
+    deap.algorithms.eaSimple(pop, toolbox, cxpb=cxpb, mutpb=mutpb, ngen=n_gen,
+                             stats=stats, halloffame=hof, verbose=verbose)
+
+    return hof

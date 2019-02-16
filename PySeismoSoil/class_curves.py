@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
 from . import helper_hh_model as hh
+from . import helper_site_response as sr
 
 #%%============================================================================
 class Curve():
@@ -498,14 +499,16 @@ class Multiple_Damping_Curves(Multiple_Curves):
         from .class_parameters import HH_Param_Multi_Layer
 
         list_of_np_array = [_.raw_data for _ in self.curves]
-        params = hh.fit_HH_x_multi_layers(list_of_np_array,
-                                          population_size=population_size,
-                                          n_gen=n_gen,
-                                          lower_bound_power=lower_bound_power,
-                                          upper_bound_power=upper_bound_power,
-                                          eta=eta, seed=seed,
-                                          show_fig=show_fig, verbose=verbose,
-                                          parallel=parallel, n_cores=n_cores)
+        params = sr.fit_all_damping_curves(list_of_np_array,
+                                           hh.fit_HH_x_single_layer,
+                                           hh.tau_HH,
+                                           population_size=population_size,
+                                           n_gen=n_gen,
+                                           lower_bound_power=lower_bound_power,
+                                           upper_bound_power=upper_bound_power,
+                                           eta=eta, seed=seed,
+                                           show_fig=show_fig, verbose=verbose,
+                                           parallel=parallel, n_cores=n_cores)
 
         if save_file:
             path_name, file_name = os.path.split(self._filename)
