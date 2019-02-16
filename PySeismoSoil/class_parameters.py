@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
 from . import helper_hh_model as hh
+from . import helper_mkz_model as mkz
 from . import helper_site_response as sr
 
 #%%============================================================================
@@ -25,6 +26,8 @@ class Parameter(collections.UserDict):
         Name-value pairs of the parameters
     allowable_keys : set<str>
         The allowable parameter names of the constitutive model
+    func_stress : Python function
+        A function to calculate shear stress from the parameters
 
     Attributes
     ----------
@@ -33,7 +36,7 @@ class Parameter(collections.UserDict):
     allowable_keys : set<str>
         Same as the input parameter
     '''
-    def __init__(self, param_dict, allowable_keys=None):
+    def __init__(self, param_dict, allowable_keys=None, func_stress=None):
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
         if not isinstance(allowable_keys, set) \
@@ -43,6 +46,7 @@ class Parameter(collections.UserDict):
             raise KeyError("Invalid keys exist in your input data. We only "
                            "allow %s." % allowable_keys)
         self.allowable_keys = allowable_keys
+        self.func_stress = func_stress
         super(Parameter, self).__init__(param_dict)
 
     def __repr__(self):
@@ -54,6 +58,109 @@ class Parameter(collections.UserDict):
             raise KeyError("The model does not have a '%s' parameter." % key)
         self.data[key] = item
         return None
+
+    def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
+        '''
+        Get the shear stress array inferred from the set of parameters
+
+        Parameter
+        ---------
+        strain_array : numpy.ndarray
+            Must be 1D numpy array. Unit: %
+
+        Returns
+        -------
+        The shear stress array, with the same shape as the strain array. Its
+        unit is identical to the unit of Gmax (one of the HH parameters).
+        '''
+        if self.func_stress is None:
+            print('You did not provide a function to calculate shear stress.')
+            return None
+        hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
+        return self.func_stress(strain_in_pct / 100., **self.data)
+
+    def get_GGmax(self, strain_in_pct=np.logspace(-2, 1)):
+        '''
+        Get the G/Gmax array inferred from the set of parameters
+
+        Parameter
+        ---------
+        strain_array : numpy.ndarray
+            Must be 1D numpy array. Unit: %
+
+        Returns
+        -------
+        The G/Gmax array, with the same shape as the strain array
+        '''
+        T_HH = self.get_stress(strain_in_pct=strain_in_pct)
+        if T_HH is None:
+            print('You did not provide a function to calculate shear stress.')
+            return None
+        Gmax = self.data['Gmax']
+        strain_in_1 = strain_in_pct / 100.
+        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, T_HH, Gmax=Gmax)
+        return GGmax
+
+    def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
+        '''
+        Get the damping array inferred from the set of parameters
+
+        Parameter
+        ---------
+        strain_array : numpy.ndarray
+            Must be 1D numpy array. Unit: %
+
+        Returns
+        -------
+        The damping array (unit: %), with the same shape as the strain array
+        '''
+        if self.func_stress is None:
+            print('You did not provide a function to calculate shear stress.')
+            return None
+        damping_in_1 = sr.calc_damping_from_param(self.data, strain_in_pct/100.,
+                                                  hh.tau_HH)
+        return damping_in_1 * 100
+
+    def plot_curves(self, figsize=None, dpi=100, **kwargs_to_matplotlib):
+        '''
+        Plot G/Gmax and damping curves from the model parameters
+
+        Parameter
+        ---------
+        figsize : tuple
+            Figure size
+        dpi : int
+            DPI of plot
+        **kwargs_to_matplotlib :
+            Keyword arguments to be passed to matplotlib.pyplot.plot()
+
+        Returns
+        -------
+        fig, ax :
+            matplotlib objects of the figure and the axes
+        '''
+        if self.func_stress is None:
+            print('You did not provide a function to calculate shear stress.')
+            return None
+        strain = np.logspace(-2, 1)  # unit: percent
+        GGmax = self.get_GGmax(strain)
+        damping = self.get_damping(strain)
+
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        ax = [None, None]
+        ax[0] = plt.subplot(121)
+        ax[0].semilogx(strain, GGmax)
+        ax[0].grid(ls=':')
+        ax[0].set_xlabel('Strain [%]')
+        ax[0].set_ylabel('G/Gmax')
+
+        ax[1] = plt.subplot(122)
+        ax[1].semilogx(strain, damping)
+        ax[1].grid(ls=':')
+        ax[1].set_xlabel('Strain [%]')
+        ax[1].set_ylabel('Damping [%]')
+
+        return fig, ax
 
 #%%============================================================================
 class HH_Param(Parameter):
@@ -78,96 +185,33 @@ class HH_Param(Parameter):
     def __init__(self, param_dict):
         allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
                           'mu', 'Tmax', 'd'}
-        super(HH_Param, self).__init__(param_dict, allowable_keys=allowable_keys)
+        super(HH_Param, self).__init__(param_dict, func_stress=hh.tau_HH,
+                                       allowable_keys=allowable_keys)
 
-    def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
-        Get the shear stress array inferred from the set of parameters
+#%%============================================================================
+class MKZ_Param(Parameter):
+    '''
+    Class implementation of the MKZ model parameters. After initialization, you
+    can access/modify individual parameter values just like a dictionary.
 
-        Parameter
-        ---------
-        strain_array : numpy.ndarray
-            Must be 1D numpy array. Unit: %
+    Parameters
+    ----------
+    param_dict : dict
+        Values of the HH model parameters. Acceptable key names are:
+            gamma_t, a, gamma_ref, beta, s, Gmax, nu, Tmax, d
+    a, gamma_ref, beta, s, Gmax, mu, Tmax, d : float
+        Alternatively (if you do not provide `param_dict`), use these keyword
+        arguments to provide HH parameter values.
 
-        Returns
-        -------
-        The shear stress array, with the same shape as the strain array. Its
-        unit is identical to the unit of Gmax (one of the HH parameters).
-        '''
-        hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
-        return hh.tau_HH(strain_in_pct / 100., **self.data)
-
-    def get_GGmax(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
-        Get the G/Gmax array inferred from the set of parameters
-
-        Parameter
-        ---------
-        strain_array : numpy.ndarray
-            Must be 1D numpy array. Unit: %
-
-        Returns
-        -------
-        The G/Gmax array, with the same shape as the strain array
-        '''
-        T_HH = self.get_stress(strain_in_pct=strain_in_pct)
-        Gmax = self.data['Gmax']
-        strain_in_1 = strain_in_pct / 100.
-        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, T_HH, Gmax=Gmax)
-        return GGmax
-
-    def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
-        Get the damping array inferred from the set of parameters
-
-        Parameter
-        ---------
-        strain_array : numpy.ndarray
-            Must be 1D numpy array. Unit: %
-
-        Returns
-        -------
-        The damping array (unit: %), with the same shape as the strain array
-        '''
-        return hh.calc_damping_from_param(self.data, strain_in_pct/100.) * 100
-
-    def plot_curves(self, figsize=None, dpi=100, **kwargs_to_matplotlib):
-        '''
-        Plot G/Gmax and damping curves from the HH parameters
-
-        Parameter
-        ---------
-        figsize : tuple
-            Figure size
-        dpi : int
-            DPI of plot
-        **kwargs_to_matplotlib :
-            Keyword arguments to be passed to matplotlib.pyplot.plot()
-
-        Returns
-        -------
-        fig, ax :
-            matplotlib objects of the figure and the axes
-        '''
-        strain = np.logspace(-2, 1)  # unit: percent
-        GGmax = self.get_GGmax(strain)
-        damping = self.get_damping(strain)
-
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = [None, None]
-        ax[0] = plt.subplot(121)
-        ax[0].semilogx(strain, GGmax)
-        ax[0].grid(ls=':')
-        ax[0].set_xlabel('Strain [%]')
-        ax[0].set_ylabel('G/Gmax')
-
-        ax[1] = plt.subplot(122)
-        ax[1].semilogx(strain, damping)
-        ax[1].grid(ls=':')
-        ax[1].set_xlabel('Strain [%]')
-        ax[1].set_ylabel('Damping [%]')
-
-        return fig, ax
+    Attributes
+    ----------
+    data : dict
+        HH model parameters with the keys listed above
+    '''
+    def __init__(self, param_dict):
+        allowable_keys = {'gamma_ref', 'beta', 's', 'Gmax'}
+        super(MKZ_Param, self).__init__(param_dict, func_stress=mkz.tau_MKZ,
+                                        allowable_keys=allowable_keys)
 
 #%%============================================================================
 class Param_Multi_Layer():
