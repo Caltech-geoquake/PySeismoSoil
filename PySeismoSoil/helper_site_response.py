@@ -832,6 +832,36 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     return freq_array, AF_ro, TF_ro, f0_ro, AF_in, TF_in, AF_bh, TF_bh, f0_bh
 
 #%%----------------------------------------------------------------------------
+def calc_damping_from_param(param, strain_in_unit_1, func_stress):
+    '''
+    Calculate damping values from HH parameters
+
+    Parameters
+    ----------
+    param : dict
+        HH model parameters
+    strain_in_unit_1 : numpy.ndarray
+        An 1D array of strain values. Unit: 1 (not percent).
+    func_stress : Python function
+        The function to calculate stress from `strain_in_unit_1` and `param`
+
+    Returns
+    -------
+    damping : numpy.ndarray
+        Damping values corresponding to each strain values, in the unit of "1"
+    '''
+
+    if not isinstance(param, dict):
+        raise TypeError('`para` needs to be a dictionary.')
+
+    hlp.assert_1D_numpy_array(strain_in_unit_1)
+
+    Tau = func_stress(strain_in_unit_1, **param)
+    damping = calc_damping_from_stress_strain(strain_in_unit_1, Tau, param['Gmax'])
+
+    return damping
+
+#%%----------------------------------------------------------------------------
 def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
     '''
     Calculates the damping curve from the given stress-strain curve.
@@ -902,3 +932,43 @@ def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
     GGmax = G / Gmax
 
     return GGmax
+
+#%%----------------------------------------------------------------------------
+def _plot_damping_curve_fit(damping_data_in_pct, param, func_stress,
+                            min_strain_in_pct=1e-4, max_strain_in_pct=5):
+    '''
+    Plot damping data and curve-fit results together.
+
+    Parameters
+    ----------
+    damping_data_in_pct : numpy.ndarray
+        Damping data. Needs to have 2 columns (strain and damping ratio). Both
+        columns need to use % as unit.
+    param : dict
+        HH_x parameters
+    func_stress : Python function
+        The function to calculate stress from strain and model parameters
+    min_strain_in_pct, max_strain_in_pct : float
+        Strain limits of the curve-fit result
+    '''
+
+    fig = plt.figure()
+    ax = plt.axes()
+    init_damping = damping_data_in_pct[0, 1]
+    ax.semilogx(damping_data_in_pct[:, 0], damping_data_in_pct[:, 1],
+                marker='o', alpha=0.8, label='data')
+
+    min_strain_in_1 = min_strain_in_pct / 100.0
+    max_strain_in_1 = max_strain_in_pct / 100.0
+    strain = np.logspace(np.log10(min_strain_in_1), np.log10(max_strain_in_1))
+    damping_curve_fit = calc_damping_from_param(param, strain, func_stress)
+
+    ax.semilogx(strain * 100, damping_curve_fit * 100 + init_damping,
+                label='curve fit', alpha=0.8)
+    ax.legend(loc='best')
+    ax.grid(ls=':')
+    ax.set_xlabel('Strain [%]')
+    ax.set_ylabel('Damping ratio [%]')
+
+    return fig, ax
+
