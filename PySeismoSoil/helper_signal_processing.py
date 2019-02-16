@@ -444,6 +444,35 @@ def fourier_transform(signal_2_col, real_val=True, double_sided=False,
     return np.column_stack((freq_array, spectrum))
 
 #%%############################################################################
+def taper_Tukey(input_signal, width=0.05):
+    '''
+    Taper a time-domain signal on both ends with a Tukey window
+
+    Parameters
+    ----------
+    input_signal : numpy.ndarray
+        Signal to be tapered. Can be 1D numpy array or 2D array with 2 columns
+    '''
+
+    if not isinstance(input_signal, np.ndarray):
+        raise TypeError('`input_signal` should be a numpy array.')
+
+    if input_signal.ndim == 2:  # if input_signal has two columns
+        time_array = input_signal[:,0]
+        second_col = input_signal[:,1]
+        l = len(time_array)
+        output_second_col = second_col * scipy.signal.tukey(l, width/2.0)
+        output = np.column_stack(time_array, output_second_col)
+    elif input_signal.ndim == 1:
+        l = len(input_signal)
+        output = input_signal * scipy.signal.tukey(l, width/2.0)
+    else:
+        raise TypeError('`input_signal` should be either 1 or 2 dimensional. '
+                        'And if 2D, should have 2 columns.')
+
+    return output
+
+#%%############################################################################
 def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
                fmax=None, n_pts=None, fix_ends=True, beta1=0.9, beta2=0.9):
     '''

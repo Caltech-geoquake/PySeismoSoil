@@ -6,6 +6,7 @@ import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
+from . import helper_signal_processing as sig
 
 #%%----------------------------------------------------------------------------
 def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
@@ -830,6 +831,329 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
         plt.show()
 
     return freq_array, AF_ro, TF_ro, f0_ro, AF_in, TF_in, AF_bh, TF_bh, f0_bh
+
+#%%----------------------------------------------------------------------------
+def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
+                   show_fig=False, deconv=False, return_fig_obj=False):
+    '''
+    Amplify (or de-amplify) ground motions in the frequency domain. The
+    mathematical process behind this function is as follows:
+
+        (1) INPUT = fft(input)
+        (2) OUTPUT = INPUT * TRANS_FUNC
+        (3) output = ifft(OUTPUT)
+
+    Parameters
+    ----------
+    input_motion : numpy.ndarray
+        Input ground motion to be amplficied. 2D numpy array of two columns.
+    transfer_function_single_sided : tuple
+        Complex-valued transfer function in frequency domain. It should be a
+        two-element tuple, whose 0-th element is the frequency array, and the
+        last element can be one of two options:
+            (1) A complex-valued transformation, which should be a 1D complex
+                numpy array
+            (2) A tuple of (amplitude, phase) which represents the complex
+                numbers. `amplitude` and `phase` both need to be 1D arrays and
+                real-valued.
+        The transfer function only needs to be "single-sided" (see note below.)
+    taper : bool
+        Whether to taper the input acceleration (using Tukey taper)
+    show_fig : bool
+        Whether or not to show an illustration of how the calculation is
+        carried out.
+    deconv : bool
+        If `False`, a regular amplification is performed; otherwise, the
+        transfer function is "deducted" from the input motion ("deconvolution").
+    return_fig_obj : bool
+        Whether or not to return figure and axis objects to the caller
+
+    Returns
+    -------
+    response : numpy.array
+        The resultant ground motion in time domain. In the same format as
+        `input_motion`.
+    fig, ax : (optional)
+        Figure and axis objects
+
+    Note
+    ----
+    "Single sided":
+        For example, the sampling time interval of `input_motion` is 0.01 sec,
+        then the Nyquist frequency is 50 Hz. Therefore, the transfer function
+        needs to contain information at least up to the Nyquist frequency,
+        i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
+        input motion at all.
+    '''
+
+    import scipy.fftpack
+
+    assert(type(transfer_function_single_sided) == tuple)
+    assert(len(transfer_function_single_sided) == 2)
+
+    f_array, tf_ss = transfer_function_single_sided
+
+    if isinstance(tf_ss, np.ndarray):
+        assert(tf_ss.ndim == 1)
+        assert(len(f_array) == len(tf_ss))
+        amp_ss = np.abs(tf_ss)
+        phase_ss = robust_unwrap(np.angle(tf_ss))
+    elif isinstance(tf_ss, tuple):
+        assert(len(tf_ss) == 2)
+        amp_ss, phase_ss = tf_ss
+        assert(amp_ss.ndim == 1)
+        assert(phase_ss.ndim == 1)
+        assert(len(amp_ss) == len(f_array))
+        assert(len(phase_ss) == len(f_array))
+    else:
+        raise TypeError('The last element of `transfer_function_single_sided` '
+                        'needs to be either a tuple of (amplitude, phase), or '
+                        'a complex-valued 1D numpy array.')
+
+    df_tf = f_array[1] - f_array[0]
+
+    df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
+    while np.max(f_array) < fmax:  # downsample input_motion to lower fmax
+        input_motion = input_motion[::2, :]
+        df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
+
+    if np.max(f_array) < fmax:
+        raise ValueError('The maximum frequency of the provided transfer '
+                         'function (%.2g Hz) should be no lower than the '
+                         'Nyquist frequency inferred from the `input_motion` '
+                         '(%.2g Hz).' % (np.max(f_array), fmax) )
+
+    if df_tf != df:  # interpolate amplitude and phase (NOT real and imag parts)
+        amp_ss_interp = np.interp(ref_f_array, f_array, amp_ss)
+        phase_ss_interp = np.interp(ref_f_array, f_array, phase_ss)
+        tf_ss = amp_ss_interp * np.exp(1j * phase_ss_interp)  # reconstruction
+        f_array = ref_f_array
+
+    tf_ss[0] = np.real(tf_ss[0])  # see note (1) below
+    if n % 2 == 0:  # if n is even
+        tf_ss[-1] = np.real(tf_ss[-1])  # see note (2) below
+
+    t, a = input_motion[:, 0], input_motion[:, 1]
+
+    # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    # Note (1) The value of transfer function when freq = 0 should be either 1
+    #          or 2 (a real number). Because of discretization errors, tf_ss(1)
+    #          is not a real number, but very close.
+    #      (2) If n is even, the "mid-point" of the Fourier spectrum is real.
+    #          So the transfer function array needs to be modified so that the
+    #          ifft of the product of the two is real valued.
+    # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    #-----------Create "double-sided" transfer function---------------
+    if n % 2 == 1:
+        tf_append = np.flipud(tf_ss[1:half_n])
+        tf_append = np.conj(tf_append)
+    else:
+        tf_append = np.flipud(tf_ss[1:half_n-1])
+        tf_append = np.conj(tf_append)
+
+    tf_ds = np.append(tf_ss, tf_append)  # should have identical length as 'a'
+
+    #------------Fourier spectrum of the input motion-----------------
+    if taper:
+        a_tapered = sig.taper_Tukey(a)
+    else:
+        a_tapered = a
+    A = scipy.fftpack.fft(a_tapered)
+
+    #------------Multiplication---------------------------------------
+    if not deconv:
+        RESP = A * tf_ds
+    else:
+        RESP = A / tf_ds
+
+    #---------Inverse Fourier transform to get the response time history------
+    resp = scipy.fftpack.ifft(RESP).real  # truncate imaginary part (very small)
+    response = np.column_stack((t, resp))
+
+    #---------Plot comparisons-------------------
+    if show_fig:
+        fig = plt.figure(figsize=(8, 4.5))
+        ax = []
+
+        ax_ = plt.subplot2grid((2,3), (0,0), colspan=3)
+        if np.max(np.abs(resp)) >= np.max(np.abs(a)):
+            plt.plot(t,resp,'b',label='Output')
+            plt.plot(t,a,'r',label='Input',alpha=0.8)
+        else:
+            plt.plot(t,a,'r',label='Input')
+            plt.plot(t,resp,'b',label='Output',alpha=0.8)
+        plt.grid(ls=':')
+        plt.legend(loc='upper right')
+        plt.xlim(min(t),max(t))
+        plt.xlabel('Time [sec]')
+        plt.ylabel('Motion')
+        plt.title('Input and output time histories')
+        ax.append(ax_)
+
+        A_ds = np.abs(A[:half_n])
+        RESP_ds = np.abs(RESP[:half_n])
+
+        ax_ = plt.subplot2grid((2,3), (1,0))
+        plt.semilogx(f_array, amp_ss_interp, 'k')
+        plt.semilogx(f_array, np.ones(len(f_array)), '--', c='gray')
+        #plt.xlim(0.1, max(f_array))
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('amplitude(TF)')
+        plt.grid(ls=':')
+        ax.append(ax_)
+
+        ax_ = plt.subplot2grid((2,3), (1,1))
+        plt.semilogx(f_array, phase_ss_interp, 'k')
+        #plt.xlim(0.1, max(f_array))
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('phase(TF)')
+        plt.grid(ls=':')
+        ax.append(ax_)
+
+        ax_ = plt.subplot2grid((2,3), (1,2))
+        plt.semilogx(f_array, RESP_ds, 'b', label='Output')
+        plt.loglog(f_array, A_ds, 'r--', label='Input',alpha=0.8)
+        plt.legend(loc='best')
+        #plt.xlim(0.1, max(f_array))
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Fourier amp. spect.')
+        plt.grid(ls=':')
+        ax.append(ax_)
+
+        plt.tight_layout(pad=0.3, h_pad=0.4)
+    else:
+        fig = None
+        ax = None
+
+    if not return_fig_obj:
+        return response
+    else:
+        return response, fig, ax
+
+#%%----------------------------------------------------------------------------
+def _get_freq_interval(input_motion):
+    '''
+    Get frequency interval from a 2-columed input motion.
+
+    Parameter
+    ---------
+    input_motion : numpy.ndarray
+        Ground motion in two columns (time, accel)
+
+    Returns
+    -------
+    df : float
+        Frequency interval
+    fmax : float
+        Maximum frequency resolvable from the input motion
+    n : int
+        Length of signal
+    half_n : int
+        Length of the frequency array below the Nyquist frequency
+    f_array : numpy.ndarray
+        Frequency array
+    '''
+
+    hlp.check_two_column_format(input_motion, name='`input_motion`')
+
+    t = input_motion[:,0]
+    a = input_motion[:,1]
+
+    dt = float(t[1] - t[0])  # sampling time interval
+    fs = 1.0/dt  # sampling freq
+    n = len(a)
+    df = fs/float(n)  # freq resolution
+
+    if n % 2 == 1:
+        half_n = int(np.ceil(n/2.0))
+    else:
+        half_n = int(n/2.0 + 1)
+
+    fmax = half_n * df
+    f_array = np.linspace(df, fmax, num=half_n)
+
+    return df, fmax, n, half_n, f_array
+
+#%%----------------------------------------------------------------------------
+def robust_unwrap(signal, discont=3.141592653589793):
+    '''
+    Robustly unwrap a phase signal.
+
+    Sometimes, due to numerical discreteness, the "jump" in the signal does not
+    happen immediately between two adjacent signal points, but rather over
+    several points. For example:
+      [-2.98, -3.01, -3.03, -3.05, -3.08, -1.55, 0.34, 2.24, 3.11, 3.08, 3.06]
+                                   trough ------------------ peak
+
+    This would mess with numpy.unwrap() and tricks it to think that the points
+    between the trough and peak (shown above) don't need unwrapping.
+
+    This function deals with such situations by adjust the values underlined by
+    "----" into the range of (trough, -3.1415927], so that numpy.unwrap() can
+    correctly identify the "jump".
+
+    Parameters
+    ----------
+    signal : array_like
+        Input array. Only allows 1-dimensional array.
+    discont : float, optional
+        Maximum discontinuity between values, default is pi. Refer to the
+        documentation of numpy.unwrap().
+
+    Returns
+    -------
+    unwrapped : array_like
+        Unwrapped array.
+
+    Notes
+    -----
+    An underlying assumption of this algorithm is that the phase angle (if
+    correctly unwrapped) should be monotonically decreasing and all negative.
+    This assumption is true for the transfer functions of 1D SH wave
+    propagation, because the output waves always arrive later than the input
+    waves.
+
+    Also, this algorithm only works for "clean" phase signals, not noisy ones,
+    because this algorithm assumes that all "upward jumps" that are not
+    achieved within "one step" (i.e., between two adjacent signal points) are
+    artifacts.  This assumption is not true for noisy phase signals, since some
+    "upward jumps" are just noises, not artifacts.
+    '''
+
+    hlp.assert_1D_numpy_array(signal)
+
+    n = len(signal)
+    signal_ = signal.copy()
+
+    #-------1. Find anomalies (peaks and troughs that are too far apart)-------
+    trough = -1  # to store index of trough point
+    peak = -1    # to store index of peak point
+    drawer = []  # to keep pairs of (trough, peak) that are 1+ apart in location
+    flag = 0
+    for i in range(1, n):
+        if signal[i] <= signal[i-1]:  # trend is decreasing
+            if flag == 1:  # just starts to dip from a previous climb
+                flag = 0
+                if peak > trough + 1:  # only keep such anomalies
+                    drawer.append((trough, peak))
+            trough = i
+        else:
+            peak = i
+            flag = 1
+
+    #--------2. Move in-between points into (signal[trough], -3.1415927]-------
+    for pair in drawer:
+        i1, i2 = pair
+        length = i2 - i1 - 1
+        scale = -np.pi - signal[i1]  # total amount needed to reach -3.1415927
+        for j in range(i1, i2):  # adjust values proportionally
+            steps = float(j - i1)
+            signal_[j] = signal_[i1] + steps / length * scale
+
+    unwrapped = np.unwrap(signal_, discont=discont)
+
+    return unwrapped
 
 #%%----------------------------------------------------------------------------
 def calc_damping_from_param(param, strain_in_unit_1, func_stress):
