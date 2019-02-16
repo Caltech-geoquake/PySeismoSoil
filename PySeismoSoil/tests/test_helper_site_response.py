@@ -166,6 +166,30 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(np.allclose(sr.thk2dep(thk, midpoint=False), dep_top))
 
     #--------------------------------------------------------------------------
+    def test_amplify_motion(self):
+        time = np.linspace(0, np.pi * 4, num=1000)
+        accel = np.sin(time) + np.cos(2 * time + 1) + np.sin(4 * time + 2)
+        input_motion = np.column_stack((time, accel))
+
+        # make a simple artificial transfer function
+        freq = np.logspace(-4, 2, num=1000)
+        a = 2
+        b = 3
+        amp = a * np.ones_like(freq)  # all frequencies are amplified a times
+        phase = -b * np.ones_like(freq)  # all frequencies are delayed by b rad
+
+        motion_out = sr.amplify_motion(input_motion, (freq, (amp, phase)),
+                                       show_fig=False, taper=False)
+
+        # you can calculate the response by hand:
+        accel_out_bench = a * np.sin(time - b) + a * np.cos(2 * time + 1 - b) \
+                          + a * np.sin(4 * time + 2 - b)
+        motion_out_bench = np.column_stack((time, accel_out_bench))
+
+        self.assertTrue(np.all(np.isreal(motion_out)))
+        self.assertTrue(np.allclose(motion_out, motion_out_bench, atol=0.02))
+
+    #--------------------------------------------------------------------------
     def test_gen_profile_plot_array(self):
 
         thk = np.array([1, 2, 3, 4])
