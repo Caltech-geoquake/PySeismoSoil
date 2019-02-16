@@ -65,7 +65,7 @@ class Test_Class_Curves(unittest.TestCase):
     def test_HH_x_fit(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
-        hhx = mdc_.obtain_HH_x_param(population_size=1, n_gen=1)
+        hhx = mdc_.obtain_HH_x_param(population_size=1, n_gen=1, save_file=False)
         self.assertEqual(len(hhx), 2)
         self.assertTrue(isinstance(hhx[0].data, dict))
         self.assertEqual(hhx[0].keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
