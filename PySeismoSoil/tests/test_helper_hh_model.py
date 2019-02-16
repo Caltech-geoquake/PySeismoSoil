@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 
 import PySeismoSoil.helper_hh_model as hh
+import PySeismoSoil.helper_site_response as sr
 
 class Test_Helper_HH_Model(unittest.TestCase):
     '''
@@ -17,13 +18,6 @@ class Test_Helper_HH_Model(unittest.TestCase):
                       's': 0.5, 'Gmax': 0.6, 'mu': 0.7, 'Tmax': 0.8, 'd': 0.9}
         self.array = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]) / 10.0
         super(Test_Helper_HH_Model, self).__init__(methodName=methodName)
-
-    def test_tau_MKZ(self):
-        T = hh.tau_MKZ(self.strain, gamma_ref=1, beta=2, s=3, Gmax=4)
-        # note: benchmark results come from comparable functions in MATLAB
-        self.assertTrue(np.allclose(T, [0.0400, 0.0750, 0.1404, 0.2630, 0.4913,
-                                        0.9018, 1.4898, 1.5694, 0.7578, 0.2413,
-                                        0.0700, 0.0200], atol=self.atol))
 
     def test_tau_FKZ(self):
         T = hh.tau_FKZ(self.strain, Gmax=4, mu=3, d=2, Tmax=1)
@@ -45,7 +39,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
                                         0.4678, 0.1269], atol=self.atol))
 
     def test_calc_damping_from_param(self):
-        xi = hh.calc_damping_from_param(self.param, self.strain)
+        xi = sr.calc_damping_from_param(self.param, self.strain, hh.tau_HH)
         self.assertTrue(np.allclose(xi, [0.0000, 0.0085, 0.0139, 0.0192, 0.0256,
                                          0.0334, 0.0430, 0.0544, 0.0675, 0.0820,
                                          0.0973, 0.1128], atol=self.atol))

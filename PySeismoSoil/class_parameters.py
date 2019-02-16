@@ -173,9 +173,6 @@ class HH_Param(Parameter):
     param_dict : dict
         Values of the HH model parameters. Acceptable key names are:
             gamma_t, a, gamma_ref, beta, s, Gmax, nu, Tmax, d
-    a, gamma_ref, beta, s, Gmax, mu, Tmax, d : float
-        Alternatively (if you do not provide `param_dict`), use these keyword
-        arguments to provide HH parameter values.
 
     Attributes
     ----------
@@ -198,10 +195,7 @@ class MKZ_Param(Parameter):
     ----------
     param_dict : dict
         Values of the HH model parameters. Acceptable key names are:
-            gamma_t, a, gamma_ref, beta, s, Gmax, nu, Tmax, d
-    a, gamma_ref, beta, s, Gmax, mu, Tmax, d : float
-        Alternatively (if you do not provide `param_dict`), use these keyword
-        arguments to provide HH parameter values.
+            gamma_ref, s, beta, Gmax
 
     Attributes
     ----------
@@ -209,7 +203,7 @@ class MKZ_Param(Parameter):
         HH model parameters with the keys listed above
     '''
     def __init__(self, param_dict):
-        allowable_keys = {'gamma_ref', 'beta', 's', 'Gmax'}
+        allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
         super(MKZ_Param, self).__init__(param_dict, func_stress=mkz.tau_MKZ,
                                         allowable_keys=allowable_keys)
 
@@ -323,4 +317,55 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         self._sep = sep
 
         super(HH_Param_Multi_Layer, self).__init__(list_of_param, HH_Param)
+
+#%%============================================================================
+class MKZ_Param_Multi_Layer(Param_Multi_Layer):
+    '''
+    Class implementation of multiple sets of MKZ parameters for multiple layers.
+
+    Its behavior is similar to a list,
+    but with a more stringent requirement: all elements are of the same data
+    type, i.e., MKZ_Param.
+
+    The list-like behaviors available are:
+        - indexing: foo[3]
+        - slicing: foo[:4]
+        - setting values: foo[2] = ...
+        - length: len(foo)
+        - deleting iterm: del foo[2]
+        - checking existance: bar in foo
+
+    Parameters
+    ----------
+    filename_or_list : str or list<dict> or list<HH_Param>
+        A file name of a validly formatted parameter file, or a list containing
+        MKZ parameter data
+    sep : str
+        Delimiter of the file to be imported. If `filename_or_list_of_curves`
+        is a list, `sep` has no effect.
+
+    Attributes
+    ----------
+    param_list : list<MKZ_Param>
+        A list of MKZ model parameters
+    n_layer : int
+        The number of soil layers (i.e., the length of the list)
+    '''
+
+    def __init__(self, filename_or_list, sep='\t'):
+        if isinstance(filename_or_list, str):  # file name
+            self._filename = filename_or_list
+            params = np.genfromtxt(filename_or_list, delimiter=sep)
+            list_of_param_array = hlp.extract_from_param_format(params)
+            list_of_param = [hh.deserialize_array_to_params(_)
+                             for _ in list_of_param_array]
+        elif isinstance(filename_or_list, list):
+            self._filename = None
+            list_of_param = filename_or_list
+        else:
+            raise TypeError('Unrecognized type for `filename_or_list`.')
+
+        self._sep = sep
+
+        super(MKZ_Param_Multi_Layer, self).__init__(list_of_param, MKZ_Param)
 

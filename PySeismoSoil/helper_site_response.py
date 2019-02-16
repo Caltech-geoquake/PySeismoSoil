@@ -839,7 +839,7 @@ def calc_damping_from_param(param, strain_in_unit_1, func_stress):
     Parameters
     ----------
     param : dict
-        HH model parameters
+        Soil model parameters
     strain_in_unit_1 : numpy.ndarray
         An 1D array of strain values. Unit: 1 (not percent).
     func_stress : Python function

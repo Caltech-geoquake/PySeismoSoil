@@ -1,7 +1,6 @@
 # Author: Jian Shi
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
 from . import helper_mkz_model as mkz
