@@ -32,22 +32,21 @@ class Test_Class_SVM(unittest.TestCase):
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
     def test_index_closest(self):
-        svm = SVM(234, 567, show_fig=False)
         array = [0, 1, 2, 1.1, 0.4, -3.2]
-        i, val = svm._find_index_closest(array, 2.1)
+        i, val = SVM._find_index_closest(array, 2.1)
         self.assertEqual((i, val), (2, 2))
 
-        i, val = svm._find_index_closest(array, -9)
+        i, val = SVM._find_index_closest(array, -9)
         self.assertEqual((i, val), (5, -3.2))
 
-        i, val = svm._find_index_closest(array, -0.5)
+        i, val = SVM._find_index_closest(array, -0.5)
         self.assertEqual((i, val), (0, 0))
 
-        i, val = svm._find_index_closest([1], 10000)
+        i, val = SVM._find_index_closest([1], 10000)
         self.assertEqual((i, val), (0, 1))
 
         with self.assertRaisesRegex(ValueError, 'length of `array` needs to'):
-            svm._find_index_closest([], 2)
+            SVM._find_index_closest([], 2)
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_SVM)

@@ -281,7 +281,7 @@ class SVM():
                 while thk_rand <= 0:  # to ensure thickness is always positive
                     thk_rand = np.random.poisson(lamda_)  # draw random sample
             else:
-                func = lambda thk: self._thk_depth_func(thk, z_top[-1])
+                func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fsolve() properly converges
@@ -362,7 +362,7 @@ class SVM():
         if not use_Toros_std:
             std_analyt_Vs = -89.7085 + 1.6434 * z_array_analyt + 0.5204 * self.Vs30  # Eq (9)
             std_analyt_Vs = np.maximum(0.5, std_analyt_Vs)  # because std < 0 when Vs30 is too low
-            _, sigma_lognormal_Vs = self._lognstat_back_calc(Vs_analyt, std_analyt_Vs)
+            _, sigma_lognormal_Vs = SVM._lognstat_back_calc(Vs_analyt, std_analyt_Vs)
         else:
             sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape) # page 8 of Toro (1995)
 
@@ -372,7 +372,7 @@ class SVM():
         np.random.seed([2 * seed]) # specify seed value to random number generator
 
         for i in range(0,len(thk)):  # loop through layers
-            index_value, __ = self._find_index_closest(z_array_analyt,z_mid[i])
+            index_value, __ = SVM._find_index_closest(z_array_analyt,z_mid[i])
             sigma_ = sigma_lognormal_Vs[index_value]  # query sigma value where z = z_mid[j]
 
             if z_mid[i] > 200:
@@ -410,7 +410,8 @@ class SVM():
         return Vs_Profile(Vs_profile)
 
     #%%========================================================================
-    def _thk_depth_func(self, thk, z_top):
+    @staticmethod
+    def _thk_depth_func(thk, z_top):
         '''
         Given thk (thickness, in meter) and z_top (depth of layer top, in
         meter), returns "right hand side" minus "left hand side".
@@ -427,7 +428,8 @@ class SVM():
         return 1.125 * (z_top + thk/2.0)**0.620 - thk
 
     #%%========================================================================
-    def _lognstat_back_calc(self, mean_value, variance_value):
+    @staticmethod
+    def _lognstat_back_calc(mean_value, variance_value):
         '''
         Calculates mu and sigma of a log-normal distribution from the mean value
         and the variance value of the distribution.
@@ -459,7 +461,8 @@ class SVM():
         return mu, sigma
 
     #%%========================================================================
-    def _find_index_closest(self, array, value):
+    @staticmethod
+    def _find_index_closest(array, value):
         '''
         Find the index in `array` which contains the closest value to `value`.
         NaN values within `array` are obmitted implicitly.
