@@ -57,11 +57,11 @@ class Vs_Profile:
                  **kwargs_to_genfromtxt):
 
         if isinstance(data, str):  # "data" is a file name
-            self.__path_name, self.__file_name = os.path.split(data)
+            self._path_name, self._file_name = os.path.split(data)
             data_ = np.genfromtxt(data, delimiter=sep, **kwargs_to_genfromtxt)
         elif isinstance(data, np.ndarray):
             data_ = data
-            self.__path_name, self.__file_name = None, None
+            self._path_name, self._file_name = None, None
         else:
             raise TypeError('"data" must be a file name or a numpy array.')
 
@@ -156,8 +156,8 @@ class Vs_Profile:
             Extra keyword arguments to be passed to the function
             helper_site_response.plot_Vs_profile()
         '''
-        if self.__file_name:
-            title_text = self.__file_name
+        if self._file_name:
+            title_text = self._file_name
         elif 'title' in kwargs:
             title_text = kwargs['title']
             kwargs.pop('title')
