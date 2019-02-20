@@ -122,10 +122,10 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
     return T_HH
 
 #%%----------------------------------------------------------------------------
-def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
-                          n_gen=100, lower_bound_power=-4, upper_bound_power=6,
-                          eta=0.1, seed=0, show_fig=False, verbose=False,
-                          suppress_warnings=True):
+def fit_HH_x_single_layer(damping_data_in_pct, use_scipy=True,
+                          population_size=800, n_gen=100, lower_bound_power=-4,
+                          upper_bound_power=6, eta=0.1, seed=0, show_fig=False,
+                          verbose=False, suppress_warnings=True):
     '''
     Perform HH_x curve fitting for one damping curve using the genetic
     algorithm provided in DEAP.
@@ -135,6 +135,11 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
     damping_data_in_pct : numpy.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
+    use_scipy : bool
+        Whether to use the "differential_evolution" algorithm implemented in
+        scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+        scipy.optimize.differential_evolution.html) to perform the optimization.
+        If False, use the algorithm implemented in the DEAP package.
     population_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
@@ -168,7 +173,8 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
         The best parameters found in the optimization
     '''
 
-    hlp.check_two_column_format(damping_data_in_pct, ensure_non_negative=True)
+    hlp.check_two_column_format(damping_data_in_pct, name='damping_data_in_pct',
+                                ensure_non_negative=True)
 
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
     damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
@@ -209,26 +215,30 @@ def fit_HH_x_single_layer(damping_data_in_pct, population_size=800,
         damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_HH, Gmax)
         error = hlp.mean_absolute_error(damping_true, damping_pred)
 
-        return error,
+        return error
 
-    hof = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
-                             damping_misfit, population_size=population_size,
-                             n_gen=n_gen, eta=eta, seed=seed, cxpb=0.8,
-                             mutpb=0.8, suppress_warnings=suppress_warnings,
-                             verbose=verbose)
+    crossover_prob = 0.8  # hard-coded, because not much useful to tune them
+    mutation_prob = 0.8
 
-    hof_top = list(hof[0])
+    result = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
+                                damping_misfit, use_scipy=use_scipy,
+                                population_size=population_size,
+                                n_gen=n_gen, eta=eta, seed=seed,
+                                crossover_prob=crossover_prob,
+                                mutation_prob=mutation_prob,
+                                suppress_warnings=suppress_warnings,
+                                verbose=verbose)
 
     best_param = {}
-    best_param['gamma_t'] = 10 ** hof_top[0]
-    best_param['a'] = 10 ** hof_top[1]
-    best_param['gamma_ref'] = 10 ** hof_top[2]
-    best_param['beta'] = 10 ** hof_top[3]
-    best_param['s'] = 10 ** hof_top[4]
-    best_param['Gmax'] = 10 ** hof_top[5]
-    best_param['mu'] = 10 ** hof_top[6]
-    best_param['Tmax'] = 10 ** hof_top[7]
-    best_param['d'] = 10 ** hof_top[8]
+    best_param['gamma_t']   = 10 ** result[0]
+    best_param['a']         = 10 ** result[1]
+    best_param['gamma_ref'] = 10 ** result[2]
+    best_param['beta']      = 10 ** result[3]
+    best_param['s']         = 10 ** result[4]
+    best_param['Gmax']      = 10 ** result[5]
+    best_param['mu']        = 10 ** result[6]
+    best_param['Tmax']      = 10 ** result[7]
+    best_param['d']         = 10 ** result[8]
 
     if show_fig:
         sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_HH)

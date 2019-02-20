@@ -1412,8 +1412,9 @@ def _fit_single_layer_loop(param):
 
 #%%----------------------------------------------------------------------------
 def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
-                    population_size=800, n_gen=100, eta=0.1, seed=0, cxpb=0.8,
-                    mutpb=0.8, suppress_warnings=True, verbose=False):
+                    use_scipy=True, population_size=800, n_gen=100, eta=0.1,
+                    seed=0, crossover_prob=0.8, mutation_prob=0.8,
+                    suppress_warnings=True, verbose=False):
     '''
     Perform a genetic algorithm (GA) process to fit the data.
 
@@ -1433,11 +1434,17 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
         model parameters share this range. You cannot have a different range
         for each parameter.
     loss_function : Python function
-        Function that maps a set of parameters to a loss value. It only accepts
-        a tuple of all the parameters as input, and needs to return a tuple of
-        (loss, ), where `loss` is a float. Note that the information in the
-        training data is implicitly passed into this function via this
-        parameter.
+        Function to be minimized by the genetic algorithm. It should map a set
+        of parameters to a loss value. It only accepts a tuple/list of all the
+        parameters as input. If `use_scipy` is True, it needs to return a float,
+        otherwise, it needs to return a tuple of (loss, ), where `loss` is a
+        float. Note that the information in the training data is implicitly
+        passed into `ga_optimization` via `loss_function`.
+    use_scipy : bool
+        Whether to use the "differential_evolution" algorithm implemented in
+        scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+        scipy.optimize.differential_evolution.html) to perform the optimization.
+        If False, use the algorithm implemented in the DEAP package.
     population_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
@@ -1450,7 +1457,7 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
         solutions much more different.
     seed : int
         Seed value for the random number generator
-    cxpb, mutpb : int
+    crossover_prob, mutation_prob : int
         Probability of cross-over and mutation. Larger values introduce more
         demographic diversity into the evolutionary process, which could help
         escape the local minima, but at a cost of convergence time.
@@ -1462,58 +1469,78 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
 
     Returns
     -------
-    hof : list<deap.tools.support.HallOfFame>
-        The "hall of fame" of the evolutionary process. Its 0th element is the
-        best parameter.
+    opt_result : list or numpy.ndarray
+        The optimization result: an array of parameters that gives the lowest
+        loss
     '''
 
-    import random
+    if use_scipy:
+        from scipy.optimize import differential_evolution as diff_evol
+        bounds = [(lower_bound, upper_bound)] * n_param
+        result = diff_evol(loss_function, bounds, recombination=crossover_prob,
+                           popsize=population_size, seed=seed, maxiter=n_gen,
+                           disp=verbose)
+        if verbose:
+            status = 'successful' if result.success else 'not successful'
+            print('Optimization status: %s.' % status)
 
-    import deap.creator
-    import deap.base
-    import deap.algorithms
-    import deap.tools
+        opt_result = result.x
 
-    if suppress_warnings:
-        import warnings
-        warnings.filterwarnings("ignore", category=RuntimeWarning)
+    else:
+        import random
 
-    def uniform(low, up, size=None):
-        try:
-            return [random.uniform(a, b) for a, b in zip(low, up)]
-        except TypeError:
-            return [random.uniform(a, b) for a, b in zip([low]*size, [up]*size)]
+        import deap.creator
+        import deap.base
+        import deap.algorithms
+        import deap.tools
 
-    LB = lower_bound
-    UB = upper_bound
+        if suppress_warnings:
+            import warnings
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-    deap.creator.create("FitnessMin", deap.base.Fitness, weights=(-1.0,))
-    deap.creator.create("Individual", list, fitness=deap.creator.FitnessMin)
+        def loss_function__(*args):
+            return (loss_function(*args), )
 
-    toolbox = deap.base.Toolbox()
+        def uniform(low, up, size=None):
+            try:
+                return [random.uniform(a, b) for a, b in zip(low, up)]
+            except TypeError:
+                return [random.uniform(a, b) for a, b in zip([low]*size, [up]*size)]
 
-    toolbox.register("attr_float", uniform, LB, UB, n_param)
-    toolbox.register("individual", deap.tools.initIterate, deap.creator.Individual,
-                     toolbox.attr_float)
-    toolbox.register("population", deap.tools.initRepeat, list, toolbox.individual)
-    toolbox.register("evaluate", loss_function)
-    toolbox.register("mate", deap.tools.cxSimulatedBinaryBounded,
-                     low=LB, up=UB, eta=eta)
-    toolbox.register("mutate", deap.tools.mutPolynomialBounded,
-                     low=LB, up=UB, eta=eta, indpb=1.0/n_param)
-    toolbox.register("select", deap.tools.selTournament, tournsize=10)
+        LB = lower_bound
+        UB = upper_bound
 
-    random.seed(seed)
+        deap.creator.create("FitnessMin", deap.base.Fitness, weights=(-1.0,))
+        deap.creator.create("Individual", list, fitness=deap.creator.FitnessMin)
 
-    pop = toolbox.population(n=population_size)
-    hof = deap.tools.HallOfFame(1)
-    stats = deap.tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("Avg", np.mean)
-    stats.register("Std", np.std)
-    stats.register("Min", np.min)
-    stats.register("Max", np.max)
+        toolbox = deap.base.Toolbox()
 
-    deap.algorithms.eaSimple(pop, toolbox, cxpb=cxpb, mutpb=mutpb, ngen=n_gen,
-                             stats=stats, halloffame=hof, verbose=verbose)
+        toolbox.register("attr_float", uniform, LB, UB, n_param)
+        toolbox.register("individual", deap.tools.initIterate, deap.creator.Individual,
+                         toolbox.attr_float)
+        toolbox.register("population", deap.tools.initRepeat, list, toolbox.individual)
+        toolbox.register("evaluate", loss_function__)
+        toolbox.register("mate", deap.tools.cxSimulatedBinaryBounded,
+                         low=LB, up=UB, eta=eta)
+        toolbox.register("mutate", deap.tools.mutPolynomialBounded,
+                         low=LB, up=UB, eta=eta, indpb=1.0/n_param)
+        toolbox.register("select", deap.tools.selTournament, tournsize=10)
 
-    return hof
+        random.seed(seed)
+
+        pop = toolbox.population(n=population_size)
+        hof = deap.tools.HallOfFame(1)
+        stats = deap.tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register("Avg", np.mean)
+        stats.register("Std", np.std)
+        stats.register("Min", np.min)
+        stats.register("Max", np.max)
+
+        deap.algorithms.eaSimple(pop, toolbox, ngen=n_gen,
+                                 cxpb=crossover_prob, mutpb=mutation_prob,
+                                 stats=stats, halloffame=hof, verbose=verbose)
+
+        opt_result = list(hof[0])  # 0th element of "hall of fame" --> best param
+
+    return opt_result
+
