@@ -224,15 +224,21 @@ class Damping_Curve(Curve):
             raise ValueError('The provided damping values must be between [0, 100].')
 
     #--------------------------------------------------------------------------
-    def get_HH_x_param(self, pop_size=800, n_gen=100,
+    def get_HH_x_param(self, use_scipy=True, pop_size=800, n_gen=100,
                        lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-                       seed=0, show_fig=True, verbose=False):
+                       seed=0, show_fig=False, verbose=False, parallel=False,
+                       n_cores=None):
         '''
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
 
         Parameters
         ----------
+        use_scipy : bool
+            Whether to use the "differential_evolution" algorithm implemented
+            in scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+            scipy.optimize.differential_evolution.html) to perform optimization.
+            If False, use the algorithm implemented in the DEAP package.
         pop_size : int
             The number of individuals in a generation
         n_gen : int
@@ -254,6 +260,17 @@ class Damping_Curve(Curve):
         verbose : bool
             Whether to display information (statistics of the loss in each
             generation) on the console
+        parallel : bool
+            Whether to use parallel computing to simultaneously evaluate different
+            individuals in a population. Note that different generations still
+            evolve one after another. Only effective for the differential evolution
+            for now. Also note that if using parallelization in differential
+            evolution, you may need more generations to achieve the same
+            optimization loss, because the best solution is being updated only once
+            per generation.
+        n_cores : int
+            Number of CPU cores to use. If None, all cores are used. No effects
+            if `parallel` is set to False.
 
         Return
         ------
@@ -263,27 +280,33 @@ class Damping_Curve(Curve):
 
         from .class_parameters import HH_Param
 
-        HH_x_param = hh.fit_HH_x_single_layer(self.raw_data,
-                                              pop_size=pop_size,
-                                              n_gen=n_gen,
+        HH_x_param = hh.fit_HH_x_single_layer(self.raw_data, use_scipy=use_scipy,
+                                              pop_size=pop_size, n_gen=n_gen,
                                               lower_bound_power=lower_bound_power,
                                               upper_bound_power=upper_bound_power,
                                               eta=eta, seed=seed,
-                                              show_fig=show_fig, verbose=verbose)
+                                              show_fig=show_fig, verbose=verbose,
+                                              parallel=parallel, n_cores=n_cores)
 
         self.HH_x_param = HH_Param(HH_x_param)
         return self.HH_x_param
 
     #--------------------------------------------------------------------------
-    def get_H4_x_param(self, pop_size=800, n_gen=100,
+    def get_H4_x_param(self, use_scipy=True, pop_size=800, n_gen=100,
                        lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-                       seed=0, show_fig=True, verbose=False):
+                       seed=0, show_fig=False, verbose=False, parallel=False,
+                       n_cores=None):
         '''
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
 
         Parameters
         ----------
+        use_scipy : bool
+            Whether to use the "differential_evolution" algorithm implemented
+            in scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+            scipy.optimize.differential_evolution.html) to perform optimization.
+            If False, use the algorithm implemented in the DEAP package.
         pop_size : int
             The number of individuals in a generation
         n_gen : int
@@ -305,6 +328,17 @@ class Damping_Curve(Curve):
         verbose : bool
             Whether to display information (statistics of the loss in each
             generation) on the console
+        parallel : bool
+            Whether to use parallel computing to simultaneously evaluate different
+            individuals in a population. Note that different generations still
+            evolve one after another. Only effective for the differential evolution
+            for now. Also note that if using parallelization in differential
+            evolution, you may need more generations to achieve the same
+            optimization loss, because the best solution is being updated only once
+            per generation.
+        n_cores : int
+            Number of CPU cores to use. If None, all cores are used. No effects
+            if `parallel` is set to False.
 
         Return
         ------
@@ -314,13 +348,13 @@ class Damping_Curve(Curve):
 
         from .class_parameters import MKZ_Param
 
-        H4_x_param = mkz.fit_H4_x_single_layer(self.raw_data,
-                                               pop_size=pop_size,
-                                               n_gen=n_gen,
+        H4_x_param = mkz.fit_H4_x_single_layer(self.raw_data, use_scipy=use_scipy,
+                                               pop_size=pop_size, n_gen=n_gen,
                                                lower_bound_power=lower_bound_power,
                                                upper_bound_power=upper_bound_power,
                                                eta=eta, seed=seed,
-                                               show_fig=show_fig, verbose=verbose)
+                                               show_fig=show_fig, verbose=verbose,
+                                               parallel=parallel, n_cores=n_cores)
 
         self.H4_x_param = MKZ_Param(H4_x_param)
         return self.H4_x_param
@@ -504,7 +538,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
                                                       Damping_Curve)
 
     #--------------------------------------------------------------------------
-    def get_all_HH_x_params(self, pop_size=800, n_gen=100,
+    def get_all_HH_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
                             parallel=False, n_cores=None, save_file=False):
@@ -514,6 +548,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         Parameters
         ----------
+        use_scipy : bool
+            Whether to use the "differential_evolution" algorithm implemented
+            in scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+            scipy.optimize.differential_evolution.html) to perform optimization.
+            If False, use the algorithm implemented in the DEAP package.
         pop_size : int
             The number of individuals in a generation
         n_gen : int
@@ -536,10 +575,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Whether to display information (statistics of the loss in each
             generation) on the console
         parallel : bool
-            Whether to use parallel computing for each soil layer
+            Whether to use parallel computing across layers, i.e., calculate
+            multiple layers simultaneously.
         n_cores : int
             Number of CPU cores to use. If None, all cores are used. No effects
-            if `parallel` is set to False.
+            if the parallelization options are set to False.
         save_file : bool
             Whether to save the results as a "HH_x_STATION_NAME.txt" file
 
@@ -554,8 +594,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
         params = sr.fit_all_damping_curves(list_of_np_array,
                                            hh.fit_HH_x_single_layer,
                                            hh.tau_HH,
-                                           pop_size=pop_size,
-                                           n_gen=n_gen,
+                                           use_scipy=use_scipy,
+                                           pop_size=pop_size, n_gen=n_gen,
                                            lower_bound_power=lower_bound_power,
                                            upper_bound_power=upper_bound_power,
                                            eta=eta, seed=seed,
@@ -582,7 +622,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         return HH_Param_Multi_Layer(params)
 
     #--------------------------------------------------------------------------
-    def get_all_H4_x_params(self, pop_size=800, n_gen=100,
+    def get_all_H4_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
                             parallel=False, n_cores=None, save_file=False):
@@ -592,6 +632,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         Parameters
         ----------
+        use_scipy : bool
+            Whether to use the "differential_evolution" algorithm implemented
+            in scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+            scipy.optimize.differential_evolution.html) to perform optimization.
+            If False, use the algorithm implemented in the DEAP package.
         pop_size : int
             The number of individuals in a generation
         n_gen : int
@@ -614,10 +659,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Whether to display information (statistics of the loss in each
             generation) on the console
         parallel : bool
-            Whether to use parallel computing for each soil layer
+            Whether to use parallel computing across layers, i.e., calculate
+            multiple layers simultaneously.
         n_cores : int
             Number of CPU cores to use. If None, all cores are used. No effects
-            if `parallel` is set to False.
+            if the parallelization options are set to False.
         save_file : bool
             Whether to save the results as a "H4_x_STATION_NAME.txt" file
 
@@ -632,8 +678,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
         params = sr.fit_all_damping_curves(list_of_np_array,
                                            mkz.fit_H4_x_single_layer,
                                            mkz.tau_MKZ,
-                                           pop_size=pop_size,
-                                           n_gen=n_gen,
+                                           use_scipy=use_scipy,
+                                           pop_size=pop_size, n_gen=n_gen,
                                            lower_bound_power=lower_bound_power,
                                            upper_bound_power=upper_bound_power,
                                            eta=eta, seed=seed,
