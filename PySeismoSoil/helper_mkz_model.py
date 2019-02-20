@@ -48,10 +48,10 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
     return T_MKZ
 
 #%%----------------------------------------------------------------------------
-def fit_H4_x_single_layer(damping_data_in_pct, population_size=800,
-                          n_gen=100, lower_bound_power=-4, upper_bound_power=6,
-                          eta=0.1, seed=0, show_fig=False, verbose=False,
-                          suppress_warnings=True):
+def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
+                          population_size=800, n_gen=100, lower_bound_power=-4,
+                          upper_bound_power=6, eta=0.1, seed=0, show_fig=False,
+                          verbose=False, suppress_warnings=True):
     '''
     Perform H4_x curve fitting for one damping curve using the genetic
     algorithm provided in DEAP.
@@ -61,6 +61,11 @@ def fit_H4_x_single_layer(damping_data_in_pct, population_size=800,
     damping_data_in_pct : numpy.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
+    use_scipy : bool
+        Whether to use the "differential_evolution" algorithm implemented in
+        scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+        scipy.optimize.differential_evolution.html) to perform the optimization.
+        If False, use the algorithm implemented in the DEAP package.
     population_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
@@ -129,20 +134,23 @@ def fit_H4_x_single_layer(damping_data_in_pct, population_size=800,
         damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
         error = hlp.mean_absolute_error(damping_true, damping_pred)
 
-        return error,
+        return error
 
-    hof = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
-                             damping_misfit, population_size=population_size,
-                             n_gen=n_gen, eta=eta, seed=seed, cxpb=0.8,
-                             mutpb=0.8, suppress_warnings=suppress_warnings,
-                             verbose=verbose)
+    crossover_prob = 0.8  # hard-coded, because not much useful to tune them
+    mutation_prob = 0.8
 
-    hof_top = list(hof[0])
+    result = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
+                                damping_misfit, population_size=population_size,
+                                n_gen=n_gen, eta=eta, seed=seed,
+                                crossover_prob=crossover_prob,
+                                mutation_prob=mutation_prob,
+                                suppress_warnings=suppress_warnings,
+                                verbose=verbose)
 
     best_param = {}
-    best_param['gamma_ref'] = 10 ** hof_top[0]
-    best_param['s'] = 10 ** hof_top[1]
-    best_param['beta'] = 10 ** hof_top[2]
+    best_param['gamma_ref'] = 10 ** result[0]
+    best_param['s'] = 10 ** result[1]
+    best_param['beta'] = 10 ** result[2]
     best_param['Gmax'] = 1.0
 
     if show_fig:
