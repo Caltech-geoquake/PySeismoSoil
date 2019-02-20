@@ -224,7 +224,7 @@ class Damping_Curve(Curve):
             raise ValueError('The provided damping values must be between [0, 100].')
 
     #--------------------------------------------------------------------------
-    def get_HH_x_param(self, population_size=800, n_gen=100,
+    def get_HH_x_param(self, pop_size=800, n_gen=100,
                        lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                        seed=0, show_fig=True, verbose=False):
         '''
@@ -233,7 +233,7 @@ class Damping_Curve(Curve):
 
         Parameters
         ----------
-        population_size : int
+        pop_size : int
             The number of individuals in a generation
         n_gen : int
             Number of generations that the evolution lasts
@@ -264,7 +264,7 @@ class Damping_Curve(Curve):
         from .class_parameters import HH_Param
 
         HH_x_param = hh.fit_HH_x_single_layer(self.raw_data,
-                                              population_size=population_size,
+                                              pop_size=pop_size,
                                               n_gen=n_gen,
                                               lower_bound_power=lower_bound_power,
                                               upper_bound_power=upper_bound_power,
@@ -275,7 +275,7 @@ class Damping_Curve(Curve):
         return self.HH_x_param
 
     #--------------------------------------------------------------------------
-    def get_H4_x_param(self, population_size=800, n_gen=100,
+    def get_H4_x_param(self, pop_size=800, n_gen=100,
                        lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                        seed=0, show_fig=True, verbose=False):
         '''
@@ -284,7 +284,7 @@ class Damping_Curve(Curve):
 
         Parameters
         ----------
-        population_size : int
+        pop_size : int
             The number of individuals in a generation
         n_gen : int
             Number of generations that the evolution lasts
@@ -315,7 +315,7 @@ class Damping_Curve(Curve):
         from .class_parameters import MKZ_Param
 
         H4_x_param = mkz.fit_H4_x_single_layer(self.raw_data,
-                                               population_size=population_size,
+                                               pop_size=pop_size,
                                                n_gen=n_gen,
                                                lower_bound_power=lower_bound_power,
                                                upper_bound_power=upper_bound_power,
@@ -504,7 +504,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
                                                       Damping_Curve)
 
     #--------------------------------------------------------------------------
-    def get_all_HH_x_params(self, population_size=800, n_gen=100,
+    def get_all_HH_x_params(self, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
                             parallel=False, n_cores=None, save_file=False):
@@ -514,7 +514,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         Parameters
         ----------
-        population_size : int
+        pop_size : int
             The number of individuals in a generation
         n_gen : int
             Number of generations that the evolution lasts
@@ -554,7 +554,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         params = sr.fit_all_damping_curves(list_of_np_array,
                                            hh.fit_HH_x_single_layer,
                                            hh.tau_HH,
-                                           population_size=population_size,
+                                           pop_size=pop_size,
                                            n_gen=n_gen,
                                            lower_bound_power=lower_bound_power,
                                            upper_bound_power=upper_bound_power,
@@ -582,7 +582,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         return HH_Param_Multi_Layer(params)
 
     #--------------------------------------------------------------------------
-    def get_all_H4_x_params(self, population_size=800, n_gen=100,
+    def get_all_H4_x_params(self, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
                             parallel=False, n_cores=None, save_file=False):
@@ -592,7 +592,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         Parameters
         ----------
-        population_size : int
+        pop_size : int
             The number of individuals in a generation
         n_gen : int
             Number of generations that the evolution lasts
@@ -632,7 +632,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         params = sr.fit_all_damping_curves(list_of_np_array,
                                            mkz.fit_H4_x_single_layer,
                                            mkz.tau_MKZ,
-                                           population_size=population_size,
+                                           pop_size=pop_size,
                                            n_gen=n_gen,
                                            lower_bound_power=lower_bound_power,
                                            upper_bound_power=upper_bound_power,

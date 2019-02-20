@@ -22,7 +22,12 @@ class Test_Class_Curves(unittest.TestCase):
     def test_HH_x_fit_single_layer(self):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Damping_Curve(data[:, 2:4])
-        hhx = curve.get_HH_x_param(population_size=1, n_gen=1, show_fig=False)
+
+        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, use_scipy=False)
+        self.assertEqual(len(hhx), 9)
+        self.assertEqual(hhx.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
+                                      's', 'Gmax', 'mu', 'Tmax', 'd'})
+        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, use_scipy=True)
         self.assertEqual(len(hhx), 9)
         self.assertEqual(hhx.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
                                       's', 'Gmax', 'mu', 'Tmax', 'd'})
@@ -30,7 +35,12 @@ class Test_Class_Curves(unittest.TestCase):
     def test_H4_x_fit_single_layer(self):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Damping_Curve(data[:, 2:4])
-        h4x = curve.get_H4_x_param(population_size=1, n_gen=1, show_fig=False)
+
+        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, use_scipy=False)
+        self.assertEqual(len(h4x), 4)
+        self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
+
+        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, use_scipy=True)
         self.assertEqual(len(h4x), 4)
         self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
@@ -80,7 +90,7 @@ class Test_Class_Curves(unittest.TestCase):
     def test_HH_x_fit_multi_layer(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
-        hhx = mdc_.get_all_HH_x_params(population_size=1, n_gen=1, save_file=False)
+        hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_file=False)
         self.assertEqual(len(hhx), 2)
         self.assertTrue(isinstance(hhx[0].data, dict))
         self.assertEqual(hhx[0].keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
@@ -89,7 +99,7 @@ class Test_Class_Curves(unittest.TestCase):
     def test_H4_x_fit_multi_layer(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
-        h4x = mdc_.get_all_H4_x_params(population_size=1, n_gen=1, save_file=False)
+        h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_file=False)
         self.assertEqual(len(h4x), 2)
         self.assertTrue(isinstance(h4x[0].data, dict))
         self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
