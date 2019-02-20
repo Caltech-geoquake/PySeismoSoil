@@ -72,11 +72,11 @@ class Vs_Profile:
         if density_unit not in ['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3']:
             raise ValueError('density_unit must be ''kg/m^3'' or ''g/cm^3''.')
 
+        thk = data_[:, 0]
+        vs  = data_[:, 1]
         nr_layers, nr_col = data_.shape
 
         if nr_col == 2:
-            thk = data_[:,0]
-            vs  = data_[:,1]
             xi, rho = sr.get_xi_rho(vs, formula_type=1)
             if density_unit in ['g/cm^3', 'g/cm3']:
                 rho /= 1000.0  # kg/m^3 --> g/cm^3
@@ -90,8 +90,8 @@ class Vs_Profile:
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
         else:  # nr_col == 5
-            xi  = data_[:,2]
-            rho = data_[:,3]
+            xi  = data_[:, 2]
+            rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
                 print('WARNING: min(density) is lower than 1000 kg/m^3. Possible error.')
             elif density_unit in ['g/cm^3', 'g/cm3'] and min(rho) <= 1.0:
@@ -100,6 +100,7 @@ class Vs_Profile:
             if damping_unit == '1' and max(xi) > 1:
                 print('WARNING: max(damping) larger than 100%. Possible error.')
 
+            material_number = data_[:, 4]
             full_data = data_.copy()
 
         self._thk = thk
