@@ -1298,7 +1298,7 @@ def _plot_damping_curve_fit(damping_data_in_pct, param, func_stress,
 
 #%%----------------------------------------------------------------------------
 def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
-                           population_size=800, n_gen=100,
+                           use_scipy=True, pop_size=800, n_gen=100,
                            lower_bound_power=-4, upper_bound_power=6,
                            eta=0.1, seed=0, show_fig=False,
                            verbose=False, parallel=False, n_cores=None):
@@ -1323,7 +1323,12 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         A function which fits the model parameters to a single layer in `curves`
     func_stress : Python function
         A function to calculate the shear stress from model parameters
-    population_size : int
+    use_scipy : bool
+        Whether to use the "differential_evolution" algorithm implemented in
+        scipy (https://docs.scipy.org/doc/scipy/reference/generated/
+        scipy.optimize.differential_evolution.html) to perform the optimization.
+        If False, use the algorithm implemented in the DEAP package.
+    pop_size : int
         The number of individuals in a generation
     n_gen : int
         Number of generations that the evolution lasts
@@ -1345,7 +1350,8 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         Whether to display information (statistics of the loss in each
         generation) on the console
     parallel : bool
-        Whether to use parallel computing for each soil layer
+        Whether to use parallel computing across layers, i.e., calculate
+        multiple layers simultaneously.
     n_cores : int
         Number of CPU cores to use. If None, all cores are used. No effects
         if `parallel` is set to False.
@@ -1371,7 +1377,7 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         raise TypeError('Input data type of `curves` not recognized. '
                         'Please check the documentation of this function.')
 
-    other_params = [(func_fit_single_layer, population_size, n_gen,
+    other_params = [(func_fit_single_layer, use_scipy, pop_size, n_gen,
                      lower_bound_power, upper_bound_power, eta, seed, show_fig,
                      verbose)]
 
@@ -1395,26 +1401,33 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
 def _fit_single_layer_loop(param):
     '''
     Loop body to be passed to the parallel pool.
+
+    Note: `func_fit_single_layer` can be:
+        (1) helper_hh_model.fit_HH_x_single_layer(), or
+        (2) helper_mkz_model.fit_H4_x_single_layer()
+        etc.
     '''
     damping_curve, other_params = param
 
-    func_fit_single_layer, population_size, n_gen, lower_bound_power, \
+    func_fit_single_layer, use_scipy, pop_size, n_gen, lower_bound_power, \
     upper_bound_power, eta, seed, show_fig, verbose = other_params
 
-    best_para = func_fit_single_layer(damping_curve, n_gen=n_gen, eta=eta,
-                                      population_size=population_size,
+    best_para = func_fit_single_layer(damping_curve, use_scipy=use_scipy,
+                                      n_gen=n_gen, eta=eta, pop_size=pop_size,
                                       lower_bound_power=lower_bound_power,
                                       upper_bound_power=upper_bound_power,
                                       seed=seed, show_fig=show_fig,
-                                      verbose=verbose)
+                                      verbose=verbose,
+                                      parallel=False)  # no par. within layers
 
     return best_para
 
 #%%----------------------------------------------------------------------------
 def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
-                    use_scipy=True, population_size=800, n_gen=100, eta=0.1,
-                    seed=0, crossover_prob=0.8, mutation_prob=0.8,
-                    suppress_warnings=True, verbose=False):
+                    damping_data, use_scipy=True, pop_size=800, n_gen=100,
+                    eta=0.1, seed=0, crossover_prob=0.8, mutation_prob=0.8,
+                    suppress_warnings=True, verbose=False, parallel=False,
+                    n_cores=None):
     '''
     Perform a genetic algorithm (GA) process to fit the data.
 
@@ -1436,36 +1449,50 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
     loss_function : Python function
         Function to be minimized by the genetic algorithm. It should map a set
         of parameters to a loss value. It only accepts a tuple/list of all the
-        parameters as input. If `use_scipy` is True, it needs to return a float,
-        otherwise, it needs to return a tuple of (loss, ), where `loss` is a
-        float. Note that the information in the training data is implicitly
-        passed into `ga_optimization` via `loss_function`.
+        parameters as input, and it needs to return a single float. Note that
+        the information in the training data is implicitly passed into
+        `ga_optimization` via `loss_function`.
     use_scipy : bool
         Whether to use the "differential_evolution" algorithm implemented in
         scipy (https://docs.scipy.org/doc/scipy/reference/generated/
         scipy.optimize.differential_evolution.html) to perform the optimization.
         If False, use the algorithm implemented in the DEAP package.
-    population_size : int
+    pop_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
     n_gen : int
         Number of generations that the evolution lasts. A larger number leads
         to potentially better curve-fitting, but a longer computing time.
+        If `use_scipy` is True (using "differential evolution"), `n_gen` means
+        the maximum number of generations, i.e., the evolution could end early
+        if no loss reduction is found.
     eta : float
         Crowding degree of the mutation or crossover. A high eta will produce
         children resembling to their parents, while a small eta will produce
-        solutions much more different.
+        solutions much more different. (Only effective if `use_scipy` is False.)
     seed : int
         Seed value for the random number generator
     crossover_prob, mutation_prob : int
         Probability of cross-over and mutation. Larger values introduce more
         demographic diversity into the evolutionary process, which could help
         escape the local minima, but at a cost of convergence time.
+        (`mutation_prob` is only effective when `use_scipy` is False.)
+    supress_warnings : bool
+        Whether to suppress warning messages
     verbose : bool
         Whether to display information (statistics of the loss in each
         generation) on the console
-    supress_warnings : bool
-        Whether to suppress warning messages.
+    parallel : bool
+        Whether to use parallel computing to simultaneously evaluate different
+        individuals in a population. Note that different generations still
+        evolve one after another. Only effective for the differential evolution
+        for now. Also note that if using parallelization in differential
+        evolution, you may need more generations to achieve the same
+        optimization loss, because the best solution is being updated only once
+        per generation.
+    n_cores : int
+        Number of CPU cores to use. If None, all cores are used. No effects
+        if `parallel` is set to False.
 
     Returns
     -------
@@ -1477,12 +1504,15 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
     if use_scipy:
         from scipy.optimize import differential_evolution as diff_evol
         bounds = [(lower_bound, upper_bound)] * n_param
-        result = diff_evol(loss_function, bounds, recombination=crossover_prob,
-                           popsize=population_size, seed=seed, maxiter=n_gen,
-                           disp=verbose)
+        n_cores = -1 if parallel and n_cores is None else 1
+        popsize_multiplier = max(1, pop_size // n_param)
+        result = diff_evol(loss_function, bounds, args=(damping_data,),
+                           recombination=crossover_prob,
+                           popsize=popsize_multiplier, seed=seed,
+                           maxiter=n_gen, disp=verbose, workers=n_cores)
         if verbose:
             status = 'successful' if result.success else 'not successful'
-            print('Optimization status: %s.' % status)
+            print('\nOptimization status: %s.' % status)
 
         opt_result = result.x
 
@@ -1498,8 +1528,8 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
             import warnings
             warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-        def loss_function__(*args):
-            return (loss_function(*args), )
+        def loss_function__(param):  # because DEAP requires (loss, ) as output
+            return (loss_function(param, damping_data), )
 
         def uniform(low, up, size=None):
             try:
@@ -1528,7 +1558,7 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
 
         random.seed(seed)
 
-        pop = toolbox.population(n=population_size)
+        pop = toolbox.population(n=pop_size)
         hof = deap.tools.HallOfFame(1)
         stats = deap.tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("Avg", np.mean)

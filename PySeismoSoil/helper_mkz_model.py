@@ -51,7 +51,8 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
 def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
                           pop_size=800, n_gen=100, lower_bound_power=-4,
                           upper_bound_power=6, eta=0.1, seed=0, show_fig=False,
-                          verbose=False, suppress_warnings=True):
+                          verbose=False, suppress_warnings=True,
+                          parallel=False, n_cores=None):
     '''
     Perform H4_x curve fitting for one damping curve using the genetic
     algorithm provided in DEAP.
@@ -92,6 +93,9 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
     supress_warnings : bool
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
+    parallel : bool
+        Whether to use multiple processors in the calculation. All CPU cores
+        will be used if set to True.
 
     Return
     ------
@@ -113,39 +117,18 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
 
     damping_data_ = np.column_stack((strain_dense, damping_dense))
 
-    def damping_misfit(param_without_Gmax):
-        '''
-        Calculate the misfit given a set of HH parameters. Note that the values
-        in `param` are actually the 10-based power of the actual HH parameters.
-        Using the powers in the genetic algorithm searching turns out to work
-        much better for this particular problem.
-        '''
-        gamma_ref_, s_, beta_ = param_without_Gmax
-
-        gamma_ref = 10 ** gamma_ref_
-        beta = 10 ** beta_
-        s = 10 ** s_
-        Gmax = 1.0  # does not affect damping, because it gets cancels out
-
-        strain = damping_data_[:, 0]
-        damping_true = damping_data_[:, 1]
-
-        Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
-        damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
-        error = hlp.mean_absolute_error(damping_true, damping_pred)
-
-        return error
-
     crossover_prob = 0.8  # hard-coded, because not much useful to tune them
     mutation_prob = 0.8
 
     result = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
-                                damping_misfit, pop_size=pop_size,
+                                damping_misfit, damping_data_,
+                                use_scipy=use_scipy, pop_size=pop_size,
                                 n_gen=n_gen, eta=eta, seed=seed,
                                 crossover_prob=crossover_prob,
                                 mutation_prob=mutation_prob,
                                 suppress_warnings=suppress_warnings,
-                                verbose=verbose)
+                                verbose=verbose, parallel=parallel,
+                                n_cores=n_cores)
 
     best_param = {}
     best_param['gamma_ref'] = 10 ** result[0]
@@ -157,6 +140,45 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
         sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_MKZ)
 
     return best_param
+
+#%%----------------------------------------------------------------------------
+def damping_misfit(param_without_Gmax, damping_data):
+        '''
+        Calculate the misfit given a set of MKZ parameters. Note that the values
+        in `param` are actually the 10-based power of the actual MKZ parameters.
+        Using the powers in the genetic algorithm searching turns out to work
+        much better for this particular problem.
+
+        Parameters
+        ----------
+        param_without_Gmax : tuple<float>
+            MKZ model parameters, in the order specified below:
+                gamma_ref, s, beta
+        damping_data : numpy.ndarray
+            2D numpy array with two columns (strain and damping value). Both
+            columns need to use "1" as the unit, not percent.
+
+        Returns
+        -------
+        error : float
+            The mean absolute error between the true damping values and the
+            predicted damping values at each strain level.
+        '''
+        gamma_ref_, s_, beta_ = param_without_Gmax
+
+        gamma_ref = 10 ** gamma_ref_
+        beta = 10 ** beta_
+        s = 10 ** s_
+        Gmax = 1.0  # does not affect damping, because it gets cancels out
+
+        strain = damping_data[:, 0]
+        damping_true = damping_data[:, 1]
+
+        Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
+        damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
+        error = hlp.mean_absolute_error(damping_true, damping_pred)
+
+        return error
 
 #%%----------------------------------------------------------------------------
 def serialize_params_to_array(param, to_files=False):
