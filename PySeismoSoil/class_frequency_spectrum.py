@@ -48,7 +48,7 @@ class Frequency_Spectrum():
     ----------
     raw_df : float
         Original frequency interval as entered
-    raw_data_2col : numpy.array
+    raw_data : numpy.array
         Raw frequency spectrum (before interpolation) that the user provided
     n_pts : int
         Same as the input parameter
@@ -75,14 +75,17 @@ class Frequency_Spectrum():
 
         data_, df = hlp.read_two_column_stuff(data, df, sep)
         if isinstance(data, str):  # is a file name
-            self.__path_name, self.__file_name = os.path.split(data)
+            self._path_name, self._file_name = os.path.split(data)
+        else:
+            self._path_name = None
+            self._file_name = None
 
         freq, spect = hlp.interpolate(fmin, fmax, n_pts,
                                       np.real_if_close(data_[:, 0]),
                                       data_[:, 1], log_scale=log_scale)
 
         self.raw_df = df
-        self.raw_data_2col = data_
+        self.raw_data = data_
         self.n_pts = n_pts
         self.freq = freq
         self.fmin = min(freq)
@@ -96,7 +99,7 @@ class Frequency_Spectrum():
     def __repr__(self):
 
         text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' \
-               % (self.df, self.n_pts, self.fmin, self.fmax)
+               % (self.raw_df, self.n_pts, self.fmin, self.fmax)
         return text
 
     #--------------------------------------------------------------------------
@@ -127,7 +130,7 @@ class Frequency_Spectrum():
         ax.grid(ls=':')
         if logx: ax.set_xscale('log')
         if logy: ax.set_yscale('log')
-        if self.__file_name: ax.set_title(self.__file_name)
+        if self._file_name: ax.set_title(self._file_name)
 
         return fig, ax
 
