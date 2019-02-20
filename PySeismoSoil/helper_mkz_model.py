@@ -49,7 +49,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
 
 #%%----------------------------------------------------------------------------
 def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
-                          population_size=800, n_gen=100, lower_bound_power=-4,
+                          pop_size=800, n_gen=100, lower_bound_power=-4,
                           upper_bound_power=6, eta=0.1, seed=0, show_fig=False,
                           verbose=False, suppress_warnings=True):
     '''
@@ -66,7 +66,7 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
         scipy (https://docs.scipy.org/doc/scipy/reference/generated/
         scipy.optimize.differential_evolution.html) to perform the optimization.
         If False, use the algorithm implemented in the DEAP package.
-    population_size : int
+    pop_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
     n_gen : int
@@ -140,7 +140,7 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
     mutation_prob = 0.8
 
     result = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
-                                damping_misfit, population_size=population_size,
+                                damping_misfit, pop_size=pop_size,
                                 n_gen=n_gen, eta=eta, seed=seed,
                                 crossover_prob=crossover_prob,
                                 mutation_prob=mutation_prob,

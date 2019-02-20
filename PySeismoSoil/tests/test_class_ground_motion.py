@@ -45,7 +45,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
 
     def test_fourier_transform(self):
         gm = GM('./files/two_column_data_example.txt', 'm/s/s')
-        freq, spec = gm.get_Fourier_spectrum(real_val=False).raw_data_2col.T
+        freq, spec = gm.get_Fourier_spectrum(real_val=False).raw_data.T
 
         freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
                       5.3333]
