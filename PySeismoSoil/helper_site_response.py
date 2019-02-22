@@ -1032,6 +1032,72 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         return response, fig, ax
 
 #%%----------------------------------------------------------------------------
+def linear_site_resp(soil_profile, input_motion, boundary='elastic',
+                     show_fig=False, deconv=False):
+    '''
+    Perform linear site response analysis
+
+    Parameters
+    ----------
+    soil_profile : numpy.ndarray or str
+        1D Vs profile profile. If it is a string, it means the file name that
+        contains the data.
+    input_motion : numpy.array or str
+        Input motion in the time domain. If it is a string, it means the file
+        name that contains the data.
+    boundary : {'elastic', 'rigid'}
+        Boundary condition. "Elastic" means that the boundary allows waves to
+        propagate through. "Rigid" means that all downgoing waves are reflected
+        back to the soil medium.
+    show_fig : bool
+        Whether to show a figure that shows the result of the analysis
+    deconv : bool
+        Whether this operation is deconvolution. If True, it means that the
+        `input_motion` will be propagated downwards, and the motion at the
+        bottom will be collected.
+
+    Returns
+    -------
+    response : numpy.array
+        The resultant ground motion in time domain. In the same format as
+        `input_motion`.
+
+    Note: If you want to get rock-outcrop motions, choose "elastic"; if you
+          want to get bedrock motions (or "total" motions), choose "rigid". If
+          you happen to want incident motions, choose "elastic", and then
+          manually divide the result by 2.
+
+    Original version in MATLAB: June, 2013
+    Re-written into Python in 4/5/2018
+    '''
+
+    if isinstance(soil_profile, str):
+        soil_profile = np.genfromtxt(soil_profile)
+    if isinstance(input_motion, str):
+        input_motion = np.genfromtxt(input_motion)
+
+    df, fmax, _, _, _ = _get_freq_interval(input_motion)
+
+    #---------Get linear transfer function (complex valued)--------------
+    factor = 1.05  # to ensure f_max of TF >= f_max inferred from `input_motion`
+    fmax_ = fmax * factor
+    df_ = df * factor  # to ensure consistent length of the output freq array
+    tmp = linear_tf(soil_profile, show_fig=False, fmax=fmax_, freq_resolution=df_)
+    if boundary == 'elastic':
+        f_array, tf_ss = tmp[0], tmp[2]
+    elif boundary == 'rigid':
+        f_array, tf_ss = tmp[0], tmp[-2]
+    else:
+        raise ValueError('`boundary` should be "elastic" or "rigid".')
+
+    transfer_function = (f_array, tf_ss)
+
+    response = amplify_motion(input_motion, transfer_function,
+                              show_fig=show_fig, deconv=deconv)
+
+    return response
+
+#%%----------------------------------------------------------------------------
 def _get_freq_interval(input_motion):
     '''
     Get frequency interval from a 2-columed input motion.
