@@ -1514,10 +1514,12 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
         for each parameter.
     loss_function : Python function
         Function to be minimized by the genetic algorithm. It should map a set
-        of parameters to a loss value. It only accepts a tuple/list of all the
-        parameters as input, and it needs to return a single float. Note that
-        the information in the training data is implicitly passed into
-        `ga_optimization` via `loss_function`.
+        of parameters to a loss value. It takes a tuple/list of all the
+        parameters and the damping data as input, and it needs to return a
+        single float.
+    damping_data : numpy.ndarray
+        Damping data for curve fitting. Needs to have two columns (strain and
+        damping), and in the unit of 1 (not percent).
     use_scipy : bool
         Whether to use the "differential_evolution" algorithm implemented in
         scipy (https://docs.scipy.org/doc/scipy/reference/generated/

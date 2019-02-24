@@ -55,7 +55,7 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
                           parallel=False, n_cores=None):
     '''
     Perform H4_x curve fitting for one damping curve using the genetic
-    algorithm provided in DEAP.
+    algorithm.
 
     Parameters
     ----------
