@@ -129,7 +129,7 @@ def fit_HH_x_single_layer(damping_data_in_pct, use_scipy=True,
                           parallel=False, n_cores=None):
     '''
     Perform HH_x curve fitting for one damping curve using the genetic
-    algorithm provided in DEAP.
+    algorithm.
 
     Parameters
     ----------
