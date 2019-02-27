@@ -630,8 +630,8 @@ def _gen_profile_plot_array(thk, vs, zmax):
         Two numpy arrays for plotting the Vs profile: plt.plot(x, y)
     '''
 
-    hlp.assert_1D_numpy_array(thk)
-    hlp.assert_1D_numpy_array(vs)
+    hlp.assert_1D_numpy_array(thk, name='`thk`')
+    hlp.assert_1D_numpy_array(vs, name='`vs`')
 
     N = len(vs)
     x = np.zeros(2 * N)
@@ -658,8 +658,8 @@ def thk2dep(thk, midpoint=False):
     thk : numpy.ndarray
         1D numpy array of layer thickness
     midpoint : bool
-        Whether or not the returned depth array means the mid points of each
-        layer (if False, the returned array means the top of layers).
+        If True, the returned depth values are at the mid points of each
+        layer. If False, the returned array are at the top of layers.
 
     Returns
     -------
@@ -667,7 +667,7 @@ def thk2dep(thk, midpoint=False):
         Depth array
     '''
 
-    hlp.assert_1D_numpy_array(thk)
+    hlp.assert_1D_numpy_array(thk, name='`thk`')
 
     L = len(thk)
     z_top = np.zeros(L) # create an array with same length as h
@@ -703,7 +703,8 @@ def dep2thk(depth_array_starting_from_0):
         Thickness array
     '''
 
-    hlp.assert_1D_numpy_array(depth_array_starting_from_0)
+    hlp.assert_1D_numpy_array(depth_array_starting_from_0,
+                              name='`depth_array_starting_from_0`')
 
     if depth_array_starting_from_0[0] != 0:
         raise ValueError('The 0th element of depth array must be 0.')
