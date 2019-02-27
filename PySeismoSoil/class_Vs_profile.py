@@ -2,7 +2,6 @@
 
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
 from . import helper_site_response as sr
@@ -32,8 +31,13 @@ class Vs_Profile:
     density_unit : {'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'}
         The unit for the mass density of soils
     sep : str
-        Delimiter character for reading the text file. If `data` is supplied as
-        a numpy array, this parameter is ignored.
+        Delimiter character for reading the text file. If `data` is
+        supplied as a numpy array, this parameter is ignored.
+    add_halfspace : bool
+        If True, add a "half space" (represented by a layer of 0 m
+        thickness) at the bottom, if such a layer does not already
+        exist.
+
     **kwargs_to_genfromtxt :
         Any extra keyword arguments will be passed to numpy.genfromtxt()
         function for loading the data from the hard drive (if applicable).
@@ -54,7 +58,7 @@ class Vs_Profile:
 
     #--------------------------------------------------------------------------
     def __init__(self, data, damping_unit='1', density_unit='kg/m^3', sep='\t',
-                 **kwargs_to_genfromtxt):
+                 add_halfspace=False, **kwargs_to_genfromtxt):
 
         if isinstance(data, str):  # "data" is a file name
             self._path_name, self._file_name = os.path.split(data)
@@ -89,7 +93,7 @@ class Vs_Profile:
                 material_number = np.arange(1, nr_layers+1)
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
-        else:  # nr_col == 5
+        elif nr_col == 5:
             xi  = data_[:, 2]
             rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
@@ -102,6 +106,17 @@ class Vs_Profile:
 
             material_number = data_[:, 4]
             full_data = data_.copy()
+        else:
+            raise ValueError('The dimension of the input data is wrong. It '
+                             'should have two or five columns.')
+
+        if add_halfspace and thk[-1] != 0:
+            last_row = full_data[-1, :]
+            half_space = last_row.copy()
+            half_space[0] = 0  # set thickness to 0 meters
+            half_space[4] = 0  # set material number to 0
+            full_data = np.row_stack((full_data, half_space))
+            thk, vs, xi, rho, material_number = full_data.T
 
         self._thk = thk
         self._vs = vs
@@ -340,17 +355,127 @@ class Vs_Profile:
         return sr.thk2dep(self._thk)
 
     #--------------------------------------------------------------------------
-    def get_Vs_at_depth(self, depth):
+    def query_Vs_at_depth(self, depth, as_profile=False):
         '''
-        Query Vs value at a given `depth`.
+        Query Vs values at given `depth` values. If the given depth values
+        happen to be at layer interfaces, return the Vs of the layer *below*
+        the interface.
+
+        Parameter
+        ---------
+        depth : float or numpy.array
+            Value(s) of depths to query the Vs value at. Unit should be m.
+        as_profile : bool
+            If True, return a Vs profile object. If False, only return the
+            array of Vs.
+
+        Returns
+        -------
+        vs_array : float, numpy.ndarray or Vs_Profile
+            Vs values corresponding to the given depths. Its type depends on
+            the type of `depth`.
         '''
-        if depth == 0:
-            return self._vs[0]
+        #------------- Check input type, input value, etc. --------------------
+        if isinstance(depth, (int, float, np.number)):
+            is_scalar = True
+            depth = np.array([depth])
+            is_sorted = True
+            has_duplicate_values = False
+        elif isinstance(depth, np.ndarray):
+            is_scalar = False
+            hlp.assert_1D_numpy_array(depth, name='`depth`')
+            if len(depth) == 1:
+                is_sorted = True
+                has_duplicate_values = False
+            else:
+                has_duplicate_values = np.any(np.diff(depth) == 0)
+                is_sorted = np.all(np.diff(depth) >= 0)
+        else:
+            raise TypeError('`depth` needs to be a single number or numpy array.')
+
+        if np.any(depth < 0):
+            raise ValueError('Please provide non-negative `depth` values.')
+
+        if as_profile:
+            if not is_sorted:
+                raise ValueError('If `as_profile` is set to True, the given '
+                                 '`depth` needs to be monotonically increasing.')
+            if has_duplicate_values:
+                raise ValueError('If `as_profile` is set to True, the given '
+                                 '`depth` should not contain duplicate values.')
+
+        #------------------ Start querying ------------------------------------
         _depth = sr.thk2dep(self._thk)
-        index = np.searchsorted(_depth, depth)
-        if index <= 0:
-            raise ValueError('Please use a valid (positive) `depth` value.')
-        return self._vs[index - 1]
+        indices = np.searchsorted(_depth, depth, side='right')
+        indices_ = np.maximum(indices - 1, 0)  # index cannot be negative
+        vs_array = self._vs[indices_]
+        if as_profile:
+            if not np.any(depth == 0):
+                thk_array = sr.dep2thk(np.append([0], depth))
+                vs_array = np.append(vs_array[0:1], vs_array)
+            else:  # `depth` has been guarenteed to be sorted with no duplicates
+                thk_array = sr.dep2thk(depth)
+            vs_ = np.column_stack((thk_array, vs_array))
+
+            # A halfspace is already implicitly added by sr.depth2thk()
+            return Vs_Profile(vs_, add_halfspace=False)
+        else:
+            if is_scalar:
+                return float(vs_array)
+            else:
+                return vs_array
+
+    #--------------------------------------------------------------------------
+    def query_Vs_given_thk(self, thk, n_layers=None, as_profile=False,
+                           at_midpoint=True, add_halfspace=True):
+        '''
+        Query Vs values from a thickness layer `thk`. The Vs at the ground
+        surface (depth == 0 m) is always included.
+
+        Parameters
+        ----------
+        thk : float or numpy.ndarray
+            Thickness array, or a single value that means a constant thickness.
+        n_layers : int or None
+            Number of layers to query. This parameter has no effect if `thk`
+            is a numpy array (because the number of layers can be inferred
+            from `thk`).
+        as_profile : bool
+            If True, return a Vs profile object. If False, only return the
+            array of Vs.
+        at_midpoint : bool
+            If True, the Vs values are queried at the mid-point depths of
+            each layer. If False, at the top of each layer.
+        add_halfspace : bool
+            If True, add a "half space" (represented by a layer of 0 m
+            thickness) at the bottom, if such a layer does not already
+            exist.
+
+        Return
+        ------
+        vs_array : numpy.ndarray or Vs_Profile
+            Vs values corresponding to the given depths. Its type depends on
+            `as_profile`.
+        '''
+        if not isinstance(thk, (int, float, np.number, np.ndarray)):
+            raise TypeError('`thk` needs to be a scalar or a numpy array.')
+        if isinstance(thk, (int, float, np.number)):
+            if not isinstance(n_layers, (int, np.integer)):
+                raise TypeError('If `thk` is a scalar, `n_layers` needs to be '
+                                'an integer.')
+            if n_layers <= 0:
+                raise ValueError('`n_layers` should be positive.')
+            thk_array = thk * np.ones(n_layers)
+        else:  # `thk` is a numpy array
+            thk_array = thk.copy()
+
+        depth_array = sr.thk2dep(thk_array, midpoint=at_midpoint)
+        vs_profile = self.query_Vs_at_depth(depth_array, as_profile=False)
+        if not as_profile:
+            return vs_profile
+        else:
+            vs_ = np.column_stack((thk_array, vs_profile))
+            return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
     #--------------------------------------------------------------------------
     def get_slowness(self):
