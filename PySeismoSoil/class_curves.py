@@ -541,7 +541,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
     def get_all_HH_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
-                            parallel=False, n_cores=None, save_file=False):
+                            parallel=False, n_cores=None, save_file=False,
+                            save_fig=False, fig_filename=None, dpi=100):
         '''
         Obtain the HH_x parameters from the damping curve data (for all the
         curves), using the genetic algorithm provided in DEAP.
@@ -582,6 +583,12 @@ class Multiple_Damping_Curves(Multiple_Curves):
             if the parallelization options are set to False.
         save_file : bool
             Whether to save the results as a "HH_x_STATION_NAME.txt" file
+        save_fig : bool
+            Whether to save damping fitting figures to hard drive
+        fig_filename : str
+            Full file name of the figure
+        dpi : int
+            Desired DPI
 
         Return
         ------
@@ -600,7 +607,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
                                            upper_bound_power=upper_bound_power,
                                            eta=eta, seed=seed,
                                            show_fig=show_fig, verbose=verbose,
-                                           parallel=parallel, n_cores=n_cores)
+                                           parallel=parallel, n_cores=n_cores,
+                                           save_fig=save_fig, dpi=dpi,
+                                           fig_filename=fig_filename)
 
         if save_file:
             path_name, file_name = os.path.split(self._filename)
@@ -625,7 +634,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
     def get_all_H4_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
-                            parallel=False, n_cores=None, save_file=False):
+                            parallel=False, n_cores=None, save_file=False,
+                            save_fig=False, fig_filename=None, dpi=100):
         '''
         Obtain the H4_x parameters from the damping curve data (for all the
         curves), using the genetic algorithm provided in DEAP.
@@ -666,6 +676,12 @@ class Multiple_Damping_Curves(Multiple_Curves):
             if the parallelization options are set to False.
         save_file : bool
             Whether to save the results as a "H4_x_STATION_NAME.txt" file
+        save_fig : bool
+            Whether to save damping fitting figures to hard drive
+        fig_filename : str
+            Full file name of the figure
+        dpi : int
+            Desired DPI
 
         Return
         ------
@@ -684,7 +700,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
                                            upper_bound_power=upper_bound_power,
                                            eta=eta, seed=seed,
                                            show_fig=show_fig, verbose=verbose,
-                                           parallel=parallel, n_cores=n_cores)
+                                           parallel=parallel, n_cores=n_cores,
+                                           save_fig=save_fig, dpi=dpi,
+                                           fig_filename=fig_filename)
 
         if save_file:
             path_name, file_name = os.path.split(self._filename)

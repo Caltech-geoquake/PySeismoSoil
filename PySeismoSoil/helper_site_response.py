@@ -697,6 +697,9 @@ def plot_Vs_profile(vs_profile, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100,
     else:
         ax = ax
 
+    hlp.check_two_column_format(vs_profile, at_least_two_columns=True,
+                                name='`vs_profile`')
+
     thk = vs_profile[:,0]
     vs = vs_profile[:,1]
     if not max_depth:
@@ -1438,8 +1441,8 @@ def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
     return GGmax
 
 #%%----------------------------------------------------------------------------
-def _plot_damping_curve_fit(damping_data_in_pct, param, func_stress,
-                            min_strain_in_pct=1e-4, max_strain_in_pct=5):
+def _plot_damping_curve_fit(damping_data_in_pct, param, func_stress, fig=None,
+                            ax=None, min_strain_in_pct=1e-4, max_strain_in_pct=10):
     '''
     Plot damping data and curve-fit results together.
 
@@ -1452,12 +1455,15 @@ def _plot_damping_curve_fit(damping_data_in_pct, param, func_stress,
         HH_x parameters
     func_stress : Python function
         The function to calculate stress from strain and model parameters
+    fig, ax :
+        matplotlib figure and axes objects. If not provided, a new figure
+        and new axes objects are created
     min_strain_in_pct, max_strain_in_pct : float
         Strain limits of the curve-fit result
     '''
 
-    fig = plt.figure()
-    ax = plt.axes()
+    fig, ax = hlp._process_fig_ax_objects(fig, ax)
+
     init_damping = damping_data_in_pct[0, 1]
     ax.semilogx(damping_data_in_pct[:, 0], damping_data_in_pct[:, 1],
                 marker='o', alpha=0.8, label='data')
@@ -1481,7 +1487,8 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
                            use_scipy=True, pop_size=800, n_gen=100,
                            lower_bound_power=-4, upper_bound_power=6,
                            eta=0.1, seed=0, show_fig=False,
-                           verbose=False, parallel=False, n_cores=None):
+                           verbose=False, parallel=False, n_cores=None,
+                           save_fig=False, fig_filename=None, dpi=100):
     '''
     Perform damping curve fitting for multiple damping curves using the genetic
     algorithm provided in DEAP.
@@ -1535,6 +1542,12 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
     n_cores : int
         Number of CPU cores to use. If None, all cores are used. No effects
         if `parallel` is set to False.
+    save_fig : bool
+        Whether to save damping fitting figures to hard drive
+    fig_filename : str
+        Full file name of the figure
+    dpi : int
+        Desired DPI
 
     Return
     ------
@@ -1568,8 +1581,17 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         params = p.map(_fit_single_layer_loop,
                        itertools.product(curves_list, other_params))
         if show_fig:
+            ncol = 4
+            nrow = int(np.ceil(len(curves_list) / ncol))
+            fig = plt.figure(figsize=(ncol * 3, nrow * 3))
             for j, curve in enumerate(curves_list):
-                _plot_damping_curve_fit(curve, params[j], func_stress)
+                ax = plt.subplot(nrow, ncol, j + 1)
+                _plot_damping_curve_fit(curve, params[j], func_stress, fig=fig,
+                                        ax=ax)
+            fig.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
+
+        if show_fig and save_fig:
+            fig.savefig(fig_filename, dpi=dpi)
     else:
         params = []
         for curve in curves_list:

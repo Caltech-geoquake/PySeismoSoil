@@ -1,6 +1,29 @@
 # Author: Jian Shi
 
 import numpy as np
+import matplotlib.pylab as pl
+import matplotlib.pyplot as plt
+
+#%%----------------------------------------------------------------------------
+def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
+    '''
+    Process figure and axes objects. If fig and ax are None, create new figure
+    and new axes according to figsize, dpi, and ax_proj (axes projection). If
+    fig and ax are not None, use the passed-in fig and/or ax.
+    Returns fig and ax back to its caller.
+    '''
+
+    if fig is None:  # if a figure handle is not provided, create new figure
+        fig = pl.figure(figsize=figsize,dpi=dpi)
+    else:   # if provided, plot to the specified figure
+        pl.figure(fig.number)
+
+    if ax is None:  # if ax is not provided
+        ax = plt.axes(projection=ax_proj)  # create new axes and plot lines on it
+    else:
+        ax = ax  # plot lines on the provided axes handle
+
+    return fig, ax
 
 #%%----------------------------------------------------------------------------
 def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
@@ -78,7 +101,8 @@ def assert_1D_numpy_array(something, name=None):
         raise TypeError('%s must be a 1D numpy array.' % name)
 
 #%%----------------------------------------------------------------------------
-def check_two_column_format(something, name=None, ensure_non_negative=False):
+def check_two_column_format(something, name=None, ensure_non_negative=False,
+                            at_least_two_columns=False):
     '''
     Check that `something` is a 2D numpy array with two columns. Raises an
     error if `something` is the wrong format.
@@ -91,6 +115,9 @@ def check_two_column_format(something, name=None, ensure_non_negative=False):
         The name of `something` to be displayed in the potential error message
     ensure_non_negative : bool
         Whether to ensure that all values in `something` >= 0
+    at_least_two_columns : bool
+        Whether to relax the constraints to from "exactly 2 columns" to "at
+        least two columns"
     '''
     if name is None:
         name = '`something`'
@@ -99,8 +126,10 @@ def check_two_column_format(something, name=None, ensure_non_negative=False):
         raise TypeError('%s should be an numpy array.' % name)
     if something.ndim != 2:
         raise TypeError('%s should be a 2D numpy array.' % name)
-    if something.shape[1] != 2:
+    if not at_least_two_columns and something.shape[1] != 2:
         raise TypeError('%s should have two columns.' % name)
+    if at_least_two_columns and something.shape[1] < 2:
+        raise TypeError('%s should have >= 2 columns.' % name)
     if check_numbers_valid(something) == -1:
         raise ValueError("%s should only contain numeric elements." % name)
     if check_numbers_valid(something) == -2:
