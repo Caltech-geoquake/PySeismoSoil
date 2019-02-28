@@ -9,6 +9,119 @@ from . import helper_generic as hlp
 from . import helper_signal_processing as sig
 
 #%%----------------------------------------------------------------------------
+def query_Vs_at_depth(vs_profile, depth):
+    '''
+    Query Vs values at given `depth` values from a Vs profile. If the given
+    depth values happen to be at layer interfaces, return the Vs of the
+    layer *below* the interface.
+
+    Parameter
+    ---------
+    vs_profile : numpy.ndarray
+        Shear-wave velocity profile, containing at least two columns:
+           (1) thickness of layers
+           (2) shear wave velocity of layers
+    depth : float or numpy.array
+        Value(s) of depths to query the Vs value at. Unit should be m.
+
+    Returns
+    -------
+    vs_array : float or numpy.ndarray
+        Vs values corresponding to the given depths. Its type depends on
+        the type of `depth`.
+    is_scalar : bool
+        Whether the given `depth` is a scalar or not
+    has_duplicate_values : bool
+        Whether `depth` has duplicate values
+    is_sorted : bool
+        Whether `depth` is sorted (ascending)
+    '''
+
+    #------------- Check input type, input value, etc. ------------------------
+    if isinstance(depth, (int, float, np.number)):
+        is_scalar = True
+        depth = np.array([depth])
+        is_sorted = True
+        has_duplicate_values = False
+    elif isinstance(depth, np.ndarray):
+        is_scalar = False
+        hlp.assert_1D_numpy_array(depth, name='`depth`')
+        if len(depth) == 1:
+            is_sorted = True
+            has_duplicate_values = False
+        else:
+            has_duplicate_values = np.any(np.diff(depth) == 0)
+            is_sorted = np.all(np.diff(depth) >= 0)
+    else:
+        raise TypeError('`depth` needs to be a single number or numpy array.')
+
+    if np.any(depth < 0):
+        raise ValueError('Please provide non-negative `depth` values.')
+
+    hlp.check_two_column_format(vs_profile, at_least_two_columns=True,
+                                name='`vs_profile`')
+
+    #------------------ Start querying ----------------------------------------
+    thk_ref = vs_profile[:, 0]
+    vs_ref  = vs_profile[:, 1]
+    dep_ref = thk2dep(thk_ref, midpoint=False)
+
+    indices = np.searchsorted(dep_ref, depth, side='right')
+    indices_ = np.maximum(indices - 1, 0)  # index cannot be negative
+    vs_queried = vs_ref[indices_]
+
+    return vs_queried, is_scalar, has_duplicate_values, is_sorted
+
+#%%----------------------------------------------------------------------------
+def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
+    '''
+    Query Vs values from a thickness layer `thk`. The starting point of
+    querying is the ground surface.
+
+    Parameters
+    ----------
+    vs_profile : numpy.ndarray
+        Shear-wave velocity profile, containing at least two columns:
+           (1) thickness of layers
+           (2) shear wave velocity of layers
+    thk : float or numpy.ndarray
+        Thickness array, or a single value that means a constant thickness.
+    n_layers : int or None
+        Number of layers to query. This parameter has no effect if `thk`
+        is a numpy array (because the number of layers can be inferred
+        from `thk`).
+    at_midpoint : bool
+        If True, the Vs values are queried at the mid-point depths of
+        each layer. If False, at the top of each layer.
+
+    Return
+    ------
+    vs_array : numpy.ndarray
+        Vs values corresponding to the given depths. Its type depends on
+        `as_profile`.
+    thk_array : numpy.ndarray
+        The constructed thickness array (if `thk` is a scalar), or `thk`
+        itself, if `thk` is already an array
+    '''
+    if not isinstance(thk, (int, float, np.number, np.ndarray)):
+        raise TypeError('`thk` needs to be a scalar or a numpy array.')
+
+    if not isinstance(thk, (int, float, np.number)):  # is a numpy array
+        thk_array = thk.copy()
+    else :  # need to construct an array
+        if not isinstance(n_layers, (int, np.integer)):
+            raise TypeError('If `thk` is a scalar, `n_layers` needs to be '
+                            'an integer.')
+        if n_layers <= 0:
+            raise ValueError('`n_layers` should be positive.')
+        thk_array = thk * np.ones(n_layers)
+
+    depth_array = thk2dep(thk_array, midpoint=at_midpoint)
+    vs_queried, _, _, _ = query_Vs_at_depth(vs_profile, depth_array)
+
+    return vs_queried, thk_array
+
+#%%----------------------------------------------------------------------------
 def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
     '''
     Plots acceleration, velocity, and displacement time history from a file
