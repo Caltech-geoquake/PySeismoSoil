@@ -375,26 +375,8 @@ class Vs_Profile:
             Vs values corresponding to the given depths. Its type depends on
             the type of `depth`.
         '''
-        #------------- Check input type, input value, etc. --------------------
-        if isinstance(depth, (int, float, np.number)):
-            is_scalar = True
-            depth = np.array([depth])
-            is_sorted = True
-            has_duplicate_values = False
-        elif isinstance(depth, np.ndarray):
-            is_scalar = False
-            hlp.assert_1D_numpy_array(depth, name='`depth`')
-            if len(depth) == 1:
-                is_sorted = True
-                has_duplicate_values = False
-            else:
-                has_duplicate_values = np.any(np.diff(depth) == 0)
-                is_sorted = np.all(np.diff(depth) >= 0)
-        else:
-            raise TypeError('`depth` needs to be a single number or numpy array.')
-
-        if np.any(depth < 0):
-            raise ValueError('Please provide non-negative `depth` values.')
+        vs_queried, is_scalar, has_duplicate_values, is_sorted \
+            = sr.query_Vs_at_depth(self.vs_profile, depth)
 
         if as_profile:
             if not is_sorted:
@@ -404,33 +386,28 @@ class Vs_Profile:
                 raise ValueError('If `as_profile` is set to True, the given '
                                  '`depth` should not contain duplicate values.')
 
-        #------------------ Start querying ------------------------------------
-        _depth = sr.thk2dep(self._thk)
-        indices = np.searchsorted(_depth, depth, side='right')
-        indices_ = np.maximum(indices - 1, 0)  # index cannot be negative
-        vs_array = self._vs[indices_]
         if as_profile:
             if not np.any(depth == 0):
                 thk_array = sr.dep2thk(np.append([0], depth))
-                vs_array = np.append(vs_array[0:1], vs_array)
+                vs_queried = np.append(vs_queried[0:1], vs_queried)
             else:  # `depth` has been guarenteed to be sorted with no duplicates
                 thk_array = sr.dep2thk(depth)
-            vs_ = np.column_stack((thk_array, vs_array))
+            vs_ = np.column_stack((thk_array, vs_queried))
 
             # A halfspace is already implicitly added by sr.depth2thk()
             return Vs_Profile(vs_, add_halfspace=False)
         else:
             if is_scalar:
-                return float(vs_array)
+                return float(vs_queried)
             else:
-                return vs_array
+                return vs_queried
 
     #--------------------------------------------------------------------------
     def query_Vs_given_thk(self, thk, n_layers=None, as_profile=False,
                            at_midpoint=True, add_halfspace=True):
         '''
-        Query Vs values from a thickness layer `thk`. The Vs at the ground
-        surface (depth == 0 m) is always included.
+        Query Vs values from a thickness layer `thk`. The starting point of
+        querying is the ground surface.
 
         Parameters
         ----------
@@ -457,24 +434,14 @@ class Vs_Profile:
             Vs values corresponding to the given depths. Its type depends on
             `as_profile`.
         '''
-        if not isinstance(thk, (int, float, np.number, np.ndarray)):
-            raise TypeError('`thk` needs to be a scalar or a numpy array.')
-        if isinstance(thk, (int, float, np.number)):
-            if not isinstance(n_layers, (int, np.integer)):
-                raise TypeError('If `thk` is a scalar, `n_layers` needs to be '
-                                'an integer.')
-            if n_layers <= 0:
-                raise ValueError('`n_layers` should be positive.')
-            thk_array = thk * np.ones(n_layers)
-        else:  # `thk` is a numpy array
-            thk_array = thk.copy()
+        vs_queried, thk_array = sr.query_Vs_given_thk(self.vs_profile, thk,
+                                                      n_layers=n_layers,
+                                                      at_midpoint=at_midpoint)
 
-        depth_array = sr.thk2dep(thk_array, midpoint=at_midpoint)
-        vs_profile = self.query_Vs_at_depth(depth_array, as_profile=False)
         if not as_profile:
-            return vs_profile
+            return vs_queried
         else:
-            vs_ = np.column_stack((thk_array, vs_profile))
+            vs_ = np.column_stack((thk_array, vs_queried))
             return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
     #--------------------------------------------------------------------------
