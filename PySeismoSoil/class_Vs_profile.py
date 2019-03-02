@@ -160,7 +160,7 @@ class Vs_Profile:
         return text
 
     #--------------------------------------------------------------------------
-    def plot_vs_profile(self, fig=None, ax=None, **kwargs):
+    def plot(self, fig=None, ax=None, **kwargs):
         '''
         Plot Vs profile
 
@@ -468,7 +468,7 @@ class Vs_Profile:
     #--------------------------------------------------------------------------
     def summary(self):
         print(self)
-        self.plot_vs_profile()
+        self.plot()
 
     #--------------------------------------------------------------------------
     def save_vs_profile(self, fname, sep='\t',
