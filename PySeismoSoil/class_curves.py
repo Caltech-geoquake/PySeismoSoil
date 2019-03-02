@@ -71,8 +71,9 @@ class Curve():
     def __repr__(self):
         return '%s object:\n%s' % (self.__class__, str(self.raw_data))
 
-    def plot(self, plot_interpolated=True, title=None, xlabel='Strain [%]',
-             ylabel=None, figsize=None, dpi=100, **kwargs_to_matplotlib):
+    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
+             xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+             **kwargs_to_matplotlib):
         '''
         Plot the curve (y axis: values, x axis: strain)
 
@@ -80,6 +81,8 @@ class Curve():
         ---------
         plot_interpolated : bool
             Whether to plot the interpolated curve or the raw data
+        fig, ax : matplotlib objects
+            Figure and axes objects. If None, new figures will be created.
         title : str
             Title of plot
         xlabel : str
@@ -98,8 +101,7 @@ class Curve():
         fig, ax :
             matplotlib objects of the figure and the axes
         '''
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-        ax = plt.axes()
+        fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
         if plot_interpolated:
             ax.semilogx(self.strain, self.values, **kwargs_to_matplotlib)
         else:
@@ -158,7 +160,6 @@ class GGmax_Curve(Curve):
                                           max_strain=max_strain,
                                           n_pts=n_pts, log_scale=log_scale)
         self.GGmax = self.values
-        del self.values
 
         if check_values and np.any(self.GGmax > 1) or np.any(self.GGmax < 0):
             raise ValueError('The provided G/Gmax values must be between [0, 1].')
@@ -212,7 +213,6 @@ class Damping_Curve(Curve):
                                             max_strain=max_strain,
                                             n_pts=n_pts, log_scale=log_scale)
         self.damping = self.values
-        del self.values
 
         if damping_unit not in ['1', '%']:
             raise ValueError("`damping_unit` must be '1' or '%'.")
@@ -408,7 +408,6 @@ class Stress_Curve(Curve):
                                            n_pts=n_pts, log_scale=log_scale,
                                            ensure_non_negative=check_values)
         self.stress = self.values
-        del self.values
 
         if stress_unit not in ['Pa', 'kPa', 'MPa', 'GPa']:
             raise ValueError("`stress_unit` must be {'Pa', 'kPa', 'MPa', 'GPa'}.")
@@ -486,6 +485,45 @@ class Multiple_Curves():
         del self.curves[i]
         self.n_layer -= 1
 
+    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
+             xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+             **kwargs_to_matplotlib):
+        '''
+        Plot multiple curves together on one figure.
+
+        Parameter
+        ---------
+        plot_interpolated : bool
+            Whether to plot the interpolated curve or the raw data
+        fig, ax : matplotlib objects
+            Figure and axes objects. If None, new figures will be created.
+        title : str
+            Title of plot
+        xlabel : str
+            X label of plot
+        ylabel : str
+            Y label of plot
+        figsize : tuple
+            Figure size
+        dpi : int
+            DPI of plot
+        **kwargs_to_matplotlib :
+            Keyword arguments to be passed to matplotlib.pyplot.plot()
+
+        Returns
+        -------
+        fig, ax :
+            matplotlib objects of the figure and the axes
+        '''
+        fig = plt.figure()
+        ax = plt.axes()
+        for curve in self.curves:
+            curve.plot(plot_interpolated=plot_interpolated, fig=fig, ax=ax,
+                       figsize=figsize, dpi=dpi, title=title, xlabel=xlabel,
+                       ylabel=ylabel)
+
+        return fig, ax
+
 #%%============================================================================
 class Multiple_Damping_Curves(Multiple_Curves):
     '''
@@ -536,6 +574,45 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         super(Multiple_Damping_Curves, self).__init__(list_of_damping_curves,
                                                       Damping_Curve)
+
+    #--------------------------------------------------------------------------
+    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
+             xlabel='Strain [%]', ylabel='Damping [%]', figsize=(3, 3), dpi=100,
+             **kwargs_to_matplotlib):
+        '''
+        Plot multiple curves together on one figure.
+
+        Parameter
+        ---------
+        plot_interpolated : bool
+            Whether to plot the interpolated curve or the raw data
+        fig, ax : matplotlib objects
+            Figure and axes objects. If None, new figures will be created.
+        title : str
+            Title of plot
+        xlabel : str
+            X label of plot
+        ylabel : str
+            Y label of plot
+        figsize : tuple
+            Figure size
+        dpi : int
+            DPI of plot
+        **kwargs_to_matplotlib :
+            Keyword arguments to be passed to matplotlib.pyplot.plot()
+
+        Returns
+        -------
+        fig, ax :
+            matplotlib objects of the figure and the axes
+        '''
+
+        fig, ax = super(Multiple_Damping_Curves, self)\
+                      .plot(plot_interpolated=plot_interpolated, fig=fig,
+                            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
+                            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib)
+
+        return fig, ax
 
     #--------------------------------------------------------------------------
     def get_all_HH_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
@@ -814,3 +891,42 @@ class Multiple_GGmax_Curves(Multiple_Curves):
 
         super(Multiple_GGmax_Curves, self).__init__(list_of_GGmax_curves,
                                                     GGmax_Curve)
+
+    #--------------------------------------------------------------------------
+    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
+             xlabel='Strain [%]', ylabel='G/Gmax', figsize=(3, 3), dpi=100,
+             **kwargs_to_matplotlib):
+        '''
+        Plot multiple curves together on one figure.
+
+        Parameter
+        ---------
+        plot_interpolated : bool
+            Whether to plot the interpolated curve or the raw data
+        fig, ax : matplotlib objects
+            Figure and axes objects. If None, new figures will be created.
+        title : str
+            Title of plot
+        xlabel : str
+            X label of plot
+        ylabel : str
+            Y label of plot
+        figsize : tuple
+            Figure size
+        dpi : int
+            DPI of plot
+        **kwargs_to_matplotlib :
+            Keyword arguments to be passed to matplotlib.pyplot.plot()
+
+        Returns
+        -------
+        fig, ax :
+            matplotlib objects of the figure and the axes
+        '''
+
+        fig, ax = super(Multiple_GGmax_Curves, self)\
+                      .plot(plot_interpolated=plot_interpolated, fig=fig,
+                            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
+                            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib)
+
+        return fig, ax
