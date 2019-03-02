@@ -150,7 +150,7 @@ class Ground_Motion:
         Shows a brief summary of the ground motion.
         '''
         print(self)
-        self.plot_waveforms()
+        self.plot()
 
     #--------------------------------------------------------------------------
     def get_Fourier_spectrum(self, real_val=True, double_sided=False,
@@ -223,7 +223,7 @@ class Ground_Motion:
         return rs
 
     #--------------------------------------------------------------------------
-    def plot_waveforms(self, show_as_unit='m', figsize=(5,6), dpi=100):
+    def plot(self, show_as_unit='m', figsize=(5,6), dpi=100):
         '''
         Plots acceleration, velocity, and displacement waveforms together.
 
