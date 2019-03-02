@@ -541,7 +541,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
     def get_all_HH_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
-                            parallel=False, n_cores=None, save_file=False,
+                            parallel=False, n_cores=None,
+                            save_txt=False, txt_filename=None, sep=None,
                             save_fig=False, fig_filename=None, dpi=100):
         '''
         Obtain the HH_x parameters from the damping curve data (for all the
@@ -581,12 +582,20 @@ class Multiple_Damping_Curves(Multiple_Curves):
         n_cores : int
             Number of CPU cores to use. If None, all cores are used. No effects
             if the parallelization options are set to False.
-        save_file : bool
+        save_txt : bool
             Whether to save the results as a "HH_x_STATION_NAME.txt" file
+        txt_filename : str
+            File name of the text file to save HH parameters. If the object is
+            created via a "curve" text file, then `txt_filename` can be None
+            and the output filename will be determined automatically.
+        sep : str
+            Delimiter to separate columns of data in the output file
         save_fig : bool
             Whether to save damping fitting figures to hard drive
         fig_filename : str
-            Full file name of the figure
+            Full file name of the figure. If the object is created via a
+            "curve" text file, then `fig_filename` can be None, and the
+            output figure name will be determined automatically.
         dpi : int
             Desired DPI
 
@@ -596,6 +605,15 @@ class Multiple_Damping_Curves(Multiple_Curves):
             The best parameters for each soil layer found in the optimization
         '''
         from .class_parameters import HH_Param_Multi_Layer
+
+        if save_fig and fig_filename is None:
+            fig_filename = self._produce_output_file_name('HH', 'png')
+
+        if save_txt:
+            if txt_filename is None:
+                txt_filename = self._produce_output_file_name('HH', 'txt')
+            if sep is None:
+                sep = self._sep
 
         list_of_np_array = [_.raw_data for _ in self.curves]
         params = sr.fit_all_damping_curves(list_of_np_array,
@@ -608,25 +626,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
                                            eta=eta, seed=seed,
                                            show_fig=show_fig, verbose=verbose,
                                            parallel=parallel, n_cores=n_cores,
-                                           save_fig=save_fig, dpi=dpi,
-                                           fig_filename=fig_filename)
-
-        if save_file:
-            path_name, file_name = os.path.split(self._filename)
-            file_name_, extension = os.path.splitext(file_name)
-            if 'curve_' in file_name_:
-                site_name = file_name_[6:]
-            else:
-                site_name = file_name_
-            new_file_name = 'HH_x_%s.%s' % (site_name, extension)
-
-            data_for_file = []
-            for param in params:
-                data_for_file.append(hh.serialize_params_to_array(param))
-
-            data_for_file__ = np.column_stack(tuple(data_for_file))
-            np.savetxt(os.path.join(path_name, new_file_name), data_for_file__,
-                       fmt='%.6g', delimiter=self._sep)
+                                           save_fig=save_fig,
+                                           fig_filename=fig_filename, dpi=dpi,
+                                           save_txt=save_txt,
+                                           txt_filename=txt_filename, sep=sep,
+                                           func_serialize=hh.serialize_params_to_array)
 
         return HH_Param_Multi_Layer(params)
 
@@ -635,6 +639,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
                             lower_bound_power=-4, upper_bound_power=6, eta=0.1,
                             seed=0, show_fig=False, verbose=False,
                             parallel=False, n_cores=None, save_file=False,
+                            save_txt=False, txt_filename=None, sep=None,
                             save_fig=False, fig_filename=None, dpi=100):
         '''
         Obtain the H4_x parameters from the damping curve data (for all the
@@ -674,12 +679,20 @@ class Multiple_Damping_Curves(Multiple_Curves):
         n_cores : int
             Number of CPU cores to use. If None, all cores are used. No effects
             if the parallelization options are set to False.
-        save_file : bool
-            Whether to save the results as a "H4_x_STATION_NAME.txt" file
+        save_txt : bool
+            Whether to save the results as a "HH_x_STATION_NAME.txt" file
+        txt_filename : str
+            File name of the text file to save HH parameters. If the object is
+            created via a "curve" text file, then `txt_filename` can be None
+            and the output filename will be determined automatically.
+        sep : str
+            Delimiter to separate columns of data in the output file
         save_fig : bool
             Whether to save damping fitting figures to hard drive
         fig_filename : str
-            Full file name of the figure
+            Full file name of the figure. If the object is created via a
+            "curve" text file, then `fig_filename` can be None, and the
+            output figure name will be determined automatically.
         dpi : int
             Desired DPI
 
@@ -689,6 +702,15 @@ class Multiple_Damping_Curves(Multiple_Curves):
             The best parameters for each soil layer found in the optimization
         '''
         from .class_parameters import MKZ_Param_Multi_Layer
+
+        if save_fig and fig_filename is None:
+            fig_filename = self._produce_output_file_name('H4', 'png')
+
+        if save_txt:
+            if txt_filename is None:
+                txt_filename = self._produce_output_file_name('H4', 'txt')
+            if sep is None:
+                sep = self._sep
 
         list_of_np_array = [_.raw_data for _ in self.curves]
         params = sr.fit_all_damping_curves(list_of_np_array,
@@ -701,27 +723,46 @@ class Multiple_Damping_Curves(Multiple_Curves):
                                            eta=eta, seed=seed,
                                            show_fig=show_fig, verbose=verbose,
                                            parallel=parallel, n_cores=n_cores,
-                                           save_fig=save_fig, dpi=dpi,
-                                           fig_filename=fig_filename)
-
-        if save_file:
-            path_name, file_name = os.path.split(self._filename)
-            file_name_, extension = os.path.splitext(file_name)
-            if 'curve_' in file_name_:
-                site_name = file_name_[6:]
-            else:
-                site_name = file_name_
-            new_file_name = 'H4_x_%s.%s' % (site_name, extension)
-
-            data_for_file = []
-            for param in params:
-                data_for_file.append(mkz.serialize_params_to_array(param, to_files=True))
-
-            data_for_file__ = np.column_stack(tuple(data_for_file))
-            np.savetxt(os.path.join(path_name, new_file_name), data_for_file__,
-                       fmt='%.6g', delimiter=self._sep)
+                                           save_fig=save_fig,
+                                           fig_filename=fig_filename, dpi=dpi,
+                                           save_txt=save_txt,
+                                           txt_filename=txt_filename, sep=sep,
+                                           func_serialize=mkz.serialize_params_to_array)
 
         return MKZ_Param_Multi_Layer(params)
+
+    #--------------------------------------------------------------------------
+    def _produce_output_file_name(self, prefix, extension):
+        '''
+        Produce the output file name.
+
+        Parameters
+        ----------
+        prefix : {'HH', 'H4'} or str
+            Prefix of file name
+        extension : {'png', 'txt'} or str
+            File extension (without the dot)
+
+        Returns
+        -------
+        new_file_name : str
+            The new file name based on the input "curve" file name
+        '''
+        if self._filename is None:
+            raise ValueError('Please make sure to create this object from '
+                             'a text file, so that there is an original file '
+                             'name to work with.')
+
+        path_name, file_name = os.path.split(self._filename)
+        file_name_, _ = os.path.splitext(file_name)
+        if 'curve_' in file_name_:
+            site_name = file_name_[6:]
+        else:
+            site_name = file_name_
+
+        new_file_name = '%s_x_%s.%s' % (prefix, site_name, extension)
+
+        return new_file_name
 
 #%%============================================================================
 class Multiple_GGmax_Curves(Multiple_Curves):

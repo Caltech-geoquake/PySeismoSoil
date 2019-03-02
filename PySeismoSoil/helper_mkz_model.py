@@ -204,7 +204,7 @@ def serialize_params_to_array(param, to_files=False):
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above
     '''
-
+    assert(len(param) == 4)
     order = ['gamma_ref', 's', 'beta', 'Gmax']
     param_array = []
     for key in order:

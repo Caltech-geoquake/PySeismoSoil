@@ -1488,7 +1488,9 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
                            lower_bound_power=-4, upper_bound_power=6,
                            eta=0.1, seed=0, show_fig=False,
                            verbose=False, parallel=False, n_cores=None,
-                           save_fig=False, fig_filename=None, dpi=100):
+                           save_fig=False, fig_filename=None, dpi=100,
+                           save_txt=False, txt_filename=None, sep='\t',
+                           func_serialize=None):
     '''
     Perform damping curve fitting for multiple damping curves using the genetic
     algorithm provided in DEAP.
@@ -1507,7 +1509,8 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         The G/Gmax information is redundant for this function.
 
     func_fit_single_layer : Python function
-        A function which fits the model parameters to a single layer in `curves`
+        A function which fits the model parameters to a single layer in
+        `curves`, such as hh.fit_HH_x_single_layer or mkz.fit_H4_x_single_layer
     func_stress : Python function
         A function to calculate the shear stress from model parameters
     use_scipy : bool
@@ -1548,6 +1551,15 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         Full file name of the figure
     dpi : int
         Desired DPI
+    save_txt : bool
+        Whether to save the fitted parameters as a text file
+    txt_filename : str
+        The name of the text file to save the parameters to
+    sep : str
+        Delimiter to separate columns of data in the output file
+    func_serialize : Python function
+        The function to serialize the parameters from a dict into a list.
+        Can be hh.serialize_params_to_array or mkz.serialize_params_to_array.
 
     Return
     ------
@@ -1571,7 +1583,8 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
                         'Please check the documentation of this function.')
 
     other_params = [(func_fit_single_layer, use_scipy, pop_size, n_gen,
-                     lower_bound_power, upper_bound_power, eta, seed, show_fig,
+                     lower_bound_power, upper_bound_power, eta, seed,
+                     False,  # set `show_fig` to False; show all layers in subplots
                      verbose)]
 
     if parallel:
@@ -1580,22 +1593,34 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
         p = multiprocessing.Pool(n_cores)
         params = p.map(_fit_single_layer_loop,
                        itertools.product(curves_list, other_params))
-        if show_fig:
-            ncol = 4
-            nrow = int(np.ceil(len(curves_list) / ncol))
-            fig = plt.figure(figsize=(ncol * 3, nrow * 3))
-            for j, curve in enumerate(curves_list):
-                ax = plt.subplot(nrow, ncol, j + 1)
-                _plot_damping_curve_fit(curve, params[j], func_stress, fig=fig,
-                                        ax=ax)
-            fig.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
-
-        if show_fig and save_fig:
-            fig.savefig(fig_filename, dpi=dpi)
     else:
         params = []
         for curve in curves_list:
             params.append(_fit_single_layer_loop((curve, other_params[0])))
+
+    if show_fig:
+        ncol = 4
+        nrow = int(np.ceil(len(curves_list) / ncol))
+        fig = plt.figure(figsize=(ncol * 3, nrow * 3))
+        for j, curve in enumerate(curves_list):
+            ax = plt.subplot(nrow, ncol, j + 1)
+            _plot_damping_curve_fit(curve, params[j], func_stress, fig=fig,
+                                    ax=ax)
+        fig.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
+
+    if show_fig and save_fig:
+        fig.savefig(fig_filename, dpi=dpi)
+
+    if save_txt:
+        if func_serialize is None:
+            raise ValueError('Please provide a function to serialize the '
+                             'parameters into a lists.')
+        data_for_file = []
+        for param in params:
+            data_for_file.append(func_serialize(param))
+
+        data_for_file__ = np.column_stack(tuple(data_for_file))
+        np.savetxt(txt_filename, data_for_file__, fmt='%.6g', delimiter=sep)
 
     return params
 

@@ -96,14 +96,16 @@ class Test_Class_Curves(unittest.TestCase):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
 
-        hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_file=False,
+        # Test differential evolution
+        hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=True)
         self.assertEqual(len(hhx), 2)
         self.assertTrue(isinstance(hhx[0].data, dict))
         self.assertEqual(hhx[0].keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
                                          's', 'Gmax', 'mu', 'Tmax', 'd'})
 
-        hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_file=False,
+        # Test DEAP
+        hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=False)
         self.assertEqual(len(hhx), 2)
         self.assertTrue(isinstance(hhx[0].data, dict))
@@ -114,13 +116,15 @@ class Test_Class_Curves(unittest.TestCase):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
 
-        h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_file=False,
+        # Test differential evolution
+        h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=True)
         self.assertEqual(len(h4x), 2)
         self.assertTrue(isinstance(h4x[0].data, dict))
         self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
-        h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_file=False,
+        # Test DEAP
+        h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=False)
         self.assertEqual(len(h4x), 2)
         self.assertTrue(isinstance(h4x[0].data, dict))

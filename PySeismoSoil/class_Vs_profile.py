@@ -171,6 +171,11 @@ class Vs_Profile:
         **kwargs :
             Extra keyword arguments to be passed to the function
             helper_site_response.plot_Vs_profile()
+
+        Returns
+        -------
+        fix, ax, hl
+            Figure, axes, and line objects, respectively
         '''
         if self._file_name:
             title_text = self._file_name
