@@ -48,9 +48,33 @@ class Test_Helper_HH_Model(unittest.TestCase):
         array = hh.serialize_params_to_array(self.param)
         self.assertTrue(np.allclose(array, self.array))
 
+        # Test error with incorrect number of dict items
+        with self.assertRaisesRegex(AssertionError, ''):
+            hh.serialize_params_to_array({'test': 2})
+
+        # Test error with incorrect dict keys: only one key name is wrong
+        with self.assertRaisesRegex(KeyError, ''):
+            hh.serialize_params_to_array({'gamma_t': 1,
+                                          'a': 1,
+                                          'gamma_ref': 1,
+                                          'beta': 1,
+                                          's': 1,
+                                          'Gmax': 1,
+                                          'mu': 1,
+                                          'Tmax': 1,
+                                          'd___': 1})
+
     def test_deserialize_array_to_params(self):
         param = hh.deserialize_array_to_params(self.array)
         self.assertEqual(param, self.param)
+
+        # Test error with input data type
+        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
+            hh.deserialize_array_to_params([1,2,3,4,5,6,7,8])
+
+        # Test error with incorrecto number of parameters (should be 9)
+        with self.assertRaisesRegex(AssertionError, ''):
+            hh.deserialize_array_to_params(np.array([1,2,3,4,5,6,7,8]))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_HH_Model)

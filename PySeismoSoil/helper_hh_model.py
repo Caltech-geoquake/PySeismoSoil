@@ -285,7 +285,7 @@ def serialize_params_to_array(param):
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above
     '''
-
+    assert(len(param) == 9)
     order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
     param_array = []
     for key in order:

@@ -249,7 +249,35 @@ class Test_Helper_Site_Response(unittest.TestCase):
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
         self.assertTrue(np.allclose(damping, [0, 0, 2./3./np.pi, 1./np.pi]))
 
+    #--------------------------------------------------------------------------
+    def test_fit_all_damping_curves(self):
+        import PySeismoSoil.helper_hh_model as hh
+        import PySeismoSoil.helper_mkz_model as mkz
+
+        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        curve = data[:, 2:4]
+        res = sr.fit_all_damping_curves([curve],
+                                         hh.fit_HH_x_single_layer, hh.tau_HH,
+                                         pop_size=1, n_gen=1)
+        self.assertTrue(isinstance(res, list))
+        self.assertTrue(isinstance(res[0], dict))
+        self.assertEqual(len(res[0]), 9)  # HH model: 9 parameters
+
+        # Test exception when no func_serialize
+        with self.assertRaisesRegex(ValueError, 'provide a function to serialize'):
+            sr.fit_all_damping_curves([curve],
+                                       hh.fit_HH_x_single_layer, hh.tau_HH,
+                                       pop_size=1, n_gen=1, save_txt=True,
+                                       func_serialize=None)
+
+        # Test exception with incorrect func_serialize
+        with self.assertRaisesRegex(AssertionError, ''):
+            sr.fit_all_damping_curves([curve],
+                                       hh.fit_HH_x_single_layer, hh.tau_HH,
+                                       pop_size=1, n_gen=1, save_txt=True,
+                                       txt_filename='1.txt',  # no effect anyways
+                                       func_serialize=mkz.serialize_params_to_array)
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Site_Response)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
-
