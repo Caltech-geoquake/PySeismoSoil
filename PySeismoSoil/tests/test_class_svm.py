@@ -14,22 +14,22 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_init(self):
         Vs30 = 256
-        z1000 = 100
-        svm = SVM(Vs30, z1000, show_fig=False)
+        z1 = 100
+        svm = SVM(Vs30, z1, show_fig=False)
         self.assertEqual(svm.Vs30, Vs30)
-        self.assertEqual(svm.z1000, z1000)
+        self.assertEqual(svm.z1, z1)
 
     def test_get_smooth_profile(self):
         Vs30 = 256
-        z1000 = 100
-        svm = SVM(Vs30, z1000, show_fig=False)
+        z1 = 100
+        svm = SVM(Vs30, z1, show_fig=False)
         smooth_profile = svm.get_smooth_profile(show_fig=False)
         self.assertTrue(isinstance(smooth_profile, Vs_Profile))
 
     def test_get_discretized_profile(self):
         Vs30 = 256
-        z1000 = 100
-        svm = SVM(Vs30, z1000, show_fig=False)
+        z1 = 100
+        svm = SVM(Vs30, z1, show_fig=False)
 
         # Test fixed_thk
         discr_profile = svm.get_discretized_profile(fixed_thk=10,
@@ -53,8 +53,8 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_get_randomized_profile(self):
         Vs30 = 256
-        z1000 = 100
-        svm = SVM(Vs30, z1000, show_fig=False)
+        z1 = 100
+        svm = SVM(Vs30, z1, show_fig=False)
         random_profile = svm.get_randomized_profile(show_fig=False)
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
