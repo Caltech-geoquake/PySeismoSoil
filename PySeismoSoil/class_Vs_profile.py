@@ -54,6 +54,8 @@ class Vs_Profile:
         Same as provided
     density_unit : str
         Same as provided
+    z_max : float
+        Maximum depth of the profile
     '''
 
     #--------------------------------------------------------------------------
@@ -127,6 +129,7 @@ class Vs_Profile:
         self.vs30 = sr.calc_Vs30(full_data)
         self.damping_unit = damping_unit
         self.density_unit = density_unit
+        self.z_max = np.sum(thk)
 
     #--------------------------------------------------------------------------
     def __repr__(self):
@@ -421,7 +424,8 @@ class Vs_Profile:
         n_layers : int or None
             Number of layers to query. This parameter has no effect if `thk`
             is a numpy array (because the number of layers can be inferred
-            from `thk`).
+            from `thk`). If None, it is automatically inferred from `thk`
+            and the maximum depth of the profile (`z_max`).
         as_profile : bool
             If True, return a Vs profile object. If False, only return the
             array of Vs.
@@ -439,6 +443,8 @@ class Vs_Profile:
             Vs values corresponding to the given depths. Its type depends on
             `as_profile`.
         '''
+        if n_layers is None and isinstance(thk, (int, float, np.number)):
+            n_layers = int(np.ceil(self.z_max / thk))
         vs_queried, thk_array = sr.query_Vs_given_thk(self.vs_profile, thk,
                                                       n_layers=n_layers,
                                                       at_midpoint=at_midpoint)
