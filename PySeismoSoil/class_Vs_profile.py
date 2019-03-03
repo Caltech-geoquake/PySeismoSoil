@@ -456,6 +456,43 @@ class Vs_Profile:
             return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
     #--------------------------------------------------------------------------
+    def get_basin_depth(self, bedrock_Vs=1000):
+        '''
+        Query the depth of the basin as indicated in the Vs profile data.
+        The basin is defined as the material whose Vs is at least `bedrock_Vs`.
+
+        Parameter
+        ---------
+        bedrock_Vs : float
+            The shear-wave velocity that you consider as the bedrock
+
+        Returns
+        -------
+        basin_depth : float
+            The basin depth. If no Vs values in the profile reaches
+            `bedrock_Vs`, return total depth (bottom) of the profile.
+        '''
+        depth = sr.thk2dep(self._thk, midpoint=False)
+        assert(depth[0] == 0)  # assert that `depth` means the layer top
+        basin_depth = -1
+        for j in range(len(self._vs)):
+            current_depth = depth[j]
+            if self._vs[j] >= bedrock_Vs:
+                basin_depth = current_depth
+                break
+        else:
+            basin_depth = np.sum(self._thk)
+
+        return basin_depth
+
+    #--------------------------------------------------------------------------
+    def get_z1(self):
+        '''
+        Get z1 (the depth to Vs = 1000 m/s)
+        '''
+        return self.get_basin_depth(bedrock_Vs=1000)
+
+    #--------------------------------------------------------------------------
     def get_slowness(self):
         '''
         Get "slowness" (reciprocal of wave velocity) as a 2D numpy array
