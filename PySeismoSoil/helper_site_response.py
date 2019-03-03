@@ -110,8 +110,8 @@ def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
         thk_array = thk.copy()
     else :  # need to construct an array
         if not isinstance(n_layers, (int, np.integer)):
-            raise TypeError('If `thk` is a scalar, `n_layers` needs to be '
-                            'an integer.')
+            raise TypeError('If `thk` is a scalar, you need to provide '
+                            '`n_layers` as an integer.')
         if n_layers <= 0:
             raise ValueError('`n_layers` should be positive.')
         thk_array = thk * np.ones(n_layers)
