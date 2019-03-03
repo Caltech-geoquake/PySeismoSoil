@@ -20,7 +20,7 @@ class SVM():
     ----------
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
-    z1000 : float
+    z1 : float
         The depth to bedrock (1000 m/s rock). Unit: m
     Vs_cap : bool or float
         Whether to "cap" the Vs profile or not.
@@ -29,7 +29,7 @@ class SVM():
         [***  See Footnote for more explanations  ***]
     eta : float
         If Vs will reach Vs_cap (usually 1000 m/s) before the depth of
-        z1000, the SVM Vs profile will stop at Vs = eta * Vs_cap, and
+        z1, the SVM Vs profile will stop at Vs = eta * Vs_cap, and
         then a linear Vs gradation will be filled from eta * Vs_cap to
         Vs_cap. Do not change this parameter, unless you know what you
         are doing.
@@ -46,23 +46,23 @@ class SVM():
     Attributes
     ----------
     smooth_profile : numpy.ndarray
-        The smooth Vs profile associated with the given Vs30 and z1000
+        The smooth Vs profile associated with the given Vs30 and z1
     Vs30 : float
         The target Vs30 value, in m/s
-    z1000 : float
+    z1 : float
         The basin depth, in meters
     '''
 
-    def __init__(self, target_Vs30, z1000=350.0, Vs_cap=True, eta=0.90,
+    def __init__(self, target_Vs30, z1=350.0, Vs_cap=True, eta=0.90,
                  show_fig=False, iterate=False, verbose=False):
         '''
         Footnote
         --------
-        If the resultant Vs profile does not reach Vs_cap at z1000, it will be
-        "glued" to Vs_cap, resulting in a velocity impedance at z1000. If the
-        Vs profile exceeds Vs_cap at a depth shallower than z1000, then the
+        If the resultant Vs profile does not reach Vs_cap at z1, it will be
+        "glued" to Vs_cap, resulting in a velocity impedance at z1. If the
+        Vs profile exceeds Vs_cap at a depth shallower than z1, then the
         smooth Vs profile is truncated at a depth where Vs = 0.8*Vs_cap, then
-        filled down to z1000 with linearly increasing Vs values.
+        filled down to z1 with linearly increasing Vs values.
         '''
 
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
@@ -81,14 +81,14 @@ class SVM():
                 layer for the top 2.5 m, thus we should add a new layer with
                 Vs = Vs0 whose thickness is "2.5 minus thk".
 
-        Note 2: For shallow profiles (i.e., z1000 < 50 m), we still want at
+        Note 2: For shallow profiles (i.e., z1 < 50 m), we still want at
                 least 50 layers, so we solve these following two equations:
 
                    thk$ = 2.5 - thk  (note: thk$ is `thk_addl_layer`)
-                   thk = (z1000 - thk$)/50   (divide remaining soils into 50 layers)
+                   thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
 
                 Then thk and thk$ can both be solved, hence we have:
-                    thk = (z1000 - 2.5)/49.0
+                    thk = (z1 - 2.5)/49.0
         '''
 
         p1 = -2.1688e-04  # these values come from curve fitting
@@ -108,9 +108,9 @@ class SVM():
         s3 = -10.827
         s4 = -7.6187e-03
 
-        if z1000 <= 2.5:  # this is a rare case, but it does happen sometimes...
+        if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
             Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
-            vs_profile = np.array([[z1000,Vs0_],[0.0, 1000.0]])  # just one layer
+            vs_profile = np.array([[z1,Vs0_],[0.0, 1000.0]])  # just one layer
         else:  # this is most of the cases...
             Vs30 = target_Vs30
             iteration_flag = True
@@ -122,7 +122,7 @@ class SVM():
                 k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
                 n_ = np.max([1.0, s1*np.exp(s2*Vs30) + s3*np.exp(s4*Vs30)])
 
-                z_array_analyt = np.arange(0.0, z1000-thk_addl_layer, thk) # depth array
+                z_array_analyt = np.arange(0.0, z1-thk_addl_layer, thk) # depth array
                 th_array_analyt = sr.dep2thk(z_array_analyt) # thickness array (for analytical Vs)
                 Vs_analyt = Vs0_ * (1. + k_ * z_array_analyt)**(1./n_)  # analytical Vs ( = Vs0*(1+k*z)^(1/n) )
 
@@ -191,16 +191,16 @@ class SVM():
         if show_fig is True:
             sr.plot_Vs_profile(vs_profile,
                                title='$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % \
-                               (target_Vs30, z1000))
+                               (target_Vs30, z1))
 
         # --------  Attributes   -------------------
         self.Vs30 = target_Vs30
-        self.z1000 = z1000
+        self.z1 = z1
         self.smooth_profile = vs_profile
 
     #%%========================================================================
     def __repr__(self):
-        return 'Vs30 = %.2g m/s, z1000 = %.2g m' % (self.Vs30, self.z1000)
+        return 'Vs30 = %.2g m/s, z1 = %.2g m' % (self.Vs30, self.z1)
 
     #%%========================================================================
     def get_smooth_profile(self, show_fig=False):
@@ -218,7 +218,7 @@ class SVM():
             The smooth Vs profile corresponding to the given Vs30 value.
         '''
         if show_fig:
-            title = '$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % (self.Vs30, self.z1000)
+            title = '$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % (self.Vs30, self.z1)
             sr.plot_Vs_profile(self.smooth_profile, title=title)
 
         return Vs_Profile(self.smooth_profile)
@@ -284,7 +284,7 @@ class SVM():
             prof_ = discr_prof.vs_profile
 
         if show_fig:  # TODO: properly truncate Vs profiles at basin depth
-            title = '$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % (self.Vs30, self.z1000)
+            title = '$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % (self.Vs30, self.z1)
             fig, ax, _ = sr.plot_Vs_profile(self.smooth_profile, label='smooth')
             sr.plot_Vs_profile(prof_, fig=fig, ax=ax, c='orange', alpha=0.85,
                                label='discretized')
@@ -333,7 +333,7 @@ class SVM():
         z_mid = []    # midpoint depth of soil layers
         thk = []    # thickness
 
-        while len(z_bot) == 0 or z_bot[-1] < self.z1000:
+        while len(z_bot) == 0 or z_bot[-1] < self.z1:
             if use_Toros_layering:
                 rate = 1.98 * (z_top[-1] + 10.86) ** (-0.89)  # Eq (2) of Toro (1995)
 
@@ -372,7 +372,7 @@ class SVM():
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
 
-        thk[-1] = self.z1000 - np.sum(thk[:-1])  # adjust thickness of last layer so that sum(thk) = z1000
+        thk[-1] = self.z1 - np.sum(thk[:-1])  # adjust thickness of last layer so that sum(thk) = z1
         z_mid = sr.thk2dep(np.array(thk), midpoint=True)  # update z_mid because thk has changed (z_top and z_bot are not used below, so no need to update)
 
         ''' ----------------   Part 2   ------------------------------------'''
@@ -475,7 +475,7 @@ class SVM():
             plt.setp(hl1,linewidth=1.25,color='r')
             plt.legend([hl1,hl2],['Stochastic','Smooth'],loc='best',fontsize=11)
             ha1.set_title('$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' %
-                          (self.Vs30, self.z1000))
+                          (self.Vs30, self.z1))
             ha1.set_xlim(0, np.max(np.append(Vs_profile[:, 1], 1000)) * 1.1)
 
         return Vs_Profile(Vs_profile)
