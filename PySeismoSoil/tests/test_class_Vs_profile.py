@@ -50,6 +50,17 @@ class Test_Class_Vs_Profile(unittest.TestCase):
     def test_f0_RO(self):
         self.assertAlmostEqual(self.prof.get_f0_RO(), 1.10, delta=1e-2)
 
+    def test_get_z1(self):
+        # Normal case: Vs reaches 1000 m/s
+        data_1 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
+        prof_1 = Vs_Profile(data_1)
+        self.assertAlmostEqual(prof_1.get_z1(), 12)
+
+        # Abnormal case: Vs does not reach 1000 m/s
+        data_2 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 800, 900]]).T
+        prof_2 = Vs_Profile(data_2)
+        self.assertAlmostEqual(prof_2.get_z1(), 15)
+
     def test_query_Vs_at_depth(self):
         prof = Vs_Profile('./files/profile_FKSH14.txt')
 
