@@ -194,7 +194,7 @@ class Vs_Profile:
 
     #--------------------------------------------------------------------------
     def ampl_function(self, show_fig=False, boundary_condition=None,
-                      also_return_f0=False, freq_resolution=.05, fmax=30.):
+                      also_return_f0=True, freq_resolution=.05, fmax=30.):
         '''
         Get amplification function of the Vs profile
 
