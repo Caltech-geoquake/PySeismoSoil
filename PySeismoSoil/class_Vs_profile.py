@@ -363,6 +363,52 @@ class Vs_Profile:
         return sr.thk2dep(self._thk)
 
     #--------------------------------------------------------------------------
+    def truncate(self, depth=None, Vs=1000.0):
+        '''
+        Truncate Vs profile at a given `depth`, and "glue" the truncated
+        profile to a given `Vs`.
+
+        Parameters
+        ----------
+        depth : float
+            The depth at which to truncate the original Vs profile. It can
+            be deeper than z_max (total depth).
+        Vs : float
+            The velocity of the bedrock
+
+        Returns
+        -------
+        truncated : Vs_Profile
+            The truncated Vs profile
+        '''
+        if depth is None or depth <= 0:
+            raise ValueError('`depth` needs to be a positive number.')
+        if Vs is None or Vs <= 0:
+            raise ValueError('`Vs` needs to be a positive number.')
+        profile_ = []
+        total_depth = 0
+        for j in range(len(self._vs)):
+            if total_depth + self._thk[j] >= depth:
+                last_thk = depth - total_depth
+                last_row = self.vs_profile[j, :]
+                last_row[0] = last_thk
+                profile_.append(last_row)
+                break
+            else:
+                profile_.append(self.vs_profile[j, :])
+                total_depth += self._thk[j]
+        else:  # `depth` > total depth of the current profile
+            last_thk = profile_[-1][0]  # thickness of the original last layer
+            profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
+
+        xi, rho = sr.get_xi_rho(np.array([Vs]))
+        bedrock = [0, Vs, xi, rho, 0]
+        profile_.append(bedrock)  # add half space whose Vs is `Vs`
+
+        profile_ = np.array(profile_)
+        return Vs_Profile(profile_)
+
+    #--------------------------------------------------------------------------
     def query_Vs_at_depth(self, depth, as_profile=False):
         '''
         Query Vs values at given `depth` values. If the given depth values
