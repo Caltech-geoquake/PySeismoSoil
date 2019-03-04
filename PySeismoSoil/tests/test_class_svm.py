@@ -19,12 +19,12 @@ class Test_Class_SVM(unittest.TestCase):
         self.assertEqual(svm.Vs30, Vs30)
         self.assertEqual(svm.z1, z1)
 
-    def test_get_smooth_profile(self):
+    def test_base_profile(self):
         Vs30 = 256
         z1 = 100
         svm = SVM(Vs30, z1, show_fig=False)
-        smooth_profile = svm.get_smooth_profile(show_fig=False)
-        self.assertTrue(isinstance(smooth_profile, Vs_Profile))
+        base_profile = svm.base_profile
+        self.assertTrue(isinstance(base_profile, Vs_Profile))
 
     def test_get_discretized_profile(self):
         Vs30 = 256
