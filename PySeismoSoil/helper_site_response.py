@@ -2,7 +2,6 @@
 
 import numpy as np
 import matplotlib as mpl
-import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
