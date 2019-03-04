@@ -190,38 +190,42 @@ class SVM():
         # ---------   Show figure    ----------------------
         if show_fig is True:
             sr.plot_Vs_profile(vs_profile,
-                               title='$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % \
+                               title='$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % \
                                (target_Vs30, z1))
 
         # --------  Attributes   -------------------
         self.Vs30 = target_Vs30
         self.z1 = z1
-        self.smooth_profile = vs_profile
+        self._base_profile = vs_profile  # for use within class methods
+        self.base_profile = Vs_Profile(vs_profile)  # for external users
 
     #%%========================================================================
     def __repr__(self):
         return 'Vs30 = %.2g m/s, z1 = %.2g m' % (self.Vs30, self.z1)
 
     #%%========================================================================
-    def get_smooth_profile(self, show_fig=False):
+    def plot(self, fig=None, ax=None, **other_kwargs):
         '''
-        Returns the "base profile" (i.e., smooth).
+        Plot the base profile
 
         Parameters
         ----------
-        show_fig : bool
-            Whether or not to plot the profile.
+        fig, ax : mpl.figure.Figure, mpl.axes._subplots.AxesSubplot
+            Figure and axes objects.
+            If provided, the histograms are plotted on the provided figure and
+            axes. If not, a new figure and new axes are created.
+        other_kwargs :
+            Other keyword arguments to be passed to helper_site_response
+            .plot_Vs_profile()
 
         Returns
         -------
-        Vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
-            The smooth Vs profile corresponding to the given Vs30 value.
+        fig, ax, h_line: the figure object, axes object, and line object
         '''
-        if show_fig:
-            title = '$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % (self.Vs30, self.z1)
-            sr.plot_Vs_profile(self.smooth_profile, title=title)
-
-        return Vs_Profile(self.smooth_profile)
+        title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
+        fig, ax, h_line = sr.plot_Vs_profile(self._base_profile, title=title,
+                                             fig=fig, ax=ax)
+        return fig, ax, h_line
 
     #%%========================================================================
     def get_discretized_profile(self, *, fixed_thk=None, Vs_increment=None,
@@ -255,37 +259,37 @@ class SVM():
             raise ValueError('Please only provide `fixed_thk` or '
                              '`Vs_increment`; do not provide both.')
         if fixed_thk is not None:
-            discr_prof = self.get_smooth_profile()\
+            discr_prof = self.base_profile\
                              .query_Vs_given_thk(fixed_thk, as_profile=True,
                                                  at_midpoint=at_midpoint)
             prof_ = discr_prof.vs_profile
         else:  # Vs_increment is not None
-            max_Vs = np.max(self.smooth_profile[:, 1])
+            max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
                 raise ValueError('`Vs_increment` needs to < %.2g m/s (the '
                                  'max Vs of the smooth profile)' % max_Vs)
-            n_layers = self.smooth_profile.shape[0]
-            vs_prev = self.smooth_profile[0, 1]
+            n_layers = self._base_profile.shape[0]
+            vs_prev = self._base_profile[0, 1]
             thk_array = []
             thk_tmp = 0
             for j in range(n_layers):
-                thk = self.smooth_profile[j, 0]
-                vs = self.smooth_profile[j, 1]
+                thk = self._base_profile[j, 0]
+                vs = self._base_profile[j, 1]
                 if vs < vs_prev + Vs_increment:
                     thk_tmp += thk
                 else:
                     vs_prev += Vs_increment
                     thk_array.append(thk_tmp)
                     thk_tmp = 0
-            discr_prof = self.get_smooth_profile()\
+            discr_prof = self.base_profile\
                              .query_Vs_given_thk(np.array(thk_array),
                                                  as_profile=True,
                                                  at_midpoint=at_midpoint)
             prof_ = discr_prof.vs_profile
 
         if show_fig:  # TODO: properly truncate Vs profiles at basin depth
-            title = '$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' % (self.Vs30, self.z1)
-            fig, ax, _ = sr.plot_Vs_profile(self.smooth_profile, label='smooth')
+            title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
+            fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='smooth')
             sr.plot_Vs_profile(prof_, fig=fig, ax=ax, c='orange', alpha=0.85,
                                label='discretized')
             ax.set_title(title)
@@ -378,8 +382,8 @@ class SVM():
         ''' ----------------   Part 2   ------------------------------------'''
         ''' Calculate baseline Vs profile based on layering & smooth profile'''
         baseline_Vs = np.zeros(len(thk))
-        Vs_analyt = self.smooth_profile[:, 1]
-        thk_array_analyt = self.smooth_profile[:, 0]
+        Vs_analyt = self._base_profile[:, 1]
+        thk_array_analyt = self._base_profile[:, 0]
         z_array_analyt = sr.thk2dep(thk_array_analyt, midpoint=False)
 
         for i in range(len(thk)):  # query Vs value where z = z_mid[j]
@@ -471,10 +475,10 @@ class SVM():
         '''-------------  Part 5: Plot Vs profile (optional) ---------------'''
         if show_fig is True:
             hf1,ha1,hl1 = sr.plot_Vs_profile(Vs_profile)
-            ___,___,hl2 = sr.plot_Vs_profile(self.smooth_profile,hf1,ha1)
+            ___,___,hl2 = sr.plot_Vs_profile(self._base_profile,hf1,ha1)
             plt.setp(hl1,linewidth=1.25,color='r')
             plt.legend([hl1,hl2],['Stochastic','Smooth'],loc='best',fontsize=11)
-            ha1.set_title('$V_{S30}$=%.1fm/s, $z_{1000}$=%.1fm' %
+            ha1.set_title('$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' %
                           (self.Vs30, self.z1))
             ha1.set_xlim(0, np.max(np.append(Vs_profile[:, 1], 1000)) * 1.1)
 

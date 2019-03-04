@@ -686,17 +686,7 @@ def plot_Vs_profile(vs_profile, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100,
     -------
     fig, ax, h_line: the figure object, axes object, and line object
     '''
-
-    if fig is None:
-        fig = pl.figure(figsize=figsize, dpi=dpi, facecolor='w', edgecolor='k')
-    else:
-        pl.figure(fig.number)
-
-    if ax is None:
-        ax = plt.axes()
-    else:
-        ax = ax
-
+    fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
     hlp.check_two_column_format(vs_profile, at_least_two_columns=True,
                                 name='`vs_profile`')
 
