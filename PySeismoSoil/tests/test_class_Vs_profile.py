@@ -61,6 +61,42 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof_2 = Vs_Profile(data_2)
         self.assertAlmostEqual(prof_2.get_z1(), 15)
 
+    def test_truncate(self):
+        data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
+        prof = Vs_Profile(data)
+
+        # Case 1: Truncation in the middle of a layer
+        new_prof = prof.truncate(depth=8, Vs=2000)
+        benchmark = np.array([[5, 3, 0], [200, 500, 2000]]).T
+        self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
+
+        # Case 2: Truncation on the boundary of a layer
+        new_prof = prof.truncate(depth=9, Vs=2000)
+        benchmark = np.array([[5, 4, 0], [200, 500, 2000]]).T
+        self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
+
+        # Case 3: Truncation beyond the total depth of original profile
+        new_prof = prof.truncate(depth=30, Vs=2000)
+        benchmark = np.array([[5, 4, 3, 2, 16, 0],
+                              [200, 500, 700, 1000, 1200, 2000]]).T
+        self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
+
+        # Case 3b: Truncation beyond the total depth of original profile
+        data_ = np.array([[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1500]]).T
+        prof = Vs_Profile(data_)
+        new_prof = prof.truncate(depth=30, Vs=2000)
+        benchmark = np.array([[5, 4, 3, 2, 1, 15, 0],
+                              [200, 500, 700, 1000, 1200, 1500, 2000]]).T
+        self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
+
+        # Case 3c: Truncation beyond the total depth of original profile
+        data_ = np.array([[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1200]]).T
+        prof = Vs_Profile(data_)
+        new_prof = prof.truncate(depth=30, Vs=2000)
+        benchmark = np.array([[5, 4, 3, 2, 1, 15, 0],
+                              [200, 500, 700, 1000, 1200, 1200, 2000]]).T
+        self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
+
     def test_query_Vs_at_depth(self):
         prof = Vs_Profile('./files/profile_FKSH14.txt')
 
