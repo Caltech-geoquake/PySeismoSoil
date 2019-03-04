@@ -196,6 +196,7 @@ class SVM():
         # --------  Attributes   -------------------
         self.Vs30 = target_Vs30
         self.z1 = z1
+        self._bedrock_Vs = Vs_cap
         self._base_profile = vs_profile  # for use within class methods
         self.base_profile = Vs_Profile(vs_profile)  # for external users
 
@@ -262,7 +263,6 @@ class SVM():
             discr_prof = self.base_profile\
                              .query_Vs_given_thk(fixed_thk, as_profile=True,
                                                  at_midpoint=at_midpoint)
-            prof_ = discr_prof.vs_profile
         else:  # Vs_increment is not None
             max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
@@ -281,13 +281,17 @@ class SVM():
                     vs_prev += Vs_increment
                     thk_array.append(thk_tmp)
                     thk_tmp = 0
+            # end "for j in range(n_layers):"
             discr_prof = self.base_profile\
                              .query_Vs_given_thk(np.array(thk_array),
                                                  as_profile=True,
                                                  at_midpoint=at_midpoint)
-            prof_ = discr_prof.vs_profile
+        # end "if fixed_thk is not None:"
 
-        if show_fig:  # TODO: properly truncate Vs profiles at basin depth
+        discr_prof = discr_prof.truncate(depth=self.z1, Vs=self._bedrock_Vs)
+        prof_ = discr_prof.vs_profile
+
+        if show_fig:
             title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
             fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='smooth')
             sr.plot_Vs_profile(prof_, fig=fig, ax=ax, c='orange', alpha=0.85,
