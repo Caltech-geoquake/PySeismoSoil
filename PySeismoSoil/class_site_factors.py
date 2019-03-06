@@ -485,7 +485,7 @@ class Site_Factors():
                 ax.set_xlabel('Frequency [Hz]')
             else:
                 ax.set_xlabel('Period [sec]')
-            ax.set_ylabel('Amplification')
+            ax.set_ylabel('Amplification or phase shift')
 
         if phase_flag:
             fig.tight_layout(pad=0.3, h_pad=0.3, w_pad=0.3, rect=[0, 0.03, 1, 0.94])
