@@ -438,9 +438,9 @@ class SVM():
             deviation of Vs, but rather the two parameters of the log-normal
             distribution that Vs is assumed to follow.)'''
         if not use_Toros_std:
-            std_analyt_Vs = -89.7085 + 1.6434 * z_array_analyt + 0.5204 * self.Vs30  # Eq (9)
-            std_analyt_Vs = np.maximum(0.5, std_analyt_Vs)  # because std < 0 when Vs30 is too low
-            _, sigma_lognormal_Vs = SVM._lognstat_back_calc(Vs_analyt, std_analyt_Vs)
+            sigma_lognormal_Vs = -7.769e-10 * Vs_analyt ** 3 \
+                                 + 1.597e-06 * Vs_analyt ** 2 \
+                                 - 0.0008724 * Vs_analyt + 0.4233
         else:
             sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape) # page 8 of Toro (1995)
 
@@ -505,39 +505,6 @@ class SVM():
         '''
         thk = np.array(thk)
         return 1.125 * (z_top + thk/2.0)**0.620 - thk
-
-    #%%========================================================================
-    @staticmethod
-    def _lognstat_back_calc(mean_value, variance_value):
-        '''
-        Calculates mu and sigma of a log-normal distribution from the mean value
-        and the variance value of the distribution.
-
-        The formulas come from: http://www.mathworks.com/help/stats/lognstat.html
-
-        Parameters
-        ----------
-        mean_value : float or array_like
-            The mean value of the log-normal distribution
-        variance_value : float or array_like
-            The variance of the log-normal distribution
-
-        Returns
-        -------
-        mu : float or array_like
-            The mean of the associated normal distribution (i.e., ln(X), where
-            X is the random variable that follows the log-normal distribution.)
-        sigma : float or array_like
-            The standard deviation of the associated normal distribution.
-        '''
-
-        m = mean_value
-        v = variance_value
-
-        mu = np.log(m**2.0 / np.sqrt(v + m**2.0))
-        sigma = np.sqrt(np.log(v / m**2.0 + 1))
-
-        return mu, sigma
 
     #%%========================================================================
     @staticmethod
