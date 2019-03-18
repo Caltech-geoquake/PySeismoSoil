@@ -21,8 +21,8 @@ class Test_Class_Frequency_Spectrum(unittest.TestCase):
 
         self.assertAlmostEqual(fs.raw_df, df_bench)
         self.assertTrue(np.allclose(fs.raw_data, fs_bench))
-        self.assertAlmostEqual(fs.spectrum_1col[0], 1)
-        self.assertAlmostEqual(fs.spectrum_1col[-1], 7)
+        self.assertAlmostEqual(fs.spectrum[0], 1)
+        self.assertAlmostEqual(fs.spectrum[-1], 7)
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Frequency_Spectrum)
