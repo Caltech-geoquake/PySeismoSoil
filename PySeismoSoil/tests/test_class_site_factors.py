@@ -128,8 +128,10 @@ class Test_Class_Site_Factors(unittest.TestCase):
     def test_interp_plots(self):
         vs30, z1000, pga = 365, 247, 0.75
         sf = SF(vs30, z1000, pga)
+        sf.get_both_amplf_and_phase(show_interp_plots=True)
         sf.get_amplification(Fourier=False, show_interp_plots=True)
         sf.get_amplification(Fourier=True, show_interp_plots=True)
+        sf.get_amplification(method='eq_hh', Fourier=True, show_interp_plots=True)
         sf.get_phase_shift(show_interp_plots=True)
 
 if __name__ == '__main__':

@@ -148,7 +148,7 @@ class Site_Factors():
 
         Parmeters
         ---------
-        method : {'nl_hh', 'eq_hh', 'eq_kz'}
+        method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended
         show_interp_plots : bool
@@ -162,7 +162,7 @@ class Site_Factors():
         '''
         amplif = self.get_amplification(method=method, Fourier=True,
                                         show_interp_plots=show_interp_plots)
-        phase = self.get_phase_shift(method=method,
+        phase = self.get_phase_shift(method='eq_hh',  # always use eq_hh
                                      show_interp_plots=show_interp_plots)
         return amplif, phase
 
@@ -208,9 +208,9 @@ class Site_Factors():
             z1000_grid = Site_Factors.z1000_array[z1000_i]
             PGA_grid = Site_Factors.PGA_array[PGA_i]
             x, y  = Site_Factors._query(amplif_or_phase,
-                                         Vs30_grid, z1000_grid, PGA_grid,
-                                         method=method, Fourier=Fourier,
-                                         data_dir=data_dir)
+                                        Vs30_grid, z1000_grid, PGA_grid,
+                                        method=method, Fourier=Fourier,
+                                        data_dir=data_dir)
             points.append((Vs30_grid, z1000_grid, PGA_grid))
             y_list.append(y)
 
@@ -480,7 +480,7 @@ class Site_Factors():
             ax1.set_xlabel('Frequency [Hz]')
             ax1.set_ylabel('Amplification')
 
-            ax2.semilogx(T_or_freq, phase_interp, 'k--', lw=2.5, label='Interpolated')
+            ax2.plot(T_or_freq, phase_interp, 'k--', lw=2.5, label='Interpolated')
             ax2.grid(ls=':')
             ax2.set_xlabel('Frequency [Hz]')
             ax2.set_ylabel('Phase shift')
