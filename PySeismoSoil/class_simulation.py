@@ -6,18 +6,16 @@ from .class_ground_motion import Ground_Motion
 from .class_Vs_profile import Vs_Profile
 
 #%%============================================================================
-class Simulator():
+class Simulation():
     '''
-    Class implementatino of a site response simulator
+    Class implementatino of a base site response simulation
 
     Parameters
     ----------
-    input_motion : str or PySeismoSoil.class_ground_motion.Ground_Motion
-        Input ground motion. Either a file name (as a str) containing time
-        and acceleration in two columns, or a Ground_Motion object.
-    soil_profile : str or PySeismoSoil.class_Vs_profile.Vs_Profile
-        Soil profile. Either a file name (as a str) containing at least two
-        columns (thickness and Vs), or a Vs_Profile object
+    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+        Input ground motion
+    soil_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+        Soil profile
 
     Attributes
     ----------
@@ -27,11 +25,6 @@ class Simulator():
         Soil profile
     '''
     def __init__(self, input_motion, soil_profile):
-
-        if isinstance(input_motion, str):
-            input_motion = Ground_Motion(input_motion, 'm/s/s')
-        if isinstance(soil_profile, str):
-            soil_profile = Vs_Profile(soil_profile)
 
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` need to be an object of the '
@@ -44,9 +37,9 @@ class Simulator():
         self.soil_profile = soil_profile
 
 #%%============================================================================
-class Linear_Simulator(Simulator):
+class Linear_Simulation(Simulation):
     '''
-    Linear site response simulator
+    Linear site response simulation
     '''
     def run(self, boundary='elastic', show_fig=False, deconv=False):
         '''
