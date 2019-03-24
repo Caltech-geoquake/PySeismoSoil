@@ -24,6 +24,10 @@ class Curve():
         stress, or G/Gmax).
     strain_unit : {'1', '%'}
         The unit of the strain
+    interpolate : bool
+        Whether to interpolate the input curve or not. If False, the following
+        several parameters (min_strain, max_strain, n_pts, log_scale) have
+        no effects
     min_strain, max_strain : float
         Minimum and maximum strain value of the strain array. The raw `data` is
         internally interpolated at a strain array defined by `min_strain`,
@@ -48,15 +52,19 @@ class Curve():
     values : numpy.array
         The interpolated values; same shape as `strain`
     '''
-    def __init__(self, data, strain_unit='%', min_strain=0.0001, max_strain=10.,
-                 n_pts=50, log_scale=True, ensure_non_negative=True):
+    def __init__(self, data, strain_unit='%', interpolate=False,
+                 min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+                 ensure_non_negative=True):
 
         hlp.check_two_column_format(data, '`curve`',
                                     ensure_non_negative=ensure_non_negative)
 
-        strain, values = hlp.interpolate(min_strain, max_strain, n_pts,
-                                         data[:, 0], data[:, 1],
-                                         log_scale=log_scale)
+        if interpolate:
+            strain, values = hlp.interpolate(min_strain, max_strain, n_pts,
+                                             data[:, 0], data[:, 1],
+                                             log_scale=log_scale)
+        else:
+            strain, values = data[:, 0], data[:, 1]
 
         if strain_unit not in ['1', '%']:
             raise ValueError("`strain_unit` must be '1' or '%'.")
