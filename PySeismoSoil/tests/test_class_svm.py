@@ -75,23 +75,15 @@ class Test_Class_SVM(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'length of `array` needs to'):
             SVM._find_index_closest([], 2)
 
-def test_svm_profiles_plotting():
-    '''
-    Do not indent this function, because I don't want to produce figures
-    when running All_unit_test.py.
-    '''
-    vs30 = 256  # m/s
-    z1 = 200  # m
-
-    svm = SVM(vs30, z1, show_fig=False)
-    svm.get_discretized_profile(fixed_thk=20, show_fig=True)
-    svm.get_discretized_profile(Vs_increment=30, show_fig=True)
-    svm.get_randomized_profile(show_fig=True)
-
-    return None
+    def test_svm_profiles_plotting(self):
+        vs30 = 256  # m/s
+        z1 = 200  # m
+        svm = SVM(vs30, z1, show_fig=False)
+        svm.get_discretized_profile(fixed_thk=20, show_fig=True)
+        svm.get_discretized_profile(Vs_increment=30, show_fig=True)
+        svm.get_randomized_profile(show_fig=True)
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_SVM)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
 
-    test_svm_profiles_plotting()

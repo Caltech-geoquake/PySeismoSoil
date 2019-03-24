@@ -19,17 +19,26 @@ class Test_Class_Curves(unittest.TestCase):
                          12.686, 18.102, 21.005, 21.783, 21.052]
         self.assertTrue(np.allclose(damping_data, damping_bench))
 
+    def test_plot(self):
+        filename = './files/curve_FKSH14.txt'
+        data = np.genfromtxt(filename)
+        curve = Curve(data[:, 2:4])
+        curve.plot(marker='.')
+
+        curves = Multiple_Damping_Curves(filename)
+        curves.plot()
+
     def test_HH_x_fit_single_layer(self):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Damping_Curve(data[:, 2:4])
 
-        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=False,
+        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
                                    use_scipy=False)
         self.assertEqual(len(hhx), 9)
         self.assertEqual(hhx.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
                                       's', 'Gmax', 'mu', 'Tmax', 'd'})
 
-        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=False,
+        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
                                    use_scipy=True)
         self.assertEqual(len(hhx), 9)
         self.assertEqual(hhx.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
@@ -39,12 +48,12 @@ class Test_Class_Curves(unittest.TestCase):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Damping_Curve(data[:, 2:4])
 
-        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=False,
+        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=True,
                                    use_scipy=False)
         self.assertEqual(len(h4x), 4)
         self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
-        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=False,
+        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=True,
                                    use_scipy=True)
         self.assertEqual(len(h4x), 4)
         self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})

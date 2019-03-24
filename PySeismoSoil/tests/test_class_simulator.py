@@ -10,7 +10,7 @@ class Test_Class_Simulator(unittest.TestCase):
         input_motion = './files/sample_accel.txt'
         soil_profile = './files/profile_FKSH14.txt'
         ls = Linear_Simulator(input_motion, soil_profile)
-        output = ls.run()
+        output = ls.run(show_fig=True)
 
         gm_input = Ground_Motion(input_motion, 'm/s/s')
         self.assertEqual(output.accel.shape, gm_input.accel.shape)

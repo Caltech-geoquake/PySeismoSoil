@@ -125,21 +125,13 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(isinstance(phase, FS))
         self.assertTrue(np.allclose(phase.raw_data[0, 1], 0.0, atol=0.07))
 
-
-def test_interp_plots(vs30, z1000, pga):
-    '''
-    This isn't part of the unit test, because it plots figures. Just a visual
-    check that the results look OK.
-
-    Do not indent this function.
-    '''
-    sf = SF(vs30, z1000, pga)
-    sf.get_amplification(Fourier=False, show_interp_plots=True)
-    sf.get_amplification(Fourier=True, show_interp_plots=True)
-    sf.get_phase_shift(show_interp_plots=True)
+    def test_interp_plots(self):
+        vs30, z1000, pga = 365, 247, 0.75
+        sf = SF(vs30, z1000, pga)
+        sf.get_amplification(Fourier=False, show_interp_plots=True)
+        sf.get_amplification(Fourier=True, show_interp_plots=True)
+        sf.get_phase_shift(show_interp_plots=True)
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Site_Factors)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    test_interp_plots(365, 247, 0.75)
