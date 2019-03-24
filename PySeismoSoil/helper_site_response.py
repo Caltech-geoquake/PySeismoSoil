@@ -121,7 +121,8 @@ def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
     return vs_queried, thk_array
 
 #%%----------------------------------------------------------------------------
-def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
+def plot_motion(accel, unit='m', fig=None, ax=None, title=None, figsize=(5, 6),
+                dpi=100):
     '''
     Plots acceleration, velocity, and displacement time history from a file
     name of acceleration data
@@ -133,17 +134,22 @@ def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
         two columns (time and accel)
     unit : str
         Unit of acceleration for displaying on the y axis label
-    title : str
-        Title of the figure (optional)
+    fig, ax : mpl.figure.Figure, mpl.axes._subplots.AxesSubplot
+        Figure and axes objects.
+        If provided, the histograms are plotted on the provided figure and
+        axes. If not, a new figure and new axes are created.
     figsize : tuple
         Figure size
     dpi : float
         DPI of the figure
+    title : str
+        Title of the figure (optional)
 
     Returns
     -------
-    fig :
-        The figure object
+    fig, (ax1, ax2, ax3) :
+        Objects of matplotlib figure and axes. (ax1, ax2, ax3) correspond to
+        the three subplots.
     '''
 
     if isinstance(accel, str):
@@ -164,8 +170,9 @@ def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
 
     v, u = num_int(np.column_stack((t,a)))
 
-    fig = plt.figure(figsize=figsize, dpi=dpi)
+    fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
     fig.subplots_adjust(left=0.2)
+    ax.remove()  # remove axes to make room for subplot axes
 
     lw = 1.00
     vl = 'top' if a[pga_index] > 0 else 'bottom'
@@ -177,32 +184,32 @@ def plot_motion(accel, unit='m', title=None, figsize=(5, 6), dpi=100):
     veloc_unit = unit + '/s'
     displ_unit = unit
 
-    plt.subplot(311)
-    plt.plot(t, a, 'b', linewidth=lw)
-    plt.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
+    ax1 = fig.add_subplot(311)
+    ax1.plot(t, a, 'b', linewidth=lw)
+    ax1.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
     t_ = t[int(np.min((pga_index + np.round(np.size(t)/40.), np.size(t))))]
-    plt.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
-    plt.grid(ls=':')
-    plt.xlim(np.min(t), np.max(t))
-    plt.ylabel('Acceleration [' + accel_unit + ']')
-    plt.title(title)
+    ax1.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
+    ax1.grid(ls=':')
+    ax1.set_xlim(np.min(t), np.max(t))
+    ax1.set_ylabel('Acceleration [' + accel_unit + ']')
+    ax1.set_title(title)
 
-    plt.subplot(312)
-    plt.plot(t, v[:,1], 'b', linewidth=lw)
-    plt.grid(ls=':')
-    plt.xlim(np.min(t), np.max(t))
-    plt.ylabel('Velocity [%s]' % veloc_unit)
+    ax2 = fig.add_subplot(312)
+    ax2.plot(t, v[:,1], 'b', linewidth=lw)
+    ax2.grid(ls=':')
+    ax2.set_xlim(np.min(t), np.max(t))
+    ax2.set_ylabel('Velocity [%s]' % veloc_unit)
 
-    plt.subplot(313)
-    plt.plot(t, u[:,1], 'b', linewidth=lw)
-    plt.xlabel('Time [sec]')
-    plt.grid(ls=':')
-    plt.xlim(np.min(t), np.max(t))
-    plt.ylabel('Displacement [%s]' % displ_unit)
+    ax3 = fig.add_subplot(313)
+    ax3.plot(t, u[:,1], 'b', linewidth=lw)
+    ax3.set_xlabel('Time [sec]')
+    ax3.grid(ls=':')
+    ax3.set_xlim(np.min(t), np.max(t))
+    ax3.set_ylabel('Displacement [%s]' % displ_unit)
 
-    plt.tight_layout(pad=0.3)
+    fig.tight_layout(pad=0.3)
 
-    return fig
+    return fig, (ax1, ax2, ax3)
 
 #%%----------------------------------------------------------------------------
 def num_int(accel):

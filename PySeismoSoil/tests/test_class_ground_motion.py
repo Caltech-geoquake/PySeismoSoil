@@ -1,7 +1,9 @@
 # Author: Jian Shi
 
+import os
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
 
 from PySeismoSoil.class_ground_motion import Ground_Motion as GM
 
@@ -93,7 +95,18 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(gm.veloc, v_bench))
         self.assertTrue(np.allclose(gm.displ, u_bench))
 
+    def test_plot(self):
+        filename = './files/sample_accel.txt'
+        gm = GM(filename, unit='m')
 
+        fig, axes = gm.plot()  # automatically generate fig/ax objects
+        self.assertTrue(isinstance(axes, tuple))
+        self.assertEqual(len(axes), 3)
+        self.assertEqual(axes[0].title.get_text(), os.path.split(filename)[1])
+
+        fig2 = plt.figure(figsize=(8, 8))
+        fig2_, axes = gm.plot(fig=fig2)  # feed an external figure object
+        self.assertTrue(np.allclose(fig2_.get_size_inches(), (8, 8)))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Ground_Motion)
