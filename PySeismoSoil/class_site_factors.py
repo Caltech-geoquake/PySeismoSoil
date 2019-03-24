@@ -495,7 +495,7 @@ class Site_Factors():
 
         if phase_flag:
             fig.tight_layout(pad=0.3, h_pad=0.3, w_pad=0.3, rect=[0, 0.03, 1, 0.94])
-        fig.suptitle('Vs30 = %d m/s, Z1.0 = %d m, PGA = %.2gg' % query_point)
+        fig.suptitle('$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point)
 
         bbox_anchor_loc = (1., 0.02, 1., 1.02)
         plt.legend(bbox_to_anchor=bbox_anchor_loc, loc='center left')
