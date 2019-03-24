@@ -79,7 +79,7 @@ class Site_Factors():
 
         Parmeters
         ---------
-        method : {'nl_hh', 'eq_hh', 'eq_kz'}
+        method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended
         Fourier : bool
@@ -98,6 +98,9 @@ class Site_Factors():
             is still (freq, amplif). The user can take the reciprocal of
             frequency to get period.)
         '''
+        if method not in {'nl_hh', 'eq_hh'}:
+            raise ValueError("Currently, only 'nl_hh' and 'eq_hh' are valid.")
+
         period_or_freq, amplif \
             = self._get_results('amplif', self.dir_amplif,
                                  method=method, Fourier=Fourier,
@@ -117,9 +120,9 @@ class Site_Factors():
 
         Parmeters
         ---------
-        method : {'nl_hh', 'eq_hh', 'eq_kz'}
+        method : {'eq_hh'}
             Which site response simulation method was used to calculate the
-            amplification factors. 'nl_hh' is recommended
+            amplification factors. Currently, only 'eq_hh' is valid.
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
             curves"
@@ -129,6 +132,9 @@ class Site_Factors():
         phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
             Phase shift as a function of frequency
         '''
+        if method not in {'eq_hh'}:
+            raise ValueError("Currently, only 'eq_hh' is valid.")
+
         freq, phase_shift \
             = self._get_results('phase', self.dir_phase,
                                  method=method, Fourier=True,
