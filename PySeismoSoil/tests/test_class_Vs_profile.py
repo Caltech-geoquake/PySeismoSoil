@@ -2,6 +2,7 @@
 
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
 
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
@@ -19,6 +20,14 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof = Vs_Profile(data)
         self.prof = prof
         super(Test_Class_Vs_Profile, self).__init__(methodName=methodName)
+
+    def test_plot(self):
+        self.prof.plot(c='r', ls='--')
+
+        fig = plt.figure(figsize=(6, 6))
+        ax = plt.axes()
+        self.prof.plot(fig=fig, ax=ax, label='profile')
+        ax.legend(loc='best')
 
     def test_add_halfspace(self):
         # Test case 1: already has a half space

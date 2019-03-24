@@ -57,6 +57,12 @@ class Test_Class_HH_Param(unittest.TestCase):
         # The error could be high, due to curve-fitting errors of genetic algorithms
         self.assertTrue(np.allclose(damping, damping_bench, atol=7.))
 
+    def test_plot_curves(self):
+        data = {'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
+                'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9}
+        hhp = HH_Param(data)
+        hhp.plot_curves()
+
     def test_hh_param_multi_layer(self):
         HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
         self.assertEqual(len(HH_x), 5)

@@ -1,5 +1,6 @@
 # Author: Jian Shi
 
+import os
 import unittest
 import numpy as np
 
@@ -23,6 +24,12 @@ class Test_Class_Frequency_Spectrum(unittest.TestCase):
         self.assertTrue(np.allclose(fs.raw_data, fs_bench))
         self.assertAlmostEqual(fs.spectrum[0], 1)
         self.assertAlmostEqual(fs.spectrum[-1], 7)
+
+    def test_plot(self):
+        txt_filename = './files/two_column_data_example.txt'
+        fs = FS(txt_filename, fmin=0.1, fmax=2.5, n_pts=20, log_scale=False)
+        fig, ax = fs.plot()
+        self.assertEqual(ax.title.get_text(), os.path.split(txt_filename)[1])
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Frequency_Spectrum)
