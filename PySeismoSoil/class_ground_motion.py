@@ -1,5 +1,6 @@
 # Author: Jian Shi
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -76,11 +77,18 @@ class Ground_Motion:
         to 95% of peak Arias intensity
     rms_accel, rms_veloc, rms_displ : float
         Root-mean-square acceleration, velocity, and displacement of the motion
+    _path_name, _file_name : str
+        Names of the directory and file of the input data, if a file name
     '''
 
     #--------------------------------------------------------------------------
     def __init__(self, data, unit, motion_type='accel', dt=None, sep='\t',
                  **kwargs_to_genfromtxt):
+
+        if isinstance(data, str):  # a file name
+            self._path_name, self._file_name = os.path.split(data)
+        else:
+            self._path_name, self._file_name = None, None
 
         data_, dt = hlp.read_two_column_stuff(data, delta=dt, sep=sep)
 
@@ -223,14 +231,14 @@ class Ground_Motion:
         return rs
 
     #--------------------------------------------------------------------------
-    def plot(self, show_as_unit='m', figsize=(5,6), dpi=100):
+    def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5,6), dpi=100):
         '''
         Plots acceleration, velocity, and displacement waveforms together.
 
-        Returns the figure object.
+        Returns the figure and axes objects.
         '''
-        if self.file_name:
-            title = self.file_name
+        if self._file_name:
+            title = self._file_name
         else:
             title = ''
 
@@ -241,10 +249,10 @@ class Ground_Motion:
         else:
             raise ValueError('"show_as_unit" can only be "m" or "cm".')
 
-        fig = sr.plot_motion(accel_, unit=show_as_unit, title=title,
-                             figsize=figsize, dpi=dpi)
+        fig, ax = sr.plot_motion(accel_, unit=show_as_unit, title=title,
+                                 fig=fig, ax=ax, figsize=figsize, dpi=dpi)
 
-        return fig
+        return fig, ax
 
     #--------------------------------------------------------------------------
     def unit_convert(self, unit='m/s/s'):
