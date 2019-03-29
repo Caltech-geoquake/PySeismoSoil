@@ -217,6 +217,13 @@ class Site_Factors():
         y_interp \
             = Site_Factors._interpolate(points, y_list, (Vs30, z1, PGA))
 
+        if Fourier:
+            index_trunc = 139  # truncate at frequency = 20 Hz
+            x = x[:index_trunc + 1]
+            y_interp = y_interp[:index_trunc + 1]
+            for ii in range(len(y_list)):
+                y_list[ii] = y_list[ii][:index_trunc + 1]
+
         if show_interp_plots:
             Site_Factors._plot_interp(points, (Vs30, z1, PGA),
                                       x, y_list, y_interp, Fourier=Fourier)
