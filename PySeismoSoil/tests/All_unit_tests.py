@@ -4,8 +4,8 @@ import unittest
 
 from test_class_svm import Test_Class_SVM
 from test_class_curves import Test_Class_Curves
-from test_class_simulator import Test_Class_Simulator
 from test_class_parameters import Test_Class_HH_Param
+from test_class_simulation import Test_Class_Simulation
 from test_class_Vs_profile import Test_Class_Vs_Profile
 from test_class_site_factors import Test_Class_Site_Factors
 from test_class_ground_motion import Test_Class_Ground_Motion
@@ -21,8 +21,8 @@ TS = unittest.TestSuite()
 
 TS.addTests(unittest.makeSuite(Test_Class_SVM))
 TS.addTests(unittest.makeSuite(Test_Class_Curves))
-TS.addTests(unittest.makeSuite(Test_Class_Simulator))
 TS.addTests(unittest.makeSuite(Test_Class_HH_Param))
+TS.addTests(unittest.makeSuite(Test_Class_Simulation))
 TS.addTests(unittest.makeSuite(Test_Class_Vs_Profile))
 TS.addTests(unittest.makeSuite(Test_Class_Site_Factors))
 TS.addTests(unittest.makeSuite(Test_Class_Ground_Motion))
