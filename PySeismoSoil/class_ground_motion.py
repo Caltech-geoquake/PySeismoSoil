@@ -460,12 +460,13 @@ class Ground_Motion:
 
         Returns
         -------
-        If not inplace:
-            - if show_fig: returns (truncated_accel, figure_object)
-            - if not show_fig: returns truncated_accel
-        If inplace:
-            - if show_fig: returns figure_object
-            - if not show_fig: returns None
+        truncated_accel : Ground_Motion
+            Truncated ground motion. It is set to None, if `inplace` is True.
+        fig, ax :
+            Figure and axes objects
+        (n1, n2) : tuple<int>
+            The indices at which signal is truncated. In other words,
+            truncated_accel = original_accel[n1 : n2]
         '''
 
         if not isinstance(limit, (tuple, list)):
@@ -495,7 +496,7 @@ class Ground_Motion:
         n1 = int(t1 / self.dt)
         n2 = int(t2 / self.dt)
 
-        if n1 < 0:           n1 = 0
+        if n1 < 0: n1 = 0
         if n2 > self.npts: n2 = self.npts
 
         time_trunc = self.accel[:n2-n1, 0]
@@ -503,43 +504,40 @@ class Ground_Motion:
         truncated = np.column_stack((time_trunc, accel_trunc))
 
         if show_fig:
+            ax = [None] * 3
             fig = plt.figure(figsize=(5,6))
             fig.subplots_adjust(left=0.2)
 
-            plt.subplot(3,1,1)
-            plt.plot(self.time, self.accel[:,1], 'gray', lw=1.75, label='original')
-            plt.plot(self.time[n1:n2], truncated[:,1], 'm', lw=1., label='truncated')
-            plt.grid(ls=':')
-            plt.ylabel('Accel.')
-            plt.legend(loc='best')
+            ax[0] = fig.add_subplot(3,1,1)
+            ax[0].plot(self.time, self.accel[:,1], 'gray', lw=1.75, label='original')
+            ax[0].plot(self.time[n1:n2], truncated[:,1], 'm', lw=1., label='truncated')
+            ax[0].grid(ls=':')
+            ax[0].set_ylabel('Accel. [m/s/s]')
+            ax[0].legend(loc='best')
 
-            plt.subplot(3,1,2)
-            plt.plot(self.time, self.veloc[:,1], 'gray', lw=1.75)
-            plt.plot(self.time[n1:n2], sr.numInt(truncated)[0][:,1], 'm', lw=1.)
-            plt.grid(ls=':')
-            plt.ylabel('Veloc.')
+            ax[1].subplot(3,1,2)
+            ax[1].plot(self.time, self.veloc[:,1], 'gray', lw=1.75)
+            ax[1].plot(self.time[n1:n2], sr.num_int(truncated)[0][:,1], 'm', lw=1.)
+            ax[1].grid(ls=':')
+            ax[1].set_ylabel('Veloc. [m/s]')
 
-            plt.subplot(3,1,3)
-            plt.plot(self.time, self.displ[:,1], 'gray', lw=1.75)
-            plt.plot(self.time[n1:n2], sr.numInt(truncated)[1][:,1], 'm', lw=1.)
-            plt.grid(ls=':')
-            plt.ylabel('Displ.')
-            plt.xlabel('Time [sec]')
+            ax[2].subplot(3,1,3)
+            ax[2].plot(self.time, self.displ[:,1], 'gray', lw=1.75)
+            ax[2].plot(self.time[n1:n2], sr.num_int(truncated)[1][:,1], 'm', lw=1.)
+            ax[2].grid(ls=':')
+            ax[2].set_ylabel('Displ. [m]')
+            ax[2].set_xlabel('Time [sec]')
 
-            plt.tight_layout(pad=0.3)
+            fig.tight_layout(pad=0.3)
+        else:
+            fig, ax = None, None
 
         if not inplace:
-            if show_fig:
-                return truncated, fig
-            else:
-                return truncated
+            return Ground_Motion(truncated, unit='m'), fig, ax, (n1, n2)
         else:
             self.time = time_trunc
             self.accel = truncated
-            if show_fig:
-                return fig
-            else:
-                return None
+            return None, fig, ax, (n1, n2)
 
     #--------------------------------------------------------------------------
     def baseline_correct(self, cutoff_freq=0.20, show_fig=False, inplace=False):
