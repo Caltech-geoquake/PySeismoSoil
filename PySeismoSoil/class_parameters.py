@@ -59,6 +59,17 @@ class Parameter(collections.UserDict):
         self.data[key] = item
         return None
 
+    def serialize(self):
+        '''
+        Serializes the parameter values into an array of floats. The order of
+        the parameters are arbitrary, so any subclass of this class is
+        recommended to override this method.
+        '''
+        param_array = []
+        for key, val in self.data.items():
+            param_array.append(val)
+        return np.array(param_array)
+
     def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
         '''
         Get the shear stress array inferred from the set of parameters
@@ -92,13 +103,13 @@ class Parameter(collections.UserDict):
         -------
         The G/Gmax array, with the same shape as the strain array
         '''
-        T_HH = self.get_stress(strain_in_pct=strain_in_pct)
-        if T_HH is None:
+        tau = self.get_stress(strain_in_pct=strain_in_pct)
+        if tau is None:
             print('You did not provide a function to calculate shear stress.')
             return None
         Gmax = self.data['Gmax']
         strain_in_1 = strain_in_pct / 100.
-        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, T_HH, Gmax=Gmax)
+        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
         return GGmax
 
     def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
@@ -118,7 +129,7 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
         damping_in_1 = sr.calc_damping_from_param(self.data, strain_in_pct/100.,
-                                                  hh.tau_HH)
+                                                  self.func_stress)
         return damping_in_1 * 100
 
     def plot_curves(self, figsize=None, dpi=100, **kwargs_to_matplotlib):
@@ -139,9 +150,6 @@ class Parameter(collections.UserDict):
         fig, ax :
             matplotlib objects of the figure and the axes
         '''
-        if self.func_stress is None:
-            print('You did not provide a function to calculate shear stress.')
-            return None
         strain = np.logspace(-2, 1)  # unit: percent
         GGmax = self.get_GGmax(strain)
         damping = self.get_damping(strain)
@@ -178,12 +186,21 @@ class HH_Param(Parameter):
     ----------
     data : dict
         HH model parameters with the keys listed above
+    allowable_keys : set<str>
+        Valid parameter names of the HH model
     '''
     def __init__(self, param_dict):
         allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
                           'mu', 'Tmax', 'd'}
         super(HH_Param, self).__init__(param_dict, func_stress=hh.tau_HH,
                                        allowable_keys=allowable_keys)
+
+    def serialize(self):
+        '''
+        Returns an array of parameter values in the order of:
+        {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
+        '''
+        return hh.serialize_params_to_array(self.data)
 
 #%%============================================================================
 class MKZ_Param(Parameter):
@@ -206,6 +223,13 @@ class MKZ_Param(Parameter):
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
         super(MKZ_Param, self).__init__(param_dict, func_stress=mkz.tau_MKZ,
                                         allowable_keys=allowable_keys)
+
+    def serialize(self):
+        '''
+        Returns an array of parameter values in the order of:
+        {'gamma_ref', 's', 'beta', 'Gmax'}
+        '''
+        return mkz.serialize_params_to_array(self.data)
 
 #%%============================================================================
 class Param_Multi_Layer():
@@ -266,6 +290,30 @@ class Param_Multi_Layer():
     def __delitem__(self, i):
         del self.param_list[i]
         self.n_layer -= 1
+
+    def save_txt(self, filename, precision='%.5g', sep='\t', **kw_to_savetxt):
+        '''
+        Save data as text file.
+
+        Parameters
+        ----------
+        filename : str
+            File name (including path) of the output file
+        precision : str
+            Precision of the numbers to be saved
+        sep : str
+            Delimiter identifier
+        kw_to_savetxt :
+            Additional keyword arguments to pass to numpy.savetxt()
+        '''
+        output = []
+        for param_single_layer in self.param_list:
+            param_array = param_single_layer.serialize()
+            output.append(param_array)
+
+        output_ = np.array(output).T
+        np.savetxt(filename, output_, fmt=precision, delimiter=sep,
+                   **kw_to_savetxt)
 
 #%%============================================================================
 class HH_Param_Multi_Layer(Param_Multi_Layer):
