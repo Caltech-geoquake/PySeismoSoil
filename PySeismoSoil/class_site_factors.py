@@ -36,7 +36,7 @@ class Site_Factors():
 
     Vs30_array = [175, 200, 250, 300, 350, 400, 450, 500, 550, 600,
                   650, 700, 750, 800, 850, 900, 950]
-    z1_array = [8, 16, 24, 36, 75, 150, 300, 450, 600, 750, 900]
+    z1_array = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
     PGA_array = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
 
     #%%------------------------------------------------------------------------
@@ -103,8 +103,8 @@ class Site_Factors():
 
         period_or_freq, amplif \
             = self._get_results('amplif', self.dir_amplif,
-                                 method=method, Fourier=Fourier,
-                                 show_interp_plots=show_interp_plots)
+                                method=method, Fourier=Fourier,
+                                show_interp_plots=show_interp_plots)
         if Fourier:
             freq = period_or_freq
             result = np.column_stack((freq, amplif))
@@ -137,8 +137,8 @@ class Site_Factors():
 
         freq, phase_shift \
             = self._get_results('phase', self.dir_phase,
-                                 method=method, Fourier=True,
-                                 show_interp_plots=show_interp_plots)
+                                method=method, Fourier=True,
+                                show_interp_plots=show_interp_plots)
         return Frequency_Spectrum(np.column_stack((freq, phase_shift)))
 
     #%%------------------------------------------------------------------------

@@ -72,7 +72,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         Vs30, z1000, PGA = 175, 900, 0.05
         locations = SF._find_neighbors(Vs30, z1000, PGA)
         self.assertEqual(locations[0], [0, 1])
-        self.assertEqual(locations[1], [9, 10])
+        self.assertEqual(locations[1], [8, 9])
         self.assertEqual(locations[2], [0, 1])
 
         Vs30, z1000, PGA = 950, 120, 0.01
