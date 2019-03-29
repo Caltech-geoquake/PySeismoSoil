@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 import PySeismoSoil.helper_hh_model as hh
-from PySeismoSoil.class_parameters import HH_Param, HH_Param_Multi_Layer
+from PySeismoSoil.class_parameters import HH_Param, MKZ_Param, HH_Param_Multi_Layer
 
 class Test_Class_HH_Param(unittest.TestCase):
 
@@ -78,6 +78,16 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertTrue(np.allclose(hh.serialize_params_to_array(HH_x_1),
                                     [0.0324457, 1.02664, 0.203758, 44.0942,
                                      0.615992, 8.07508, 187.808, 33.9501, 1]))
+
+    def test_param_serialize(self):
+        HH_x = HH_Param({'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4,
+                         's': 5, 'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9})
+        HH_x_array = HH_x.serialize()
+        self.assertTrue(np.allclose(HH_x_array, [1, 2, 3, 4, 5, 6, 7, 8, 9]))
+
+        H4_x = MKZ_Param({'gamma_ref': 5, 's': 6, 'beta': 7, 'Gmax': 8})
+        H4_x_array = H4_x.serialize()
+        self.assertTrue(np.allclose(H4_x_array, [5, 6, 7, 8]))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_HH_Param)
