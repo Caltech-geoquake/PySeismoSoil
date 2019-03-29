@@ -404,8 +404,11 @@ class Vs_Profile:
         xi, rho = sr.get_xi_rho(np.array([Vs]))
         bedrock = [0, Vs, xi, rho, 0]
         profile_.append(bedrock)  # add half space whose Vs is `Vs`
-
         profile_ = np.array(profile_)
+
+        if profile_[-2, -1] == 0:  # last "material number" before appending is 0
+            profile_[-2, -1] = np.max(profile_[:, -1]) + 1  # require add'l material
+
         return Vs_Profile(profile_)
 
     #--------------------------------------------------------------------------
