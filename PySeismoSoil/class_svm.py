@@ -282,6 +282,14 @@ class SVM():
                     thk_array.append(thk_tmp)
                     thk_tmp = 0
             # end "for j in range(n_layers):"
+
+            #----- If _base_profile has a velocity contrast at the bottom, ----
+            #----- we should include the "half space" layer, i.e., the     ----
+            #----- bottom layer.                                           ----
+            if thk_array[-1] == 0:
+                thk_array[-1] = 0.01
+            #------------------------------------------------------------------
+
             discr_prof = self.base_profile\
                              .query_Vs_given_thk(np.array(thk_array),
                                                  as_profile=True,
