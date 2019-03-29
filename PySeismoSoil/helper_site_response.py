@@ -947,7 +947,8 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
 
 #%%----------------------------------------------------------------------------
 def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
-                   show_fig=False, deconv=False, return_fig_obj=False):
+                   extrap_tf=False, deconv=False, show_fig=False, dpi=100,
+                   return_fig_obj=False):
     '''
     Amplify (or de-amplify) ground motions in the frequency domain. The
     mathematical process behind this function is as follows:
@@ -972,12 +973,18 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         The transfer function only needs to be "single-sided" (see note below.)
     taper : bool
         Whether to taper the input acceleration (using Tukey taper)
-    show_fig : bool
-        Whether or not to show an illustration of how the calculation is
-        carried out.
+    extrap_tf : bool
+        Whether to extrapolate the transfer function if its frequency range
+        does not reach the frequency range implied by the input motion
     deconv : bool
         If `False`, a regular amplification is performed; otherwise, the
         transfer function is "deducted" from the input motion ("deconvolution").
+    show_fig : bool
+        Whether or not to show an illustration of how the calculation is
+        carried out.
+    dpi : int
+        Desired DPI for the figures; only effective when `show_fig` is True
+
     return_fig_obj : bool
         Whether or not to return figure and axis objects to the caller
 
@@ -1005,6 +1012,7 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
     assert(len(transfer_function_single_sided) == 2)
 
     f_array, tf_ss = transfer_function_single_sided
+    hlp.assert_1D_numpy_array(f_array, name='`f_array`')
 
     if isinstance(tf_ss, np.ndarray):
         assert(tf_ss.ndim == 1)
@@ -1026,21 +1034,34 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
     df_tf = f_array[1] - f_array[0]
 
     df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
-    while np.max(f_array) < fmax:  # downsample input_motion to lower fmax
-        input_motion = input_motion[::2, :]
-        df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
+    if extrap_tf:
+        if np.max(f_array) < fmax:  # `f_array` does not cover `fmax`
+            phase_slope = phase_ss[-1] / f_array[-1]  # average slope of phase
+            f_array = np.append(f_array, fmax)
+            amp_ss = np.append(amp_ss, amp_ss[-1])
+            # extrapolate phase knowing that it is a straight line in general:
+            phase_ss = np.append(phase_ss, phase_slope * fmax)
+        if np.min(f_array) > df:  # `f_array` does not cover fmin (i.e., `df`)
+            f_array = np.append(df, f_array)
+            amp_ss = np.append(1.0, amp_ss)
+            phase_ss = np.append(0.0, phase_ss)
+    else:  # keep downsampling `input_motion` until f_array covers the freq range
+        while np.max(f_array) < fmax:
+            input_motion = input_motion[::2, :]
+            if input_motion.shape[0] <= 1:
+                raise ValueError('The frequency range covered by '
+                                 '`transfer_function_single_sided` does '
+                                 'not cover the frequency range implied in '
+                                 'the `input_motion` (even after downsampling '
+                                 'the `input_motion`). Please make sure to '
+                                 'provide the correct frequency range.')
+            df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
 
-    if np.max(f_array) < fmax:
-        raise ValueError('The maximum frequency of the provided transfer '
-                         'function (%.2g Hz) should be no lower than the '
-                         'Nyquist frequency inferred from the `input_motion` '
-                         '(%.2g Hz).' % (np.max(f_array), fmax) )
-
-    if df_tf != df:  # interpolate amplitude and phase (NOT real and imag parts)
-        amp_ss_interp = np.interp(ref_f_array, f_array, amp_ss)
-        phase_ss_interp = np.interp(ref_f_array, f_array, phase_ss)
-        tf_ss = amp_ss_interp * np.exp(1j * phase_ss_interp)  # reconstruction
-        f_array = ref_f_array
+    # interpolate amplitude and phase (NOT the real/imag parts)
+    amp_ss_interp = np.interp(ref_f_array, f_array, amp_ss)
+    phase_ss_interp = np.interp(ref_f_array, f_array, phase_ss)
+    tf_ss = amp_ss_interp * np.exp(1j * phase_ss_interp)  # reconstruction
+    f_array = ref_f_array
 
     tf_ss[0] = np.real(tf_ss[0])  # see note (1) below
     if n % 2 == 0:  # if n is even
@@ -1086,16 +1107,21 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
 
     #---------Plot comparisons-------------------
     if show_fig:
-        fig = plt.figure(figsize=(8, 4.5))
+        blue = '#3182bd'
+        red = '#ef3b2c'
+        alpha = 0.7
+        alpha_ = 0.85
+
+        fig = plt.figure(figsize=(8, 4.5), dpi=dpi)
         ax = []
 
         ax_ = plt.subplot2grid((2,3), (0,0), colspan=3)
         if np.max(np.abs(resp)) >= np.max(np.abs(a)):
-            plt.plot(t,resp,'b',label='Output')
-            plt.plot(t,a,'r',label='Input',alpha=0.8)
+            plt.plot(t,resp,c=blue,label='Output')
+            plt.plot(t,a,c=red,label='Input',alpha=alpha)
         else:
-            plt.plot(t,a,'r',label='Input')
-            plt.plot(t,resp,'b',label='Output',alpha=0.8)
+            plt.plot(t,a,c=red,label='Input',alpha=alpha_)
+            plt.plot(t,resp,c=blue,label='Output',alpha=alpha_)
         plt.grid(ls=':')
         plt.legend(loc='upper right')
         plt.xlim(min(t),max(t))
@@ -1117,7 +1143,7 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         ax.append(ax_)
 
         ax_ = plt.subplot2grid((2,3), (1,1))
-        plt.semilogx(f_array, phase_ss_interp, 'k')
+        plt.plot(f_array, phase_ss_interp, 'k')
         #plt.xlim(0.1, max(f_array))
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('phase(TF)')
@@ -1125,8 +1151,8 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         ax.append(ax_)
 
         ax_ = plt.subplot2grid((2,3), (1,2))
-        plt.semilogx(f_array, RESP_ds, 'b', label='Output')
-        plt.loglog(f_array, A_ds, 'r--', label='Input',alpha=0.8)
+        plt.semilogx(f_array, RESP_ds, c=blue, label='Output')
+        plt.loglog(f_array, A_ds, c=red, label='Input',alpha=alpha)
         plt.legend(loc='best')
         #plt.xlim(0.1, max(f_array))
         plt.xlabel('Frequency [Hz]')
@@ -1238,6 +1264,10 @@ def _get_freq_interval(input_motion):
 
     t = input_motion[:,0]
     a = input_motion[:,1]
+
+    if len(a) <= 1:
+        raise ValueError('`input_motion` only contains one data point. '
+                         'It needs at least two data points.')
 
     dt = float(t[1] - t[0])  # sampling time interval
     fs = 1.0/dt  # sampling freq
