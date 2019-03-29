@@ -1755,6 +1755,9 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
         The optimization result: an array of parameters that gives the lowest
         loss
     '''
+    if suppress_warnings:
+        import warnings  # TODO: enable setting it from methods that calls this function
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     if use_scipy:
         from scipy.optimize import differential_evolution as diff_evol
@@ -1778,10 +1781,6 @@ def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
         import deap.base
         import deap.algorithms
         import deap.tools
-
-        if suppress_warnings:
-            import warnings
-            warnings.filterwarnings("ignore", category=RuntimeWarning)
 
         def loss_function__(param):  # because DEAP requires (loss, ) as output
             return (loss_function(param, damping_data), )
