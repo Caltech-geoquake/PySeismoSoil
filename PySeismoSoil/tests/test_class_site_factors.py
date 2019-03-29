@@ -125,6 +125,63 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(isinstance(phase, FS))
         self.assertTrue(np.allclose(phase.raw_data[0, 1], 0.0, atol=0.1))
 
+        # test out-of-bound values (not lenient)
+        with self.assertRaisesRegex(ValueError, 'Vs30 should be between'):
+            SF(174, 125, 0.3, lenient=False)
+        with self.assertRaisesRegex(ValueError, 'z1_in_m should be between'):
+            SF(180, 901, 0.3, lenient=False)
+        with self.assertRaisesRegex(ValueError, 'PGA should be between'):
+            SF(180, 650, 1.6, lenient=False)
+
+        # test invalid combinations (not lenient)
+        with self.assertRaisesRegex(ValueError, 'combination not valid'):
+            SF(650, 900, 1.0, lenient=False)
+
+        # test lenient cases: out-of-bound Vs30
+        sf1 = SF(170, 125, 0.3, lenient=True)
+        sf2 = SF(175, 125, 0.3)
+        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
+                                    sf2.get_amplification().spectrum))
+        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
+                                    sf2.get_phase_shift().spectrum))
+
+        sf1 = SF(980, 10, 0.3, lenient=True)
+        sf2 = SF(950, 10, 0.3)
+        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
+                                    sf2.get_amplification().spectrum))
+        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
+                                    sf2.get_phase_shift().spectrum))
+
+        # test lenient cases: out-of-bound z1
+        sf1 = SF(275, 5, 0.3, lenient=True)
+        sf2 = SF(275, 8, 0.3)
+        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
+                                    sf2.get_amplification().spectrum))
+        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
+                                    sf2.get_phase_shift().spectrum))
+
+        sf1 = SF(275, 980, 0.3, lenient=True)
+        sf2 = SF(275, 900, 0.3)
+        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
+                                    sf2.get_amplification().spectrum))
+        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
+                                    sf2.get_phase_shift().spectrum))
+
+        # test lenient cases: out-of-bound PGA
+        sf1 = SF(300, 120, 0.008, lenient=True)
+        sf2 = SF(300, 120, 0.01)
+        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
+                                    sf2.get_amplification().spectrum))
+        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
+                                    sf2.get_phase_shift().spectrum))
+
+        sf1 = SF(300, 120, 1.75, lenient=True)
+        sf2 = SF(300, 120, 1.5)
+        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
+                                    sf2.get_amplification().spectrum))
+        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
+                                    sf2.get_phase_shift().spectrum))
+
     def test_interp_plots(self):
         vs30, z1000, pga = 365, 247, 0.75
         sf = SF(vs30, z1000, pga)
