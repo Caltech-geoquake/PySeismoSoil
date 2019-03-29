@@ -58,13 +58,13 @@ class Site_Factors():
             if not lenient:
                 raise ValueError('z1_in_m should be between [8, 900] m')
             else:
-                z1_in_m = 8 if z1_in_m < 8 else 1000
+                z1_in_m = 8 if z1_in_m < 8 else 900
         if 3 in status:
             if not lenient:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
             else:
                 PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
-        if 4 in status:
+        if 4 in status:  # TODO: add leniency for out-of-bound combinations
             raise ValueError('Vs30 and z1 combination not valid')
 
         self.Vs30 = Vs30_in_meter_per_sec
