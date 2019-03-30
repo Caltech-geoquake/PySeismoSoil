@@ -37,7 +37,7 @@ class Vs_Profile:
         If True, add a "half space" (represented by a layer of 0 m
         thickness) at the bottom, if such a layer does not already
         exist.
-
+    xi_rho_formula : {1, 2, 3}
     **kwargs_to_genfromtxt :
         Any extra keyword arguments will be passed to numpy.genfromtxt()
         function for loading the data from the hard drive (if applicable).
@@ -60,7 +60,7 @@ class Vs_Profile:
 
     #--------------------------------------------------------------------------
     def __init__(self, data, damping_unit='1', density_unit='kg/m^3', sep='\t',
-                 add_halfspace=False, **kwargs_to_genfromtxt):
+                 add_halfspace=False, xi_rho_formula=3, **kwargs_to_genfromtxt):
 
         if isinstance(data, str):  # "data" is a file name
             self._path_name, self._file_name = os.path.split(data)
@@ -83,7 +83,7 @@ class Vs_Profile:
         nr_layers, nr_col = data_.shape
 
         if nr_col == 2:
-            xi, rho = sr.get_xi_rho(vs, formula_type=1)
+            xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if density_unit in ['g/cm^3', 'g/cm3']:
                 rho /= 1000.0  # kg/m^3 --> g/cm^3
             if damping_unit == '%':
