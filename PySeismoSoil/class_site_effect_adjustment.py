@@ -94,6 +94,8 @@ class Site_Effect_Adjustment():
             ax[0].set_title('$V_{S30}$=%.1fm/s, $z_1$=%.1fm, '
                             '$\mathrm{PGA}_{\mathrm{input}}$=%.3g$g$' % \
                             (self.Vs30, self.z1, self.PGA_in_g))
+            ax[1].set_ylabel('Amplif. factor')
+            ax[2].set_ylabel('Phase factor [rad]')
         else:
             accel_out = result
 
