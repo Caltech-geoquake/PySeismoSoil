@@ -1677,7 +1677,7 @@ def _fit_single_layer_loop(param):
 
 #%%----------------------------------------------------------------------------
 def ga_optimization(n_param, lower_bound, upper_bound, loss_function,
-                    damping_data, use_scipy=True, pop_size=800, n_gen=100,
+                    damping_data, use_scipy=True, pop_size=100, n_gen=100,
                     eta=0.1, seed=0, crossover_prob=0.8, mutation_prob=0.8,
                     suppress_warnings=True, verbose=False, parallel=False,
                     n_cores=None):
