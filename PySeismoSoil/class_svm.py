@@ -45,12 +45,17 @@ class SVM():
 
     Attributes
     ----------
-    smooth_profile : numpy.ndarray
-        The smooth Vs profile associated with the given Vs30 and z1
     Vs30 : float
         The target Vs30 value, in m/s
     z1 : float
         The basin depth, in meters
+    base_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+        The base Vs profile associated with the given Vs30 and z1
+    bedrock_Vs : float
+        Bedrock Vs, either user-specified (via `Vs_cap`), or automatically
+        chosen as 1,000 m/s, or `None` (if `Vs_cap` is False)
+    has_bedrock_Vs : bool
+        Whether the Vs profile has a bedrock Vs value
     '''
 
     def __init__(self, target_Vs30, z1=350.0, Vs_cap=True, eta=0.90,
@@ -187,18 +192,22 @@ class SVM():
 
         ## END OF "IF Z1000 <= 2.5" CHECK
 
-        # ---------   Show figure    ----------------------
+        # ----------  Show figure  -----------------
         if show_fig is True:
-            sr.plot_Vs_profile(vs_profile,
-                               title='$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % \
-                               (target_Vs30, z1))
+            title_text = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (target_Vs30, z1)
+            sr.plot_Vs_profile(vs_profile, title=title_text)
 
-        # --------  Attributes   -------------------
+        # --------  Attributes  --------------------
         self.Vs30 = target_Vs30
         self.z1 = z1
-        self._bedrock_Vs = Vs_cap
         self._base_profile = vs_profile  # for use within class methods
         self.base_profile = Vs_Profile(vs_profile)  # for external users
+        if Vs_cap is not False:
+            self.bedrock_Vs = Vs_cap  # Vs_cap is already a number, not `True`
+            self.has_bedrock_Vs = True
+        else:
+            self.has_bedrock_Vs = False
+            self.bedrock_Vs = None
 
     #%%========================================================================
     def __repr__(self):
@@ -296,7 +305,7 @@ class SVM():
                                                  at_midpoint=at_midpoint)
         # end "if fixed_thk is not None:"
 
-        discr_prof = discr_prof.truncate(depth=self.z1, Vs=self._bedrock_Vs)
+        discr_prof = discr_prof.truncate(depth=self.z1, Vs=self.bedrock_Vs)
         prof_ = discr_prof.vs_profile
 
         if show_fig:
@@ -488,7 +497,7 @@ class SVM():
         if show_fig is True:
             hf1,ha1,hl1 = sr.plot_Vs_profile(Vs_profile)
             ___,___,hl2 = sr.plot_Vs_profile(self._base_profile,hf1,ha1)
-            plt.setp(hl1,linewidth=1.25,color='r')
+            plt.setp(hl1,linewidth=1.25,color='orange')
             plt.legend([hl1,hl2],['Stochastic','Smooth'],loc='best',fontsize=11)
             ha1.set_title('$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' %
                           (self.Vs30, self.z1))
