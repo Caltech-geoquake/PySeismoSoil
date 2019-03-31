@@ -568,8 +568,21 @@ class Vs_Profile:
         self.plot()
 
     #--------------------------------------------------------------------------
-    def save_vs_profile(self, fname, sep='\t',
-                        precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d']):
+    def to_txt(self, fname, sep='\t',
+               precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d']):
+        '''
+        Write Vs profile to a text file
+
+        Parameters
+        ----------
+        fname : str
+            File name (including path)
+        sep : str
+            Delimiter for the output file
+        precision : list<str>
+            A list of precision specifiers, each for the five columns of the
+            Vs profile
+        '''
 
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
