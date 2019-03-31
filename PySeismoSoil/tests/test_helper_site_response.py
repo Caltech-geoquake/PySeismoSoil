@@ -14,7 +14,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_num_int(self):
-
         accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
         v, u = sr.num_int(accel)
 
@@ -54,7 +53,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_num_diff(self):
-
         v_bench = np.array([[0.1000, 0.1000],
                             [0.2000, 0.3000],
                             [0.3000, 0.6000],
@@ -81,7 +79,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_response_spectra(self):
-
         accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
 
         T_min = 0.01
@@ -106,7 +103,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_find_f0(self):
-
         data, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
         f0 = sr.find_f0(data)
         f0_benchmark = 0.5
@@ -120,7 +116,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_get_xi_rho(self):
-
         vs = np.array([100, 300, 500, 700, 900])
         xi, rho = sr.get_xi_rho(vs, formula_type=1)
         self.assertTrue(np.allclose(xi, [.05, .02, .02, .02, .01]))
@@ -135,7 +130,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_calc_Vs30_and_VsZ(self):
-
         vs_profile = np.array([[10, 10, 10, 10], [200, 300, 400, 500]]).T
         vs30 = sr.calc_Vs30(vs_profile)
         vs40 = sr.calc_VsZ(vs_profile, 40)
@@ -156,14 +150,15 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_thk2dep_and_dep2thk(self):
-
         thk = np.array([6, 5, 4, 3, 2, 0])
         dep_mid = np.array([3, 8.5, 13, 16.5, 19])
         dep_top = np.array([0, 6, 11, 15, 18, 20])
 
         self.assertTrue(np.allclose(sr.dep2thk(dep_top), thk))
+        self.assertTrue(np.allclose(sr.dep2thk(dep_top, include_halfspace=False),
+                                    thk[:-1]))
         self.assertTrue(np.allclose(sr.thk2dep(thk, midpoint=True), dep_mid))
-        self.assertTrue(np.allclose(sr.thk2dep(thk, midpoint=False), dep_top))
+        self.assertTrue(np.allclose(sr.thk2dep(thk), dep_top))
 
     #--------------------------------------------------------------------------
     def test_amplify_motion(self):
@@ -191,7 +186,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_gen_profile_plot_array(self):
-
         thk = np.array([1, 2, 3, 4])
         vs = np.array([5, 6, 7, 8])
         zmax = 15

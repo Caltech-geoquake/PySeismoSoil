@@ -800,7 +800,7 @@ def thk2dep(thk, midpoint=False):
         return z_mid
 
 #%%----------------------------------------------------------------------------
-def dep2thk(depth_array_starting_from_0):
+def dep2thk(depth_array_starting_from_0, include_halfspace=True):
     '''
     Converts a soil layer depth array into thickness array.
 
@@ -808,6 +808,9 @@ def dep2thk(depth_array_starting_from_0):
     ---------
     depth_array_starting_from_0 : numpy.array
         Needs to be a 1D numpy array
+    include_halfspace : bool
+        Whether to include the last layer (i.e., "half space"), which always
+        have 0 thickness
 
     Returns
     -------
@@ -826,7 +829,10 @@ def dep2thk(depth_array_starting_from_0):
     for i in range(len(h)-1):
         h[i] = depth_array_starting_from_0[i+1] - depth_array_starting_from_0[i]
 
-    return h
+    if include_halfspace:
+        return h
+    else:
+        return h[:-1]
 
 #%%----------------------------------------------------------------------------
 def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
