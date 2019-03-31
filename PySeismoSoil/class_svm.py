@@ -278,32 +278,41 @@ class SVM():
                 raise ValueError('`Vs_increment` needs to < %.2g m/s (the '
                                  'max Vs of the smooth profile)' % max_Vs)
             n_layers = self._base_profile.shape[0]
-            vs_prev = self._base_profile[0, 1]
-            thk_array = []
+            discr_Vs_previous_layer = self._base_profile[0, 1]
+            layer_bottom_depth_array = [0]
             thk_tmp = 0
+            current_depth = 0
             for j in range(n_layers):
                 thk = self._base_profile[j, 0]
-                vs = self._base_profile[j, 1]
-                if vs < vs_prev + Vs_increment:
+                current_depth += thk
+                base_Vs_j_th_layer = self._base_profile[j, 1]
+                if base_Vs_j_th_layer < discr_Vs_previous_layer + Vs_increment:
                     thk_tmp += thk
                 else:
-                    vs_prev += Vs_increment
-                    thk_array.append(thk_tmp)
+                    '''
+                    We need different treatments for two different cases:
+                    (1) `Vs_increment` exceeds the "natural" increment of the
+                        base profile --- accumulate "temporary layer" whose
+                        thickness is `thk_tmp`
+                    (2) `Vs_increment` is smaller than the "natural" increment
+                        of the base profile --- we need to use the natural
+                        increment as the Vs increment
+                    '''
+                    if thk_tmp != 0:  # the first case
+                        discr_Vs_previous_layer += Vs_increment
+                    else:  # the second case
+                        discr_Vs_previous_layer = base_Vs_j_th_layer
+
                     thk_tmp = 0
-            # end "for j in range(n_layers):"
+                    layer_bottom_depth_array.append(current_depth)
+            # END "for j in range(n_layers):"
 
-            #----- If _base_profile has a velocity contrast at the bottom, ----
-            #----- we should include the "half space" layer, i.e., the     ----
-            #----- bottom layer.                                           ----
-            if thk_array[-1] == 0:
-                thk_array[-1] = 0.01
-            #------------------------------------------------------------------
-
+            thk_array = sr.dep2thk(np.array(layer_bottom_depth_array),
+                                   include_halfspace=False)
             discr_prof = self.base_profile\
-                             .query_Vs_given_thk(np.array(thk_array),
-                                                 as_profile=True,
+                             .query_Vs_given_thk(thk_array, as_profile=True,
                                                  at_midpoint=at_midpoint)
-        # end "if fixed_thk is not None:"
+        # END "if fixed_thk is not None:"
 
         discr_prof = discr_prof.truncate(depth=self.z1, Vs=self.bedrock_Vs)
         prof_ = discr_prof.vs_profile

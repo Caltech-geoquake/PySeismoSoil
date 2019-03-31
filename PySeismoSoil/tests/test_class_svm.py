@@ -104,7 +104,8 @@ class Test_Class_SVM(unittest.TestCase):
         z1 = 200  # m
         svm = SVM(vs30, z1, show_fig=False)
         svm.get_discretized_profile(fixed_thk=20, show_fig=True)
-        svm.get_discretized_profile(Vs_increment=30, show_fig=True)
+        svm.get_discretized_profile(Vs_increment=1, show_fig=True)
+        svm.get_discretized_profile(Vs_increment=100, show_fig=True)
         svm.get_randomized_profile(show_fig=True)
 
 if __name__ == '__main__':
