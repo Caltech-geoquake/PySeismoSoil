@@ -130,11 +130,13 @@ def check_two_column_format(something, name=None, ensure_non_negative=False,
         raise TypeError('%s should have two columns.' % name)
     if at_least_two_columns and something.shape[1] < 2:
         raise TypeError('%s should have >= 2 columns.' % name)
-    if check_numbers_valid(something) == -1:
+
+    check_status = check_numbers_valid(something)
+    if check_status == -1:
         raise ValueError("%s should only contain numeric elements." % name)
-    if check_numbers_valid(something) == -2:
+    if check_status == -2:
         raise ValueError("%s should contain no NaN values." % name)
-    if ensure_non_negative and check_numbers_valid(something) == -3:
+    if ensure_non_negative and check_status == -3:
         raise ValueError('%s should have all non-negative values.' % name)
 
     return None
@@ -152,18 +154,64 @@ def check_Vs_profile_format(data):
 
     if not isinstance(data, np.ndarray):
         raise TypeError("`data` should be a numpy array.")
-    if check_numbers_valid(data) == -1:
+
+    check_status = check_numbers_valid(data)
+    if check_status == -1:
         raise ValueError("`data` should only contain numeric elements.")
-    if check_numbers_valid(data) == -2:
+    if check_status == -2:
         raise ValueError("`data` should contain no NaN values.")
-    if check_numbers_valid(data) == -3:
-        raise ValueError("`data` should not contain negative values.")
     if data.ndim != 2:
-        raise TypeError("`data` should be a 2D numpy array.")
+        raise ValueError("`data` should be a 2D numpy array.")
     if data.shape[1] not in [2, 5]:
         raise ValueError("`data` should have either 2 or 5 columns.")
 
+    thk = data[:, 0]
+    Vs  = data[:, 1]
+    if np.any(thk[:-1] <= 0):
+        raise ValueError('The thickness column should be all positive, except '
+                         'for the last layer.')
+    if np.any(thk[-1] < 0):
+        raise ValueError('The last layer thickness should be non-negative.')
+    if np.any(Vs <= 0):
+        raise ValueError('The Vs column should be all positive.')
+
+    if data.shape[1] == 5:
+        xi  = data[:, 2]
+        rho = data[:, 3]
+        mat = data[:, 4]
+        if np.any(xi <= 0) or np.any(rho <= 0):
+            raise ValueError('The damping and density columns should be positive.')
+        if not all([is_int(_) for _ in mat]):
+            raise ValueError('The "material number" column should be all integers.')
+        if np.any(mat[:-1] <= 0):
+            raise ValueError('The "material number" column should be all '
+                             'positive, except for the last error.')
+        if np.any(mat[-1] < 0):
+            raise ValueError('The material number of the last layer should be '
+                             'non-negative.')
+
     return None
+
+#%%----------------------------------------------------------------------------
+def is_int(number):
+    '''
+    Check that a `number` represents an integer value. (Its data type does
+    not need to be int or numpy.integer).
+
+    Parameter
+    ---------
+    number :
+        Any Python object
+    '''
+    if not isinstance(number, (int, float, np.number)):
+        return False
+    if isinstance(number, (int, np.integer)):
+        return True
+    try:
+        if number.is_integer():
+            return True
+    except AttributeError:
+        return False
 
 #%%----------------------------------------------------------------------------
 def check_numbers_valid(array):

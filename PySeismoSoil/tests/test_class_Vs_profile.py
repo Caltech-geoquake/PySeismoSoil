@@ -21,6 +21,80 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.prof = prof
         super(Test_Class_Vs_Profile, self).__init__(methodName=methodName)
 
+    def test_Vs_profile_format(self):
+        # Test `None` as `data`
+        data = None
+        with self.assertRaisesRegex(TypeError, 'must be a file name or a numpy array'):
+            Vs_Profile(data)
+
+        # Test other type as `data`
+        data = 3.6
+        with self.assertRaisesRegex(TypeError, 'must be a file name or a numpy array'):
+            Vs_Profile(data)
+
+        # Test NaN values
+        data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
+        data[2, 1] = np.nan
+        with self.assertRaisesRegex(ValueError, 'should contain no NaN values'):
+            Vs_Profile(data)
+
+        # Test non-positive values in thickness
+        data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
+        data[2, 0] = 0
+        with self.assertRaisesRegex(ValueError, 'should be all positive, except'):
+            Vs_Profile(data)
+
+        # Test negative values in last layer thickness
+        data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
+        data[-1, 0] = -1
+        with self.assertRaisesRegex(ValueError, 'last layer thickness should be'):
+            Vs_Profile(data)
+
+        # Test correct number of dimensions
+        data = np.array([[[1, 2, 3, 0], [1, 2, 3, 4]]]).T  # one more dimension
+        with self.assertRaisesRegex(ValueError, 'should be a 2D numpy array'):
+            Vs_Profile(data)
+
+        # Test negative values in Vs
+        data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
+        data[2, 1] = -1
+        with self.assertRaisesRegex(ValueError, 'Vs column should be all positive.'):
+            Vs_Profile(data)
+
+        # Test non-positive values in damping and density
+        data = np.array([[10, 20, 30, 0],
+                         [100, 120, 160, 190],
+                         [0.01, 0.01, 0.01, 0.01],
+                         [1600, 1600, 1600, 1600],
+                         [1, 2, 3, 0]], dtype=float).T
+        data_ = data.copy()
+        data_[2, 3] = 0
+        with self.assertRaisesRegex(ValueError, 'damping and density columns'):
+            Vs_Profile(data_)
+
+        # Test "material number" column: all integers
+        data_ = data.copy()
+        data_[1, -1] = 2.2
+        with self.assertRaisesRegex(ValueError, 'should be all integers'):
+            Vs_Profile(data_)
+
+        # Test "material number" column: all positive
+        data_ = data.copy()
+        data_[1, -1] = 0
+        with self.assertRaisesRegex(ValueError, 'should be all positive'):
+            Vs_Profile(data_)
+
+        # Test "material number" column: last layer should >= 0
+        data_ = data.copy()
+        data_[-1, -1] = -1
+        with self.assertRaisesRegex(ValueError, 'last layer should be non-negative'):
+            Vs_Profile(data_)
+
+        # Test correct number of columns
+        data_ = data[:, 0:-1]  # one fewer column
+        with self.assertRaisesRegex(ValueError, 'either 2 or 5 columns'):
+            Vs_Profile(data_)
+
     def test_plot(self):
         self.prof.plot(c='r', ls='--')
 

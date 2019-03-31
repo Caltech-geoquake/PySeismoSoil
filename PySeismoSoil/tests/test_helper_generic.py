@@ -10,6 +10,17 @@ class Test_Helper_Generic(unittest.TestCase):
     Unit test for helper functions in helper_generic.py
     '''
 
+    def test_is_int(self):
+        self.assertTrue(hlp.is_int(3))
+        self.assertTrue(hlp.is_int(np.array([3])[0]))
+        self.assertTrue(hlp.is_int(3.0))
+        self.assertTrue(hlp.is_int(np.array([3.0])[0]))
+        self.assertFalse(hlp.is_int(3.1))
+        self.assertFalse(hlp.is_int(np.array([3.1])[0]))
+        self.assertFalse(hlp.is_int(None))
+        self.assertFalse(hlp.is_int(np.array([])))
+        self.assertFalse(hlp.is_int(np.array([3])))
+
     def test_read_two_column_stuff(self):
         # Load from file
         data, dt = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
