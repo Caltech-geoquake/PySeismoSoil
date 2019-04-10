@@ -412,26 +412,35 @@ class Ground_Motion:
         return Ia, Ia_norm, Ia_peak, T5_95
 
     #--------------------------------------------------------------------------
-    def scale_motion(self, factor=1, target_PGA=None, inplace=False):
+    def scale_motion(self, factor=1.0, target_PGA_in_g=None, inplace=False):
         '''
         Scale ground motion, either by specifying a factor, or specifying a
         target PGA level.
+
+        Parameters
+        ----------
+        factor : float
+            The factor to multiply to the original acceleration (with the
+            unit of m/s/s)
+        target_PGA_in_g : float
+            The target PGA (in g). If `target_PGA_in_g` is not None, it
+            overrides `factor`.
+
+        Returns
+        -------
+        scaled_motion : Ground_Motion
+            The scaled motion
         '''
-
-        if factor != None and target_PGA != None:
-            raise ValueError('At least one of "factor" and "target_PGA" should be None.')
-
-        if target_PGA != None:
-            factor = target_PGA / self.pga
-        else:  # factor != None, and target_PGA is None
+        if target_PGA_in_g != None:
+            factor = target_PGA_in_g / self.pga_in_g
+        else:  # factor != None, and target_PGA_in_g is None
             pass
 
-        if not inplace:
+        if not inplace:  # TODO: deprecate "inplace" options in this class
             time = self.accel[:,0]
             acc = self.accel[:,1]
             acc_scaled = acc * factor
-
-            return np.column_stack((time, acc_scaled))
+            return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
         else:
             self.accel[:,1] = self.accel[:,1] * factor
 
@@ -538,6 +547,74 @@ class Ground_Motion:
             self.time = time_trunc
             self.accel = truncated
             return None, fig, ax, (n1, n2)
+
+    #--------------------------------------------------------------------------
+    def amplify(self, transfer_function_single_sided, taper=False,
+                extrap_tf=True, deconv=False, show_fig=False, dpi=100,
+                return_fig_obj=False):
+        '''
+        Amplify (or de-amplify) ground motions in the frequency domain. The
+        mathematical process behind this function is as follows:
+
+            (1) INPUT = fft(input)
+            (2) OUTPUT = INPUT * TRANS_FUNC
+            (3) output = ifft(OUTPUT)
+
+        Parameters
+        ----------
+        transfer_function_single_sided : tuple
+            Complex-valued transfer function in frequency domain. It should be a
+            two-element tuple, whose 0-th element is the frequency array, and the
+            last element can be one of two options:
+                (1) A complex-valued transformation, which should be a 1D complex
+                    numpy array
+                (2) A tuple of (amplitude, phase) which represents the complex
+                    numbers. `amplitude` and `phase` both need to be 1D arrays and
+                    real-valued.
+            The transfer function only needs to be "single-sided" (see note below.)
+        taper : bool
+            Whether to taper the input acceleration (using Tukey taper)
+        extrap_tf : bool
+            Whether to extrapolate the transfer function if its frequency range
+            does not reach the frequency range implied by the input motion
+        deconv : bool
+            If `False`, a regular amplification is performed; otherwise, the
+            transfer function is "deducted" from the input motion ("deconvolution").
+        show_fig : bool
+            Whether or not to show an illustration of how the calculation is
+            carried out.
+        dpi : int
+            Desired DPI for the figures; only effective when `show_fig` is True
+        return_fig_obj : bool
+            Whether or not to return figure and axis objects to the caller
+
+        Returns
+        -------
+        output_motion : Ground_Motion
+            The resultant ground motion in time domain
+        fig, ax : (optional)
+            Figure and axis objects
+
+        Note
+        ----
+        "Single sided":
+            For example, the sampling time interval of `input_motion` is 0.01 sec,
+            then the Nyquist frequency is 50 Hz. Therefore, the transfer function
+            needs to contain information at least up to the Nyquist frequency,
+            i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
+            input motion at all.
+        '''
+        result = sr.amplify_motion(self.accel, transfer_function_single_sided,
+                                   taper=taper, extrap_tf=extrap_tf,
+                                   deconv=deconv, show_fig=show_fig,
+                                   dpi=dpi, return_fig_obj=return_fig_obj)
+
+        if return_fig_obj:
+            output_accel, fig, ax = result
+            return Ground_Motion(output_accel, unit='m'), fig, ax
+        else:
+            output_accel = result
+            return Ground_Motion(output_accel, unit='m')
 
     #--------------------------------------------------------------------------
     def baseline_correct(self, cutoff_freq=0.20, show_fig=False, inplace=False):

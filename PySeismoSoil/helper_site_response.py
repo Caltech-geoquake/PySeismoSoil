@@ -953,7 +953,7 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
 
 #%%----------------------------------------------------------------------------
 def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
-                   extrap_tf=False, deconv=False, show_fig=False, dpi=100,
+                   extrap_tf=True, deconv=False, show_fig=False, dpi=100,
                    return_fig_obj=False):
     '''
     Amplify (or de-amplify) ground motions in the frequency domain. The
@@ -990,7 +990,6 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         carried out.
     dpi : int
         Desired DPI for the figures; only effective when `show_fig` is True
-
     return_fig_obj : bool
         Whether or not to return figure and axis objects to the caller
 
@@ -1036,8 +1035,6 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         raise TypeError('The last element of `transfer_function_single_sided` '
                         'needs to be either a tuple of (amplitude, phase), or '
                         'a complex-valued 1D numpy array.')
-
-    df_tf = f_array[1] - f_array[0]
 
     df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
     if extrap_tf:
