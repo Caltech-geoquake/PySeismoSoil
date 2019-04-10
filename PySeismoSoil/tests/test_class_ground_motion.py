@@ -57,6 +57,22 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001))
         self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001))
 
+    def test_baseline_correction(self):
+        gm = GM('./files/sample_accel.txt', 'm/s/s')
+        corrected = gm.baseline_correct(show_fig=True)
+        self.assertTrue(isinstance(corrected, GM))
+
+    def test_filters(self):
+        gm = GM('./files/sample_accel.txt', unit='m')
+        hp = gm.highpass(cutoff_freq=1.0, show_fig=True)
+        lp = gm.lowpass(cutoff_freq=1.0, show_fig=True)
+        bp = gm.bandpass(cutoff_freq=[0.5, 8], show_fig=True)
+        bs = gm.bandstop(cutoff_freq=[0.5, 8], show_fig=True)
+        self.assertTrue(isinstance(hp, GM))
+        self.assertTrue(isinstance(lp, GM))
+        self.assertTrue(isinstance(bp, GM))
+        self.assertTrue(isinstance(bs, GM))
+
     def test_num_integration(self):
 
         gm = GM('./files/two_column_data_example.txt', 'm/s/s')
