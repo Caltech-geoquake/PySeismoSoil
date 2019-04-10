@@ -53,10 +53,14 @@ class Site_Effect_Adjustment():
             z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
         PGA_in_g = input_motion.pga_in_g
 
+        site_factor = Site_Factors(Vs30_in_meter_per_sec, z1_in_m, PGA_in_g,
+                                   lenient=lenient)
+
         self.input_motion = input_motion
         self.Vs30 = Vs30_in_meter_per_sec
         self.z1 = z1_in_m
         self.PGA_in_g = PGA_in_g
+        self.site_factor = site_factor
         self._lenient = lenient
         self._ampl_method = ampl_method
 
@@ -64,8 +68,7 @@ class Site_Effect_Adjustment():
         '''
         Run the site effect adjustment by querying the SAG19 site factors.
         '''
-        sf = Site_Factors(self.Vs30, self.z1, self.PGA_in_g,
-                          lenient=self._lenient)
+        sf = self.site_factor
         af = sf.get_amplification(method=self._ampl_method, Fourier=True)
         phf = sf.get_phase_shift(method='eq_hh')  # only `eq_hh` is valid
 
