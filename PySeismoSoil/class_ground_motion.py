@@ -412,7 +412,7 @@ class Ground_Motion:
         return Ia, Ia_norm, Ia_peak, T5_95
 
     #--------------------------------------------------------------------------
-    def scale_motion(self, factor=1.0, target_PGA_in_g=None, inplace=False):
+    def scale_motion(self, factor=1.0, target_PGA_in_g=None):
         '''
         Scale ground motion, either by specifying a factor, or specifying a
         target PGA level.
@@ -436,41 +436,35 @@ class Ground_Motion:
         else:  # factor != None, and target_PGA_in_g is None
             pass
 
-        if not inplace:  # TODO: deprecate "inplace" options in this class
-            time = self.accel[:,0]
-            acc = self.accel[:,1]
-            acc_scaled = acc * factor
-            return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
-        else:
-            self.accel[:,1] = self.accel[:,1] * factor
+        time = self.accel[:,0]
+        acc = self.accel[:,1]
+        acc_scaled = acc * factor
+        return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
 
     #--------------------------------------------------------------------------
-    def truncate(self, limit, arias=True, extend=[0,0], inplace=False,
-                 show_fig=False):
+    def truncate(self, limit, arias=True, extend=[0,0], show_fig=False):
         '''
         Truncate ground motion, removing data points in the head and/or tail.
 
         Parameters
         ----------
-        limit : tuple or list of two elements
+        limit : tuple or list of two floats
             The lower/upper bounds of time (e.g., [2, 95]) or normalized Arias
             intensity (e.g., [0.05, 0.95])
-        arias : <bool>
+        arias : bool
             Whether or not "limit" means the normalized Arias intensity
-        extend : tuple or list of two elements
+        extend : tuple or list of two floats
             How many seconds to extend before and after the original truncated
             time limits. For example, if extend is [5, 5] sec, and the original
             time limits are [3, 50] sec, then the actual time limits are
             [0, 55] sec. (3 - 5 = -2 smaller than 0, so truncated at 0.)
-        inplace : <bool>
-            Whether or not to perform the truncation in-place.
-        show_fig : <bool>
+        show_fig : bool
             Whether or not to show the waveforms before and after truncation.
 
         Returns
         -------
         truncated_accel : Ground_Motion
-            Truncated ground motion. It is set to None, if `inplace` is True.
+            Truncated ground motion
         fig, ax :
             Figure and axes objects
         (n1, n2) : tuple<int>
@@ -541,12 +535,7 @@ class Ground_Motion:
         else:
             fig, ax = None, None
 
-        if not inplace:
-            return Ground_Motion(truncated, unit='m'), fig, ax, (n1, n2)
-        else:
-            self.time = time_trunc
-            self.accel = truncated
-            return None, fig, ax, (n1, n2)
+        return Ground_Motion(truncated, unit='m'), fig, ax, (n1, n2)
 
     #--------------------------------------------------------------------------
     def amplify(self, transfer_function_single_sided, taper=False,
@@ -617,7 +606,7 @@ class Ground_Motion:
             return Ground_Motion(output_accel, unit='m')
 
     #--------------------------------------------------------------------------
-    def baseline_correct(self, cutoff_freq=0.20, show_fig=False, inplace=False):
+    def baseline_correct(self, cutoff_freq=0.20, show_fig=False):
         '''
         Baseline-correct the acceleration (via zero-phase-shift high-pass method)
         '''
@@ -625,15 +614,10 @@ class Ground_Motion:
         accel_ = sig.baseline(self.accel, show_fig=show_fig,
                               cutoff_freq=cutoff_freq)[0]
 
-        if inplace:
-            self.accel = accel_
-            return None
-        else:
-            return accel_
+        return Ground_Motion(accel_, unit='m')
 
     #--------------------------------------------------------------------------
-    def lowpass(self, cutoff_freq, show_fig=False, inplace=False,
-                filter_order=4, padlen=150):
+    def lowpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         '''
         Zero-phase-shift low-pass.
         '''
@@ -641,15 +625,10 @@ class Ground_Motion:
         accel_ = sig.lowpass(self.accel, cutoff_freq, show_fig=show_fig,
                              filter_order=filter_order, padlen=padlen)[0]
 
-        if inplace:
-            self.accel = accel_
-            return None
-        else:
-            return accel_
+        return Ground_Motion(accel_, unit='m')
 
     #--------------------------------------------------------------------------
-    def highpass(self, cutoff_freq, show_fig=False, inplace=False,
-                filter_order=4, padlen=150):
+    def highpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         '''
         Zero-phase-shift low-pass.
         '''
@@ -657,11 +636,7 @@ class Ground_Motion:
         accel_ = sig.highpass(self.accel, cutoff_freq, show_fig=show_fig,
                               filter_order=filter_order, padlen=padlen)[0]
 
-        if inplace:
-            self.accel = accel_
-            return None
-        else:
-            return accel_
+        return Ground_Motion(accel_, unit='m')
 
     #--------------------------------------------------------------------------
     def save_accel(self, fname, sep='\t', t_prec='%.5g', motion_prec='%.5g',
