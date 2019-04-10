@@ -22,7 +22,9 @@ def lowpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     filter_order : int (default = 4)
         Filter order.
     padlen : int
-        pad length
+        Pad length (the number of elements by which to extend x at both ends
+        of axis before applying the filter). If None, use the default value
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
@@ -46,9 +48,11 @@ def highpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     cutoff_freq : float
         Cut-off frequency
     filter_order : int (default = 4)
-        Filter order.
+        Filter order
     padlen : int
-        pad length
+        Pad length (the number of elements by which to extend x at both ends
+        of axis before applying the filter). If None, use the default value
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
@@ -72,9 +76,11 @@ def bandpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     cutoff_freq : [float, float]
         Cut-off frequencies, from low to high
     filter_order : int (default = 4)
-        Filter order.
+        Filter order
     padlen : int
-        pad length
+        Pad length (the number of elements by which to extend x at both ends
+        of axis before applying the filter). If None, use the default value
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
@@ -100,7 +106,9 @@ def bandstop(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     filter_order : int (default = 4)
         Filter order.
     padlen : int
-        pad length
+        Pad length (the number of elements by which to extend x at both ends
+        of axis before applying the filter). If None, use the default value
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
@@ -173,12 +181,14 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
         plt.subplot(221)
         plt.plot(time,x)
         plt.title('Original')
+        plt.ylabel('Signal')
         plt.grid(ls=':')
 
         plt.subplot(223)
         plt.plot(time,y)
         plt.title('After filtering')
         plt.xlabel('Time [sec]')
+        plt.ylabel('Signal')
         plt.grid(ls=':')
 
         ax = plt.subplot(222)
@@ -195,6 +205,7 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
         plt.ylim(0,np.max(spec_orig[1:]))
         plt.grid(ls=':')
         plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Fourier amplitude')
 
         ax = plt.subplot(224)
         freq, spec = fourier_transform(np.column_stack((time, y))).T
@@ -210,6 +221,7 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
         plt.ylim(0,np.max(spec[1:]))
         plt.grid(ls=':')
         plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Fourier amplitude')
 
         plt.tight_layout(pad=0.3, h_pad=0.5, w_pad=0.5)
 
@@ -220,9 +232,20 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     '''
     Baseline correction of a time-domain signal using high pass filter.
 
-    orig_signal should be two-columned.
+    Parameters
+    ----------
+    orig_signal : numpy.ndarray
+        Original signal. Must have two columns.
+    show_fig : bool
+        Whether or not to show figures comparing before and after
+    cutoff_freq : float
+        The frequency (unit: Hz) for high passing. Energies below this
+        frequency are filtered out.
 
-    Returns three variables: [t,y], t, and y
+    Returns
+    -------
+    corrected : numpy.ndarray
+        The corrected signal
     '''
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')

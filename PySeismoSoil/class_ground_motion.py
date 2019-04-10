@@ -609,33 +609,122 @@ class Ground_Motion:
     def baseline_correct(self, cutoff_freq=0.20, show_fig=False):
         '''
         Baseline-correct the acceleration (via zero-phase-shift high-pass method)
+
+        Parameters
+        ----------
+        cutoff_freq : float
+            The frequency (unit: Hz) for high passing. Energies below this
+            frequency are filtered out.
+        show_fig : bool
+            Whether or not to show figures comparing before and after
+
+        Returns
+        -------
+        corrected : Ground_Motion
+            The baseline-corrected ground motion, with SI units
         '''
-
-        accel_ = sig.baseline(self.accel, show_fig=show_fig,
-                              cutoff_freq=cutoff_freq)[0]
-
+        accel_ = sig.baseline(self.accel, show_fig=show_fig, cutoff_freq=cutoff_freq)
         return Ground_Motion(accel_, unit='m')
 
     #--------------------------------------------------------------------------
     def lowpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         '''
-        Zero-phase-shift low-pass.
+        Zero-phase-shift low-pass filtering.
+
+        Parameters
+        ----------
+        cutoff_freq : float
+            Cut-off frequency (unit: Hz)
+        filter_order : int (default = 4)
+            Filter order.
+        padlen : int
+            pad length
+
+        Returns
+        -------
+        filtered : Ground_Motion
+            Filtered signal
         '''
-
         accel_ = sig.lowpass(self.accel, cutoff_freq, show_fig=show_fig,
-                             filter_order=filter_order, padlen=padlen)[0]
-
+                             filter_order=filter_order, padlen=padlen)
         return Ground_Motion(accel_, unit='m')
 
     #--------------------------------------------------------------------------
     def highpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         '''
-        Zero-phase-shift low-pass.
+        Zero-phase-shift high-pass filtering.
+
+        Pameters
+        --------
+        cutoff_freq : float
+            Cut-off frequency (unit: Hz)
+        filter_order : int (default = 4)
+            Filter order.
+        padlen : int
+            Pad length (the number of elements by which to extend x at both ends
+            of axis before applying the filter). If None, use the default value
+            (https://docs.scipy.org/doc/scipy/reference/generated/
+             scipy.signal.filtfilt.html)
+
+        Returns
+        -------
+        filtered : Ground_Motion
+            Filtered signal
         '''
-
         accel_ = sig.highpass(self.accel, cutoff_freq, show_fig=show_fig,
-                              filter_order=filter_order, padlen=padlen)[0]
+                              filter_order=filter_order, padlen=padlen)
+        return Ground_Motion(accel_, unit='m')
 
+    #--------------------------------------------------------------------------
+    def bandpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
+        '''
+        Zero-phase-shift band-pass filtering.
+
+        Pameters
+        --------
+        cutoff_freq : [float, float]
+            Cut-off frequencies (in Hz), from low to high
+        filter_order : int (default = 4)
+            Filter order.
+        padlen : int
+            Pad length (the number of elements by which to extend x at both ends
+            of axis before applying the filter). If None, use the default value
+            (https://docs.scipy.org/doc/scipy/reference/generated/
+             scipy.signal.filtfilt.html)
+
+        Returns
+        -------
+        filtered : Ground_Motion
+            Filtered signal
+        '''
+        accel_ = sig.bandpass(self.accel, cutoff_freq, show_fig=show_fig,
+                              filter_order=filter_order, padlen=padlen)
+        return Ground_Motion(accel_, unit='m')
+
+    #--------------------------------------------------------------------------
+    def bandstop(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
+        '''
+        Zero-phase-shift band-stop filtering.
+
+        Pameters
+        --------
+        cutoff_freq : [float, float]
+            Cut-off frequencies (in Hz), from low to high
+        filter_order : int (default = 4)
+            Filter order.
+        padlen : int
+            Pad length (the number of elements by which to extend x at both ends
+            of axis before applying the filter). If None, use the default value
+            (https://docs.scipy.org/doc/scipy/reference/generated/
+             scipy.signal.filtfilt.html)
+
+        Returns
+        -------
+        filtered : Ground_Motion
+            Filtered signal
+        '''
+        accel_ = sig.bandstop(self.accel, cutoff_freq, show_fig=show_fig,
+                              filter_order=filter_order, padlen=padlen)
         return Ground_Motion(accel_, unit='m')
 
     #--------------------------------------------------------------------------
