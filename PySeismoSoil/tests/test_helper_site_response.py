@@ -78,6 +78,17 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(np.allclose(veloc, v_bench))
 
     #--------------------------------------------------------------------------
+    def test_stratify(self):
+        prof1 = np.array([[3, 4, 5, 6, 0], [225, 225*2, 225*3, 225*2.4, 225*5]]).T
+        prof1_ = sr.stratify(prof1)
+
+        prof1_benchmark = np.array([[1, 1, 1, 2, 2, 2.5, 2.5, 2, 2, 2, 0],
+                                    [225, 225, 225, 450, 450, 675, 675, 540,
+                                     540, 540, 1125]]).T
+
+        self.assertTrue(np.allclose(prof1_, prof1_benchmark))
+
+    #--------------------------------------------------------------------------
     def test_response_spectra(self):
         accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
 

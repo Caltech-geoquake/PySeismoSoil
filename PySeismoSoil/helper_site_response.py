@@ -8,14 +8,104 @@ from . import helper_generic as hlp
 from . import helper_signal_processing as sig
 
 #%%----------------------------------------------------------------------------
+def stratify(vs_profile):
+    '''
+    Parameter
+    ---------
+    vs_profile : numpy.ndarray
+        The Vs profile. Must be 2D numpy array with two or five columns.
+
+    Returns
+    -------
+    new_profile : numpy.ndarray
+        The re-discretized Vs profile with the same number of columns as the
+        input profile.
+    '''
+    hlp.check_Vs_profile_format(vs_profile)
+
+    h = vs_profile[:, 0]
+    Vs = vs_profile[:, 1]
+    if vs_profile.shape[1] > 2:
+        five_columns = True
+        xi = vs_profile[:, 2]
+        rho = vs_profile[:, 3]
+        mtrl = vs_profile[:, 4]
+    else:
+        five_columns = False
+
+    if h[-1] == 0:
+        flag = True
+        Vs_end = Vs[-1]
+        h = h[:-1]
+        Vs = Vs[:-1]
+        if five_columns:
+            xi_end = xi[-1]
+            rho_end = rho[-1]
+            mtrl_end = mtrl[-1]
+            xi = xi[:-1]
+            rho = rho[:-1]
+            mtrl = mtrl[:-1]
+    else:
+        flag = False
+
+    n = len(h)
+    h_temp = Vs / 225.0  # max freq = 15 Hz, and 15 points per wavelength
+
+    h2 = []
+    Vs2 = []
+    xi2 = []
+    rho2 = []
+    mtrl2 = []
+    counter = 1
+
+    for j in range(n):
+        if h_temp[j] >= h[j]:  # no need to create sub-layers
+            nr_sublayer = 1
+            h2.append(h[j])
+            Vs2.append(Vs[j])
+            if five_columns:
+                xi2.append(xi[j])
+                rho2.append(rho[j])
+                mtrl2.append(mtrl[j])
+        else:  # create sub-layers
+            nr_sublayer = int(np.ceil(h[j] / h_temp[j]))
+            if np.allclose(np.round(h[j] / h_temp[j]), h[j] / h_temp[j]):
+                h2.extend([h_temp[j]] * nr_sublayer)
+            else:
+                h2.extend([h[j] / nr_sublayer] * nr_sublayer)
+
+            Vs2.extend([Vs[j]] * nr_sublayer)
+            if five_columns:
+                xi2.extend([xi[j]] * nr_sublayer)
+                rho2.extend([rho[j]] * nr_sublayer)
+                mtrl2.extend([mtrl[j]] * nr_sublayer)
+
+        counter += nr_sublayer
+
+    if flag:
+        h2.append(0)
+        Vs2.append(Vs_end)
+        if five_columns:
+            xi2.append(xi_end)
+            rho2.append(rho_end)
+            mtrl2.append(mtrl_end)
+
+    if five_columns:
+        new_profile = np.column_stack((h2, Vs2, xi2, rho2, mtrl2))
+    else:
+        new_profile = np.column_stack((h2, Vs2))
+
+    return new_profile
+
+#%%----------------------------------------------------------------------------
 def query_Vs_at_depth(vs_profile, depth):
     '''
     Query Vs values at given `depth` values from a Vs profile. If the given
     depth values happen to be at layer interfaces, return the Vs of the
     layer *below* the interface.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     vs_profile : numpy.ndarray
         Shear-wave velocity profile, containing at least two columns:
            (1) thickness of layers
