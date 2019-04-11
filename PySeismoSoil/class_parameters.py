@@ -319,6 +319,23 @@ class Param_Multi_Layer():
 
         return curves
 
+    def serialize_to_2D_array(self):
+        '''
+        Serielizes the parameter data to a 2D numpy array
+
+        Returns
+        -------
+        param_2D_array : numpy.array
+            A 2D numpy array whose columns are parameters of each layer
+        '''
+        output = []
+        for param_single_layer in self.param_list:
+            param_array = param_single_layer.serialize()
+            output.append(param_array)
+
+        param_2D_array = np.array(output).T
+        return param_2D_array
+
     def save_txt(self, filename, precision='%.5g', sep='\t', **kw_to_savetxt):
         '''
         Save data as text file.
@@ -334,13 +351,8 @@ class Param_Multi_Layer():
         kw_to_savetxt :
             Additional keyword arguments to pass to numpy.savetxt()
         '''
-        output = []
-        for param_single_layer in self.param_list:
-            param_array = param_single_layer.serialize()
-            output.append(param_array)
-
-        output_ = np.array(output).T
-        np.savetxt(filename, output_, fmt=precision, delimiter=sep,
+        param_2D_array = self.serialize_to_2D_array()
+        np.savetxt(filename, param_2D_array, fmt=precision, delimiter=sep,
                    **kw_to_savetxt)
 
 #%%============================================================================

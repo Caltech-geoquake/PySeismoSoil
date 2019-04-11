@@ -150,6 +150,17 @@ class Test_Class_HH_Param(unittest.TestCase):
         H4_x_array = H4_x.serialize()
         self.assertTrue(np.allclose(H4_x_array, [5, 6, 7, 8]))
 
+    def test_serialize_to_2D_array(self):
+        HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
+        HH_x_2D_array = HH_x.serialize_to_2D_array()
+        HH_x_2D_array_bench = np.genfromtxt('./files/HH_X_FKSH14.txt')
+        self.assertTrue(np.allclose(HH_x_2D_array, HH_x_2D_array_bench))
+
+        H4_G = MKZ_Param_Multi_Layer('./files/H4_G_IWTH04.txt')
+        H4_G_2D_array = H4_G.serialize_to_2D_array()
+        H4_G_2D_array_bench = np.genfromtxt('./files/H4_G_IWTH04.txt')
+        self.assertTrue(np.allclose(H4_G_2D_array, H4_G_2D_array_bench))
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_HH_Param)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
