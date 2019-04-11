@@ -76,8 +76,8 @@ class Parameter(collections.UserDict):
 
         Parameter
         ---------
-        strain_array : numpy.ndarray
-            Must be 1D numpy array. Unit: %
+        strain_in_pct : numpy.ndarray
+            Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
@@ -96,8 +96,8 @@ class Parameter(collections.UserDict):
 
         Parameter
         ---------
-        strain_array : numpy.ndarray
-            Must be 1D numpy array. Unit: %
+        strain_in_pct : numpy.ndarray
+            Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
@@ -118,8 +118,8 @@ class Parameter(collections.UserDict):
 
         Parameter
         ---------
-        strain_array : numpy.ndarray
-            Must be 1D numpy array. Unit: %
+        strain_in_pct : numpy.ndarray
+            Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
@@ -254,8 +254,8 @@ class Param_Multi_Layer():
         List of dict or a list of valid parameter class (such as HH_Param),
         which contain data for parameters of each layer
     element_class : PySeismoSoil.class_parameters.HH_Param_Single_Layer et al
-        A class name. Each element of `list_of_param_dict` will be used to
-        initialize an object of `element_class`.
+        A class name, such as `HH_Param`. Each element of `list_of_param_dict`
+        will be used to initialize an object of `element_class`.
 
     Attributes
     ----------
@@ -290,6 +290,34 @@ class Param_Multi_Layer():
     def __delitem__(self, i):
         del self.param_list[i]
         self.n_layer -= 1
+
+    def construct_curves(self, strain_in_pct=np.logspace(-2, 1)):
+        '''
+        Construct G/Gmax and damping curves from parameter values.
+
+        Parameter
+        ---------
+        strain_in_pct : numpy.ndarray
+            Strain array. Must be a 1D numpy array. Unit: %
+
+        Returns
+        -------
+        curves : numpy.array
+            The curves matrix. It should have n_layer * 4 columns
+        '''
+        strain_in_pct = np.logspace(-2, 1)
+        curves = None
+        for param in self.param_list:
+            GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
+            damping = param.get_damping(strain_in_pct=strain_in_pct)
+            if curves is None:
+                curves = np.column_stack((strain_in_pct, GGmax,
+                                          strain_in_pct, damping))
+            else:
+                curves = np.column_stack((curves, strain_in_pct, GGmax,
+                                          strain_in_pct, damping))
+
+        return curves
 
     def save_txt(self, filename, precision='%.5g', sep='\t', **kw_to_savetxt):
         '''
@@ -405,7 +433,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             self._filename = filename_or_list
             params = np.genfromtxt(filename_or_list, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
-            list_of_param = [hh.deserialize_array_to_params(_)
+            list_of_param = [mkz.deserialize_array_to_params(_)
                              for _ in list_of_param_array]
         elif isinstance(filename_or_list, list):
             self._filename = None
