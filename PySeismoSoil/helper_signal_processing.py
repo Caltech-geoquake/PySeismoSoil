@@ -496,6 +496,68 @@ def taper_Tukey(input_signal, width=0.05):
     return output
 
 #%%############################################################################
+def calc_transfer_function(input_signal, output_signal, amplitude_only=True,
+                           smooth=False):
+    '''
+    Calculates transfer function between the output and input time-domain
+    signals. The two signals need to have the same time interval and same
+    length.
+
+    Parameters
+    ----------
+    input_signal : numpy.ndarray
+        Input signal in the time domain.
+    ouput_signal : numpy.ndarray
+        Output signal in the time domain.
+
+    Returns
+    -------
+    transfer_func : numpy.ndarray
+        The complex-valued or real-valued transfer function with two columns
+        (frequency and ratio)
+    '''
+    hlp.check_two_column_format(input_signal, name='`input_signal`')
+    hlp.check_two_column_format(output_signal, name='`output_signal`')
+    if hlp.check_numbers_valid(input_signal) in [-1, -2]:
+        raise ValueError('`input_signal` contains invalid values.')
+    if hlp.check_numbers_valid(output_signal) in [-1, -2]:
+        raise ValueError('`output_signal` contains invalid values.')
+
+    dt_in = input_signal[1, 0] - input_signal[0, 0]
+    dt_out = output_signal[1, 0] - output_signal[0, 0]
+    if not np.allclose(dt_in, dt_out, atol=1e-6):
+        raise ValueError('Time intervals of the input and output should match.')
+
+    N_in = input_signal.shape[0]
+    N_out = output_signal.shape[0]
+    if N_in != N_out:
+        raise ValueError('Length of the input and output signals should match.')
+
+    result_in = fourier_transform(input_signal, real_val=False)
+    result_out = fourier_transform(output_signal, real_val=False)
+
+    freq_in = result_in[:, 0]
+    spectrum_in = result_in[:, 1]
+    freq_out = result_out[:, 0]
+    spectrum_out = result_out[:, 1]
+
+    if not np.allclose(freq_in, freq_out, atol=1e-6):
+        print('WARNING in `calc_transfer_function()`: The frequency arrays '
+              'of the output and input Fourier spectra do not match.')
+
+    freq = freq_in
+    transfer_func = spectrum_out / spectrum_in
+
+    if not amplitude_only:
+        return np.column_stack((freq, transfer_func))
+
+    transfer_func = np.abs(transfer_func)
+    if smooth:
+        transfer_func = log_smooth(transfer_func)
+
+    return np.column_stack((freq, transfer_func))
+
+#%%############################################################################
 def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
                fmax=None, n_pts=None, fix_ends=True, beta1=0.9, beta2=0.9):
     '''
@@ -578,37 +640,48 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
 
 #%%############################################################################
 def smooth(x, window_len=15, window='hanning'):
-    """smooth the data using a window with requested size.
+    """
+    Smooth the data using a window with requested size.
 
     This method is based on the convolution of a scaled window with the signal.
     The signal is prepared by introducing reflected copies of the signal
     (with the window size) in both ends so that transient parts are minimized
     in the begining and end part of the output signal.
 
-    input:
-        x: the input signal
-        window_len: the dimension of the smoothing window; should be an odd integer
-        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
-            flat window will produce a moving average smoothing.
+    Parameters
+    ----------
+    x : numpy.ndarray
+        The input signal. Should be a 1D numpy array
+    window_len : int
+        The dimension of the smoothing window; should be an odd integer
+    window : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}
+        The type of window. A 'flat' window will produce a moving average
+        smoothing.
 
-    output:
-        the smoothed signal
+    Returns
+    -------
+    smoothed : numpy.ndarray
+        The smoothed signal (same dimension as `x`)
 
-    example:
+    Example
+    -------
+    >>> t = linspace(-2,2,0.1)
+    >>> x = sin(t)+randn(len(t))*0.1
+    >>> y = smooth(x)
 
-    t=linspace(-2,2,0.1)
-    x=sin(t)+randn(len(t))*0.1
-    y=smooth(x)
-
-    see also:
-
+    See also
+    --------
     numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
     scipy.signal.lfilter
 
-    TO-DO: the window parameter could be the window itself if an array instead of a string
-    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    TO-DO
+    -----
+    The window parameter could be the window itself if an array instead of a string
 
-    [Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html]
+    Notes
+    -----
+    - length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    - Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
     """
 
     if x.ndim != 1:
