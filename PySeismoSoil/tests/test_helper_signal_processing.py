@@ -2,6 +2,7 @@
 
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
@@ -25,6 +26,28 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001))
         self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001))
 
+    def test_calc_transfer_function(self):
+        input_accel = np.genfromtxt('./files/sample_accel.txt')
+        output_accel = input_accel.copy()
+        output_accel[:, 1] *= 2.3
+        transfer_func = sig.calc_transfer_function(input_accel, output_accel)
+        self.assertTrue(np.allclose(transfer_func[:, 1], 2.3))
+
+    def test_smooth(self):
+        raw_signal = sig.fourier_transform(np.genfromtxt('./files/sample_accel.txt'))
+        freq = raw_signal[:, 0]
+        log_smoothed = sig.log_smooth(raw_signal[:, 1], lin_space=False)
+        lin_smoothed = sig.smooth(raw_signal[:, 1])
+
+        alpha=0.75
+        plt.figure()
+        plt.semilogx(freq, raw_signal[:, 1], alpha=alpha, label='raw')
+        plt.semilogx(freq, lin_smoothed, alpha=alpha, label='lin smoothed')
+        plt.semilogx(freq, log_smoothed, alpha=alpha, label='log smoothed')
+        plt.grid(ls=':')
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Signal value')
+        plt.legend(loc='best')
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Signal_Processing)
