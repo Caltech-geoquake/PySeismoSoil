@@ -105,7 +105,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
     def test_add_halfspace(self):
         # Test case 1: already has a half space
-        data = np.genfromtxt('./files/sample_profile.txt')
+        data = np.genfromtxt('./files/sample_profile.txt')  # already has halfspace
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
 
@@ -113,9 +113,11 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(prof_2._thk[-1] == 0)
         self.assertTrue(prof_1._thk[-2] != 0)
         self.assertTrue(prof_2._thk[-2] != 0)  # assert only one "halfspace"
+        self.assertEqual(prof_1.n_layer, 12)
+        self.assertEqual(prof_1.n_layer, prof_2.n_layer)
 
         # Test case 2: no half space
-        data = np.genfromtxt('./files/two_column_data_example.txt')
+        data = np.genfromtxt('./files/two_column_data_example.txt')  # no halfspace
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
 
@@ -123,6 +125,8 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(prof_2._thk[-1] == 0)
         self.assertTrue(prof_1._thk[-2] != 0)
         self.assertTrue(prof_2._thk[-2] != 0)  # assert only one "halfspace"
+        self.assertEqual(prof_1.n_layer, 15)
+        self.assertEqual(prof_1.n_layer, prof_2.n_layer)
 
     def test_vs30(self):
         self.assertAlmostEqual(self.prof.vs30, 276.9231, delta=1e-4)

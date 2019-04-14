@@ -56,6 +56,8 @@ class Vs_Profile:
         Same as provided
     z_max : float
         Maximum depth of the profile
+    n_layer : int
+        Number of soil layers (i.e., not including the half space)
     '''
 
     #--------------------------------------------------------------------------
@@ -80,9 +82,9 @@ class Vs_Profile:
 
         thk = data_[:, 0]
         vs  = data_[:, 1]
-        nr_layers, nr_col = data_.shape
+        n_layer_tmp, n_col = data_.shape
 
-        if nr_col == 2:
+        if n_col == 2:
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if density_unit in ['g/cm^3', 'g/cm3']:
                 rho /= 1000.0  # kg/m^3 --> g/cm^3
@@ -90,12 +92,12 @@ class Vs_Profile:
                 xi *= 100.0  # unity --> percent
 
             if thk[-1] == 0:  # last layer is an "infinity" layer
-                material_number = np.append(np.arange(1, nr_layers),[0])
+                material_number = np.append(np.arange(1, n_layer_tmp),[0])
             else:
-                material_number = np.arange(1, nr_layers+1)
+                material_number = np.arange(1, n_layer_tmp+1)
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
-        elif nr_col == 5:
+        elif n_col == 5:
             xi  = data_[:, 2]
             rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
@@ -130,6 +132,7 @@ class Vs_Profile:
         self.damping_unit = damping_unit
         self.density_unit = density_unit
         self.z_max = np.sum(thk)
+        self.n_layer = len(vs) - 1 if thk[-1] == 0 else len(vs)
 
     #--------------------------------------------------------------------------
     def __repr__(self):
@@ -142,8 +145,8 @@ class Vs_Profile:
                  % self.density_unit
         text += '----------+----------+-------------+------------------+--------------\n'
 
-        nr_layers, nr_col = self.vs_profile.shape
-        for j in range(nr_layers):
+        n_layer_all, _ = self.vs_profile.shape
+        for j in range(n_layer_all):
             text += '{:^10}|'.format('%.2f' % self.vs_profile[j,0])
             text += '{:^10}|'.format('%.1f' % self.vs_profile[j,1])
             if self.damping_unit == '1':
