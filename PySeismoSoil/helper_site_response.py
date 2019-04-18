@@ -1200,60 +1200,10 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
 
     #---------Plot comparisons-------------------
     if show_fig:
-        blue = '#3182bd'
-        red = '#ef3b2c'
-        alpha = 0.7
-        alpha_ = 0.85
-
-        fig = plt.figure(figsize=(8, 4.5), dpi=dpi)
-        ax = []
-
-        ax_ = plt.subplot2grid((2,3), (0,0), colspan=3)
-        if np.max(np.abs(resp)) >= np.max(np.abs(a)):
-            plt.plot(t,resp,c=blue,label='Output')
-            plt.plot(t,a,c=red,label='Input',alpha=alpha)
-        else:
-            plt.plot(t,a,c=red,label='Input',alpha=alpha_)
-            plt.plot(t,resp,c=blue,label='Output',alpha=alpha_)
-        plt.grid(ls=':')
-        plt.legend(loc='upper right')
-        plt.xlim(min(t),max(t))
-        plt.xlabel('Time [sec]')
-        plt.ylabel('Motion')
-        plt.title('Input and output time histories')
-        ax.append(ax_)
-
-        A_ds = np.abs(A[:half_n])
-        RESP_ds = np.abs(RESP[:half_n])
-
-        ax_ = plt.subplot2grid((2,3), (1,0))
-        plt.semilogx(f_array, amp_ss_interp, 'k')
-        plt.semilogx(f_array, np.ones(len(f_array)), '--', c='gray')
-        #plt.xlim(0.1, max(f_array))
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('amplitude(TF)')
-        plt.grid(ls=':')
-        ax.append(ax_)
-
-        ax_ = plt.subplot2grid((2,3), (1,1))
-        plt.plot(f_array, phase_ss_interp, 'k')
-        #plt.xlim(0.1, max(f_array))
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('phase(TF)')
-        plt.grid(ls=':')
-        ax.append(ax_)
-
-        ax_ = plt.subplot2grid((2,3), (1,2))
-        plt.semilogx(f_array, RESP_ds, c=blue, label='Output')
-        plt.loglog(f_array, A_ds, c=red, label='Input',alpha=alpha)
-        plt.legend(loc='best')
-        #plt.xlim(0.1, max(f_array))
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Fourier amp. spect.')
-        plt.grid(ls=':')
-        ax.append(ax_)
-
-        plt.tight_layout(pad=0.3, h_pad=0.4)
+        accel_in = np.column_stack((t, a))
+        accel_out = np.column_stack((t, resp))
+        fig, ax = _plot_site_amp(accel_in, accel_out, f_array, amp_ss_interp,
+                                 phase_ss_interp)
     else:
         fig = None
         ax = None
@@ -1328,6 +1278,106 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
                               show_fig=show_fig, deconv=deconv)
 
     return response
+
+#%%----------------------------------------------------------------------------
+def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
+                   phase_func_1col=None, fig=None, figsize=(8, 4.5), dpi=100):
+    '''
+    Plots site amplification simulation results: input and output ground
+    motions, amplification and phase factors, and Fourier amplitudes of the
+    input and output motions.
+
+    Parameters
+    ----------
+    accel_in_2col : numpy.ndarray
+        Input acceleration as a two-column numpy array (time and acceleration).
+    accel_out_2col : numpy.ndarray
+        Output acceleration as a two-column numpy array (time and acceleration).
+    freq : numpy.ndarray
+        Frequency array (1D numpy array)
+    amplif_func_1col : numpy.ndarray
+        Amplification function (1D numpy array)
+    phase_func_1col : numpy.ndarray
+        Phase function (1D numpy array)
+    fig, ax :
+        Figure and axes objects. If not provided, new objects will be provided.
+    figsize : tuple<float>
+        Figure size (in width and height)
+    dpi : int
+        Figure resolution
+
+    Returns
+    -------
+    fig :
+        Figure object
+    ax : list
+        A list of four subplot axes objects
+    '''
+
+    hlp.check_two_column_format(accel_in_2col, name='`accel_in`')
+    hlp.check_two_column_format(accel_out_2col, name='`accel_out`')
+    hlp.assert_1D_numpy_array(freq, name='`freq`')
+    hlp.assert_1D_numpy_array(amplif_func_1col, name='`amplif_func_1col`')
+    hlp.assert_1D_numpy_array(phase_func_1col, name='`phase_func_1col`')
+
+    t_in, accel_in = accel_in_2col.T
+    t_out, accel_out = accel_out_2col.T
+    assert(np.allclose(t_in, t_out, atol=1e-4))
+    time = t_in
+
+    fig, _ = hlp._process_fig_ax_objects(fig, ax=None, figsize=figsize, dpi=dpi)
+    ax = []
+
+    blue = '#3182bd'
+    red = '#ef3b2c'
+    alpha = 0.7
+    alpha_ = 0.85
+
+    ax_ = plt.subplot2grid((2, 3), (0, 0), fig=fig, colspan=3)
+    if np.max(np.abs(accel_out)) >= np.max(np.abs(accel_in)):
+        plt.plot(time, accel_out, c=blue, label='Output')
+        plt.plot(time, accel_in, c=red, label='Input', alpha=alpha)
+    else:
+        plt.plot(time, accel_in, c=red, label='Input', alpha=alpha_)
+        plt.plot(time, accel_out, c=blue, label='Output', alpha=alpha_)
+    plt.grid(ls=':')
+    plt.legend(loc='upper right')
+    plt.xlim(np.min(time), np.max(time))
+    plt.xlabel('Time [sec]')
+    plt.ylabel('Motion')
+    plt.title('Input and output time histories')
+    ax.append(ax_)
+
+    ax_ = plt.subplot2grid((2, 3), (1, 0), fig=fig)
+    plt.semilogx(freq, amplif_func_1col, 'k')
+    plt.semilogx(freq, np.ones(len(freq)), '--', c='gray')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Amplification')
+    plt.grid(ls=':')
+    ax.append(ax_)
+
+    ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)
+    plt.plot(freq, phase_func_1col, 'k')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Phase shift [rad]')
+    plt.grid(ls=':')
+    ax.append(ax_)
+
+    freq_in, ACCEL_IN = sig.fourier_transform(accel_in_2col).T
+    freq_out, ACCEL_OUT = sig.fourier_transform(accel_out_2col).T
+
+    ax_ = plt.subplot2grid((2, 3), (1, 2), fig=fig)
+    plt.loglog(freq_out, ACCEL_OUT, c=blue, label='Output')
+    plt.loglog(freq_in, ACCEL_IN, c=red, label='Input', alpha=alpha)
+    plt.legend(loc='best')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Fourier amplitudes')
+    plt.grid(ls=':')
+    ax.append(ax_)
+
+    fig.tight_layout(pad=0.3, h_pad=0.4)
+
+    return fig, ax
 
 #%%----------------------------------------------------------------------------
 def _get_freq_interval(input_motion):
