@@ -47,7 +47,8 @@ class Vs_Profile:
     vs_profile : numpy.ndarray
         The full 5-column Vs profile data. If the supplied Vs profile only has
         2 columns, damping and density and material numbers are automatically
-        filled in.
+        filled in. The damping and density values are automatically converted
+        to have SI units.
     vs30 : float
         Reciprocal of the weighted average travel time through the top 30 m.
     damping_unit : str
@@ -86,16 +87,10 @@ class Vs_Profile:
 
         if n_col == 2:
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
-            if density_unit in ['g/cm^3', 'g/cm3']:
-                rho /= 1000.0  # kg/m^3 --> g/cm^3
-            if damping_unit == '%':
-                xi *= 100.0  # unity --> percent
-
             if thk[-1] == 0:  # last layer is an "infinity" layer
                 material_number = np.append(np.arange(1, n_layer_tmp),[0])
             else:
                 material_number = np.arange(1, n_layer_tmp+1)
-
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
         elif n_col == 5:
             xi  = data_[:, 2]
@@ -110,6 +105,11 @@ class Vs_Profile:
             if damping_unit == '1' and max(xi) > 1:
                 print('Warning in initializing Vs_Profile: max(damping) '
                       'larger than 100%. Possible error.')
+
+            if density_unit in ['g/cm^3', 'g/cm3']:
+                data_[:, 3] *= 1000.0  # g/cm^3 --> kg/m^3
+            if damping_unit == '%':
+                data_[:, 2] /= 100.0  # percent --> 1
 
             material_number = data_[:, 4]
             full_data = data_.copy()
