@@ -73,14 +73,17 @@ class Site_Effect_Adjustment():
         phf = sf.get_phase_shift(method='eq_hh')  # only `eq_hh` is valid
 
         if not np.allclose(af.freq, phf.freq):
-            print('Warning: the frequency arrays of the amplification factor '
+            print('Warning in Site_Effect_Adjustment.run(): the frequency '
+                  'arrays of the amplification factor '
                   'and the phase factor are not identical---something may '
                   'be wrong in class_site_factors.py.')
         if af.iscomplex:
-            print('Warning: the amplification factor is complex, rather than '
+            print('Warning in Site_Effect_Adjustment.run(): the '
+                  'amplification factor is complex, rather than '
                   'real---something may be wrong in class_site_factors.py')
         if phf.iscomplex:
-            print('Warning: the phase factor is complex, rather than '
+            print('Warning in Site_Effect_Adjustment.run(): the phase '
+                  'factor is complex, rather than '
                   'real---something may be wrong in class_site_factors.py')
 
         freq = af.freq
