@@ -71,6 +71,11 @@ class Frequency_Spectrum():
         `spectrum` can already be all real numbers.
     amplitude_2col: numpy.ndarray
         A two-column numpy array (frequency and amplitude)
+    phase : numpy.ndarray
+        The phase angle of `spectrum`. If `spectrum` has all real values,
+        `phase` is all zeros.
+    phase_2col : numpy.ndarray
+        A two-column numpy array (frequency and phase)
     iscomplex : bool
         Is `spectrum` complex or already real?
     '''
@@ -106,6 +111,8 @@ class Frequency_Spectrum():
         self.spectrum = spect
         self.amplitude = np.abs(spect)
         self.amplitude_2col = np.column_stack((freq, self.amplitude))
+        self.phase = np.angle(spect)
+        self.phase_2col = np.column_stack((freq, self.phase))
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
     #--------------------------------------------------------------------------
