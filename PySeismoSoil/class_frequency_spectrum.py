@@ -297,7 +297,8 @@ class Transfer_Function(Frequency_Spectrum):
             frequency array.
         '''
         if not self.iscomplex:
-            print('Warning: the frequency spectrum is not a complex array...')
+            print('Warning in get_phase(): the frequency spectrum is not '
+                  'a complex array...')
         if unwrap:
             if robust:
                 phase = sr.robust_unwrap(np.angle(self.spectrum))

@@ -101,12 +101,15 @@ class Vs_Profile:
             xi  = data_[:, 2]
             rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
-                print('WARNING: min(density) is lower than 1000 kg/m^3. Possible error.')
+                print('Warning in initializing Vs_Profile: min(density) is '
+                      'lower than 1000 kg/m^3. Possible error.')
             elif density_unit in ['g/cm^3', 'g/cm3'] and min(rho) <= 1.0:
-                print('WARNING: min(density) is lower than 1.0 g/cm^3. Possible error.')
+                print('Warning in initializing Vs_Profile: min(density) is '
+                      'lower than 1.0 g/cm^3. Possible error.')
 
             if damping_unit == '1' and max(xi) > 1:
-                print('WARNING: max(damping) larger than 100%. Possible error.')
+                print('Warning in initializing Vs_Profile: max(damping) '
+                      'larger than 100%. Possible error.')
 
             material_number = data_[:, 4]
             full_data = data_.copy()
