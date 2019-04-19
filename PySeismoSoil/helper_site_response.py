@@ -1203,7 +1203,7 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         accel_in = np.column_stack((t, a))
         accel_out = np.column_stack((t, resp))
         fig, ax = _plot_site_amp(accel_in, accel_out, f_array, amp_ss_interp,
-                                 phase_ss_interp)
+                                 phase_func_1col=phase_ss_interp)
     else:
         fig = None
         ax = None
@@ -1281,7 +1281,8 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
 
 #%%----------------------------------------------------------------------------
 def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
-                   phase_func_1col=None, fig=None, figsize=(8, 4.5), dpi=100):
+                   amplif_func_1col_smoothed=None, phase_func_1col=None,
+                   fig=None, figsize=(8, 4.5), dpi=100):
     '''
     Plots site amplification simulation results: input and output ground
     motions, amplification and phase factors, and Fourier amplitudes of the
@@ -1297,6 +1298,8 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
         Frequency array (1D numpy array)
     amplif_func_1col : numpy.ndarray
         Amplification function (1D numpy array)
+    amplif_func_1col_smoothed : numpy.ndarray
+        Smoothed amplification function (1D numpy array)
     phase_func_1col : numpy.ndarray
         Phase function (1D numpy array)
     fig, ax :
@@ -1313,12 +1316,15 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     ax : list
         A list of four subplot axes objects
     '''
-
     hlp.check_two_column_format(accel_in_2col, name='`accel_in`')
     hlp.check_two_column_format(accel_out_2col, name='`accel_out`')
     hlp.assert_1D_numpy_array(freq, name='`freq`')
     hlp.assert_1D_numpy_array(amplif_func_1col, name='`amplif_func_1col`')
-    hlp.assert_1D_numpy_array(phase_func_1col, name='`phase_func_1col`')
+    if amplif_func_1col_smoothed is not None:
+        hlp.assert_1D_numpy_array(amplif_func_1col_smoothed,
+                                  name='`amplif_func_1col_smoothed`')
+    if phase_func_1col is not None:
+        hlp.assert_1D_numpy_array(phase_func_1col, name='`phase_func_1col`')
 
     t_in, accel_in = accel_in_2col.T
     t_out, accel_out = accel_out_2col.T
@@ -1349,15 +1355,19 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     ax.append(ax_)
 
     ax_ = plt.subplot2grid((2, 3), (1, 0), fig=fig)
-    plt.semilogx(freq, amplif_func_1col, 'k')
+    plt.semilogx(freq, amplif_func_1col, c=[0.1] * 3, label='Unsmoothed')
+    if amplif_func_1col_smoothed is not None:
+        plt.semilogx(freq, amplif_func_1col_smoothed, c='orange', label='Smoothed')
     plt.semilogx(freq, np.ones(len(freq)), '--', c='gray')
+    if amplif_func_1col_smoothed is not None:
+        plt.legend(loc='best')
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('Amplification')
     plt.grid(ls=':')
     ax.append(ax_)
 
     ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)
-    plt.plot(freq, phase_func_1col, 'k')
+    plt.plot(freq, phase_func_1col, c=[0.1] * 3)
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('Phase shift [rad]')
     plt.grid(ls=':')
