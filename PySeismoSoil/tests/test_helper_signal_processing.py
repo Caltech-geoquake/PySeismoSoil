@@ -33,11 +33,11 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         transfer_func = sig.calc_transfer_function(input_accel, output_accel)
         self.assertTrue(np.allclose(transfer_func[:, 1], 2.3))
 
-    def test_smooth(self):
+    def test_lin_smooth(self):
         raw_signal = sig.fourier_transform(np.genfromtxt('./files/sample_accel.txt'))
         freq = raw_signal[:, 0]
         log_smoothed = sig.log_smooth(raw_signal[:, 1], lin_space=False)
-        lin_smoothed = sig.smooth(raw_signal[:, 1])
+        lin_smoothed = sig.lin_smooth(raw_signal[:, 1])
 
         alpha=0.75
         plt.figure()
