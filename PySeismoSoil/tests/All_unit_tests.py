@@ -7,6 +7,7 @@ from test_class_frequency_spectrum import Test_Class_Frequency_Spectrum
 from test_class_ground_motion import Test_Class_Ground_Motion
 from test_class_parameters import Test_Class_HH_Param
 from test_class_simulation import Test_Class_Simulation
+from test_class_simulation_results import Test_Class_Simulation_Results
 from test_class_site_effect_adjustment import Test_Class_Site_Effect_Adjustment
 from test_class_site_factors import Test_Class_Site_Factors
 from test_class_svm import Test_Class_SVM
@@ -25,6 +26,7 @@ TS.addTests(unittest.makeSuite(Test_Class_Frequency_Spectrum))
 TS.addTests(unittest.makeSuite(Test_Class_Ground_Motion))
 TS.addTests(unittest.makeSuite(Test_Class_HH_Param))
 TS.addTests(unittest.makeSuite(Test_Class_Simulation))
+TS.addTests(unittest.makeSuite(Test_Class_Simulation_Results))
 TS.addTests(unittest.makeSuite(Test_Class_Site_Effect_Adjustment))
 TS.addTests(unittest.makeSuite(Test_Class_Site_Factors))
 TS.addTests(unittest.makeSuite(Test_Class_SVM))
