@@ -5,6 +5,37 @@ import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 
 #%%----------------------------------------------------------------------------
+def detect_OS():
+    '''
+    Check which operating system is currently running
+
+    Returns
+    -------
+    'Windows', 'Linux', or 'Darwin'
+    '''
+    import platform
+    return platform.system()
+
+#%%----------------------------------------------------------------------------
+def get_current_time(for_filename=True):
+    '''
+    Get current time as a string (e.g., 2001-01-01 23:59:59)
+
+    Parameter
+    ---------
+    for_filename : bool
+        Whether the returned string is for filenames or not. If so, colons
+        are substituted with dashes, and the space is substituted with an
+        underscore
+    '''
+    import datetime
+
+    if for_filename:
+        return datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    else:
+        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+#%%----------------------------------------------------------------------------
 def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     '''
     Process figure and axes objects. If fig and ax are None, create new figure
@@ -101,6 +132,22 @@ def assert_1D_numpy_array(something, name=None):
         raise TypeError('%s must be a 1D numpy array.' % name)
 
 #%%----------------------------------------------------------------------------
+def assert_2D_numpy_array(something, name=None):
+    '''
+    Assert that `something` is a 2D numpy array
+
+    Parameters
+    ----------
+    something :
+        Any Python object
+    name : str or None
+        The name of `something` to be displayed in the potential error message
+    '''
+    if not isinstance(something, np.ndarray) or something.ndim != 2:
+        name = '`something`' if name is None else name
+        raise TypeError('%s must be a 2D numpy array.' % name)
+
+#%%----------------------------------------------------------------------------
 def check_two_column_format(something, name=None, ensure_non_negative=False,
                             at_least_two_columns=False):
     '''
@@ -144,7 +191,8 @@ def check_two_column_format(something, name=None, ensure_non_negative=False,
 #%%----------------------------------------------------------------------------
 def check_Vs_profile_format(data):
     '''
-    Check that `data` is in a valid format as a Vs profile.
+    Check that `data` is in a valid format as a Vs profile (i.e., 2D numpy
+    array, two or five columns, non-negative or positive values, etc.)
 
     Parameter
     ---------
@@ -216,7 +264,8 @@ def is_int(number):
 #%%----------------------------------------------------------------------------
 def check_numbers_valid(array):
     '''
-    Generic helper function to check the contents in `array` is valid.
+    Generic helper function to check the contents in `array` is valid (i.e.,
+    are numbers, are not infinite, are positive)
 
     Parameter
     ---------
