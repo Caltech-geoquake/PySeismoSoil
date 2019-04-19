@@ -497,7 +497,7 @@ def taper_Tukey(input_signal, width=0.05):
 
 #%%############################################################################
 def calc_transfer_function(input_signal, output_signal, amplitude_only=True,
-                           smooth=False):
+                           smooth_signal=False):
     '''
     Calculates transfer function between the output and input time-domain
     signals. The two signals need to have the same time interval and same
@@ -506,13 +506,18 @@ def calc_transfer_function(input_signal, output_signal, amplitude_only=True,
     Parameters
     ----------
     input_signal : numpy.ndarray
-        Input signal in the time domain.
+        Input signal in the time domain
     ouput_signal : numpy.ndarray
-        Output signal in the time domain.
+        Output signal in the time domain
+    amplitude_only : bool
+        Whether to keep only the amplitude of the transfer function
+    smooth_signal : bool
+        Whether to smooth the amplitude spectrum. If both `smooth` is True and
+        `amplitude_only` is False, an error will be raised.
 
     Returns
     -------
-    transfer_func : numpy.ndarray
+    trans_func_2col : numpy.ndarray
         The complex-valued or real-valued transfer function with two columns
         (frequency and ratio)
     '''
@@ -548,14 +553,20 @@ def calc_transfer_function(input_signal, output_signal, amplitude_only=True,
     freq = freq_in
     transfer_func = spectrum_out / spectrum_in
 
-    if not amplitude_only:
-        return np.column_stack((freq, transfer_func))
+    if not amplitude_only and smooth_signal:
+        raise ValueError('If `smooth_signal` is set to True, `amplitude_only` '
+                         'needs to be also set to True.')
 
-    transfer_func = np.abs(transfer_func)
-    if smooth:
-        transfer_func = log_smooth(transfer_func)
+    if not smooth_signal:
+        if amplitude_only:
+            trans_func_2col = np.column_stack((freq, np.abs(transfer_func)))
+        else:
+            trans_func_2col = np.column_stack((freq, transfer_func))
+    else:
+        transfer_func = lin_smooth(np.abs(transfer_func))
+        trans_func_2col = np.column_stack((freq, transfer_func))
 
-    return np.column_stack((freq, transfer_func))
+    return trans_func_2col
 
 #%%############################################################################
 def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
@@ -617,7 +628,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
     else:
         x = np.copy(signal)
 
-    y = smooth(x, win_len, window)
+    y = lin_smooth(x, win_len, window)
 
     if fix_ends:
         n = win_len // 2
@@ -639,7 +650,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
     return smoothed_signal
 
 #%%############################################################################
-def smooth(x, window_len=15, window='hanning'):
+def lin_smooth(x, window_len=15, window='hanning'):
     """
     Smooth the data using a window with requested size.
 
@@ -667,7 +678,7 @@ def smooth(x, window_len=15, window='hanning'):
     -------
     >>> t = linspace(-2,2,0.1)
     >>> x = sin(t)+randn(len(t))*0.1
-    >>> y = smooth(x)
+    >>> y = lin_smooth(x)
 
     See also
     --------
