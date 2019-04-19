@@ -94,7 +94,7 @@ class Frequency_Spectrum():
             fmin = df
             n_pts = data_.shape[0]
             fmax = df * n_pts
-            freq = data_[:, 0]
+            freq = np.real_if_close(data_[:, 0])
             spect = data_[:, 1]
         else:
             freq, spect = hlp.interpolate(fmin, fmax, n_pts,
