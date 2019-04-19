@@ -1366,12 +1366,13 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     plt.grid(ls=':')
     ax.append(ax_)
 
-    ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)
-    plt.plot(freq, phase_func_1col, c=[0.1] * 3)
-    plt.xlabel('Frequency [Hz]')
-    plt.ylabel('Phase shift [rad]')
-    plt.grid(ls=':')
-    ax.append(ax_)
+    if phase_func_1col is not None:
+        ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)
+        plt.plot(freq, phase_func_1col, c=[0.1] * 3)
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Phase shift [rad]')
+        plt.grid(ls=':')
+        ax.append(ax_)
 
     freq_in, ACCEL_IN = sig.fourier_transform(accel_in_2col).T
     freq_out, ACCEL_OUT = sig.fourier_transform(accel_out_2col).T

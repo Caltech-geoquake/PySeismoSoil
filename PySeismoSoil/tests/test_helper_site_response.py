@@ -185,7 +185,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         phase = -b * np.ones_like(freq)  # all frequencies are delayed by b rad
 
         motion_out = sr.amplify_motion(input_motion, (freq, (amp, phase)),
-                                       show_fig=False, taper=False)
+                                       show_fig=True, taper=False)
 
         # you can calculate the response by hand:
         accel_out_bench = a * np.sin(time - b) + a * np.cos(2 * time + 1 - b) \
