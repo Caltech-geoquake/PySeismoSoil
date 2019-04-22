@@ -17,11 +17,11 @@ class Site_Factors():
     Parameters
     ----------
     Vs30_in_meter_per_sec : float
-        Vs30 values in SI unit
+        Vs30 values in SI unit.
     z1_in_m : float
-        z1 (basin depth) in meters
+        z1 (basin depth) in meters.
     PGA_in_g : float
-        PGA in g
+        PGA in g.
     lenient : bool
         Whether to ensure the given Vs30, z1, and PGA values are within the
         valid range. If False and the given values fall outside the valid
@@ -30,8 +30,7 @@ class Site_Factors():
 
     Attributes
     ----------
-    Vs30, z1, PGA : float
-        Same as the inputs (same values, same unit)
+    Attributes same as the inputs
     '''
 
     Vs30_array = [175, 200, 250, 300, 350, 400, 450, 500, 550, 600,
@@ -75,25 +74,25 @@ class Site_Factors():
     def get_amplification(self, method='nl_hh', Fourier=True,
                           show_interp_plots=False):
         '''
-        Get site amplification factors
+        Get site amplification factors.
 
         Parmeters
         ---------
         method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
-            amplification factors. 'nl_hh' is recommended
+            amplification factors. 'nl_hh' is recommended.
         Fourier : bool
             Whether or not to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (False)
+            factors (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
-            curves"
+            curves".
 
         Returns
         -------
         amplif : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
             Amplification factors as a function of frequency.
-            (Note: Even if `Fourier` is set to False, i.e., the user is
+            (Note: Even if ``Fourier`` is set to ``False``, i.e., the user is
             querying response spectral amplification, the returned result
             is still (freq, amplif). The user can take the reciprocal of
             frequency to get period.)
@@ -125,12 +124,12 @@ class Site_Factors():
             amplification factors. Currently, only 'eq_hh' is valid.
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
-            curves"
+            curves".
 
         Returns
         -------
         phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
-            Phase shift as a function of frequency
+            Phase shift as a function of frequency.
         '''
         if method not in {'eq_hh'}:
             raise ValueError("Currently, only 'eq_hh' is valid.")
@@ -150,15 +149,15 @@ class Site_Factors():
         ---------
         method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
-            amplification factors. 'nl_hh' is recommended
+            amplification factors. 'nl_hh' is recommended.
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
-            curves"
+            curves".
 
         Returns
         -------
         amplif, phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
-            Amplification and phase-shift as functions of frequency
+            Amplification and phase-shift as functions of frequency.
         '''
         amplif = self.get_amplification(method=method, Fourier=True,
                                         show_interp_plots=show_interp_plots)
@@ -175,25 +174,25 @@ class Site_Factors():
         Parameters
         ----------
         amplif_or_phase : {'amplif', 'phase'}
-            Specifies what to query: amplification or phase
+            Specifies what to query: amplification or phase.
         data_dir : str
-            Directory where the csv data files are stored
+            Directory where the csv data files are stored.
         method : {'nl_hh', 'eq_hh', 'eq_kz'}
             Which site response simulation method was used to calculate the
-            amplification factors. 'nl_hh' is recommended
+            amplification factors. 'nl_hh' is recommended.
         Fourier : bool
             Whether or not to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (False)
+            factors (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
-            curves"
+            curves".
 
         Returns
         -------
         x : numpy.ndarray
-            Frequency or period array
+            Frequency or period array.
         y_interp : numpy.ndarray
-            Amplification or phase shift, interpolated
+            Amplification or phase shift, interpolated.
         '''
         Vs30 = self.Vs30
         z1 = self.z1
@@ -243,13 +242,13 @@ class Site_Factors():
         Parameters
         ----------
         amplif_or_phase : {'amplif', 'phase'}
-            Specifies what to query: amplification or phase
+            Specifies what to query: amplification or phase.
         Vs30 : scalar
-            Vs30 value. Unit: m/s
+            Vs30 value. Unit: m/s.
         z1 : scalar
-            Basin depth (i.e., depth to Vs = 1000 m/s). Unit: m
+            Basin depth (i.e., depth to Vs = 1000 m/s). Unit: m.
         PGA : scalar
-            Peak ground acceleration. Unit: g
+            Peak ground acceleration. Unit: g.
         Fourier : bool
             Whether or not to return Fourier-spectra-based amplification
             factors or response-spectra based factors.
@@ -257,7 +256,7 @@ class Site_Factors():
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
         data_dir : str
-            Directory where the csv data files are stored
+            Directory where the csv data files are stored.
 
         Returns
         -------
@@ -346,9 +345,10 @@ class Site_Factors():
             In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
             Out: [0, 1]
 
-        It is assumed that `value` is already within `array`.  If you want to add
-        robustness for cases where value < min(array) or value > max(array), just
-        add two `if` statements: if value < array[0] or value > array[-1].
+        It is assumed that ``value`` is already within ``array``.  If you
+        want to add robustness for cases where value < min(array) or
+        value > max(array), just add two "``if``" statements::
+            if value < array[0] or value > array[-1]
         '''
 
         if value == array[0]:
@@ -369,34 +369,35 @@ class Site_Factors():
         ----------
         ref_points : list of tuples
             Coordinates of reference points at which the values are given by
-            `values`. Each element of `ref_points` is the coordinate of a point
-            as a tuple.
+            `values`. Each element of ``ref_points`` is the coordinate of a
+            point as a tuple.
         values : list of lists
             Values of interest corresponding to each reference point. There can be
             different versions of values at the reference points (for example, at
             different frequencies, the reference points take on different voltages).
 
-            So the structure of `values` shall look like this:
+            So the structure of ``values`` shall look like this::
 
-            values =
-                [ [1, 2, 3, 4, ...]  # reference point No.1
-                  [2, 3, 4, 5, ...]  # reference point No.2
-                  [3, 4, 5, 6, ...]  # reference point No.3
-                  ...
-                  [9, 10, 11, 12, ...]  # reference point No.X
-                ]   # Each vertical slice is a version of values at the ref. points
+             values =
+                 [ [1, 2, 3, 4, ...]  # reference point No.1
+                   [2, 3, 4, 5, ...]  # reference point No.2
+                   [3, 4, 5, 6, ...]  # reference point No.3
+                   ...
+                   [9, 10, 11, 12, ...]  # reference point No.X
+                 ]   # Each vertical slice is a version of values at the ref. points
 
         interp_points : list or tuple
             Point at which you want to know the value. Only one point is allow at
             a time.
         method : {'linear', 'nearest', 'cubic'}
-            Method of interpolation. See documentation of scipy.interpolate.griddata.
+            Method of interpolation. See documentation of
+            ``scipy.interpolate.griddata``.
 
         Returns
         -------
         interp_result : numpy.ndarray
             The interpolation result having the same length as the number of
-            "versions" in `values`.
+            "versions" in ``values``.
         '''
 
         assert(type(ref_points) == list)
@@ -429,31 +430,32 @@ class Site_Factors():
 
         Parameters
         ----------
-        ref_points : list of tuples
-            List of tuples of (Vs30, z1, PGA), which are the reference points
+        ref_points : list<tuples>
+            List of tuples of (Vs30, z1, PGA), which are the reference points.
         query_point : tuple
-            A tuple of (Vs30, z1, PGA) at which you want to query the factors
+            A tuple of (Vs30, z1, PGA) at which you want to query the factors.
         T_or_freq : numpy.ndarray
-            Period or frequency array
+            Period or frequency array.
         amps : list of numpy.ndarray
-            A list of amplification factors at the reference points. Must have the
-            same length as `ref_points`.
+            A list of amplification factors at the reference points. Must have
+            the same length as ``ref_points``.
         amp_interp : numpy.array
-            Interpolated amplification factor at `query_point`
+            Interpolated amplification factor at ``query_point``.
         phases : list of numpy.array (optional)
-            A list of phase shift factors at the reference points. Must have the
-            same length as `ref_points`.
+            A list of phase shift factors at the reference points. Must have
+            the same length as ``ref_points``.
         phase_interp : numpy.array
-            Interpolated phase shift factor at `query_point`
+            Interpolated phase shift factor at ``query_point``.
         Fourier : bool
-            Whether or not the amplification factors passed in are the Fourier-
-            based factors
+            Whether or not the amplification factors passed in are the
+            Fourier-based factors.
 
         Return
         ------
         fig, ax1, ax2 OR fig, ax:
             If the user also passes in the phase factors, then two subplots are
-            produced, and `ax1` and `ax2` are the axes objects of the two subplots.
+            produced, and ``ax1`` and ``ax2`` are the axes objects of the two
+            subplots.
         '''
 
         import matplotlib.pyplot as plt

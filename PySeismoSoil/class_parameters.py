@@ -23,18 +23,18 @@ class Parameter(collections.UserDict):
     Parameters
     ----------
     param_dict : dict
-        Name-value pairs of the parameters
+        Name-value pairs of the parameters.
     allowable_keys : set<str>
-        The allowable parameter names of the constitutive model
+        The allowable parameter names of the constitutive model.
     func_stress : Python function
-        A function to calculate shear stress from the parameters
+        A function to calculate shear stress from the parameters.
 
     Attributes
     ----------
     data : dict
-        The original data, stored as a regular dictionary
+        The original data, stored as a regular dictionary.
     allowable_keys : set<str>
-        Same as the input parameter
+        Same as the input parameter.
     '''
     def __init__(self, param_dict, allowable_keys=None, func_stress=None):
         if not isinstance(param_dict, dict):
@@ -64,6 +64,11 @@ class Parameter(collections.UserDict):
         Serializes the parameter values into an array of floats. The order of
         the parameters are arbitrary, so any subclass of this class is
         recommended to override this method.
+
+        Returns
+        -------
+        result : numpy.ndarray
+            Serialized parameters.
         '''
         param_array = []
         for key, val in self.data.items():
@@ -74,15 +79,16 @@ class Parameter(collections.UserDict):
         '''
         Get the shear stress array inferred from the set of parameters
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         strain_in_pct : numpy.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        The shear stress array, with the same shape as the strain array. Its
-        unit is identical to the unit of Gmax (one of the HH parameters).
+        result : numpy.ndarray
+            The shear stress array, with the same shape as the strain array.
+            Its unit is identical to the unit of Gmax (one of the HH parameters).
         '''
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
@@ -94,14 +100,15 @@ class Parameter(collections.UserDict):
         '''
         Get the G/Gmax array inferred from the set of parameters
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         strain_in_pct : numpy.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        The G/Gmax array, with the same shape as the strain array
+        result : numpy.ndarray
+            The G/Gmax array, with the same shape as the strain array.
         '''
         tau = self.get_stress(strain_in_pct=strain_in_pct)
         if tau is None:
@@ -116,14 +123,15 @@ class Parameter(collections.UserDict):
         '''
         Get the damping array inferred from the set of parameters
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         strain_in_pct : numpy.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        The damping array (unit: %), with the same shape as the strain array
+        result : numpy.ndarray
+            The damping array (unit: %), with the same shape as the strain array
         '''
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
@@ -136,23 +144,31 @@ class Parameter(collections.UserDict):
         '''
         Plot G/Gmax and damping curves from the model parameters
 
-        Parameter
-        ---------
-        figsize : tuple
-            Figure size
-        dpi : int
-            DPI of plot
+        Parameters
+        ----------
+        figsize: (float, float)
+            Figure size in inches, as a tuple of two numbers. If ``None``, use
+            (3, 6).
+        dpi : float
+            Figure resolution. If ``None``, use 100.
         **kwargs_to_matplotlib :
-            Keyword arguments to be passed to matplotlib.pyplot.plot()
+            Keyword arguments to be passed to ``matplotlib.pyplot.plot()``.
 
         Returns
         -------
-        fig, ax :
-            matplotlib objects of the figure and the axes
+        fig : matplotlib.figure.Figure
+            The figure object.
+        ax : list<matplotlib.axes._subplots.AxesSubplot>
+            A list of two axes objects.
         '''
         strain = np.logspace(-2, 1)  # unit: percent
         GGmax = self.get_GGmax(strain)
         damping = self.get_damping(strain)
+
+        if figsize is None:
+            figsize = (3, 6)
+        if dpi is None:
+            dpi = 100
 
         fig = plt.figure(figsize=figsize, dpi=dpi)
         ax = [None, None]
@@ -185,9 +201,9 @@ class HH_Param(Parameter):
     Attributes
     ----------
     data : dict
-        HH model parameters with the keys listed above
+        HH model parameters with the keys listed above.
     allowable_keys : set<str>
-        Valid parameter names of the HH model
+        Valid parameter names of the HH model.
     '''
     def __init__(self, param_dict):
         allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
@@ -217,7 +233,9 @@ class MKZ_Param(Parameter):
     Attributes
     ----------
     data : dict
-        HH model parameters with the keys listed above
+        MKZ model parameters with the keys listed above.
+    allowable_keys : set<str>
+        Valid parameter names of the MKZ model.
     '''
     def __init__(self, param_dict):
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
@@ -238,7 +256,7 @@ class Param_Multi_Layer():
 
     Its behavior is similar to a list,
     but with a more stringent requirement: all elements are of the same data
-    type, i.e., `element_class`.
+    type, i.e., ``element_class``.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -251,18 +269,18 @@ class Param_Multi_Layer():
     Parameters
     ----------
     list_of_param_data : list<dict> or list<Param>
-        List of dict or a list of valid parameter class (such as HH_Param),
-        which contain data for parameters of each layer
+        List of dict or a list of valid parameter class (such as ``HH_Param``),
+        which contain data for parameters of each layer.
     element_class : PySeismoSoil.class_parameters.HH_Param_Single_Layer et al
-        A class name, such as `HH_Param`. Each element of `list_of_param_dict`
-        will be used to initialize an object of `element_class`.
+        A class name, such as ``HH_Param``. Each element of ``list_of_param_dict``
+        will be used to initialize an object of ``element_class``.
 
     Attributes
     ----------
-    param_list : list<`element_class`>
-        A list of param objects whose type is specified by the user
+    param_list : list<``element_class``>
+        A list of param objects whose type is specified by the user.
     n_layer : int
-        The number of soil layers (i.e., the length of the list)
+        The number of soil layers (i.e., the length of the list).
     '''
 
     def __init__(self, list_of_param_data, element_class):
@@ -273,7 +291,7 @@ class Param_Multi_Layer():
             elif isinstance(param_data, element_class):
                 param_list.append(param_data)
             else:
-                raise TypeError('An element in `list_of_param_data` has '
+                raise TypeError('An element in ``list_of_param_data`` has '
                                 'invalid type.')
         self.param_list = param_list
         self.n_layer = len(param_list)
@@ -295,15 +313,15 @@ class Param_Multi_Layer():
         '''
         Construct G/Gmax and damping curves from parameter values.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         strain_in_pct : numpy.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
         curves : numpy.array
-            The curves matrix. It should have n_layer * 4 columns
+            The curves matrix. It should have n_layer * 4 columns.
         '''
         strain_in_pct = np.logspace(-2, 1)
         curves = None
@@ -321,12 +339,12 @@ class Param_Multi_Layer():
 
     def serialize_to_2D_array(self):
         '''
-        Serielizes the parameter data to a 2D numpy array
+        Serielizes the parameter data to a 2D numpy array.
 
         Returns
         -------
         param_2D_array : numpy.array
-            A 2D numpy array whose columns are parameters of each layer
+            A 2D numpy array whose columns are parameters of each layer.
         '''
         output = []
         for param_single_layer in self.param_list:
@@ -343,13 +361,13 @@ class Param_Multi_Layer():
         Parameters
         ----------
         filename : str
-            File name (including path) of the output file
+            File name (including path) of the output file.
         precision : str
-            Precision of the numbers to be saved
+            Precision of the numbers to be saved.
         sep : str
-            Delimiter identifier
-        kw_to_savetxt :
-            Additional keyword arguments to pass to numpy.savetxt()
+            Delimiter identifier.
+        **kw_to_savetxt :
+            Additional keyword arguments to pass to ``numpy.savetxt()``.
         '''
         param_2D_array = self.serialize_to_2D_array()
         np.savetxt(filename, param_2D_array, fmt=precision, delimiter=sep,
@@ -374,19 +392,19 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_list : str or list<dict> or list<HH_Param>
+    filename_or_list : str or list<dict> or list<``HH_Param``>
         A file name of a validly formatted parameter file, or a list containing
-        HH parameter data
+        HH parameter data.
     sep : str
-        Delimiter of the file to be imported. If `filename_or_list_of_curves`
-        is a list, `sep` has no effect.
+        Delimiter of the file to be imported. If ``filename_or_list_of_curves``
+        is a list, ``sep`` has no effect.
 
     Attributes
     ----------
-    param_list : list<HH_Param>
-        A list of HH model parameters
+    param_list : list<``HH_Param``>
+        A list of HH model parameters.
     n_layer : int
-        The number of soil layers (i.e., the length of the list)
+        The number of soil layers (i.e., the length of the list).
     '''
 
     def __init__(self, filename_or_list, sep='\t'):
@@ -400,7 +418,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
             self._filename = None
             list_of_param = filename_or_list
         else:
-            raise TypeError('Unrecognized type for `filename_or_list`.')
+            raise TypeError('Unrecognized type for ``filename_or_list``.')
 
         self._sep = sep
 
@@ -425,19 +443,19 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_list : str or list<dict> or list<HH_Param>
+    filename_or_list : str or list<dict> or list<``MKZ_Param``>
         A file name of a validly formatted parameter file, or a list containing
-        MKZ parameter data
+        MKZ parameter data.
     sep : str
-        Delimiter of the file to be imported. If `filename_or_list_of_curves`
-        is a list, `sep` has no effect.
+        Delimiter of the file to be imported. If ``filename_or_list_of_curves``
+        is a list, ``sep`` has no effect.
 
     Attributes
     ----------
-    param_list : list<MKZ_Param>
-        A list of MKZ model parameters
+    param_list : list<``MKZ_Param``>
+        A list of MKZ model parameters.
     n_layer : int
-        The number of soil layers (i.e., the length of the list)
+        The number of soil layers (i.e., the length of the list).
     '''
 
     def __init__(self, filename_or_list, sep='\t'):
@@ -451,7 +469,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             self._filename = None
             list_of_param = filename_or_list
         else:
-            raise TypeError('Unrecognized type for `filename_or_list`.')
+            raise TypeError('Unrecognized type for ``filename_or_list``.')
 
         self._sep = sep
 

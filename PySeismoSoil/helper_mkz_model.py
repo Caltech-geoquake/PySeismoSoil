@@ -9,18 +9,19 @@ from . import helper_site_response as sr
 def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
     '''
     Calculate the MKZ shear stress. The MKZ model is proposed in Matasovic and
-    Vucetic (1993), and has the following form:
+    Vucetic (1993), and has the following form::
 
                               Gmax * gamma
         T(gamma) = ---------------------------------------
                       1 + beta * (gamma / gamma_ref)^s
 
-    where T         = shear stress
-          gamma     = shear strain
-          Gmax      = initial shear modulus
-          beta      = a shape parameter of the MKZ model
-          gamma_ref = reference strain, another shape parameter of the MKZ model
-          s         = another shape parameter of the MKZ model
+    where:
+        + T         = shear stress
+        + gamma     = shear strain
+        + Gmax      = initial shear modulus
+        + beta      = a shape parameter of the MKZ model
+        + gamma_ref = reference strain, another shape parameter of the MKZ model
+        + s         = another shape parameter of the MKZ model
 
     Parameters
     ----------
@@ -28,19 +29,19 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     gamma_ref : float
-        Reference shear strain, a shape parameter of the MKZ model
+        Reference shear strain, a shape parameter of the MKZ model.
     beta : float
-        A shape parameter of the MKZ model
+        A shape parameter of the MKZ model.
     s : float
-        A shape parameter of the MKZ model
+        A shape parameter of the MKZ model.
     Gmax : float
         Initial shear modulus. Its unit can be arbitrary, but we recommend Pa.
 
     Returns
     -------
     T_MKZ : numpy.ndarray
-        The shear stress determined by the formula above. Same shape as `x`,
-        and same unit as `Gmax`.
+        The shear stress determined by the formula above. Same shape as ``x``,
+        and same unit as ``Gmax``.
     '''
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_MKZ = Gmax * gamma / ( 1 + beta * (np.abs(gamma) / gamma_ref)**s )
@@ -63,10 +64,10 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
     use_scipy : bool
-        Whether to use the "differential_evolution" algorithm implemented in
-        scipy (https://docs.scipy.org/doc/scipy/reference/generated/
-        scipy.optimize.differential_evolution.html) to perform the optimization.
-        If False, use the algorithm implemented in the DEAP package.
+        Whether to use the "differential_evolution" algorithm in scipy
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html)
+        to perform the optimization. If ``False``, use the algorithm in the
+        DEAP package.
     pop_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
@@ -76,31 +77,31 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
     lower_bound_power : float
         The 10-based power of the lower bound of all the 9 parameters. For
         example, if your desired lower bound is 0.26, then set this parameter
-        to be numpy.log10(0.26)
+        to be numpy.log10(0.26).
     upper_bound_power : float
         The 10-based power of the upper bound of all the 9 parameters.
     eta : float
-        Crowding degree of the mutation or crossover. A high eta will produce
-        children resembling to their parents, while a small eta will produce
+        Crowding degree of the mutation or crossover. A high ``eta`` will produce
+        children resembling to their parents, while a low ``eta`` will produce
         solutions much more different.
     seed : int
-        Seed value for the random number generator
+        Seed value for the random number generator.
     show_fig : bool
-        Whether to show the curve fitting results as a figure
+        Whether to show the curve fitting results as a figure.
     verbose : bool
         Whether to display information (statistics of the loss in each
-        generation) on the console
+        generation) on the console.
     supress_warnings : bool
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
     parallel : bool
         Whether to use multiple processors in the calculation. All CPU cores
-        will be used if set to True.
+        will be used if set to ``True``.
 
     Return
     ------
     best_param : dict
-        The best parameters found in the optimization
+        The best parameters found in the optimization.
     '''
 
     hlp.check_two_column_format(damping_data_in_pct, ensure_non_negative=True)
@@ -187,22 +188,22 @@ def serialize_params_to_array(param, to_files=False):
     order:
         gamma_ref, s, beta, Gmax
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     param : dict
-        A dictionary containing the parameters of the MKZ model
+        A dictionary containing the parameters of the MKZ model.
     to_files : bool
         Whether the result is for writing to files. If so, the last parameter,
         Gmax, is removed, and a dummy parameter, b, which is always 0, is
         inserted between gamma_ref and s. This is for historical reasons: the
         text files recognizable by MATLAB and Fortran functions have the
-        convention of "gamma_ref, 0.0, s, beta"
+        convention of "gamma_ref, 0.0, s, beta".
 
     Returns
     -------
     param_array : numpy.array
         A numpy array of shape (9,) containing the parameters of the MKZ model
-        in the order specified above
+        in the order specified above.
     '''
     assert(len(param) == 4)
     order = ['gamma_ref', 's', 'beta', 'Gmax']
@@ -220,14 +221,14 @@ def deserialize_array_to_params(array, from_files=False):
     '''
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
-    The users needs to ensure the order of values in `array` are in this order:
+    The users needs to ensure the order of values in ``array`` are in this order:
         gamma_ref, s, beta, Gmax
     or:
         gamma_ref, b, s, beta
     (where b is always 0, for historical reasons)
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     array : numpy.ndarray
         A 1D numpy array of MKZ parameter values in this order:
             gamma_ref, s, beta, Gmax
@@ -240,7 +241,7 @@ def deserialize_array_to_params(array, from_files=False):
     Returns
     -------
     param : dict
-        The dictionary with parameter name as keys and values as values
+        The dictionary with parameter name as keys and values as values.
     '''
 
     hlp.assert_1D_numpy_array(array)

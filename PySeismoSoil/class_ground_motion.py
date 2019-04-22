@@ -24,61 +24,61 @@ class Ground_Motion:
 
         The data can have one column (which contains the motion) or two
         columns (1st column: time; 2nd column: motion). If only one column
-        is supplied, another input parameter "dt" must also be supplied.
+        is supplied, another input parameter ``dt`` must also be supplied.
     unit : str
         Valid values include:
             ['m', 'cm', 'ft', 'in',
-             'm/s', 'cm/s', 'ft/s', 'in/s',
-             'm/s/s', 'cm/s/s', 'ft/s/s', 'in/s/s', 'gal', 'g']
+            'm/s', 'cm/s', 'ft/s', 'in/s',
+            'm/s/s', 'cm/s/s', 'ft/s/s', 'in/s/s', 'gal', 'g']
     motion_type : {'accel', 'veloc', 'displ'}
         Specifying what type of motion "data" contains. It needs to be
         consistent with "unit". For example, if motion_type is "accel" and
         unit is "m/s", an exception will be raised.
     dt : float
-        Recording time interval of the ground motion. If `data` has only one
-        column, this parameter must be supplied. If `data` has two columns,
+        Recording time interval of the ground motion. If ``data`` has only one
+        column, this parameter must be supplied. If ``data`` has two columns,
         this parameter is ignored.
     sep : str
-        Delimiter character for reading the text file. If `data` is supplied as
+        Delimiter character for reading the text file. If ``data`` is supplied as
         a numpy array, this parameter is ignored.
     **kwargs_to_genfromtxt :
-        Any extra keyword arguments will be passed to numpy.genfromtxt()
+        Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
         function for loading the data from the hard drive (if applicable).
 
     Attributes
     ----------
     dt : float
-        Recording time interval of the motion
+        Recording time interval of the motion.
     time : numpy.ndarray
-        1D numpy array: the time points in seconds
+        1D numpy array: the time points in seconds.
     accel : numpy.ndarray
         A numpy array of two columns, whose first column is identical to "time",
-        and second column is the acceleration in SI unit
+        and second column is the acceleration in SI unit.
     veloc : numpy.ndarray
         A numpy array of two columns, whose first column is identical to "time",
-        and second column is the velocity in SI unit
+        and second column is the velocity in SI unit.
     displ : numpy.ndarray
         A numpy array of two columns, whose first column is identical to "time",
-        and second column is the displacement in SI unit
+        and second column is the displacement in SI unit.
     pga, pgv, pgd : float
-        Peak ground acceleration, velocity, and displacement in SI unit
+        Peak ground acceleration, velocity, and displacement in SI unit.
     pga_in_gal, pga_in_g, pgv_in_cm_s, pgd_in_cm : <float>
-        PGA, PGV, and PGD in other common units
+        PGA, PGV, and PGD in other common units.
     Arias_Intensity : numpy.ndarray
         A numpy array of two columns, whose first column is identical to "time",
-        and second column is the Arias intensity
+        and second column is the Arias intensity.
     Arias_Intensity_normalized : numpy.ndarray
         A numpy array of two columns, whose first column is identical to "time",
-        and second column is the normalized Arias intensity
+        and second column is the normalized Arias intensity.
     peak_Arias_Intensity : float
-        The last element of the second column of Arias_Intensity
+        The last element of the second column of Arias_Intensity.
     T5_95 : float
         The time interval (in seconds) between 5% of peak Arias intensity
-        to 95% of peak Arias intensity
+        to 95% of peak Arias intensity.
     rms_accel, rms_veloc, rms_displ : float
-        Root-mean-square acceleration, velocity, and displacement of the motion
+        Root-mean-square acceleration, velocity, and displacement of the motion.
     _path_name, _file_name : str
-        Names of the directory and file of the input data, if a file name
+        Names of the directory and file of the input data, if a file name.
     '''
 
     #--------------------------------------------------------------------------
@@ -95,13 +95,13 @@ class Ground_Motion:
         if unit not in ['m', 'cm', 'ft', 'in',
                         'm/s', 'cm/s', 'ft/s', 'in/s',
                         'm/s/s', 'cm/s/s', 'ft/s/s', 'in/s/s', 'gal', 'g']:
-            raise ValueError("Invalid nane for `unit`.")
+            raise ValueError("Invalid nane for ``unit``.")
 
         if motion_type not in ['accel','veloc','displ']:
             raise ValueError("motion_type must be: ['accel','veloc','displ']")
 
         if (unit == 'g' or unit == 'gal') and motion_type != 'accel':
-            raise ValueError("If unit is g or gal, then motion_type must be `accel`.")
+            raise ValueError("If unit is g or gal, then motion_type must be ``accel``.")
 
         if motion_type == 'veloc':  # convert data into acceleration first
             data_ = sr.num_diff(data_)
@@ -155,7 +155,7 @@ class Ground_Motion:
     #--------------------------------------------------------------------------
     def summary(self):
         '''
-        Shows a brief summary of the ground motion.
+        Show a brief summary of the ground motion.
         '''
         print(self)
         self.plot()
@@ -169,17 +169,18 @@ class Ground_Motion:
         Parameters
         ----------
         real_val : bool
-            Whether to return the amplitude (or "magnitude") of the complex numbers
+            Whether to return the amplitude (or "magnitude") of the complex
+            numbers.
         double_sided : bool
             Whether to return the second half of the spectrum (i.e. beyond the
-            Nyquist frequency)
+            Nyquist frequency).
         show_fig : bool
-            Whether to show figures of the spectrum
+            Whether to show figures of the spectrum.
 
         Return
         ------
         fs : PySeismoSoil.class_frequency_spectrym.Frequency_Spectrum
-            A frequency spectrum object
+            A frequency spectrum object.
         '''
 
         x = sig.fourier_transform(self.accel, real_val, double_sided, show_fig)
@@ -197,20 +198,20 @@ class Ground_Motion:
         Parameters
         ----------
         T_min : float
-            Minimum period value to calculate the response spectra
+            Minimum period value to calculate the response spectra.
         T_max : float
-            Maximum period value to calculate the response spectra
+            Maximum period value to calculate the response spectra.
         n_pts : int
             Number of points you want for the response spectra. A high number
             increases computation time.
         damping : float
             Damping of the dash pots. Do not use "percent" as unit. Use 1-based.
         show_fig : bool
-            Whether to show a figure of the response spectra
+            Whether to show a figure of the response spectra.
         parallel : bool
-            Whether to perform the calculation in parallel
+            Whether to perform the calculation in parallel.
         n_cores : int or None
-            Number of cores to use in parallel. Not necessary if not `parallel`.
+            Number of cores to use in parallel. Not necessary if not ``parallel``.
         subsample_interval : int
             The interval at which to subsample the input acceleration. A higher
             number saves computation time.
@@ -235,7 +236,27 @@ class Ground_Motion:
         '''
         Plots acceleration, velocity, and displacement waveforms together.
 
-        Returns the figure and axes objects.
+        Parameters
+        ----------
+        show_as_unit : str
+            What unit to convert the ground motion into, when plotting.
+        fig : matplotlib.figure.Figure or ``None``
+            Figure object. If None, a new figure will be created.
+        ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+            Axes object. If None, a new axes will be created.
+        figsize: (float, float)
+            Figure size in inches, as a tuple of two numbers. The figure
+            size of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
+            this parameter.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
         '''
         if self._file_name:
             title = self._file_name
@@ -259,6 +280,16 @@ class Ground_Motion:
         '''
         Convert the unit of acceleration. "In-place" conversion is not allowed,
         because ground motions are always stored in SI units internally.
+
+        Parameters
+        ----------
+        unit : str
+            What unit to convert the acceleration into.
+
+        Returns
+        -------
+        data_ : numpy.ndarray
+            A numpy array with two columns (time, acceleration).
         '''
         data_ = self.accel.copy()
 
@@ -281,6 +312,16 @@ class Ground_Motion:
     def get_accel(self, unit='m/s/s'):
         '''
         Returns the acceleration time history.
+
+        Parameters
+        ----------
+        unit : str
+            What unit the obtained acceleration should be in.
+
+        Returns
+        -------
+        accel : numpy.ndarray
+            A numpy array with two columns (time, acceleration).
         '''
         return self.unit_convert(unit)
 
@@ -288,6 +329,16 @@ class Ground_Motion:
     def get_veloc(self, unit='m/s'):
         '''
         Returns the velocity time history.
+
+        Parameters
+        ----------
+        unit : str
+            What unit the obtained velocity should be in.
+
+        Returns
+        -------
+        veloc : numpy.ndarray
+            A numpy array with two columns (time, velocity).
         '''
         if unit == 'm/s':
             return sr.num_int(self.accel)[0]
@@ -300,6 +351,16 @@ class Ground_Motion:
     def get_displ(self, unit='m'):
         '''
         Returns the displacement time history.
+
+        Parameters
+        ----------
+        unit : str
+            What unit the obtained displacement should be in.
+
+        Returns
+        -------
+        accel : numpy.ndarray
+            A numpy array with two columns (time, displacement).
         '''
         if unit == 'm':
             return sr.num_int(self.accel)[1]
@@ -423,8 +484,8 @@ class Ground_Motion:
             The factor to multiply to the original acceleration (with the
             unit of m/s/s)
         target_PGA_in_g : float
-            The target PGA (in g). If `target_PGA_in_g` is not None, it
-            overrides `factor`.
+            The target PGA (in g). If ``target_PGA_in_g`` is not None, it
+            overrides ``factor``.
 
         Returns
         -------
@@ -448,11 +509,11 @@ class Ground_Motion:
 
         Parameters
         ----------
-        limit : tuple or list of two floats
+        limit : (float, float) or [float, float]
             The lower/upper bounds of time (e.g., [2, 95]) or normalized Arias
-            intensity (e.g., [0.05, 0.95])
+            intensity (e.g., [0.05, 0.95]).
         arias : bool
-            Whether or not "limit" means the normalized Arias intensity
+            Whether or not ``limit`` means the normalized Arias intensity.
         extend : tuple or list of two floats
             How many seconds to extend before and after the original truncated
             time limits. For example, if extend is [5, 5] sec, and the original
@@ -464,14 +525,15 @@ class Ground_Motion:
         Returns
         -------
         truncated_accel : Ground_Motion
-            Truncated ground motion
-        fig, ax :
-            Figure and axes objects
+            Truncated ground motion.
+        fig : matplotlib.figure.Figure
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
         (n1, n2) : tuple<int>
             The indices at which signal is truncated. In other words,
-            truncated_accel = original_accel[n1 : n2]
+            truncated_accel = original_accel[n1 : n2].
         '''
-
         if not isinstance(limit, (tuple, list)):
             raise TypeError('"limit" must be a list/tuple of  two elements.')
         if len(limit) != 2:
@@ -558,7 +620,7 @@ class Ground_Motion:
                 (1) A complex-valued transformation, which should be a 1D complex
                     numpy array
                 (2) A tuple of (amplitude, phase) which represents the complex
-                    numbers. `amplitude` and `phase` both need to be 1D arrays and
+                    numbers. ``amplitude`` and ``phase`` both need to be 1D arrays and
                     real-valued.
             The transfer function only needs to be "single-sided" (see note below.)
         taper : bool
@@ -567,31 +629,34 @@ class Ground_Motion:
             Whether to extrapolate the transfer function if its frequency range
             does not reach the frequency range implied by the input motion
         deconv : bool
-            If `False`, a regular amplification is performed; otherwise, the
+            If ``False``, a regular amplification is performed; otherwise, the
             transfer function is "deducted" from the input motion ("deconvolution").
         show_fig : bool
             Whether or not to show an illustration of how the calculation is
             carried out.
         dpi : int
-            Desired DPI for the figures; only effective when `show_fig` is True
+            Desired DPI for the figures; only effective when ``show_fig`` is 
+            ``True``.
         return_fig_obj : bool
-            Whether or not to return figure and axis objects to the caller
+            Whether or not to return figure and axis objects to the caller.
 
         Returns
         -------
         output_motion : Ground_Motion
             The resultant ground motion in time domain
-        fig, ax : (optional)
-            Figure and axis objects
+        fig : matplotlib.figure.Figure, *optional*
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot, *optional*
+            The axes object being created or being passed into this function.
 
         Note
         ----
         "Single sided":
-            For example, the sampling time interval of `input_motion` is 0.01 sec,
-            then the Nyquist frequency is 50 Hz. Therefore, the transfer function
-            needs to contain information at least up to the Nyquist frequency,
-            i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
-            input motion at all.
+            For example, the sampling time interval of ``input_motion`` is 0.01
+            sec, then the Nyquist frequency is 50 Hz. Therefore, the transfer
+            function needs to contain information at least up to the Nyquist
+            frequency, i.e., at least 0-50 Hz, and anything above 50 Hz will
+            not affect the input motion at all.
         '''
         result = sr.amplify_motion(self.accel, transfer_function_single_sided,
                                    taper=taper, extrap_tf=extrap_tf,
@@ -608,7 +673,8 @@ class Ground_Motion:
     #--------------------------------------------------------------------------
     def baseline_correct(self, cutoff_freq=0.20, show_fig=False):
         '''
-        Baseline-correct the acceleration (via zero-phase-shift high-pass method)
+        Baseline-correct the acceleration (via zero-phase-shift high-pass
+        method).
 
         Parameters
         ----------
@@ -616,12 +682,12 @@ class Ground_Motion:
             The frequency (unit: Hz) for high passing. Energies below this
             frequency are filtered out.
         show_fig : bool
-            Whether or not to show figures comparing before and after
+            Whether or not to show figures comparing before and after.
 
         Returns
         -------
         corrected : Ground_Motion
-            The baseline-corrected ground motion, with SI units
+            The baseline-corrected ground motion, with SI units.
         '''
         accel_ = sig.baseline(self.accel, show_fig=show_fig, cutoff_freq=cutoff_freq)
         return Ground_Motion(accel_, unit='m')
@@ -634,16 +700,18 @@ class Ground_Motion:
         Parameters
         ----------
         cutoff_freq : float
-            Cut-off frequency (unit: Hz)
-        filter_order : int (default = 4)
+            Cut-off frequency (unit: Hz).
+        filter_order : int
             Filter order.
         padlen : int
-            pad length
+            Pad length (the number of elements by which to extend x at both ends
+            of axis before applying the filter). If None, use the default value
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
         -------
         filtered : Ground_Motion
-            Filtered signal
+            Filtered signal.
         '''
         accel_ = sig.lowpass(self.accel, cutoff_freq, show_fig=show_fig,
                              filter_order=filter_order, padlen=padlen)
@@ -657,19 +725,18 @@ class Ground_Motion:
         Pameters
         --------
         cutoff_freq : float
-            Cut-off frequency (unit: Hz)
-        filter_order : int (default = 4)
+            Cut-off frequency (unit: Hz).
+        filter_order : int
             Filter order.
         padlen : int
             Pad length (the number of elements by which to extend x at both ends
             of axis before applying the filter). If None, use the default value
-            (https://docs.scipy.org/doc/scipy/reference/generated/
-             scipy.signal.filtfilt.html)
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
         -------
         filtered : Ground_Motion
-            Filtered signal
+            Filtered signal.
         '''
         accel_ = sig.highpass(self.accel, cutoff_freq, show_fig=show_fig,
                               filter_order=filter_order, padlen=padlen)
@@ -683,14 +750,13 @@ class Ground_Motion:
         Pameters
         --------
         cutoff_freq : [float, float]
-            Cut-off frequencies (in Hz), from low to high
-        filter_order : int (default = 4)
+            Cut-off frequencies (in Hz), from low to high.
+        filter_order : int
             Filter order.
         padlen : int
             Pad length (the number of elements by which to extend x at both ends
             of axis before applying the filter). If None, use the default value
-            (https://docs.scipy.org/doc/scipy/reference/generated/
-             scipy.signal.filtfilt.html)
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
         -------
@@ -709,14 +775,14 @@ class Ground_Motion:
         Pameters
         --------
         cutoff_freq : [float, float]
-            Cut-off frequencies (in Hz), from low to high
-        filter_order : int (default = 4)
+            Cut-off frequencies (in Hz), from low to high.
+        filter_order : int
             Filter order.
         padlen : int
+            padlen : int
             Pad length (the number of elements by which to extend x at both ends
             of axis before applying the filter). If None, use the default value
-            (https://docs.scipy.org/doc/scipy/reference/generated/
-             scipy.signal.filtfilt.html)
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
         -------
@@ -732,8 +798,20 @@ class Ground_Motion:
                    unit='m/s/s'):
         '''
         Saves the acceleration as a text file.
-        '''
 
+        Parameters
+        ----------
+        fname : str
+            File name (including path).
+        sep : str
+            Delimiter.
+        t_prec : str
+            The precision specifier for the "time" column.
+        motion_prec : str
+            The precision specifier for the "motion" column.
+        unit : str
+            What unit shall the exported acceleration be in.
+        '''
         fmt = [t_prec, motion_prec]
         data = self.accel
 

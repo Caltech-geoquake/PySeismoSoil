@@ -10,7 +10,7 @@ from . import helper_site_response as sr
 def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
     '''
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
-    (2017), in Equation (6), and has the following form:
+    (2017), in Equation (6), and has the following form::
 
                         gamma^d * mu
         T(gamma) = ------------------------
@@ -18,12 +18,13 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
                     ------ + ------------
                      Gmax        Tmax
 
-    where T     = shear stress
-          gamma = shear strain
-          Gmax  = initial shear modulus
-          d     = shape parameter
-          mu    = shape parameter
-          Tmax  = shear strength of soil
+    where:
+        + T     = shear stress
+        + gamma = shear strain
+        + Gmax  = initial shear modulus
+        + d     = shape parameter
+        + mu    = shape parameter
+        + Tmax  = shear strength of soil
 
     Parmeters
     ---------
@@ -33,17 +34,17 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
     Gmax : float
         Initial shear modulus. Its unit can be arbitrary, but we recommend Pa.
     mu : float
-        Shape parameter of the FKZ model
+        Shape parameter of the FKZ model.
     d : float
-        Shape parameter of the FKZ model
+        Shape parameter of the FKZ model.
     Tmax : float
-        Shear strength of soil. Its unit should match that of Gmax.
+        Shear strength of soil. Its unit should match that of ``Gmax``.
 
     Returns
     -------
     T_FKZ : numpy.ndarray
-        The shear stress determined by the formula above. Same shape as `x`,
-        and same unit as `Gmax`.
+        The shear stress determined by the formula above. Same shape as ``x``,
+        and same unit as ``Gmax``.
     '''
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_FKZ = mu * Gmax * gamma**d / ( 1 + Gmax / Tmax * mu * np.abs(gamma)**d )
@@ -62,14 +63,14 @@ def transition_function(gamma, *, a, gamma_t):
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     a : float
-        A shape parameter describing how fast the transition happens
+        A shape parameter describing how fast the transition happens.
     gamma_t : float
-        Transition strain: the x value at which the transition happens
+        Transition strain: the x value at which the transition happens.
 
     Returns
     -------
     w : numpy.array
-        The transition function, ranging from 0 to 1. Same shape as `x`.
+        The transition function, ranging from 0 to 1. Same shape as ``x``.
     '''
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     assert(gamma_t > 0)
@@ -89,29 +90,29 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     gamma_t : float
-        Transition strain: the x value at which the transition happens
+        Transition strain: the x value at which the transition happens.
     a : float
-        A shape parameter describing how fast the transition happens
+        A shape parameter describing how fast the transition happens.
     gamma_ref : float
-        Reference shear strain, a shape parameter of the MKZ model
+        Reference shear strain, a shape parameter of the MKZ model.
     beta : float
-        A shape parameter of the MKZ model
+        A shape parameter of the MKZ model.
     s : float
-        A shape parameter of the MKZ model
+        A shape parameter of the MKZ model.
     Gmax : float
         Initial shear modulus. Its unit can be arbitrary, but we recommend Pa.
     mu : float
-        Shape parameter of the FKZ model
+        Shape parameter of the FKZ model.
     Tmax : float
         Shear strength of soil. Its unit should match that of Gmax.
     d : float
-        Shape parameter of the FKZ model
+        Shape parameter of the FKZ model.
 
     Returns
     -------
     T_FKZ : numpy.ndarray
-        The shear stress determined by the HH model. Same shape as `x`,
-        and same unit as `Gmax`.
+        The shear stress determined by the HH model. Same shape as ``x``,
+        and same unit as ``Gmax``.
     '''
     w = transition_function(gamma, a=a, gamma_t=gamma_t)
     T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
@@ -137,10 +138,10 @@ def fit_HH_x_single_layer(damping_data_in_pct, use_scipy=True,
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
     use_scipy : bool
-        Whether to use the "differential_evolution" algorithm implemented in
-        scipy (https://docs.scipy.org/doc/scipy/reference/generated/
-        scipy.optimize.differential_evolution.html) to perform the optimization.
-        If False, use the algorithm implemented in the DEAP package.
+        Whether to use the "differential_evolution" algorithm in scipy
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html)
+        to perform the optimization. If ``False``, use the algorithm in the
+        DEAP package.
     pop_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
@@ -150,31 +151,31 @@ def fit_HH_x_single_layer(damping_data_in_pct, use_scipy=True,
     lower_bound_power : float
         The 10-based power of the lower bound of all the 9 parameters. For
         example, if your desired lower bound is 0.26, then set this parameter
-        to be numpy.log10(0.26)
+        to be numpy.log10(0.26).
     upper_bound_power : float
         The 10-based power of the upper bound of all the 9 parameters.
     eta : float
-        Crowding degree of the mutation or crossover. A high eta will produce
-        children resembling to their parents, while a small eta will produce
+        Crowding degree of the mutation or crossover. A high ``eta`` will produce
+        children resembling to their parents, while a low ``eta`` will produce
         solutions much more different.
     seed : int
-        Seed value for the random number generator
+        Seed value for the random number generator.
     show_fig : bool
-        Whether to show the curve fitting results as a figure
+        Whether to show the curve fitting results as a figure.
     verbose : bool
         Whether to display information (statistics of the loss in each
-        generation) on the console
+        generation) on the console.
     supress_warnings : bool
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
     parallel : bool
         Whether to use multiple processors in the calculation. All CPU cores
-        will be used if set to True.
+        will be used if set to ``True``.
 
     Return
     ------
     best_param : dict
-        The best parameters found in the optimization
+        The best parameters found in the optimization.
     '''
 
     hlp.check_two_column_format(damping_data_in_pct, name='damping_data_in_pct',
@@ -274,16 +275,16 @@ def serialize_params_to_array(param):
     order:
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     param : dict
-        A dictionary containing the parameters of the HH model
+        A dictionary containing the parameters of the HH model.
 
     Returns
     -------
     param_array : numpy.array
         A numpy array of shape (9,) containing the parameters of the HH model
-        in the order specified above
+        in the order specified above.
     '''
     assert(len(param) == 9)
     order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
@@ -298,11 +299,11 @@ def deserialize_array_to_params(array):
     '''
     Reconstruct a HH model parameter dictionary from an array of values.
 
-    The users needs to ensure the order of values in `array` are in this order:
+    The users needs to ensure the order of values in ``array`` are in this order:
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     array : numpy.ndarray
         A 1D numpy array of HH parameter values in this order: gamma_t, a,
         gamma_ref, beta, s, Gmax, mu, Tmax, d
@@ -310,7 +311,7 @@ def deserialize_array_to_params(array):
     Returns
     -------
     param : dict
-        The dictionary with parameter name as keys and values as values
+        The dictionary with parameter name as keys and values as values.
     '''
 
     hlp.assert_1D_numpy_array(array)

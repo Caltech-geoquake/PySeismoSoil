@@ -14,10 +14,10 @@ class Site_Effect_Adjustment():
 
     Parameters
     ----------
-    input_motion : class_ground_motion.Ground_Motion
-        Input ground motion
+    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+        Input ground motion.
     Vs30_in_meter_per_sec : float
-        Vs30 values in SI unit
+        Vs30 values in SI unit.
     z1_in_m : float
         z1 (basin depth) in meters. If None, it will be estimated from Vs30
         using the following correlation: z1 = 140.511 * exp(-0.00303 * Vs30),
@@ -26,8 +26,8 @@ class Site_Effect_Adjustment():
 
     Attributes
     ----------
-    input_motion : class_ground_motion.Ground_Motion
-        Input ground motion
+    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+        Input ground motion.
     Vs30 : float
         Vs30 of the site. (Unit: m/s)
     z1 : float
@@ -67,6 +67,25 @@ class Site_Effect_Adjustment():
     def run(self, show_fig=False, return_fig_obj=False, **kwargs_to_plot):
         '''
         Run the site effect adjustment by querying the SAG19 site factors.
+
+        Parameters
+        ----------
+        show_fig : bool
+            Whether or not to show a figure demonstrating how the adjustment
+            works.
+        return_fig_obj : bool
+            Whether to return the figure and axes objects.
+        **kwargs_to_plot :
+            Keyword arguments to pass to ``matplotlib.pyplot.plot()``.
+
+        Returns
+        -------
+        output_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+            Output ground motion with site effects included.
+        fig : matplotlib.figure.Figure, optional
+            The figure object.
+        ax : matplotlib.axes._subplots.AxesSubplot, optional
+            The axes object.
         '''
         sf = self.site_factor
         af = sf.get_amplification(method=self._ampl_method, Fourier=True)

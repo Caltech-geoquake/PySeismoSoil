@@ -19,37 +19,37 @@ class Simulation_Results():
     Parameters
     ----------
     input_accel : Ground_Motion
-        Input ground motion
+        Input ground motion.
     accel_on_surface : Ground_Motion
-        Output ground motion
+        Output ground motion.
     rediscretized_profile : Vs_Profile
         Vs profile (the re-discretized version that ensures proper
-        representation of wave shapes)
+        representation of wave shapes).
     max_a_v_d : numpy.ndarray
         Maximum acceleration, velocity, displacement (during ground shaking)
-        at all layer boundaries
+        at all layer boundaries.
     max_strain_stress : numpy.ndarray
-        Maximum strain and stress (during ground shaking) at layer midpoints
+        Maximum strain and stress (during ground shaking) at layer midpoints.
     trans_func : Frequency_Spectrum
         Transfer function (between the output and input motions). It can
         be complex-valued or real-valued (i.e., amplitudes only).
-    trans_func_smoothed : Frequency_Spectrum or None
+    trans_func_smoothed : Frequency_Spectrum or ``None``
         The smoothed transfer function (between the output and input motions).
         It is by default real-valued (i.e., amplitudes only).
     time_history_accel : numpy.ndarray
-        Time histories of accelerations of all layers (at layer boundaries)
+        Time histories of accelerations of all layers (at layer boundaries).
     time_history_veloc : numpy.ndarray
-        Time histories of velocities of all layers (at layer boundaries)
+        Time histories of velocities of all layers (at layer boundaries).
     time_history_displ : numpy.ndarray
-        Time histories of displacements of all layers (at layer boundaries)
+        Time histories of displacements of all layers (at layer boundaries).
     time_history_stress : numpy.ndarray
-        Time histories of shear stresses of all layers (at layer midpoints)
+        Time histories of shear stresses of all layers (at layer midpoints).
     time_history_strain : numpy.ndarray
-        Time histories of shear strains of all layers (at layer midpoints)
+        Time histories of shear strains of all layers (at layer midpoints).
 
     Attributes
     ----------
-    Same as inputs
+    Attributes same as inputs
     '''
     #%%------------------------------------------------------------------------
     def __init__(self, input_accel, accel_on_surface, rediscretized_profile,
@@ -116,21 +116,21 @@ class Simulation_Results():
 
         Parameters
         ----------
-        dpi : int
-            Figure resolution
+        dpi : float
+            Figure resolution.
         save_fig : bool
-            Whether to save figure to `output_dir`
+            Whether to save figure to ``output_dir``.
         motion_name : str
-            The name of the ground motion to be used in the file names
+            The name of the ground motion to be used in the file names.
         output_dir : str
-            Directory for saving the figures
+            Directory for saving the figures.
 
         Returns
         -------
         figs : list
-            A list of three figure objects
+            A list of three figure objects.
         axes : list
-            A list of axes objects (or axes lists, if multiple subplots)
+            A list of axes objects (or axes lists, if multiple subplots).
         '''
         #-------- Plot output/input motions and transfer functions ------------
         accel_in = self.input_accel.accel
@@ -209,13 +209,13 @@ class Simulation_Results():
         '''
         Save simulation results to hard drive.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         motion_name : str
             The name of the input motion to be used as an identifier in the
-            file names
+            file names.
         output_dir : str
-            Directory to which to save the output files
+            Directory to which to save the output files.
         save_full_time_history : bool
             Whether to save full time histories (every time step, every layer)
             of accel/veloc/displ/strain/stress to hard drive. They can take
