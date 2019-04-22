@@ -19,17 +19,19 @@ class Vs_Profile:
 
         The correct format for a Vs profile should be:
 
-           thickness (m) | Vs (m/s) | damping | density | material number
-           --------------+----------+---------+---------+----------------
-                ...      |   ...    |   ...   |   ...   |      ...
+         +---------------+----------+---------+---------+-----------------+
+         | Thickness (m) | Vs (m/s) | Damping | Density | Material Number |
+         +===============+==========+=========+=========+=================+
+         |      ...      |   ...    |   ...   |   ...   |      ...        |
+         +---------------+----------+---------+---------+-----------------+
 
         (The "material numbers" are integer indices that map each layer to
         their G/Gmax and damping curves.)
 
     damping_unit : {'1', '%'}
-        The unit for the damping ratio
+        The unit for the damping ratio.
     density_unit : {'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'}
-        The unit for the mass density of soils
+        The unit for the mass density of soils.
     sep : str
         Delimiter character for reading the text file. If `data` is
         supplied as a numpy array, this parameter is ignored.
@@ -38,8 +40,9 @@ class Vs_Profile:
         thickness) at the bottom, if such a layer does not already
         exist.
     xi_rho_formula : {1, 2, 3}
+        The formula identifier to determine damping and mass density.
     **kwargs_to_genfromtxt :
-        Any extra keyword arguments will be passed to numpy.genfromtxt()
+        Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
         function for loading the data from the hard drive (if applicable).
 
     Attributes
@@ -52,13 +55,13 @@ class Vs_Profile:
     vs30 : float
         Reciprocal of the weighted average travel time through the top 30 m.
     damping_unit : str
-        Same as provided
+        Same as provided.
     density_unit : str
-        Same as provided
+        Same as provided.
     z_max : float
-        Maximum depth of the profile
+        Maximum depth of the profile.
     n_layer : int
-        Number of soil layers (i.e., not including the half space)
+        Number of soil layers (i.e., not including the half space).
     '''
 
     #--------------------------------------------------------------------------
@@ -169,22 +172,34 @@ class Vs_Profile:
         return text
 
     #--------------------------------------------------------------------------
-    def plot(self, fig=None, ax=None, **kwargs):
+    def plot(self, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100, **kwargs):
         '''
-        Plot Vs profile
+        Plot Vs profile.
 
         Parameters
         ----------
-        fig, ax : (optional)
-            matplotlib figure and axes objects to show the plot on
+        fig : matplotlib.figure.Figure or ``None``
+            Figure object. If None, a new figure will be created.
+        ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+            Axes object. If None, a new axes will be created.
+        figsize: (float, float)
+            Figure size in inches, as a tuple of two numbers. The figure
+            size of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
+            this parameter.
         **kwargs :
             Extra keyword arguments to be passed to the function
-            helper_site_response.plot_Vs_profile()
+            ``helper_site_response.plot_Vs_profile()``.
 
         Returns
         -------
-        fix, ax, hl
-            Figure, axes, and line objects, respectively
+        fig : matplotlib.figure.Figure
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
+        h_line : matplotlib.lines.Line2D
+            The line object.
         '''
         if self._file_name:
             title_text = self._file_name
@@ -195,44 +210,45 @@ class Vs_Profile:
             title_text = None
 
         fig, ax, hl = sr.plot_Vs_profile(self.vs_profile, title=title_text,
-                                         fig=fig, ax=ax, **kwargs)
+                                         fig=fig, ax=ax, figsize=figsize,
+                                         dpi=dpi, **kwargs)
         return fig, ax, hl
 
     #--------------------------------------------------------------------------
     def ampl_function(self, show_fig=False, boundary_condition=None,
                       also_return_f0=True, freq_resolution=.05, fmax=30.):
         '''
-        Get amplification function of the Vs profile
+        Get amplification function of the Vs profile.
 
         Parameters
         ----------
         show_fig : bool
-            Whether or not show figures of the amplification function
+            Whether or not show figures of the amplification function.
         boundary_condition : {'ro', 'in', 'bh'}
             Type of boundary condition: 'ro' for rock outcrop, 'in' for
             incident motion, and 'bh' for borehole motion. If None, results of
             all three boundary conditions are returned.
         also_return_f0 : bool
-            Whether or not to also return f_0 (fundamental frequency)
+            Whether or not to also return f_0 (fundamental frequency).
         freq_resolution : float
-            Frequency resolution of the frequency spectrum
+            Frequency resolution of the frequency spectrum.
         fmax : float
-            Maximum frequency of interest
+            Maximum frequency of interest.
 
-        Returns (depending on the input, not all will be returned)
-        ----------------------------------------------------------
+        Returns
+        -------
         freq_array : numpy.ndarray
-            Frequency array, in linear scale
+            Frequency array, in linear scale.
         AF_ro : numpy.ndarray
-            Amplification with respect to rock outcrop
-        f0_ro : float
-            Fundamental frequency of rock outcrop amplification
+            Amplification with respect to rock outcrop.
+        f0_ro : float, optional
+            Fundamental frequency of rock outcrop amplification.
         AF_in : numpy.ndarray
-            Amplification with respect to incident motion
+            Amplification with respect to incident motion.
         AF_bh : numpy.ndarray
-            Amplification with respect to borehole motion
-        f0_bh : float
-            Fundamental frequency of rock outcrop amplification
+            Amplification with respect to borehole motion.
+        f0_bh : float, optional
+            Fundamental frequency of rock outcrop amplification.
         '''
 
         freq, af_ro, _, f0_ro, af_in, _, af_bh, _, f0_bh = \
@@ -266,37 +282,37 @@ class Vs_Profile:
     def transfer_function(self, show_fig=False, boundary_condition=None,
                           also_return_f0=False, freq_resolution=.05, fmax=30.):
         '''
-        Get transfer function (complex-valued) of the Vs profile
+        Get transfer function (complex-valued) of the Vs profile.
 
         Parameters
         ----------
         show_fig : bool
-            Whether or not show figures of the transfer function
+            Whether or not show figures of the transfer function.
         boundary_condition : {'ro', 'in', 'bh'}
             Type of boundary condition: 'ro' for rock outcrop, 'in' for
             incident motion, and 'bh' for borehole motion. If None, results of
             all three boundary conditions are returned.
         also_return_f0 : bool
-            Whether or not to also return f_0 (fundamental frequency)
+            Whether or not to also return f_0 (fundamental frequency).
         freq_resolution : float
-            Frequency resolution of the frequency spectrum
+            Frequency resolution of the frequency spectrum.
         fmax : float
-            Maximum frequency of interest
+            Maximum frequency of interest.
 
-        Returns (depending on the input, not all will be returned)
-        ----------------------------------------------------------
+        Returns
+        -------
         freq_array : numpy.ndarray
-            Frequency array, in linear scale
+            Frequency array, in linear scale.
         TF_ro : numpy.ndarray
-            Transfer function (complex-valued) with respect to rock outcrop
-        f0_ro : float
-            Fundamental frequency of rock outcrop amplification
+            Transfer function (complex-valued) with respect to rock outcrop.
+        f0_ro : float, optional
+            Fundamental frequency of rock outcrop amplification.
         TF_in : numpy.ndarray
-            Transfer function (complex-valued) with respect to incident motion
+            Transfer function (complex-valued) with respect to incident motion.
         TF_bh : numpy.ndarray
-            Transfer function (complex-valued) with respect to borehole motion
-        f0_bh : float
-            Fundamental frequency of rock outcrop amplification
+            Transfer function (complex-valued) with respect to borehole motion.
+        f0_bh : float, optional
+            Fundamental frequency of rock outcrop amplification.
         '''
 
         freq, _, tf_ro, f0_ro, _, tf_in, _, tf_bh, f0_bh = \
@@ -329,23 +345,23 @@ class Vs_Profile:
     #--------------------------------------------------------------------------
     def phase_transfer_function(self, show_fig=False):
         '''
-        Calculate the phase shift transfer function
+        Calculate the phase shift transfer function.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         show_fig : bool
-            Whether or not show figures of the amplification function
+            Whether or not show figures of the amplification function.
 
         Returns
         -------
         freq : numpy.ndarray
-            Frequency array, in linear scale
+            Frequency array, in linear scale.
         phase_ro : numpy.array
-            Phase shift with respect to rock outcrop
+            Phase shift with respect to rock outcrop.
         phase_in : numpy.array
-            Phase shift with respect to incident motion
+            Phase shift with respect to incident motion.
         phase_bh : numpy.array
-            Phase shift with respect to borehole motion
+            Phase shift with respect to borehole motion.
         '''
 
         freq, tf_ro, _, tf_in, tf_bh, _ = self.transfer_function(show_fig)
@@ -358,21 +374,45 @@ class Vs_Profile:
 
     #--------------------------------------------------------------------------
     def get_f0_RO(self):
+        '''
+        Return the rock-outcrop fundamental frequency.
+
+        Returns
+        -------
+        f0_RO : float
+            Rock-outcrop fundamental frequency.
+        '''
         return self.ampl_function(boundary_condition='ro', also_return_f0=True)[-1]
 
     #--------------------------------------------------------------------------
     def get_f0_BH(self):
+        '''
+        Return the borehole fundamental frequency.
+
+        Returns
+        -------
+        f0_BH : float
+            Borehole fundamental frequency.
+        '''
         return self.ampl_function(boundary_condition='bh', also_return_f0=True)[-1]
 
     #--------------------------------------------------------------------------
     def get_depth_array(self):
+        '''
+        Returns the depth array.
+
+        Returns
+        -------
+        dep : numpy.ndarray
+            The depth array of the Vs profile.
+        '''
         return sr.thk2dep(self._thk)
 
     #--------------------------------------------------------------------------
     def truncate(self, depth=None, Vs=1000.0):
         '''
-        Truncate Vs profile at a given `depth`, and "glue" the truncated
-        profile to a given `Vs`.
+        Truncate Vs profile at a given ``depth``, and "glue" the truncated
+        profile to a given ``Vs``.
 
         Parameters
         ----------
@@ -380,12 +420,12 @@ class Vs_Profile:
             The depth at which to truncate the original Vs profile. It can
             be deeper than z_max (total depth).
         Vs : float
-            The velocity of the bedrock
+            The velocity of the bedrock.
 
         Returns
         -------
         truncated : Vs_Profile
-            The truncated Vs profile
+            The truncated Vs profile.
         '''
         if depth is None or depth <= 0:
             raise ValueError('`depth` needs to be a positive number.')
@@ -408,7 +448,10 @@ class Vs_Profile:
             profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
 
         xi, rho = sr.get_xi_rho(np.array([Vs]))
-        bedrock = [0, Vs, xi, rho, 0]
+        if isinstance(xi, np.ndarray):  # xi and rho are 1D numpy arrays
+            bedrock = [0, Vs, xi[0], rho[0], 0]
+        else:  # just numbers
+            bedrock = [0, Vs, xi, rho, 0]
         profile_.append(bedrock)  # add half space whose Vs is `Vs`
         profile_ = np.array(profile_)
 
@@ -420,23 +463,23 @@ class Vs_Profile:
     #--------------------------------------------------------------------------
     def query_Vs_at_depth(self, depth, as_profile=False):
         '''
-        Query Vs values at given `depth` values. If the given depth values
+        Query Vs values at given ``depth`` values. If the given depth values
         happen to be at layer interfaces, return the Vs of the layer *below*
         the interface.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         depth : float or numpy.array
             Value(s) of depths to query the Vs value at. Unit should be m.
         as_profile : bool
-            If True, return a Vs profile object. If False, only return the
+            If ``True``, return a Vs profile object. If False, only return the
             array of Vs.
 
         Returns
         -------
-        vs_array : float, numpy.ndarray or Vs_Profile
+        vs_array : float, numpy.ndarray, or Vs_Profile
             Vs values corresponding to the given depths. Its type depends on
-            the type of `depth`.
+            the type of ``depth``.
         '''
         vs_queried, is_scalar, has_duplicate_values, is_sorted \
             = sr.query_Vs_at_depth(self.vs_profile, depth)
@@ -469,26 +512,26 @@ class Vs_Profile:
     def query_Vs_given_thk(self, thk, n_layers=None, as_profile=False,
                            at_midpoint=True, add_halfspace=True):
         '''
-        Query Vs values from a thickness layer `thk`. The starting point of
+        Query Vs values from a thickness layer ``thk``. The starting point of
         querying is the ground surface.
 
         Parameters
         ----------
         thk : float or numpy.ndarray
             Thickness array, or a single value that means a constant thickness.
-        n_layers : int or None
-            Number of layers to query. This parameter has no effect if `thk`
+        n_layers : int or ``None``
+            Number of layers to query. This parameter has no effect if ``thk``
             is a numpy array (because the number of layers can be inferred
-            from `thk`). If None, it is automatically inferred from `thk`
-            and the maximum depth of the profile (`z_max`).
+            from ``thk``). If ``None``, it is automatically inferred from
+            ``thk`` and the maximum depth of the profile.
         as_profile : bool
-            If True, return a Vs profile object. If False, only return the
-            array of Vs.
+            If ``True``, return a Vs profile object. If ``False``, only
+            return the array of Vs.
         at_midpoint : bool
-            If True, the Vs values are queried at the mid-point depths of
-            each layer. If False, at the top of each layer.
+            If ``True``, the Vs values are queried at the mid-point depths of
+            each layer. If ``False``, at the top of each layer.
         add_halfspace : bool
-            If True, add a "half space" (represented by a layer of 0 m
+            If ``True``, add a "half space" (represented by a layer of 0 m
             thickness) at the bottom, if such a layer does not already
             exist.
 
@@ -496,7 +539,7 @@ class Vs_Profile:
         ------
         vs_array : numpy.ndarray or Vs_Profile
             Vs values corresponding to the given depths. Its type depends on
-            `as_profile`.
+            ``as_profile``.
         '''
         if n_layers is None and isinstance(thk, (int, float, np.number)):
             n_layers = int(np.ceil(self.z_max / thk))
@@ -516,16 +559,16 @@ class Vs_Profile:
         Query the depth of the basin as indicated in the Vs profile data.
         The basin is defined as the material whose Vs is at least `bedrock_Vs`.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         bedrock_Vs : float
-            The shear-wave velocity that you consider as the bedrock
+            The shear-wave velocity that you consider as the bedrock.
 
         Returns
         -------
         basin_depth : float
             The basin depth. If no Vs values in the profile reaches
-            `bedrock_Vs`, return total depth (bottom) of the profile.
+            ``bedrock_Vs``, return total depth (bottom) of the profile.
         '''
         depth = sr.thk2dep(self._thk, midpoint=False)
         assert(depth[0] == 0)  # assert that `depth` means the layer top
@@ -543,7 +586,12 @@ class Vs_Profile:
     #--------------------------------------------------------------------------
     def get_z1(self):
         '''
-        Get z1 (the depth to Vs = 1000 m/s)
+        Get z1 (the depth to Vs = 1000 m/s).
+
+        Returns
+        -------
+        z1 : float
+            The depth to Vs = 1000 m/s.
         '''
         return self.get_basin_depth(bedrock_Vs=1000)
 
@@ -551,7 +599,12 @@ class Vs_Profile:
     def get_slowness(self):
         '''
         Get "slowness" (reciprocal of wave velocity) as a 2D numpy array
-        (including the thickness array)
+        (including the thickness array).
+
+        Returns
+        -------
+        slowness : numpy.ndarray
+            The slowness array.
         '''
         slowness = np.ones_like(self.vs_profile)
         slowness[:,0] = self.vs_profile[:,0]
@@ -562,6 +615,11 @@ class Vs_Profile:
     def output_as_km_unit(self):
         '''
         Output the Vs profile in km and km/s unit.
+
+        Returns
+        -------
+        vs_profile : numpy.ndarray
+            The Vs profile in km and km/s unit.
         '''
         tmp = self.vs_profile.copy()
         tmp[:,0] /= 1000.0
@@ -570,6 +628,9 @@ class Vs_Profile:
 
     #--------------------------------------------------------------------------
     def summary(self):
+        '''
+        Display the Vs profile on the console and plot Vs profile.
+        '''
         print(self)
         self.plot()
 
@@ -577,17 +638,17 @@ class Vs_Profile:
     def to_txt(self, fname, sep='\t',
                precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d']):
         '''
-        Write Vs profile to a text file
+        Write Vs profile to a text file.
 
         Parameters
         ----------
         fname : str
-            File name (including path)
+            File name (including path).
         sep : str
-            Delimiter for the output file
+            Delimiter for the output file.
         precision : list<str>
             A list of precision specifiers, each for the five columns of the
-            Vs profile
+            Vs profile.
         '''
 
         if not isinstance(precision, list):

@@ -32,11 +32,14 @@ class Test_Class_Curves(unittest.TestCase):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Damping_Curve(data[:, 2:4])
 
-        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
-                                   use_scipy=False)
-        self.assertEqual(len(hhx), 9)
-        self.assertEqual(hhx.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
-                                      's', 'Gmax', 'mu', 'Tmax', 'd'})
+        try:
+            hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
+                                       use_scipy=False)
+            self.assertEqual(len(hhx), 9)
+            self.assertEqual(hhx.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
+                                          's', 'Gmax', 'mu', 'Tmax', 'd'})
+        except ImportError:  # DEAP library may not be installed
+            pass
 
         hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
                                    use_scipy=True)
@@ -48,10 +51,13 @@ class Test_Class_Curves(unittest.TestCase):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Damping_Curve(data[:, 2:4])
 
-        h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=True,
-                                   use_scipy=False)
-        self.assertEqual(len(h4x), 4)
-        self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
+        try:
+            h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=True,
+                                       use_scipy=False)
+            self.assertEqual(len(h4x), 4)
+            self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
+        except ImportError:  # DEAP library may not be installed
+            pass
 
         h4x = curve.get_H4_x_param(pop_size=1, n_gen=1, show_fig=True,
                                    use_scipy=True)
@@ -114,12 +120,15 @@ class Test_Class_Curves(unittest.TestCase):
                                          's', 'Gmax', 'mu', 'Tmax', 'd'})
 
         # Test DEAP
-        hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
-                                       use_scipy=False)
-        self.assertEqual(len(hhx), 2)
-        self.assertTrue(isinstance(hhx[0].data, dict))
-        self.assertEqual(hhx[0].keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
-                                         's', 'Gmax', 'mu', 'Tmax', 'd'})
+        try:
+            hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
+                                           use_scipy=False)
+            self.assertEqual(len(hhx), 2)
+            self.assertTrue(isinstance(hhx[0].data, dict))
+            self.assertEqual(hhx[0].keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
+                                             's', 'Gmax', 'mu', 'Tmax', 'd'})
+        except ImportError:  # DEAP library may not be installed
+            pass
 
     def test_H4_x_fit_multi_layer(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
@@ -133,11 +142,14 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
         # Test DEAP
-        h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
-                                       use_scipy=False)
-        self.assertEqual(len(h4x), 2)
-        self.assertTrue(isinstance(h4x[0].data, dict))
-        self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
+        try:
+            h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
+                                           use_scipy=False)
+            self.assertEqual(len(h4x), 2)
+            self.assertTrue(isinstance(h4x[0].data, dict))
+            self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
+        except ImportError:  # DEAP library may not be installed
+            pass
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Curves)

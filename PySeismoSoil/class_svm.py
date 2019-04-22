@@ -21,24 +21,29 @@ class SVM():
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
     z1 : float
-        The depth to bedrock (1000 m/s rock). Unit: m
+        The depth to bedrock (1000 m/s rock). Unit: m.
     Vs_cap : bool or float
         Whether to "cap" the Vs profile or not.
         If True, then the Vs profile is capped at 1000.0 m/s; if specified
         as another real number, Vs profile is capped at that value.
-        [***  See Footnote for more explanations  ***]
+        If the resultant Vs profile does not reach ``Vs_cap`` at ``z1``, it
+        will be "glued" to ``Vs_cap``, resulting in a velocity impedance at
+        ``z1``. If the Vs profile exceeds ``Vs_cap`` at a depth shallower
+        than ``z1``, then the smooth Vs profile is truncated at a depth where
+        ``Vs = eta * Vs_cap``, then filled down to ``z1`` with linearly
+        increasing Vs values.
     eta : float
-        If Vs will reach Vs_cap (usually 1000 m/s) before the depth of
-        z1, the SVM Vs profile will stop at Vs = eta * Vs_cap, and
-        then a linear Vs gradation will be filled from eta * Vs_cap to
-        Vs_cap. Do not change this parameter, unless you know what you
+        If Vs will reach ``Vs_cap`` (usually 1000 m/s) before the depth of
+        ``z1``, the SVM Vs profile will stop at ``Vs = eta * Vs_cap``, and
+        then a linear Vs gradation will be filled from ``eta * Vs_cap`` to
+        ``Vs_cap``. Do not change this parameter, unless you know what you
         are doing.
     show_fig : bool
-        Whether or not to plot the generated Vs profile
+        Whether or not to plot the generated Vs profile.
     iterate : bool
         Whether or not to iteratively adjust the input Vs30 so that the actual
         Vs30 (calculated from the resultant Vs profile) falls within 10 m/s
-        of the target_Vs30. False by default.
+        of the ``target_Vs30``.
     verbose : bool
         Whether or not to print iteration progress (trial Vs30 value and
         calculated Vs30 value) on the terminal.
@@ -46,29 +51,19 @@ class SVM():
     Attributes
     ----------
     Vs30 : float
-        The target Vs30 value, in m/s
+        The target Vs30 value, in m/s.
     z1 : float
-        The basin depth, in meters
+        The basin depth, in meters.
     base_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
-        The base Vs profile associated with the given Vs30 and z1
+        The base Vs profile associated with the given ``Vs30`` and ``z1``.
     bedrock_Vs : float
-        Bedrock Vs, either user-specified (via `Vs_cap`), or automatically
-        chosen as 1,000 m/s, or `None` (if `Vs_cap` is False)
+        Bedrock Vs, either user-specified (via ``Vs_cap``), or automatically
+        chosen as 1,000 m/s, or ``None`` (if ``Vs_cap`` is False).
     has_bedrock_Vs : bool
-        Whether the Vs profile has a bedrock Vs value
+        Whether the Vs profile has a bedrock Vs value.
     '''
-
     def __init__(self, target_Vs30, z1=350.0, Vs_cap=True, eta=0.90,
                  show_fig=False, iterate=False, verbose=False):
-        '''
-        Footnote
-        --------
-        If the resultant Vs profile does not reach Vs_cap at z1, it will be
-        "glued" to Vs_cap, resulting in a velocity impedance at z1. If the
-        Vs profile exceeds Vs_cap at a depth shallower than z1, then the
-        smooth Vs profile is truncated at a depth where Vs = 0.8*Vs_cap, then
-        filled down to z1 with linearly increasing Vs values.
-        '''
 
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
 
@@ -214,27 +209,39 @@ class SVM():
         return 'Vs30 = %.2g m/s, z1 = %.2g m' % (self.Vs30, self.z1)
 
     #%%========================================================================
-    def plot(self, fig=None, ax=None, **other_kwargs):
+    def plot(self, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100, **kwargs):
         '''
-        Plot the base profile
+        Plot the base profile.
 
         Parameters
         ----------
-        fig, ax : mpl.figure.Figure, mpl.axes._subplots.AxesSubplot
-            Figure and axes objects.
-            If provided, the histograms are plotted on the provided figure and
-            axes. If not, a new figure and new axes are created.
-        other_kwargs :
-            Other keyword arguments to be passed to helper_site_response
-            .plot_Vs_profile()
+        fig : matplotlib.figure.Figure or ``None``
+            Figure object. If None, a new figure will be created.
+        ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+            Axes object. If None, a new axes will be created.
+        figsize: (float, float)
+            Figure size in inches, as a tuple of two numbers. The figure
+            size of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
+            this parameter.
+        **kwargs :
+            Other keyword arguments to be passed to
+            ``helper_site_response.plot_Vs_profile()``.
 
         Returns
         -------
-        fig, ax, h_line: the figure object, axes object, and line object
+        fig : matplotlib.figure.Figure
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
+        h_line : matplotlib.lines.Line2D
+            The line object.
         '''
         title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
         fig, ax, h_line = sr.plot_Vs_profile(self._base_profile, title=title,
-                                             fig=fig, ax=ax)
+                                             fig=fig, ax=ax, figsize=figsize,
+                                             dpi=dpi)
         return fig, ax, h_line
 
     #%%========================================================================
@@ -242,25 +249,25 @@ class SVM():
                                 at_midpoint=True, show_fig=False):
         '''
         Returns the discretized Vs profile (with user-specified layer
-        thickness, or Vs increment)
+        thickness, or Vs increment).
 
         Parameters
         ----------
         fixed_thk : float
-            The layer thickness for each layer
+            The layer thickness for each layer.
         Vs_increment : float
-            The Vs increment between adjacent layers
+            The Vs increment between adjacent layers.
         at_midpoint : bool
             Whether to return Vs values queried at the top of each layer
             depth. It is strongly recommended that you use `True`. Using
-            `False` will produce biased Vs profiles
+            `False` will produce biased Vs profiles.
         show_fig : bool
-            Whether to show the figure of smooth and discretized profiles
+            Whether to show the figure of smooth and discretized profiles.
 
         Returns
         -------
         discr_prof : PySeismoSoil.class_Vs_profile.Vs_Profile
-            Discretized Vs profile
+            Discretized Vs profile.
         '''
         if fixed_thk is None and Vs_increment is None:
             raise ValueError('You need to provide either `fixed_thk` or '
@@ -343,15 +350,15 @@ class SVM():
             Whether or not to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
             Whether or not to use the layering relation in Toro (1995) instead
-            of Eq (7) of Shi & Asimaki (2018)
+            of Eq (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
             Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
-            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018)
+            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
 
         Returns
         -------
         Vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
-            The randomzed Vs profile
+            The randomzed Vs profile.
         '''
 
         if seed == None:
@@ -401,7 +408,10 @@ class SVM():
 
             thk_rand = np.max([thk_rand, 2.0])  # make sure each layer is at least 2 meters thick; too thin layers are not realistic
 
-            thk.append(thk_rand)
+            if isinstance(thk_rand, (np.number, float, int)):
+                thk.append(thk_rand)
+            else:  # a single-element 1D numpy array
+                thk.append(thk_rand[0])
             z_mid.append(z_top[-1] + thk_rand/2.0)
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
@@ -545,14 +555,14 @@ class SVM():
             Array from which to query the index. Must be 1D numpy array. It
             does NOT need to be sorted.
         value : float
-            The value of interest
+            The value of interest.
 
         Returns
         -------
         index : int
-            The index within `array` where the closest value is found
+            The index within ``array`` where the closest value is found.
         closest_value : float
-            The closest value to `value` within `array`
+            The closest value to ``value`` within ``array``.
         '''
 
         array = np.array(array)

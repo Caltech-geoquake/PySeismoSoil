@@ -22,30 +22,30 @@ from .class_frequency_spectrum import Frequency_Spectrum
 #%%============================================================================
 class Simulation():
     '''
-    Class implementation of a base site response simulation
+    Class implementation of a base site response simulation.
 
     Parameters
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
-        Soil profile
+        Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion
+        Input ground motion.
     boundary : {'elastic', 'rigid'}
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
         the recorded motion at the bottom of the Vs profile.
     G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
-        Parameters that describe the G/Gmax curves
+        Parameters that describe the G/Gmax curves.
     xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
-        Parameters that describe the damping curves
+        Parameters that describe the damping curves.
     GGmax_curves : class_curves.Multiple_GGmax_Curves
-        G/Gmax curves
+        G/Gmax curves.
     xi_curves : class_curves.Multiple_Damping_Curves
-        Damping curves
+        Damping curves.
 
     Attributes
     ----------
-    Same as the inputs
+    Attributes same as the inputs
     '''
     def __init__(self, soil_profile, input_motion, boundary='elastic',
                  G_param=None, xi_param=None, GGmax_curves=None, xi_curves=None):
@@ -94,9 +94,9 @@ class Linear_Simulation(Simulation):
     Parameters
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
-        Soil profile
+        Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion
+        Input ground motion.
     boundary : {'elastic', 'rigid'}
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
@@ -104,14 +104,14 @@ class Linear_Simulation(Simulation):
 
     Attributes
     ----------
-    Same as the inputs
+    Attributes same as the inputs
     '''
     def run(self, show_fig=False, deconv=False):
         '''
         Parameters
         ----------
         show_fig : bool
-            Whether to show a figure that shows the result of the analysis
+            Whether to show a figure that shows the result of the analysis.
         deconv : bool
             Whether this operation is deconvolution. If True, it means that the
             `input_motion` will be propagated downwards, and the motion at the
@@ -120,7 +120,7 @@ class Linear_Simulation(Simulation):
         Returns
         -------
         output_motion : PySeismoSoil.class_ground_motion.Ground_Motion
-            The output ground motion
+            The output ground motion.
         '''
         response = sr.linear_site_resp(self.soil_profile.vs_profile,
                                        self.input_motion.accel,  # unit: m/s/s
@@ -131,18 +131,18 @@ class Linear_Simulation(Simulation):
 #%%============================================================================
 class Nonlinear_Simulation(Simulation):
     '''
-    Nonlinear site response simulation
+    Nonlinear site response simulation.
 
     Parameters
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
-        Soil profile
+        Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion
+        Input ground motion.
     G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
-        Parameters that describe the G/Gmax curves
+        Parameters that describe the G/Gmax curves.
     xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
-        Parameters that describe the damping curves
+        Parameters that describe the damping curves.
     boundary : {'elastic', 'rigid'}
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
@@ -150,7 +150,7 @@ class Nonlinear_Simulation(Simulation):
 
     Attributes
     ----------
-    Same as the inputs
+    Attributes same as the inputs
     '''
     #%%------------------------------------------------------------------------
     def __init__(self, soil_profile, input_motion, G_param, xi_param,
@@ -170,19 +170,19 @@ class Nonlinear_Simulation(Simulation):
             save_txt=True, save_full_time_history=True, show_fig=False,
             save_fig=False, remove_sim_dir=False):
         '''
-        Starts nonlinear simulation
+        Start nonlinear simulation.
 
         Parameters
         ----------
         sim_dir : str
             Directory for storing temporary input files and storing permenant
-            output files/figures
+            output files/figures.
         profile_name : str
             Name of the Vs profile. For example, "FKSH14".
         motion_name : str
             Name of the input ground motion. For example, "Northridge".
         save_txt : bool
-            Whether to save the simulation results as text files to `sim_dir`
+            Whether to save the simulation results as text files to ``sim_dir``.
         save_full_time_history : bool
             When saving simulation results, whether to save the full time
             histories (i.e., every time step, every depth) of the acceleration,
@@ -191,17 +191,17 @@ class Nonlinear_Simulation(Simulation):
             Whether to show figures of the simulation results (input and
             output motions, maximum accel/veloc/displ/strain/stress profiles)
         save_fig : bool
-            Whether to save figures to `sim_dir`. Only effective when
-            `show_fig` is set to True.
+            Whether to save figures to ``sim_dir``. Only effective when
+            ``show_fig`` is set to ``True``.
         remove_sim_dir : bool
-            Whether to remove `sim_dir` from the hard drive after simulations,
-            only effective when `save_txt` and `save_fig` are both set to
-            False.
+            Whether to remove ``sim_dir`` from the hard drive after simulations,
+            only effective when ``save_txt`` and ``save_fig`` are both set to
+            ``False``.
 
         Returns
         -------
         sim_results : Simulation_Results
-            An object that contains all the simulation results
+            An object that contains all the simulation results.
         '''
         print('Nonlinear simulation starting...')
 

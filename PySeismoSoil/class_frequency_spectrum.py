@@ -13,8 +13,8 @@ class Frequency_Spectrum():
     '''
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
-    array. (If frequency range implied in `data` and/or `df` goes beyond `fmin`
-    and/or `fmax`, then the interpolation algorithm automatically use the 0th
+    array. (If frequency range implied in ``data`` and/or ``df`` goes beyond ``fmin``
+    and/or ``fmax``, then the interpolation algorithm automatically use the 0th
     and the last point in the extrapolated parts.)
 
     Parameters
@@ -24,62 +24,61 @@ class Frequency_Spectrum():
         If np.ndarray: the numpy array containing the data.
         The data can have one column (which contains the spectrum) or two
         columns (0st column: freq; 1st column: spectrum). If only one column
-        is supplied, another input parameter `df` must also be supplied.
+        is supplied, another input parameter ``df`` must also be supplied.
     df : float
-        Frequency interval. Not necessary if `data` has two columns (with the
-        0th column being the frequency information). If `data` has one column,
-        it is assumed that the values in `data` correspond to a linear
+        Frequency interval. Not necessary if ``data`` has two columns (with the
+        0th column being the frequency information). If ``data`` has one column,
+        it is assumed that the values in ``data`` correspond to a linear
         frequency array.
     interpolate : bool
-        Whether to use the interpolated spectra in place of the raw data
+        Whether to use the interpolated spectra in place of the raw data.
     fmin : float
         Minimum frequency of the manuall constructed frequency array for
-        interpolation. It has no effect if `interpolate` is False.
+        interpolation. It has no effect if ``interpolate`` is ``False``.
     fmax : float
         Maximum frequency of the manually constructed frequency array for
-        interpolation. It has no effect if `interpolate` is False.
+        interpolation. It has no effect if ``interpolate`` is ``False``.
     n_pts : int
         Number of points in the manualy constructed frequency array for
-        interpolation. It has no effect if `interpolate` is False.
+        interpolation. It has no effect if ``interpolate`` is ``False``.
     log_scale : bool
         Whether the manually constructed frequency (for interpolation) array
-        is in log scale (or linear scale). It has no effect if `interpolate`
+        is in log scale (or linear scale). It has no effect if ``interpolate``
         is False.
     sep : str
-        Delimiter identifier, only useful if `data` is a file name
+        Delimiter identifier, only useful if ``data`` is a file name.
 
     Attributes
     ----------
     raw_df : float
-        Original frequency interval as entered
+        Original frequency interval as entered.
     raw_data : numpy.ndarray
-        Raw frequency spectrum (before interpolation) that the user provided
+        Raw frequency spectrum (before interpolation) that the user provided.
     n_pts : int
-        Same as the input parameter
+        Same as the input parameter.
     freq : numpy.ndarray
-        The reference frequency array for interpolation
+        The reference frequency array for interpolation.
     fmin : float
-        Same as the input parameter
+        Same as the input parameter.
     fmax : float
-        Same as the input parameter
+        Same as the input parameter.
     spectrum_2col : numpy.ndarray
-        A two-column numpy array (frequency and spectrum)
+        A two-column numpy array (frequency and spectrum).
     spectrum : numpy.ndarray
-        Just the spectrum values
+        Just the spectrum values.
     amplitude : numpy.ndarray
-        The amplitude (or "magnitude") of `spectrum`. Note that
-        `spectrum` can already be all real numbers.
+        The amplitude (or "magnitude") of ``spectrum``. Note that
+        ``spectrum`` can already be all real numbers.
     amplitude_2col: numpy.ndarray
-        A two-column numpy array (frequency and amplitude)
+        A two-column numpy array (frequency and amplitude).
     phase : numpy.ndarray
-        The phase angle of `spectrum`. If `spectrum` has all real values,
-        `phase` is all zeros.
+        The phase angle of ``spectrum``. If ``spectrum`` has all real values,
+        ``phase`` is all zeros.
     phase_2col : numpy.ndarray
-        A two-column numpy array (frequency and phase)
+        A two-column numpy array (frequency and phase).
     iscomplex : bool
-        Is `spectrum` complex or already real?
+        Is ``spectrum`` complex or already real?
     '''
-
     def __init__(self, data, df=None, interpolate=False, fmin=0.1, fmax=30,
                  n_pts=1000, log_scale=True, sep='\t'):
 
@@ -130,29 +129,31 @@ class Frequency_Spectrum():
 
         Parameters
         ----------
-        fig, ax : mpl.figure.Figure, mpl.axes._subplots.AxesSubplot
-            Figure and axes objects.
-            If provided, the histograms are plotted on the provided figure and
-            axes. If not, a new figure and new axes are created.
-        figsize : tuple<float>
-            Size (width, height) of figure in inches. (fig object passed via "fig"
-            will over override this parameter). If None, the figure size will be
-            automatically determined from the number of distinct categories in x.
-        dpi : int
-            Display resolution of the figure
+        fig : matplotlib.figure.Figure or ``None``
+            Figure object. If None, a new figure will be created.
+        ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+            Axes object. If None, a new axes will be created.
+        figsize: (float, float)
+            Figure size in inches, as a tuple of two numbers. The figure
+            size of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
+            this parameter.
         logx : bool
-            Whether to show x scale as log
+            Whether to show x scale as log.
         logy : bool
-            Whether to show y scale as log
+            Whether to show y scale as log.
         plot_abs : bool
-            Whether to plot the absolute values of the spectrum
+            Whether to plot the absolute values of the spectrum.
         **kwargs_plot :
-            Extra keyword arguments are passed to matplotlib.pyplot.plot()
+            Extra keyword arguments are passed to ``matplotlib.pyplot.plot()``.
 
         Returns
         -------
-        fig, ax :
-            Objects of matplotlib figure and axes
+        fig : matplotlib.figure.Figure
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
         '''
 
         fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
@@ -181,17 +182,19 @@ class Frequency_Spectrum():
         win_len : int
             Length of the smoothing window. Larget numbers means more smoothing.
         show_fig : bool
-            Whether to show a before/after figure
+            Whether to show a before/after figure.
         **kwargs :
             Extra keyword arguments get passed to the function
-            helper_signal_processing.log_smooth()
+            ``helper_signal_processing.log_smooth()``.
 
         Returns
         -------
-        sm : numpy.ndarray (optional, only if `inplace`)
-            The smoothed signal. 1D numpy array
-        fig, ax :
-            matplotlib objects of the figure and axes
+        sm : numpy.ndarray (optional, only if ``inplace``)
+            The smoothed signal. 1D numpy array.
+        fig : matplotlib.figure.Figure
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
         '''
 
         sm = sig.log_smooth(self.spectrum, win_len=win_len, fmin=self.fmin,
@@ -225,7 +228,7 @@ class Amplification_Function(Frequency_Spectrum):
         Returns
         -------
         f0 : float
-            The fundamental frequency
+            The fundamental frequency.
         '''
         return sr.find_f0(self.spectrum_2col)
 
@@ -240,8 +243,8 @@ class Phase_Function(Frequency_Spectrum):
         '''
         Get the unwrpped phase function
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         robust : bool
             When unwrapping, whether to use the robust adjustment or not.
             Turning this option on can help mitigate some issues associated
@@ -250,7 +253,7 @@ class Phase_Function(Frequency_Spectrum):
         Returns
         -------
         unwrapped : numpy.ndarray
-            The unwrapped phase array
+            The unwrapped phase array.
         '''
         if robust:
             unwrapped = sr.robust_unwrap(self.spectrum)
@@ -271,7 +274,7 @@ class Transfer_Function(Frequency_Spectrum):
         -------
         amplitude : numpy.ndarray
             2D numpy array with two columns. Amplitude spectrum with the
-            accompanying frequency array
+            accompanying frequency array.
         '''
         return np.column_stack((self.freq, self.amplitude))
 
@@ -279,14 +282,14 @@ class Transfer_Function(Frequency_Spectrum):
         '''
         Return the phase shift angle (unit: rad) of the transfer function.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         unwrap : bool
-            Whether to return the unwrapped phase angle. If False, the returned
-            spectrum will be bounded between [-np.pi, np.pi]
+            Whether to return the unwrapped phase angle. If ``False``, the
+            returned spectrum will be bounded between [-np.pi, np.pi].
         robust : bool
             When unwrapping, whether to use the robust adjustment or not. It
-            has no effects if `unwrap` is False. Turning this option on can
+            has no effects if ``unwrap`` is False. Turning this option on can
             help mitigate some issues associated with incomplete unwrapping
             due to discretization errors.
 

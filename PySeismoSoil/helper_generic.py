@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 #%%----------------------------------------------------------------------------
 def detect_OS():
     '''
-    Check which operating system is currently running
+    Check which operating system is currently running.
 
     Returns
     -------
-    'Windows', 'Linux', or 'Darwin'
+    result : str
+        One of 'Windows', 'Linux', or 'Darwin'.
     '''
     import platform
     return platform.system()
@@ -19,14 +20,14 @@ def detect_OS():
 #%%----------------------------------------------------------------------------
 def get_current_time(for_filename=True):
     '''
-    Get current time as a string (e.g., 2001-01-01 23:59:59)
+    Get current time as a string (e.g., 2001-01-01 23:59:59).
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     for_filename : bool
         Whether the returned string is for filenames or not. If so, colons
         are substituted with dashes, and the space is substituted with an
-        underscore
+        underscore.
     '''
     import datetime
 
@@ -38,10 +39,32 @@ def get_current_time(for_filename=True):
 #%%----------------------------------------------------------------------------
 def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     '''
-    Process figure and axes objects. If fig and ax are None, create new figure
-    and new axes according to figsize, dpi, and ax_proj (axes projection). If
-    fig and ax are not None, use the passed-in fig and/or ax.
-    Returns fig and ax back to its caller.
+    Processes figure and axes objects. If ``fig`` and ``ax`` are None, creates
+    new figure and new axes according to ``figsize``, ``dpi``, and ``ax_proj``.
+    Otherwise, uses the passed-in ``fig`` and/or ``ax``.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure or ``None``
+        Figure object. If None, a new figure will be created.
+    ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+        Axes object. If None, a new axes will be created.
+    figsize: (float, float)
+        Figure size in inches, as a tuple of two numbers. The figure
+        size of ``fig`` (if not ``None``) will override this parameter.
+    dpi : float
+        Figure resolution. The dpi of ``fig`` (if not ``None``) will override
+        this parameter.
+    ax_proj : {None, 'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear', str}
+        The projection type of the axes. The default None results in a
+        'rectilinear' projection.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The figure object being created or being passed into this function.
+    ax : matplotlib.axes._subplots.AxesSubplot
+        The axes object being created or being passed into this function.
     '''
 
     if fig is None:  # if a figure handle is not provided, create new figure
@@ -76,7 +99,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
         The file delimiter. If data is not a file name, this parameter is
         ignored.
     **kwargs_to_genfromtxt :
-        Any extra keyword arguments will be passed to numpy.genfromtxt()
+        Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
         function for loading the data from the hard drive.
 
     Returns
@@ -85,7 +108,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
         A two column numpy array containing the "delta array" (such as the time
         array or the frequency array) and the data.
     delta : float
-        The "delta value", such as dt or df
+        The "delta value", such as dt or df.
     '''
 
     if isinstance(data, str):  # "data" is a file name
@@ -118,14 +141,14 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
 #%%----------------------------------------------------------------------------
 def assert_1D_numpy_array(something, name=None):
     '''
-    Assert that `something` is a 1D numpy array
+    Assert that ``something`` is a 1D numpy array
 
     Parameters
     ----------
     something :
-        Any Python object
+        Any Python object.
     name : str or None
-        The name of `something` to be displayed in the potential error message
+        The name of ``something`` to be displayed in the potential error message.
     '''
     if not isinstance(something, np.ndarray) or something.ndim != 1:
         name = '`something`' if name is None else name
@@ -134,14 +157,14 @@ def assert_1D_numpy_array(something, name=None):
 #%%----------------------------------------------------------------------------
 def assert_2D_numpy_array(something, name=None):
     '''
-    Assert that `something` is a 2D numpy array
+    Assert that ``something`` is a 2D numpy array.
 
     Parameters
     ----------
     something :
-        Any Python object
+        Any Python object.
     name : str or None
-        The name of `something` to be displayed in the potential error message
+        The name of ``something`` to be displayed in the potential error message.
     '''
     if not isinstance(something, np.ndarray) or something.ndim != 2:
         name = '`something`' if name is None else name
@@ -151,20 +174,20 @@ def assert_2D_numpy_array(something, name=None):
 def check_two_column_format(something, name=None, ensure_non_negative=False,
                             at_least_two_columns=False):
     '''
-    Check that `something` is a 2D numpy array with two columns. Raises an
-    error if `something` is the wrong format.
+    Check that ``something`` is a 2D numpy array with two columns. Raises an
+    error if ``something`` is the wrong format.
 
     Parameters
     ----------
     something :
-        Any Python object
+        Any Python object.
     name : str or None
-        The name of `something` to be displayed in the potential error message
+        The name of ``something`` to be displayed in the potential error message.
     ensure_non_negative : bool
-        Whether to ensure that all values in `something` >= 0
+        Whether to ensure that all values in ``something`` >= 0.
     at_least_two_columns : bool
         Whether to relax the constraints to from "exactly 2 columns" to "at
-        least two columns"
+        least two columns".
     '''
     if name is None:
         name = '`something`'
@@ -191,13 +214,13 @@ def check_two_column_format(something, name=None, ensure_non_negative=False,
 #%%----------------------------------------------------------------------------
 def check_Vs_profile_format(data):
     '''
-    Check that `data` is in a valid format as a Vs profile (i.e., 2D numpy
+    Check that ``data`` is in a valid format as a Vs profile (i.e., 2D numpy
     array, two or five columns, non-negative or positive values, etc.)
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     data :
-        Any Python object
+        Any Python object.
     '''
 
     if not isinstance(data, np.ndarray):
@@ -243,13 +266,13 @@ def check_Vs_profile_format(data):
 #%%----------------------------------------------------------------------------
 def is_int(number):
     '''
-    Check that a `number` represents an integer value. (Its data type does
+    Check that a ``number`` represents an integer value. (Its data type does
     not need to be int or numpy.integer).
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     number :
-        Any Python object
+        Any Python object.
     '''
     if not isinstance(number, (int, float, np.number)):
         return False
@@ -264,18 +287,18 @@ def is_int(number):
 #%%----------------------------------------------------------------------------
 def check_numbers_valid(array):
     '''
-    Generic helper function to check the contents in `array` is valid (i.e.,
+    Generic helper function to check the contents in ``array`` is valid (i.e.,
     are numbers, are not infinite, are positive)
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     array : numpy.ndarray
-        The numpy array to be tested
+        The numpy array to be tested.
 
     Returns
     -------
     error_flag : int
-        Flag indicating type of errors
+        Flag indicating type of errors.
     '''
 
     assert(isinstance(array, np.ndarray))
@@ -293,15 +316,15 @@ def check_numbers_valid(array):
 def interpolate(x_query_min, x_query_max, n_pts, x_ref, y_ref, log_scale=True,
                 **kwargs_to_interp):
     '''
-    Interpolate data (x_ref and y_ref) at x query points defined by x_query_min,
-    x_query_max, and n_pts.
+    Interpolate data (``x_ref`` and ``y_ref``) at x query points defined by
+    ``x_query_min``, ``x_query_max``, and ``n_pts``.
 
     Parameters
     ----------
     x_query_min : float
-        Minimum x value at which you want to query (inclusive)
+        Minimum x value at which you want to query (inclusive).
     x_query_max : float
-        Maximum x value at which you want to query (inclusive)
+        Maximum x value at which you want to query (inclusive).
     n_pts : int
         An array of x values are constructed between `x_query_min` and
         `x_query_max`, at which we query the y values. `n_pts` controls the
@@ -311,16 +334,17 @@ def interpolate(x_query_min, x_query_max, n_pts, x_ref, y_ref, log_scale=True,
     y_ref : numpy.ndarray
         Reference y values for interpolation. Must be a 1D numpy array.
     log_scale : bool
-        Whether to construct the query array in log or linear scale
+        Whether to construct the query array in log or linear scale.
     **kwargs_to_interp :
-        Extra keyword arguments to be passed to numpy.interp()
+        Extra keyword arguments to be passed to ``numpy.interp()``.
 
     Returns
     -------
     x_query_array : numpy.array
-        A 1D numpy array constructed from x_query_min, x_query_max, and n_pts
+        A 1D numpy array constructed from ``x_query_min``, ``x_query_max``,
+        and ``n_pts``.
     y_query_array : numpy.array
-        The interpolation result. Same shape as x_query_array
+        The interpolation result. Same shape as ``x_query_array``.
     '''
     if log_scale:
         x_query_array = np.logspace(np.log10(x_query_min),
@@ -349,7 +373,7 @@ def mean_absolute_error(y_true, y_pred):
     Returns
     -------
     mse : float
-        Mean squared error
+        Mean squared error.
     '''
     assert_1D_numpy_array(y_true, name='`y_true`')
     assert_1D_numpy_array(y_pred, name='`y_pred`')
@@ -363,24 +387,30 @@ def extract_from_curve_format(curves):
     All G/Gmax curves are organized into a list, and all damping curves are
     organized into another list.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     curves : numpy.ndarray
-        A 2D numpy array that follows the following format:
+        A 2D numpy array that follows the following format::
 
-        strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
-        -----------+--------+------------+-------------+-------------+--------+ ...
-           ...     |  ...   |    ...     |    ...      |    ...      |  ...   |
+          +------------+--------+------------+-------------+-------------+--------+-----
+          | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
+          +============+========+============+=============+=============+========+=====
+          |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
+          +------------+--------+------------+-------------+-------------+--------+-----
 
         Such an array can be constructed by hand, or by directly imported from
         a "curve_STATION_NAME.txt" file.
 
     Returns
     -------
-    GGmax_curves_list, damping_curves_list : list<numpy.ndarray>
-        The parsed G/Gmax and damping curves. Each element in the list is a 2D
-        numpy array with 2 columns (strain and G/Gmax, or strain and damping).
-        The units are shown in the above format.
+    GGmax_curves_list : list<numpy.ndarray>:
+        The parsed G/Gmax curves. Each element in the list is a 2D numpy array
+        with 2 columns (strain and G/Gmax). The units are shown in the above
+        table.
+    damping_curves_list : list<numpy.ndarray>
+        The parsed damping curves. Each element in the list is a 2D numpy array
+        with 2 columns (strain and damping). The units are shown in the above
+        table.
     '''
 
     if not isinstance(curves, np.ndarray):
@@ -413,16 +443,17 @@ def extract_from_curve_format(curves):
 def extract_from_param_format(params):
     '''
     Extract soil constituve model parameters from a 2D numpy array, which
-    follows the following format:
+    follows the following format::
 
-        param_layer_1  |  param_layer_2  |  param_layer_3  | ...
-        ---------------+-----------------+-----------------+-----
-             1.1       |      2.2        |      3.3        | ...
-             1.2       |      2.3        |      3.4        | ...
-             ...       |      ...        |      ...        | ...
+      +----------------+-----------------+-----------------+-----
+      |  param_layer_1 |  param_layer_2  |  param_layer_3  | ...
+      +================+=================+=================+=====
+      |      1.1       |      2.2        |      3.3        | ...
+      |      1.2       |      2.3        |      3.4        | ...
+      |      ...       |      ...        |      ...        | ...
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     params : numpy.ndarray
         A 2D numpy array containing soil constitutive model parameters for each
         soil layer. Such an array can be constructed by hand, or directly

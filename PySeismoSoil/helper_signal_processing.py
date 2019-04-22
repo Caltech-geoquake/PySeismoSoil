@@ -16,14 +16,14 @@ def lowpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     Parameters
     ----------
     orig_signal : numpy.ndarray
-        The signal to be filtered(2 columns)
+        The signal to be filtered (2 columns).
     cutoff_freq : float
-        Cut-off frequency
-    filter_order : int (default = 4)
+        Cut-off frequency.
+    filter_order : int
         Filter order.
     padlen : int
         Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If None, use the default value
+        of axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -44,14 +44,14 @@ def highpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     Parameters
     ----------
     orig_signal : numpy.ndarray
-        The signal to be filtered(2 columns)
+        The signal to be filtered (2 columns)
     cutoff_freq : float
-        Cut-off frequency
-    filter_order : int (default = 4)
-        Filter order
+        Cut-off frequency.
+    filter_order : int
+        Filter order.
     padlen : int
         Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If None, use the default value
+        of axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -72,14 +72,14 @@ def bandpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     Parameters
     ----------
     orig_signal : numpy.ndarray
-        The signal to be filtered(2 columns)
+        The signal to be filtered (2 columns)
     cutoff_freq : [float, float]
         Cut-off frequencies, from low to high
-    filter_order : int (default = 4)
-        Filter order
+    filter_order : int
+        Filter order.
     padlen : int
         Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If None, use the default value
+        of axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -100,14 +100,14 @@ def bandstop(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     Parameters
     ----------
     orig_signal : numpy.ndarray
-        The signal to be filtered(2 columns)
+        The signal to be filtered (2 columns)
     cutoff_freq : [float, float]
         Cut-off frequencies, from low to high
-    filter_order : int (default = 4)
+    filter_order : int
         Filter order.
     padlen : int
         Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If None, use the default value
+        of axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -237,7 +237,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     orig_signal : numpy.ndarray
         Original signal. Must have two columns.
     show_fig : bool
-        Whether or not to show figures comparing before and after
+        Whether or not to show figures comparing before and after.
     cutoff_freq : float
         The frequency (unit: Hz) for high passing. Energies below this
         frequency are filtered out.
@@ -245,7 +245,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     Returns
     -------
     corrected : numpy.ndarray
-        The corrected signal
+        The corrected signal.
     '''
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
@@ -399,18 +399,19 @@ def fourier_transform(signal_2_col, real_val=True, double_sided=False,
     Parameters
     ----------
     signal_2_col : numpy.ndarray
-        Signal in two columns (time array and signal array)
+        Signal in two columns (time array and signal array).
     real_val : bool
-        Whether to return the amplitude (or "magnitude") of the complex numbers
+        Whether to return the amplitude (or "magnitude") of the complex numbers.
     double_sided : bool
         Whether to return the second half of the spectrum (i.e. beyond the
-        Nyquist frequency)
+        Nyquist frequency).
     show_fig : bool
-        Whether to show figures of the spectrum
+        Whether to show figures of the spectrum.
 
     Returns
     -------
-    A two-column array containing [freq_array,spectrum]
+    spectra : numpy.ndarray
+        A two-column array containing [freq_array, spectrum].
     '''
 
     hlp.check_two_column_format(signal_2_col, '`signal_2_col`')
@@ -474,7 +475,14 @@ def taper_Tukey(input_signal, width=0.05):
     Parameters
     ----------
     input_signal : numpy.ndarray
-        Signal to be tapered. Can be 1D numpy array or 2D array with 2 columns
+        Signal to be tapered. Can be 1D numpy array or 2D array with 2 columns.
+    width : float
+        The width of the Tukey window.
+
+    Returns
+    -------
+    output : numpy.ndarray
+        The tapered signal.
     '''
 
     if not isinstance(input_signal, np.ndarray):
@@ -506,20 +514,20 @@ def calc_transfer_function(input_signal, output_signal, amplitude_only=True,
     Parameters
     ----------
     input_signal : numpy.ndarray
-        Input signal in the time domain
+        Input signal in the time domain. Needs to have two columns.
     ouput_signal : numpy.ndarray
-        Output signal in the time domain
+        Output signal in the time domain. Needs to have two columns.
     amplitude_only : bool
-        Whether to keep only the amplitude of the transfer function
+        Whether to keep only the amplitude of the transfer function.
     smooth_signal : bool
-        Whether to smooth the amplitude spectrum. If both `smooth` is True and
-        `amplitude_only` is False, an error will be raised.
+        Whether to smooth the amplitude spectrum. If ``smooth`` is ``True``
+        and ``amplitude_only`` is ``False``, an error will be raised.
 
     Returns
     -------
     trans_func_2col : numpy.ndarray
         The complex-valued or real-valued transfer function with two columns
-        (frequency and ratio)
+        (frequency and ratio).
     '''
     hlp.check_two_column_format(input_signal, name='`input_signal`')
     hlp.check_two_column_format(output_signal, name='`output_signal`')
@@ -579,25 +587,27 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
     signal : numpy.ndarray
         The signal to be smoothed. Must be a 1D numpy array.
     win_len : int
-        The length of the convolution window
-    window : str
-        The name of the window. Valid values:
-            ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
+        The length of the convolution window.
+    window : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}
+        The name of the window.
     lin_space : bool
         Whether or not the points of the signal is uniformly spaced linearly.
-        If False, the signal is treated as uniformaly spaced logarithmically.
+        If ``False``, the signal is treated as uniformaly spaced logarithmically.
     fmin, fmax : float
         Minimum and maximum frequencies (in Hz) that the signal is spaced within.
-        Only needed when lin_space is True.
+        Only effective when ``lin_space`` is ``True``.
     n_pts : int
         The number of points of the logarithmically interpolated the signal.
-        Only needed when lin_space is True.
+        Only effective when ``lin_space`` is ``True``.
     fix_ends : bool
         Whether or not to fix the two ends of the smoothed signal, so that
-        the "boundary effect" from convolution can be corrected. If True, the
-        first and last n points will be adjusted using the exponentially
-        weighted averaging method. (n is half of win_len.)
-    beta1, beta2 : float
+        the "boundary effect" from convolution can be corrected. If ``True``,
+        the first and last n points will be adjusted using the exponentially
+        weighted averaging method. (n is half of ``win_len``.)
+    beta1 : float
+        The "strength" of exponentially weighted averaging. For the head and
+        the tail ends, respectively. Values should be within [0, 1].
+    beta2 : float
         The "strength" of exponentially weighted averaging. For the head and
         the tail ends, respectively. Values should be within [0, 1].
 
