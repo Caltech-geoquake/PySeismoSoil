@@ -154,12 +154,12 @@ class Simulation_Results():
         #-------- Plot maximum accel/veloc/displ/strain/stress profiles -------
         max_layer_boundary_depth = np.max(self.max_a_v_d[:, 0])
 
-        fig2 = plt.figure(figsize=(12, 7), dpi=dpi)
+        fig2 = plt.figure(figsize=(8.5, 5.5), dpi=dpi)
 
         ax21 = plt.subplot(151)
         plt.plot(self.max_a_v_d[:, 1], self.max_a_v_d[:, 0], ls='-', marker='.')
         plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('Max. accel. [m/s^2]')
+        plt.xlabel('Max. accel. [m/s/s]')
         plt.ylabel('Depth [m]')
         plt.grid(ls=':', lw=0.5)
 
@@ -168,12 +168,14 @@ class Simulation_Results():
         plt.ylim(max_layer_boundary_depth, 0)
         plt.xlabel('Max. veloc. [m/s]')
         plt.grid(ls=':', lw=0.5)
+        ax22.get_yaxis().set_ticklabels([])
 
         ax23 = plt.subplot(153)
         plt.plot(self.max_a_v_d[:, 3], self.max_a_v_d[:, 0], ls='-', marker='.')
         plt.ylim(max_layer_boundary_depth, 0)
         plt.xlabel('Max. displ. [m]')
         plt.grid(ls=':', lw=0.5)
+        ax23.get_yaxis().set_ticklabels([])
 
         ax24 = plt.subplot(154)
         plt.plot(self.max_strain_stress[:, 1]*100, self.max_strain_stress[:, 0],
@@ -181,13 +183,15 @@ class Simulation_Results():
         plt.ylim(max_layer_boundary_depth, 0)
         plt.xlabel('$\gamma_{\max}$ [%]')
         plt.grid(ls=':', lw=0.5)
+        ax24.get_yaxis().set_ticklabels([])
 
         ax25 = plt.subplot(155)
         plt.plot(self.max_strain_stress[:, 2]/1000., self.max_strain_stress[:, 0],
                  ls='-', marker='.')
         plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel(r'$\tau_{\max}$ [kPA]')
+        plt.xlabel(r'$\tau_{\max}$ [kPa]')
         plt.grid(ls=':', lw=0.5)
+        ax25.get_yaxis().set_ticklabels([])
 
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.3)
 
