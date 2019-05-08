@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from PySeismoSoil.class_ground_motion import Ground_Motion as GM
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 class Test_Class_Ground_Motion(unittest.TestCase):
     '''
@@ -13,7 +14,6 @@ class Test_Class_Ground_Motion(unittest.TestCase):
     '''
 
     def test_loading_data(self):
-
         # Two columns from file
         gm = GM('./files/sample_accel.txt', 'gal')
 
@@ -73,10 +73,14 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(isinstance(bp, GM))
         self.assertTrue(isinstance(bs, GM))
 
+    def test_deconvolution(self):
+        gm = GM('./files/sample_accel.txt', unit='m')
+        vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
+        deconv_motion = gm.deconvolve(vs_prof, show_fig=True)
+        self.assertTrue(isinstance(deconv_motion, GM))
+
     def test_num_integration(self):
-
         gm = GM('./files/two_column_data_example.txt', 'm/s/s')
-
         v_bench = np.array([[0.1000, 0.1000],
                             [0.2000, 0.3000],
                             [0.3000, 0.6000],
@@ -107,7 +111,6 @@ class Test_Class_Ground_Motion(unittest.TestCase):
                             [1.3000, 2.8700],
                             [1.4000, 3.4000],
                             [1.5000, 4.0000]])
-
         self.assertTrue(np.allclose(gm.veloc, v_bench))
         self.assertTrue(np.allclose(gm.displ, u_bench))
 

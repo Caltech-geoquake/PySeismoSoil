@@ -9,6 +9,7 @@ from . import helper_site_response as sr
 from . import helper_signal_processing as sig
 
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 class Ground_Motion:
     '''
@@ -635,7 +636,7 @@ class Ground_Motion:
             Whether or not to show an illustration of how the calculation is
             carried out.
         dpi : int
-            Desired DPI for the figures; only effective when ``show_fig`` is 
+            Desired DPI for the figures; only effective when ``show_fig`` is
             ``True``.
         return_fig_obj : bool
             Whether or not to return figure and axis objects to the caller.
@@ -669,6 +670,37 @@ class Ground_Motion:
         else:
             output_accel = result
             return Ground_Motion(output_accel, unit='m')
+
+    #--------------------------------------------------------------------------
+    def deconvolve(self, soil_profile, boundary='elastic', show_fig=False):
+        '''
+        Deconvolve the ground motion, i.e., propagate the motion downwards to
+        get the borehole motion (rigid boundary) or the "rock outcrop" motion
+        (elastic boundary).
+
+        Parameters
+        ----------
+        soil_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+            The soil profile through which to deconvolve the gound motion.
+        boundary : {'elastic', 'rigid'}
+            The type of boundary of the bottom of the soil profile.
+        show_fig : bool
+            Whether or not to show a figure that illustrates the deconvolution
+            process.
+
+        Returns
+        -------
+        deconv_motion : Ground_Motion
+        '''
+        if not isinstance(soil_profile, Vs_Profile):
+            raise TypeError('`soil_profile` must be of type Vs_Profile.')
+
+        vs_profile = soil_profile.vs_profile
+        surface_motion = self.accel  # note: unit is SI
+        response = sr.linear_site_resp(vs_profile, surface_motion, deconv=True,
+                                       boundary=boundary, show_fig=show_fig)
+        deconv_motion = Ground_Motion(response, unit='m')
+        return deconv_motion
 
     #--------------------------------------------------------------------------
     def baseline_correct(self, cutoff_freq=0.20, show_fig=False):
