@@ -19,10 +19,9 @@ class Site_Effect_Adjustment():
     Vs30_in_meter_per_sec : float
         Vs30 values in SI unit.
     z1_in_m : float
-        z1 (basin depth) in meters. If None, it will be estimated from Vs30
-        using the following correlation: z1 = 140.511 * exp(-0.00303 * Vs30),
-        where the units of z1 and Vs30 are both SI units. This formula is
-        obtained from the dataset used in Shi & Asimaki (2018).
+        z1 (basin depth) in meters. If ``None``, it will be estimated from 
+        Vs30 using an empirical correlation (see `calc_z1_from_Vs30()` 
+        function in `helper_site_response.py`).
 
     Attributes
     ----------
@@ -50,7 +49,7 @@ class Site_Effect_Adjustment():
             raise ValueError("Currently, only 'nl_hh' and 'eq_hh' are valid.")
 
         if z1_in_m is None:
-            z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
+            z1_in_m = sr.calc_z1_from_Vs30(Vs30_in_meter_per_sec)
         PGA_in_g = input_motion.pga_in_g
 
         site_factor = Site_Factors(Vs30_in_meter_per_sec, z1_in_m, PGA_in_g,

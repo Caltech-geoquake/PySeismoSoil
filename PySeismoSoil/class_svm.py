@@ -21,7 +21,9 @@ class SVM():
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
     z1 : float
-        The depth to bedrock (1000 m/s rock). Unit: m.
+        The depth to bedrock (1000 m/s rock). Unit: m. If ``None``, it will be
+        estimated from Vs30 using an empirical correlation (see
+        `calc_z1_from_Vs30()` function in `helper_site_response.py`).
     Vs_cap : bool or float
         Whether to "cap" the Vs profile or not.
         If True, then the Vs profile is capped at 1000.0 m/s; if specified
@@ -62,7 +64,7 @@ class SVM():
     has_bedrock_Vs : bool
         Whether the Vs profile has a bedrock Vs value.
     '''
-    def __init__(self, target_Vs30, z1=350.0, Vs_cap=True, eta=0.90,
+    def __init__(self, target_Vs30, z1=None, Vs_cap=True, eta=0.90,
                  show_fig=False, iterate=False, verbose=False):
 
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
@@ -107,6 +109,9 @@ class SVM():
         s2 = -1.0521e-04
         s3 = -10.827
         s4 = -7.6187e-03
+
+        if z1 is None:
+            z1 = sr.calc_z1_from_Vs30(target_Vs30)
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
             Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
