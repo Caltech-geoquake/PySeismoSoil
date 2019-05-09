@@ -8,6 +8,17 @@ from . import helper_generic as hlp
 from . import helper_signal_processing as sig
 
 #%%----------------------------------------------------------------------------
+def calc_z1_from_Vs30(Vs30_in_meter_per_sec):
+    '''
+    Calculate z1 (basin depth) from Vs30. The correlation used here is
+    z1 = 140.511 * exp(-0.00303 * Vs30), where the units of z1 and Vs30 are
+    both SI units. This formula is obtained from the dataset used in
+    Shi & Asimaki (2018).
+    '''
+    z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
+    return z1_in_m
+
+#%%----------------------------------------------------------------------------
 def stratify(vs_profile):
     '''
     Divide layers of a Vs profile as necessary, according to the Vs values
