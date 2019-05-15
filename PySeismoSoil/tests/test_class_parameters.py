@@ -113,8 +113,8 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertTrue(HH_x_1.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
                                         's', 'Gmax', 'mu', 'Tmax', 'd'})
         self.assertTrue(np.allclose(hh.serialize_params_to_array(HH_x_1),
-                                    [0.0324457, 1.02664, 0.203758, 44.0942,
-                                     0.615992, 8.07508, 187.808, 33.9501, 1]))
+                                    [0.027916, 1.01507, 0.0851825, 23.468,
+                                     0.638322, 5.84163, 183.507, 29.7071, 1]))
 
     def test_mkz_param_multi_layer(self):
         H4_G = MKZ_Param_Multi_Layer('./files/H4_G_IWTH04.txt')
