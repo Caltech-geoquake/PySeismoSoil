@@ -1554,7 +1554,7 @@ def robust_unwrap(signal, discont=3.141592653589793):
 #%%----------------------------------------------------------------------------
 def calc_damping_from_param(param, strain_in_unit_1, func_stress):
     '''
-    Calculate damping values from HH parameters.
+    Calculate damping values from HH or MKZ parameters.
 
     Parameters
     ----------
@@ -1624,9 +1624,10 @@ def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
 
     Parameters
     ----------
-    stress_strain_curve : numpy.ndarray
-        Stress-strain curve. Needs to have two columns. The strain needs to
-        have unit "1".
+    strain_in_unit_1 : numpy.ndarray
+        Strain array (a 1D numpy array). Unit: 1.
+    stress : numpy.ndarray
+        Stress array. Its unit can be arbitrary.
     Gmax : float
         Maximum shear modulus, whose unit needs to be identical to that of the
         stress curve. If not provided, it is automatically calculated from the
