@@ -92,12 +92,18 @@ class Test_Helper_Generic(unittest.TestCase):
         self.assertTrue(np.allclose(damping, damping_bench))
 
     def test_extract_from_param_format(self):
-        data = np.genfromtxt('./files/HH_X_FKSH14.txt')[:, :2]
+        data = np.genfromtxt('./files/HH_X_FKSH14.txt')
         param = hlp.extract_from_param_format(data)
-        param_bench = [np.array([0.0215919, 1.01123, 0.078535, 35.2871,
-                                 0.600817, 10.5475, 157.751, 25.3493, 1]),
-                       np.array([0.0324457, 1.02664, 0.203758, 44.0942,
-                                 0.615992, 8.07508, 187.808, 33.9501, 1])]
+        param_bench = [np.array([0.010161, 1, 0.10468, 39.317, 0.630114,
+                                 18.7975, 149.535, 29.053, 1]),
+                       np.array([0.027916, 1.01507, 0.0851825, 23.468, 0.638322,
+                                 5.84163, 183.507, 29.7071, 1]),
+                       np.array([0.0479335, 1.00849, 0.276801, 35.9504,
+                                 0.643012, 5.04279, 193.483, 54.8234, 1]),
+                       np.array([0.0516179, 1.0215, 0.153973, 21.8676,
+                                 0.654707, 1.44752, 179.24, 22.4495, 1]),
+                       np.array([0.0340815, 1.02711, 0.202054, 25.2326,
+                                 0.667001, 3.97622, 195.136, 34.601, 1])]
         self.assertTrue(np.allclose(param, param_bench))
 
 if __name__ == '__main__':
