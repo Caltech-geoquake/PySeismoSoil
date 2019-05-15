@@ -166,7 +166,7 @@ class Parameter(collections.UserDict):
         damping = self.get_damping(strain)
 
         if figsize is None:
-            figsize = (3, 6)
+            figsize = (6, 3)
         if dpi is None:
             dpi = 100
 
@@ -183,6 +183,8 @@ class Parameter(collections.UserDict):
         ax[1].grid(ls=':')
         ax[1].set_xlabel('Strain [%]')
         ax[1].set_ylabel('Damping [%]')
+
+        fig.tight_layout(pad=0.3, h_pad=0.4, w_pad=0.5)
 
         return fig, ax
 

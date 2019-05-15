@@ -14,8 +14,8 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
 
                         gamma^d * mu
         T(gamma) = ------------------------
-                      1        x^d * mu
-                    ------ + ------------
+                      1       gamma^d * mu
+                    ------ + --------------
                      Gmax        Tmax
 
     where:

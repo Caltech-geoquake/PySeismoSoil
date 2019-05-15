@@ -29,7 +29,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     gamma_ref : float
-        Reference shear strain, a shape parameter of the MKZ model.
+        Reference shear strain, a shape parameter of the MKZ model. Unit: 1.
     beta : float
         A shape parameter of the MKZ model.
     s : float
@@ -144,42 +144,42 @@ def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
 
 #%%----------------------------------------------------------------------------
 def damping_misfit(param_without_Gmax, damping_data):
-        '''
-        Calculate the misfit given a set of MKZ parameters. Note that the values
-        in `param` are actually the 10-based power of the actual MKZ parameters.
-        Using the powers in the genetic algorithm searching turns out to work
-        much better for this particular problem.
+    '''
+    Calculate the misfit given a set of MKZ parameters. Note that the values
+    in `param` are actually the 10-based power of the actual MKZ parameters.
+    Using the powers in the genetic algorithm searching turns out to work
+    much better for this particular problem.
 
-        Parameters
-        ----------
-        param_without_Gmax : tuple<float>
-            MKZ model parameters, in the order specified below:
-                gamma_ref, s, beta
-        damping_data : numpy.ndarray
-            2D numpy array with two columns (strain and damping value). Both
-            columns need to use "1" as the unit, not percent.
+    Parameters
+    ----------
+    param_without_Gmax : tuple<float>
+        MKZ model parameters, in the order specified below:
+            gamma_ref, s, beta
+    damping_data : numpy.ndarray
+        2D numpy array with two columns (strain and damping value). Both
+        columns need to use "1" as the unit, not percent.
 
-        Returns
-        -------
-        error : float
-            The mean absolute error between the true damping values and the
-            predicted damping values at each strain level.
-        '''
-        gamma_ref_, s_, beta_ = param_without_Gmax
+    Returns
+    -------
+    error : float
+        The mean absolute error between the true damping values and the
+        predicted damping values at each strain level.
+    '''
+    gamma_ref_, s_, beta_ = param_without_Gmax
 
-        gamma_ref = 10 ** gamma_ref_
-        beta = 10 ** beta_
-        s = 10 ** s_
-        Gmax = 1.0  # does not affect damping, because it gets cancels out
+    gamma_ref = 10 ** gamma_ref_
+    beta = 10 ** beta_
+    s = 10 ** s_
+    Gmax = 1.0  # does not affect damping, because it gets cancels out
 
-        strain = damping_data[:, 0]
-        damping_true = damping_data[:, 1]
+    strain = damping_data[:, 0]
+    damping_true = damping_data[:, 1]
 
-        Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
-        damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
-        error = hlp.mean_absolute_error(damping_true, damping_pred)
+    Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
+    damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
+    error = hlp.mean_absolute_error(damping_true, damping_pred)
 
-        return error
+    return error
 
 #%%----------------------------------------------------------------------------
 def serialize_params_to_array(param, to_files=False):
@@ -222,9 +222,9 @@ def deserialize_array_to_params(array, from_files=False):
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
     The users needs to ensure the order of values in ``array`` are in this order:
-        gamma_ref, s, beta, Gmax
+        gamma_ref, s, beta, Gmax    <-- if ``from_files`` is ``False``
     or:
-        gamma_ref, b, s, beta
+        gamma_ref, b, s, beta    <-- if ``from_files`` is ``True``
     (where b is always 0, for historical reasons)
 
     Parameters
