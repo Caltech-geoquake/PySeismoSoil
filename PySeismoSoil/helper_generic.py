@@ -37,6 +37,41 @@ def get_current_time(for_filename=True):
         return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 #%%----------------------------------------------------------------------------
+def find_closest_index(array, value):
+    '''
+    Find the index in ``array`` corresponding to the value closest to the
+    given ``value``.
+
+    Parameters
+    ----------
+    array : numpy.ndarray
+        A 1D numpy array. It does not need to be sorted, because this function
+        has an O(n) time complexity.
+    value : float
+        The value to search for.
+
+    Returns
+    -------
+    index : int
+        The index whose value is closest to the given ``value``.
+    closest_value : float
+        The value in ``array`` that is closest to the given ``value``.
+    '''
+    assert_1D_numpy_array(array, name='`array`')
+    if not isinstance(value, (int, float, np.number)):
+        raise TypeError('`value` must be a single number (such as a float).')
+
+    if len(array) == 0:
+        index = None
+        closest_value = None
+    else:
+        deviation = np.abs(array - value)
+        index = np.argmin(deviation)
+        closest_value = array[index]
+
+    return index, closest_value
+
+#%%----------------------------------------------------------------------------
 def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     '''
     Processes figure and axes objects. If ``fig`` and ``ax`` are None, creates
@@ -153,6 +188,79 @@ def assert_1D_numpy_array(something, name=None):
     if not isinstance(something, np.ndarray) or something.ndim != 1:
         name = '`something`' if name is None else name
         raise TypeError('%s must be a 1D numpy array.' % name)
+
+#%%----------------------------------------------------------------------------
+def assert_array_length(something, length, name='`something`'):
+    '''
+    Assert that ``something`` is a 1D of length ``length``.
+
+    Parameters
+    ----------
+    something :
+        Any Python object
+    length : int or ``None``
+        The length that ``something`` must have.
+    name : str
+        The name of ``something`` for displaying the error message, if necessary.
+    '''
+    assert_1D_numpy_array(something, name=name)
+    if len(something) != length:
+        raise ValueError('%s must have length %d, but not %d.' \
+                         % (name, length, len(something)))
+
+#%%----------------------------------------------------------------------------
+def extend_scalar(scalar, length):
+    '''
+    "Extend" a scalar (float, int, or numpy.number type) into a 1D numpy array
+    whose length is ``length`` and whose elements are all ``scalar``.
+
+    Parameters
+    ----------
+    scalar : float, int, numpy.number
+        A single number.
+    length : int
+        The length of the desired output.
+
+    Returns
+    -------
+    array : numpy.ndarray
+        A 1D numpy array with length ``length`` and elements of value ``scalar``.
+    '''
+    if not isinstance(scalar, (float, int, np.number)):
+        raise TypeError('`scalar` must be a float, int, or a numpy.number type.')
+
+    array = scalar * np.ones(length)
+    return array
+
+#%%----------------------------------------------------------------------------
+def check_length_or_extend_to_array(something, length, name='`something`'):
+    '''
+    Check that ``something`` is a 1D numpy array with length ``length``, or
+    if ``something`` is a single value, extend it to a 1D numpy array whose
+    length is ``length`` and elements are all ``something``.
+
+    Parameters
+    ----------
+    something :
+        Any Python object.
+    length : int
+        The desired length of array.
+    name : str
+        The name of ``something`` for displaying the error message, if necessary.
+
+    Returns
+    -------
+    array : numpy.ndarray
+        The array that ``something`` is extended to (if ``something`` is a
+        single value). Or ``something`` itself.
+    '''
+    if isinstance(something, (float, int, np.number)):
+        array = extend_scalar(something, length)
+    else:
+        assert_array_length(something, length, name=name)
+        array = something
+
+    return array
 
 #%%----------------------------------------------------------------------------
 def assert_2D_numpy_array(something, name=None):
