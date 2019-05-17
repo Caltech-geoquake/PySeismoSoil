@@ -1714,13 +1714,12 @@ def fit_all_damping_curves(curves, func_fit_single_layer, func_stress,
     curves : numpy.ndarray or list<numpy.array>
         Can either be a 2D array in the "curve" format, or a list of individual
         damping curves.
-        The "curve" format is as follows::
-
-         +------------+--------+------------+-------------+-------------+--------+-----
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
-         +============+========+============+=============+=============+========+=====
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
-         +------------+--------+------------+-------------+-------------+--------+-----
+        The "curve" format is as follows:
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         The G/Gmax information is redundant for this function.
 
