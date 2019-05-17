@@ -911,10 +911,9 @@ class Multiple_GGmax_Curves(Multiple_Curves):
     '''
 
     def __init__(self, filename_or_list_of_curves, sep='\t'):
-
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
-            _, list_of_GGmax_curves = hlp.extract_from_curve_format(curves)
+            list_of_GGmax_curves, _ = hlp.extract_from_curve_format(curves)
             self._filename = filename_or_list_of_curves
         elif isinstance(filename_or_list_of_curves, list):
             list_of_GGmax_curves = filename_or_list_of_curves
@@ -964,10 +963,69 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         '''
-
         fig, ax = super(Multiple_GGmax_Curves, self)\
                       .plot(plot_interpolated=plot_interpolated, fig=fig,
                             ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
                             figsize=figsize, dpi=dpi, **kwargs_to_matplotlib)
 
         return fig, ax
+
+    #--------------------------------------------------------------------------
+    def get_curve_matrix(self, damping_filler_value=1.0, save_to_file=False,
+                         full_file_name=None):
+        '''
+        Based on the G/Gmax data defined in objects of this class, produce a
+        full "curve matrix" in the following format::
+
+         +------------+--------+------------+-------------+-------------+--------+-----
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
+         +============+========+============+=============+=============+========+=====
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
+         +------------+--------+------------+-------------+-------------+--------+-----
+
+        Since this class only defines G/Gmax curves, not damping curves,
+        damping values will be filled with some dummy values.
+
+        Parameters
+        ----------
+        damping_filler_value : float
+            A dummy value to fill all the damping curves
+        save_to_file : bool
+            Whether or not to save the "curve matrix" as a text file.
+        full_file_name : str or ``None``
+            Full file name to save to the hard drive. It can be ``None`` if
+            ``save_to_file`` is set to ``False``.
+
+        Returns
+        -------
+        curve_matrix : numpy.ndarray
+            A matrix containing G/Gmax curves in the above-mentioned format.
+        '''
+        lengths = []  # lengths of strain array of each layer
+        #max_npts = 0  # the uniformed length for all strain arrays
+        for curve_ in self.curves:
+            lengths.append(len(curve_.strain))
+            #if len(curve_.strain) >= max_npts:
+            #    max_npts = len(curve_.strain)
+
+        max_length = np.max(lengths)
+
+        curve_matrix = None
+        for curve_ in self.curves:
+            strain = curve_.strain
+            if len(curve_.strain) == max_length:
+                strain_ = strain  # we can use the original strain array
+                GGmax_ = curve_.GGmax
+            else:  # otherwise we need a new strain array to match `max_length`
+                strain_ = np.geomspace(np.min(strain), np.max(strain), max_length)
+                GGmax_ = np.interp(strain_, strain, curve_.GGmax)
+            # END IF
+            damping = np.ones_like(strain_) * damping_filler_value
+            tmp_matrix = np.column_stack((strain_, GGmax_, strain_, damping))
+            if curve_matrix is None:
+                curve_matrix = tmp_matrix
+            else:
+                curve_matrix = np.column_stack((curve_matrix, tmp_matrix))
+            # END IF
+        # END FOR
+        return curve_matrix
