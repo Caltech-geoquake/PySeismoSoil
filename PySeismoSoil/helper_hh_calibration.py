@@ -141,7 +141,6 @@ def hh_param_from_curves(vs_profile, curves, Tmax=None, show_fig=False,
     vs_profile : numpy.ndarray
         Shear-wave velocity profile, as a 2D numpy array. It should have the
         following columns:
-
             +---------------+----------+---------+---------+-----------------+
             | Thickness (m) | Vs (m/s) | Damping | Density | Material Number |
             +===============+==========+=========+=========+=================+
@@ -150,13 +149,12 @@ def hh_param_from_curves(vs_profile, curves, Tmax=None, show_fig=False,
 
     curves : numpy.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
-        layer, in the following format::
-
-         +------------+--------+------------+-------------+-------------+--------+-----
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
-         +============+========+============+=============+=============+========+=====
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
-         +------------+--------+------------+-------------+-------------+--------+-----
+        layer, in the following format:
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+ 
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         The damping information is neglected in this function, so users can
         supply some dummy values.
@@ -270,13 +268,12 @@ def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
         this same value.
     curves : numpy.ndarray or ``None``
         A 2D numpy array that represents G/Gmax and damping curves of each
-        layer, in the following format::
-
-         +------------+--------+------------+-------------+-------------+--------+-----
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
-         +============+========+============+=============+=============+========+=====
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
-         +------------+--------+------------+-------------+-------------+--------+-----
+        layer, in the following format:
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         The damping information is neglected in this function, so users can
         supply some dummy values. If ``None``, it means that the users do not

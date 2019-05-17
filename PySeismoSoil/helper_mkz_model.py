@@ -223,10 +223,10 @@ def deserialize_array_to_params(array, from_files=False):
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
     The users needs to ensure the order of values in ``array`` are in this order:
-        gamma_ref, s, beta, Gmax    <-- if ``from_files`` is ``False``
+        gamma_ref, s, beta, Gmax (if ``from_files`` is ``False``)
     or:
-        gamma_ref, b, s, beta    <-- if ``from_files`` is ``True``
-    (where b is always 0, for historical reasons)
+        gamma_ref, b, s, beta (if ``from_files`` is ``True``)
+    (b is always 0, for historical reasons)
 
     Parameters
     ----------
@@ -272,13 +272,12 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
     ----------
     curve_data : numpy.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
-        layer, in the following format::
-
-         +------------+--------+------------+-------------+-------------+--------+-----
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
-         +============+========+============+=============+=============+========+=====
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
-         +------------+--------+------------+-------------+-------------+--------+-----
+        layer, in the following format:
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         The damping information is neglected in this function, so users can
         supply some dummy values.

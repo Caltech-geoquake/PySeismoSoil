@@ -975,13 +975,12 @@ class Multiple_GGmax_Curves(Multiple_Curves):
                          full_file_name=None):
         '''
         Based on the G/Gmax data defined in objects of this class, produce a
-        full "curve matrix" in the following format::
-
-         +------------+--------+------------+-------------+-------------+--------+-----
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
-         +============+========+============+=============+=============+========+=====
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
-         +------------+--------+------------+-------------+-------------+--------+-----
+        full "curve matrix" in the following format:
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         Since this class only defines G/Gmax curves, not damping curves,
         damping values will be filled with some dummy values.
