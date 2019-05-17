@@ -4,7 +4,8 @@ import unittest
 import numpy as np
 
 from PySeismoSoil.class_curves import Curve, GGmax_Curve, Damping_Curve, \
-                                      Stress_Curve, Multiple_Damping_Curves
+                                      Stress_Curve, Multiple_Damping_Curves, \
+                                      Multiple_GGmax_Curves
 
 class Test_Class_Curves(unittest.TestCase):
     '''
@@ -150,6 +151,19 @@ class Test_Class_Curves(unittest.TestCase):
             self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
         except ImportError:  # DEAP library may not be installed
             pass
+
+    def test_multiple_GGmax_curve_get_curve_matrix(self):
+        damping = 1.23  # choose a dummy value
+
+        mgc = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
+        curve = mgc.get_curve_matrix(damping_filler_value=damping)
+
+        curve_benchmark = np.genfromtxt('./files/curve_FKSH14.txt')
+        for j in range(curve_benchmark.shape[1]):
+            if j % 4 == 3:  # original damping info is lost; use same dummy value
+                curve_benchmark[:, j] = damping
+
+        self.assertTrue(np.allclose(curve, curve_benchmark, rtol=1e-5))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Curves)
