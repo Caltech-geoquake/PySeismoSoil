@@ -1,6 +1,7 @@
 # Author: Jian Shi
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from . import helper_generic as hlp
 from . import helper_site_response as sr
@@ -262,3 +263,114 @@ def deserialize_array_to_params(array, from_files=False):
 
     return param
 
+#%%----------------------------------------------------------------------------
+def fit_MKZ(curve_data, show_fig=False, verbose=False):
+    '''
+    Fit MKZ model to G/Gmax curves.
+
+    Parameters
+    ----------
+    curve_data : numpy.ndarray
+        A 2D numpy array that represents G/Gmax and damping curves of each
+        layer, in the following format::
+
+         +------------+--------+------------+-------------+-------------+--------+-----
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ...
+         +============+========+============+=============+=============+========+=====
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ...
+         +------------+--------+------------+-------------+-------------+--------+-----
+
+        The damping information is neglected in this function, so users can
+        supply some dummy values.
+    show_fig : bool
+        Whether or not to show curve-fitting results.
+    verbose : bool
+        Whether to show messages about the calculation progress on the console.
+
+    Returns
+    -------
+    param : numpy.ndarray
+        The fitted MKZ parameters. Shape: (n_mat, 4), where ``n_mat`` is
+        the number of materials implied in ``curve_data``.
+    fitted_curves : numpy.ndarray
+        The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
+        of the strain array. Currently hard-coded as 109.
+    '''
+    from scipy.optimize import curve_fit
+
+    hlp.assert_2D_numpy_array(curve_data, name='`curve_data`')
+
+    nr = 109
+    fitted_curves = np.zeros((nr, curve_data.shape[1]))
+
+    n_ma = int(curve_data.shape[1] / 4.0)  # number of materials
+    length = curve_data.shape[0]  # length of strain array
+
+    ref_strain = np.zeros(n_ma)
+    s_value = np.zeros(n_ma)
+    beta = np.zeros(n_ma)
+
+    gamma = np.zeros((length, n_ma))
+    GGmax = np.zeros((length, n_ma))
+    for k in range(n_ma):
+        gamma[:, k] = curve_data[:, k*4 + 0] / 100.0  # percent --> 1
+        GGmax[:, k] = curve_data[:, k*4 + 1]
+
+    gamma_ = np.geomspace(1e-6, 0.1, num=nr)  # unit: 1
+    GGmax_ = np.zeros((nr, n_ma))
+    damping_ = np.zeros((nr, n_ma))
+
+    #-------------- Curve-fitting, layer by layer -----------------------------
+    def func(x, beta, gamma_ref, s):
+        return 1.0 / (1 + beta * (x / gamma_ref)**s)
+
+    if verbose:
+        print('Fitting MKZ model to G/Gmax data. Total: %d layers.' % n_ma)
+    for j in range(n_ma):
+        if verbose:
+            print('  Layer #%d' % j)
+        x_data = gamma[:, j]
+        y_data = GGmax[:, j]
+        popt, _ = curve_fit(func, x_data, y_data, p0=[1, 0.005, 0.8],
+                            bounds=([0.2, 0, 0.6], [1.8, 0.1, 0.999]))
+        beta[j] = popt[0]
+        ref_strain[j] = popt[1]
+        s_value[j] = popt[2]
+
+    param = np.column_stack((ref_strain, np.zeros(n_ma), s_value, beta))
+
+    #------------ Calculate the fitted curve ----------------------------------
+    for k in range(n_ma):
+        param_k = param[k, :]
+        T_MKZ = tau_MKZ(gamma_, gamma_ref=param_k[0], s=param_k[2],
+                        beta=param_k[3], Gmax=1.0)
+        GGmax_k = sr.calc_GGmax_from_stress_strain(gamma_, T_MKZ, Gmax=1.0)
+        GGmax_[:, k] = GGmax_k
+
+    #------------ Plotting ----------------------------------------------------
+    if show_fig:
+        ncol = 4
+        nrow = int(np.ceil(n_ma / ncol))
+        plt.figure(figsize=(ncol * 3.5, nrow * 3))
+        for k in range(n_ma):
+            plt.subplot(nrow, ncol, k + 1)
+            plt.semilogx(gamma[:, k] * 100, GGmax[:, k], ls='-', marker='o',
+                         lw=1.5, alpha=0.8, label='Data points')
+            plt.semilogx(gamma_ * 100, GGmax_[:, k], lw=1.5, label='Curve fit',)
+            plt.xlabel('Shear strain [%]')
+            plt.ylabel('G/Gmax')
+            plt.legend(loc='lower left')
+            plt.grid(ls=':', lw=0.5)
+            plt.title(r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g' \
+                      % (ref_strain[k], s_value[k], beta[k]))
+        # END FOR
+        plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
+
+    #---------- Produce fitting curves ----------------------------------------
+    for k in range(n_ma):
+        fitted_curves[:, k * 4 + 0] = gamma_ * 100
+        fitted_curves[:, k * 4 + 1] = GGmax_[:, k]
+        fitted_curves[:, k * 4 + 2] = gamma_ * 100
+        fitted_curves[:, k * 4 + 3] = damping_[:, k] * 100
+
+    return param, fitted_curves
