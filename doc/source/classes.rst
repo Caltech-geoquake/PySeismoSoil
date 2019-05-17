@@ -11,6 +11,7 @@ Here are the documentations of the utility classes:
    api_docs/class_curves
    api_docs/class_frequency_spectrum
    api_docs/class_ground_motion
+   api_docs/class_hh_calibration
    api_docs/class_parameters
    api_docs/class_simulation
    api_docs/class_simulation_results
