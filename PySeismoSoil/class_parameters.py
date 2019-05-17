@@ -394,12 +394,22 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_list : str or list<dict> or list<``HH_Param``>
-        A file name of a validly formatted parameter file, or a list containing
-        HH parameter data.
+    filename_or_data : str, numpy.ndarray, list<dict>, or list<``HH_Param``>
+        A file name of a validly formatted "parameter file", i.e., having the
+        following format::
+
+            +----------------+-----------------+-----------------+-----
+            |  param_layer_1 |  param_layer_2  |  param_layer_3  | ...
+            +================+=================+=================+=====
+            |      1.1       |      2.2        |      3.3        | ...
+            |      1.2       |      2.3        |      3.4        | ...
+            |      ...       |      ...        |      ...        | ...
+
+        or a 2D numpy array containing the data of the format above, or a
+        list containing HH parameter data.
     sep : str
-        Delimiter of the file to be imported. If ``filename_or_list_of_curves``
-        is a list, ``sep`` has no effect.
+        Delimiter of the file to be imported. If ``filename_or_data`` is not
+        a file name, ``sep`` has no effect.
 
     Attributes
     ----------
@@ -409,18 +419,23 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         The number of soil layers (i.e., the length of the list).
     '''
 
-    def __init__(self, filename_or_list, sep='\t'):
-        if isinstance(filename_or_list, str):  # file name
-            self._filename = filename_or_list
-            params = np.genfromtxt(filename_or_list, delimiter=sep)
+    def __init__(self, filename_or_data, sep='\t'):
+        if isinstance(filename_or_data, str):  # file name
+            self._filename = filename_or_data
+            params = np.genfromtxt(filename_or_data, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
             list_of_param = [hh.deserialize_array_to_params(_)
                              for _ in list_of_param_array]
-        elif isinstance(filename_or_list, list):
+        elif isinstance(filename_or_data, np.ndarray):
+            hlp.assert_2D_numpy_array(filename_or_data, name='`filename_or_data`')
+            list_of_param_array = hlp.extract_from_param_format(filename_or_data)
+            list_of_param = [hh.deserialize_array_to_params(_)
+                             for _ in list_of_param_array]
+        elif isinstance(filename_or_data, list):
             self._filename = None
-            list_of_param = filename_or_list
+            list_of_param = filename_or_data
         else:
-            raise TypeError('Unrecognized type for ``filename_or_list``.')
+            raise TypeError('Unrecognized type for ``filename_or_data``.')
 
         self._sep = sep
 
@@ -445,12 +460,22 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_list : str or list<dict> or list<``MKZ_Param``>
-        A file name of a validly formatted parameter file, or a list containing
-        MKZ parameter data.
+    filename_or_data : str, numpy.ndarray, list<dict>, or list<``MKZ_Param``>
+        A file name of a validly formatted "parameter file", i.e., having the
+        following format::
+
+            +----------------+-----------------+-----------------+-----
+            |  param_layer_1 |  param_layer_2  |  param_layer_3  | ...
+            +================+=================+=================+=====
+            |      1.1       |      2.2        |      3.3        | ...
+            |      1.2       |      2.3        |      3.4        | ...
+            |      ...       |      ...        |      ...        | ...
+
+        or a 2D numpy array containing the data of the format above, or a
+        list containing MKZ parameter data.
     sep : str
-        Delimiter of the file to be imported. If ``filename_or_list_of_curves``
-        is a list, ``sep`` has no effect.
+        Delimiter of the file to be imported. If ``filename_or_data`` is not
+        a file name, ``sep`` has no effect.
 
     Attributes
     ----------
@@ -460,18 +485,23 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
         The number of soil layers (i.e., the length of the list).
     '''
 
-    def __init__(self, filename_or_list, sep='\t'):
-        if isinstance(filename_or_list, str):  # file name
-            self._filename = filename_or_list
-            params = np.genfromtxt(filename_or_list, delimiter=sep)
+    def __init__(self, filename_or_data, sep='\t'):
+        if isinstance(filename_or_data, str):  # file name
+            self._filename = filename_or_data
+            params = np.genfromtxt(filename_or_data, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
             list_of_param = [mkz.deserialize_array_to_params(_)
                              for _ in list_of_param_array]
-        elif isinstance(filename_or_list, list):
+        elif isinstance(filename_or_data, np.ndarray):
+            hlp.assert_2D_numpy_array(filename_or_data, name='`filename_or_data`')
+            list_of_param_array = hlp.extract_from_param_format(filename_or_data)
+            list_of_param = [mkz.deserialize_array_to_params(_)
+                             for _ in list_of_param_array]
+        elif isinstance(filename_or_data, list):
             self._filename = None
-            list_of_param = filename_or_list
+            list_of_param = filename_or_data
         else:
-            raise TypeError('Unrecognized type for ``filename_or_list``.')
+            raise TypeError('Unrecognized type for ``filename_or_data``.')
 
         self._sep = sep
 
