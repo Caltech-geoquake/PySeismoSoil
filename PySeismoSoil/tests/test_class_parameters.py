@@ -100,14 +100,23 @@ class Test_Class_HH_Param(unittest.TestCase):
         mkzp.plot_curves()
 
     def test_hh_param_multi_layer(self):
+        # Test that the class constructor can correctly read from a file
         HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
         self.assertEqual(len(HH_x), 5)
         self.assertEqual(HH_x.n_layer, 5)
 
+        # Test that the class constructor can correctly read from a 2D array
+        HH_x_array = np.genfromtxt('./files/HH_X_FKSH14.txt')
+        HH_x_from_array = HH_Param_Multi_Layer(HH_x_array)
+        self.assertTrue(np.allclose(HH_x.serialize_to_2D_array(),
+                                    HH_x_from_array.serialize_to_2D_array()))
+
+        # Test list operations
         del HH_x[3]
         self.assertEqual(len(HH_x), 4)
         self.assertEqual(len(HH_x), 4)
 
+        # Test the content of list elements
         HH_x_1 = HH_x[1]
         self.assertTrue(isinstance(HH_x_1, HH_Param))
         self.assertTrue(HH_x_1.keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
@@ -117,14 +126,23 @@ class Test_Class_HH_Param(unittest.TestCase):
                                      0.638322, 5.84163, 183.507, 29.7071, 1]))
 
     def test_mkz_param_multi_layer(self):
+        # Test that the class constructor can correctly read from a file
         H4_G = MKZ_Param_Multi_Layer('./files/H4_G_IWTH04.txt')
         self.assertEqual(len(H4_G), 14)
         self.assertEqual(H4_G.n_layer, 14)
 
+        # Test that the class constructor can correctly read from a 2D array
+        H4_G_array = np.genfromtxt('./files/H4_G_IWTH04.txt')
+        H4_G_from_array = MKZ_Param_Multi_Layer(H4_G_array)
+        self.assertTrue(np.allclose(H4_G.serialize_to_2D_array(),
+                                    H4_G_from_array.serialize_to_2D_array()))
+
+        # Test list operations
         del H4_G[6]
         self.assertEqual(len(H4_G), 13)
         self.assertEqual(H4_G.n_layer, 13)
 
+        # Test the content of list elements
         H4_G_1 = H4_G[1]
         self.assertTrue(isinstance(H4_G_1, MKZ_Param))
         self.assertTrue(H4_G_1.keys(), {'gamma_ref', 'beta', 's', 'Gmax'})
