@@ -9,6 +9,7 @@ Here are the documentations of the helper modules:
    :maxdepth: 2
 
    api_docs/helper_generic
+   api_docs/helper_hh_calibration
    api_docs/helper_hh_model
    api_docs/helper_mkz_model
    api_docs/helper_signal_processing
