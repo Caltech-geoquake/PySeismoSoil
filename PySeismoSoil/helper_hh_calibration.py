@@ -43,9 +43,10 @@ from . import helper_mkz_model as mkz
 from . import helper_hh_model as hh
 
 #%%----------------------------------------------------------------------------
-def hh_param_from_profile(vs_profile, Tmax=None, show_fig=False, save_fig=False,
-                          fig_output_dir=None, save_HH_G_file=False,
-                          HH_G_file_dir=None, profile_name=None, verbose=True):
+def hh_param_from_profile(vs_profile, *, Tmax=None, show_fig=False,
+                          save_fig=False, fig_output_dir=None,
+                          save_HH_G_file=False, HH_G_file_dir=None,
+                          profile_name=None, verbose=True):
     '''
     Get HH parameters of each soil layer from the Vs values of every layer.
 
@@ -130,7 +131,7 @@ def hh_param_from_profile(vs_profile, Tmax=None, show_fig=False, save_fig=False,
     return HH_G_param
 
 #%%----------------------------------------------------------------------------
-def hh_param_from_curves(vs_profile, curves, Tmax=None, show_fig=False,
+def hh_param_from_curves(vs_profile, curves, *, Tmax=None, show_fig=False,
                          save_fig=False, fig_output_dir=None, save_HH_G_file=False,
                          HH_G_file_dir=None, profile_name=None, verbose=True):
     '''
@@ -152,7 +153,7 @@ def hh_param_from_curves(vs_profile, curves, Tmax=None, show_fig=False,
         layer, in the following format:
          +------------+--------+------------+-------------+-------------+--------+-----+
          | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+ 
+         +============+========+============+=============+=============+========+=====+
          |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
          +------------+--------+------------+-------------+-------------+--------+-----+
 

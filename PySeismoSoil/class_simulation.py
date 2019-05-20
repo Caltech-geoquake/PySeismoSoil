@@ -47,9 +47,8 @@ class Simulation():
     ----------
     Attributes same as the inputs
     '''
-    def __init__(self, soil_profile, input_motion, boundary='elastic',
+    def __init__(self, soil_profile, input_motion, *, boundary='elastic',
                  G_param=None, xi_param=None, GGmax_curves=None, xi_curves=None):
-
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
         if not isinstance(soil_profile, Vs_Profile):
@@ -89,7 +88,7 @@ class Simulation():
 #%%============================================================================
 class Linear_Simulation(Simulation):
     '''
-    Linear site response simulation
+    Linear site response simulation.
 
     Parameters
     ----------
@@ -126,7 +125,7 @@ class Linear_Simulation(Simulation):
                                        self.input_motion.accel,  # unit: m/s/s
                                        boundary=self.boundary,
                                        show_fig=show_fig, deconv=deconv)
-        return Ground_Motion(response, 'm')  # because GM internally uses SI unit
+        return Ground_Motion(response, unit='m')  # because GM internally uses SI unit
 
 #%%============================================================================
 class Nonlinear_Simulation(Simulation):
@@ -153,7 +152,7 @@ class Nonlinear_Simulation(Simulation):
     Attributes same as the inputs
     '''
     #%%------------------------------------------------------------------------
-    def __init__(self, soil_profile, input_motion, G_param, xi_param,
+    def __init__(self, soil_profile, input_motion, *, G_param, xi_param,
                  boundary='elastic'):
         if G_param is None:
             raise TypeError('`G_param` cannot be None.')
@@ -163,7 +162,7 @@ class Nonlinear_Simulation(Simulation):
                                                    G_param=G_param,
                                                    xi_param=xi_param,
                                                    boundary=boundary)
-        sim.check_layer_count(soil_profile, G_param, xi_param)
+        sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
     #%%------------------------------------------------------------------------
     def run(self, sim_dir=None, profile_name=None, motion_name=None,

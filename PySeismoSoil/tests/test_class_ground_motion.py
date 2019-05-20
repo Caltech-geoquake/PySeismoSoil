@@ -15,7 +15,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
 
     def test_loading_data(self):
         # Two columns from file
-        gm = GM('./files/sample_accel.txt', 'gal')
+        gm = GM('./files/sample_accel.txt', unit='gal')
 
         PGA_benchmark = 294.30  # unit: cm/s/s
         PGV_benchmark = 31.46   # unit: cm/s
@@ -29,24 +29,24 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertAlmostEqual(gm.rms_accel, 0.4645, delta=tol)
 
         # Two columns from numpy array
-        gm = GM(np.array([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]]).T, 'm/s/s')
+        gm = GM(np.array([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]]).T, unit='m/s/s')
         self.assertAlmostEqual(gm.pga, 4)
 
         # One column from file
-        gm = GM('./files/one_column_data_example.txt', 'g', dt=0.2)
+        gm = GM('./files/one_column_data_example.txt', unit='g', dt=0.2)
         self.assertAlmostEqual(gm.pga_in_g, 12.0)
 
         # One column from numpy array
-        gm = GM(np.array([1, 2, 3, 4, 5]), 'gal', dt=0.1)
+        gm = GM(np.array([1, 2, 3, 4, 5]), unit='gal', dt=0.1)
         self.assertAlmostEqual(gm.pga_in_gal, 5.0)
 
         # One column without specifying dt
         error_msg = 'is needed for one-column `data`.'
         with self.assertRaisesRegex(ValueError, error_msg):
-            gm = GM(np.array([1, 2, 3, 4, 5]), 'gal')
+            gm = GM(np.array([1, 2, 3, 4, 5]), unit='gal')
 
     def test_fourier_transform(self):
-        gm = GM('./files/two_column_data_example.txt', 'm/s/s')
+        gm = GM('./files/two_column_data_example.txt', unit='m/s/s')
         freq, spec = gm.get_Fourier_spectrum(real_val=False).raw_data.T
 
         freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
@@ -58,7 +58,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001))
 
     def test_baseline_correction(self):
-        gm = GM('./files/sample_accel.txt', 'm/s/s')
+        gm = GM('./files/sample_accel.txt', unit='m/s/s')
         corrected = gm.baseline_correct(show_fig=True)
         self.assertTrue(isinstance(corrected, GM))
 
@@ -80,7 +80,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(isinstance(deconv_motion, GM))
 
     def test_num_integration(self):
-        gm = GM('./files/two_column_data_example.txt', 'm/s/s')
+        gm = GM('./files/two_column_data_example.txt', unit='m/s/s')
         v_bench = np.array([[0.1000, 0.1000],
                             [0.2000, 0.3000],
                             [0.3000, 0.6000],

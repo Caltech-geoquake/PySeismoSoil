@@ -44,7 +44,7 @@ class HH_Calibration():
     Tmax_profile : numpy.ndarray or ``None``
         Same as the input parameter.
     '''
-    def __init__(self, vs_profile, GGmax_curves=None, Tmax_profile=None):
+    def __init__(self, vs_profile, *, GGmax_curves=None, Tmax_profile=None):
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
         if GGmax_curves is not None:

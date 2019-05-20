@@ -36,7 +36,7 @@ class Parameter(collections.UserDict):
     allowable_keys : set<str>
         Same as the input parameter.
     '''
-    def __init__(self, param_dict, allowable_keys=None, func_stress=None):
+    def __init__(self, param_dict, *, allowable_keys=None, func_stress=None):
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
         if not isinstance(allowable_keys, set) \
@@ -285,7 +285,7 @@ class Param_Multi_Layer():
         The number of soil layers (i.e., the length of the list).
     '''
 
-    def __init__(self, list_of_param_data, element_class):
+    def __init__(self, list_of_param_data, *, element_class):
         param_list = []
         for param_data in list_of_param_data:
             if isinstance(param_data, dict):
@@ -420,8 +420,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     '''
-
-    def __init__(self, filename_or_data, sep='\t'):
+    def __init__(self, filename_or_data, *, sep='\t'):
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
@@ -441,7 +440,8 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
         self._sep = sep
 
-        super(HH_Param_Multi_Layer, self).__init__(list_of_param, HH_Param)
+        super(HH_Param_Multi_Layer, self).__init__(list_of_param,
+                                                   element_class=HH_Param)
 
 #%%============================================================================
 class MKZ_Param_Multi_Layer(Param_Multi_Layer):
@@ -488,8 +488,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     '''
-
-    def __init__(self, filename_or_data, sep='\t'):
+    def __init__(self, filename_or_data, *, sep='\t'):
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
@@ -509,5 +508,6 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
         self._sep = sep
 
-        super(MKZ_Param_Multi_Layer, self).__init__(list_of_param, MKZ_Param)
+        super(MKZ_Param_Multi_Layer, self).__init__(list_of_param,
+                                                    element_class=MKZ_Param)
 

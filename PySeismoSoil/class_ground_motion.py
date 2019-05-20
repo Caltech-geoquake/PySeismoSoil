@@ -81,9 +81,8 @@ class Ground_Motion:
     _path_name, _file_name : str
         Names of the directory and file of the input data, if a file name.
     '''
-
     #--------------------------------------------------------------------------
-    def __init__(self, data, unit, motion_type='accel', dt=None, sep='\t',
+    def __init__(self, data, *, unit, motion_type='accel', dt=None, sep='\t',
                  **kwargs_to_genfromtxt):
 
         if isinstance(data, str):  # a file name
@@ -184,7 +183,8 @@ class Ground_Motion:
             A frequency spectrum object.
         '''
 
-        x = sig.fourier_transform(self.accel, real_val, double_sided, show_fig)
+        x = sig.fourier_transform(self.accel, real_val=real_val,
+                                  double_sided=double_sided, show_fig=show_fig)
         fs = FS(x)
 
         return fs

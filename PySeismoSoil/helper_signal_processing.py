@@ -391,7 +391,7 @@ def _remove_linear_trend(signal):
     return np.column_stack((t, x - baseline))
 
 #%%############################################################################
-def fourier_transform(signal_2_col, real_val=True, double_sided=False,
+def fourier_transform(signal_2_col, *, real_val=True, double_sided=False,
                       show_fig=False):
     '''
     Fourier transform using FFT.
@@ -504,7 +504,7 @@ def taper_Tukey(input_signal, width=0.05):
     return output
 
 #%%############################################################################
-def calc_transfer_function(input_signal, output_signal, amplitude_only=True,
+def calc_transfer_function(input_signal, output_signal, *, amplitude_only=True,
                            smooth_signal=False):
     '''
     Calculates transfer function between the output and input time-domain

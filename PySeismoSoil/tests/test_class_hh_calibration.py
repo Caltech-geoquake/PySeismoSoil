@@ -25,7 +25,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         # Type of curves not correct
         with self.assertRaisesRegex(TypeError, 'If `GGmax_curves` is not `None`,'
                                     ' it must be of type Multiple_GGmax_Curves'):
-            HH_Calibration(vs_profile, np.array([1, 2, 3]))
+            HH_Calibration(vs_profile, GGmax_curves=np.array([1, 2, 3]))
 
         # Length of curves not correct
         del curves[-1]  # remove the last layer

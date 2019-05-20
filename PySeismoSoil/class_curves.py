@@ -54,7 +54,7 @@ class Curve():
     values : numpy.array
         The interpolated values; same shape as ``strain``
     '''
-    def __init__(self, data, strain_unit='%', interpolate=False,
+    def __init__(self, data, *, strain_unit='%', interpolate=False,
                  min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
                  ensure_non_negative=True):
 
@@ -170,8 +170,8 @@ class GGmax_Curve(Curve):
     GGmax : numpy.array
         The interpolated G/Gmax values; same shape as ``strain``.
     '''
-    def __init__(self, data, strain_unit='%', min_strain=0.0001, max_strain=10.,
-                 n_pts=50, log_scale=True, check_values=True):
+    def __init__(self, data, *, strain_unit='%', min_strain=0.0001,
+                 max_strain=10., n_pts=50, log_scale=True, check_values=True):
 
         super(GGmax_Curve, self).__init__(data, strain_unit=strain_unit,
                                           min_strain=min_strain,
@@ -223,8 +223,7 @@ class Damping_Curve(Curve):
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
     '''
-
-    def __init__(self, data, strain_unit='%', damping_unit='%',
+    def __init__(self, data, *, strain_unit='%', damping_unit='%',
                  min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
                  check_values=True):
 
@@ -420,7 +419,7 @@ class Stress_Curve(Curve):
         The interpolated damping values; same shape as ``strain``. The unit is
         always 'kPa'.
     '''
-    def __init__(self, data, strain_unit='1', stress_unit='kPa',
+    def __init__(self, data, *, strain_unit='1', stress_unit='kPa',
                  min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
                  check_values=True):
 
@@ -475,7 +474,7 @@ class Multiple_Curves():
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     '''
-    def __init__(self, list_of_curves, element_class=Curve):
+    def __init__(self, list_of_curves, *, element_class=Curve):
         curves = []
         for curve in list_of_curves:
             if isinstance(curve, np.ndarray):
@@ -584,9 +583,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     '''
-
-    def __init__(self, filename_or_list_of_curves, sep='\t'):
-
+    def __init__(self, filename_or_list_of_curves, *, sep='\t'):
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
             _, list_of_damping_curves = hlp.extract_from_curve_format(curves)
@@ -600,7 +597,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         self._sep = sep
 
         super(Multiple_Damping_Curves, self).__init__(list_of_damping_curves,
-                                                      Damping_Curve)
+                                                      element_class=Damping_Curve)
 
     #--------------------------------------------------------------------------
     def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
@@ -639,7 +636,6 @@ class Multiple_Damping_Curves(Multiple_Curves):
     ax : matplotlib.axes._subplots.AxesSubplot
         The axes object being created or being passed into this function.
         '''
-
         fig, ax = super(Multiple_Damping_Curves, self)\
                       .plot(plot_interpolated=plot_interpolated, fig=fig,
                             ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
@@ -909,8 +905,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     '''
-
-    def __init__(self, filename_or_list_of_curves, sep='\t'):
+    def __init__(self, filename_or_list_of_curves, *, sep='\t'):
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
             list_of_GGmax_curves, _ = hlp.extract_from_curve_format(curves)
@@ -924,7 +919,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         self._sep = sep
 
         super(Multiple_GGmax_Curves, self).__init__(list_of_GGmax_curves,
-                                                    GGmax_Curve)
+                                                    element_class=GGmax_Curve)
 
     #--------------------------------------------------------------------------
     def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,

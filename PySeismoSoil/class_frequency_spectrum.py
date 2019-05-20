@@ -79,7 +79,7 @@ class Frequency_Spectrum():
     iscomplex : bool
         Is ``spectrum`` complex or already real?
     '''
-    def __init__(self, data, df=None, interpolate=False, fmin=0.1, fmax=30,
+    def __init__(self, data, *, df=None, interpolate=False, fmin=0.1, fmax=30,
                  n_pts=1000, log_scale=True, sep='\t'):
 
         data_, df = hlp.read_two_column_stuff(data, df, sep)
@@ -219,7 +219,6 @@ class Amplification_Function(Frequency_Spectrum):
     Amplification function, which is the magnitude of a complex-valued transfer
     function.
     '''
-
     def get_f0(self):
         '''
         Get the "fundamental frequency" of an amplification function, which is
@@ -238,7 +237,6 @@ class Phase_Function(Frequency_Spectrum):
     Amplification function, which is the magnitude of a complex-valued transfer
     function.
     '''
-
     def unwrap(self, robust=True):
         '''
         Get the unwrpped phase function
@@ -267,7 +265,6 @@ class Transfer_Function(Frequency_Spectrum):
     '''
     Complex-valued transfer function.
     '''
-
     def get_amplitude(self):
         '''
         Returns

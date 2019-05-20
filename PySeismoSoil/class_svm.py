@@ -20,7 +20,7 @@ class SVM():
     ----------
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
-    z1 : float
+    z1 : float or ``None``
         The depth to bedrock (1000 m/s rock). Unit: m. If ``None``, it will be
         estimated from Vs30 using an empirical correlation (see
         `calc_z1_from_Vs30()` function in `helper_site_response.py`).
@@ -64,7 +64,7 @@ class SVM():
     has_bedrock_Vs : bool
         Whether the Vs profile has a bedrock Vs value.
     '''
-    def __init__(self, target_Vs30, z1=None, Vs_cap=True, eta=0.90,
+    def __init__(self, target_Vs30, *, z1=None, Vs_cap=True, eta=0.90,
                  show_fig=False, iterate=False, verbose=False):
 
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
