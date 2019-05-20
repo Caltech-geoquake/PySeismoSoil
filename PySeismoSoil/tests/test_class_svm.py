@@ -13,7 +13,7 @@ class Test_Class_SVM(unittest.TestCase):
     def test_init(self):
         Vs30 = 256
         z1 = 100
-        svm = SVM(Vs30, z1, show_fig=False)
+        svm = SVM(Vs30, z1=z1, show_fig=False)
         self.assertEqual(svm.Vs30, Vs30)
         self.assertEqual(svm.z1, z1)
 
@@ -22,12 +22,12 @@ class Test_Class_SVM(unittest.TestCase):
         z1 = 10
 
         # Case 1: Vs_cap is True (automatically chosen as 1,000 m/s)
-        svm = SVM(Vs30, z1, Vs_cap=True)
+        svm = SVM(Vs30, z1=z1, Vs_cap=True)
         self.assertEqual(svm.base_profile.vs_profile[-1, 0], 0)
         self.assertEqual(svm.base_profile.vs_profile[-1, 1], 1000)
 
         # Case 2: Vs_cap is user-defined
-        svm = SVM(Vs30, z1, Vs_cap=1234.5)
+        svm = SVM(Vs30, z1=z1, Vs_cap=1234.5)
         self.assertEqual(svm.base_profile.vs_profile[-1, 0], 0)
         self.assertEqual(svm.base_profile.vs_profile[-1, 1], 1234.5)
 
@@ -36,14 +36,14 @@ class Test_Class_SVM(unittest.TestCase):
     def test_base_profile(self):
         Vs30 = 256
         z1 = 100
-        svm = SVM(Vs30, z1, show_fig=False)
+        svm = SVM(Vs30, z1=z1, show_fig=False)
         base_profile = svm.base_profile
         self.assertTrue(isinstance(base_profile, Vs_Profile))
 
     def test_get_discretized_profile(self):
         Vs30 = 256
         z1 = 100
-        svm = SVM(Vs30, z1, show_fig=False)
+        svm = SVM(Vs30, z1=z1, show_fig=False)
 
         # Test fixed_thk
         discr_profile = svm.get_discretized_profile(fixed_thk=10,
@@ -74,7 +74,7 @@ class Test_Class_SVM(unittest.TestCase):
     def test_get_randomized_profile(self):
         Vs30 = 256
         z1 = 100
-        svm = SVM(Vs30, z1, show_fig=False)
+        svm = SVM(Vs30, z1=z1, show_fig=False)
         random_profile = svm.get_randomized_profile(show_fig=False)
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
@@ -102,7 +102,7 @@ class Test_Class_SVM(unittest.TestCase):
     def test_svm_profiles_plotting(self):
         vs30 = 256  # m/s
         z1 = 200  # m
-        svm = SVM(vs30, z1, show_fig=False)
+        svm = SVM(vs30, z1=z1, show_fig=False)
         svm.get_discretized_profile(fixed_thk=20, show_fig=True)
         svm.get_discretized_profile(Vs_increment=1, show_fig=True)
         svm.get_discretized_profile(Vs_increment=100, show_fig=True)

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def check_layer_count(vs_profile, G_param, xi_param):
+def check_layer_count(vs_profile, *, G_param=None, xi_param=None):
     '''
     Check that ``G_param`` and ``xi_param`` have enough sets of parameters for
     ``vs_profile``.

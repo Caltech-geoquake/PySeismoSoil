@@ -50,7 +50,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
     return T_MKZ
 
 #%%----------------------------------------------------------------------------
-def fit_H4_x_single_layer(damping_data_in_pct, use_scipy=True,
+def fit_H4_x_single_layer(damping_data_in_pct, *, use_scipy=True,
                           pop_size=800, n_gen=100, lower_bound_power=-4,
                           upper_bound_power=6, eta=0.1, seed=0, show_fig=False,
                           verbose=False, suppress_warnings=True,

@@ -36,11 +36,13 @@ class Vs_Profile:
         Delimiter character for reading the text file. If `data` is
         supplied as a numpy array, this parameter is ignored.
     add_halfspace : bool
-        If True, add a "half space" (represented by a layer of 0 m
-        thickness) at the bottom, if such a layer does not already
-        exist.
+        If ``True``, add a "half space" (represented by a layer of 0 m
+        thickness) at the bottom of the profile, if such a layer does not
+        already exist.
     xi_rho_formula : {1, 2, 3}
-        The formula identifier to determine damping and mass density.
+        The formula identifier to determine damping and mass density. See the
+        documentation of ``helper_site_response.get_xi_rho()`` for the
+        definitions of these three identifiers.
     **kwargs_to_genfromtxt :
         Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
         function for loading the data from the hard drive (if applicable).
@@ -54,18 +56,18 @@ class Vs_Profile:
         to have SI units.
     vs30 : float
         Reciprocal of the weighted average travel time through the top 30 m.
+        Unit: m/s.
     damping_unit : str
-        Same as provided.
+        Same meaning as the input parameter.
     density_unit : str
-        Same as provided.
+        Same meaning as the input parameter.
     z_max : float
-        Maximum depth of the profile.
+        Maximum depth of the profile. Unit: m.
     n_layer : int
-        Number of soil layers (i.e., not including the half space).
+        Number of soil layers (not including the half space).
     '''
-
     #--------------------------------------------------------------------------
-    def __init__(self, data, damping_unit='1', density_unit='kg/m^3', sep='\t',
+    def __init__(self, data, *, damping_unit='1', density_unit='kg/m^3', sep='\t',
                  add_halfspace=False, xi_rho_formula=3, **kwargs_to_genfromtxt):
 
         if isinstance(data, str):  # "data" is a file name

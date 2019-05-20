@@ -25,8 +25,8 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
 
         # this should succeed
-        Nonlinear_Simulation(soil_profile, input_motion, HH_G, HH_x,
-                             boundary='elastic')
+        Nonlinear_Simulation(soil_profile, input_motion, G_param=HH_G,
+                             xi_param=HH_x, boundary='elastic')
 
         # this should fail with ValueError
         HH_G_data = HH_G.param_list
@@ -34,9 +34,11 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_G_ = HH_Param_Multi_Layer(HH_G_data[:-1])  # exclude one layer
         HH_x_ = HH_Param_Multi_Layer(HH_x_data[:-1])  # exclude one layer
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
-            Nonlinear_Simulation(soil_profile, input_motion, HH_G_, HH_x)
+            Nonlinear_Simulation(soil_profile, input_motion, G_param=HH_G_,
+                                 xi_param=HH_x)
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
-            Nonlinear_Simulation(soil_profile, input_motion, HH_G, HH_x_)
+            Nonlinear_Simulation(soil_profile, input_motion, G_param=HH_G,
+                                 xi_param=HH_x_)
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Simulation)

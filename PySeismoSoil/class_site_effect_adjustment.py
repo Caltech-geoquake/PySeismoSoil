@@ -19,8 +19,8 @@ class Site_Effect_Adjustment():
     Vs30_in_meter_per_sec : float
         Vs30 values in SI unit.
     z1_in_m : float
-        z1 (basin depth) in meters. If ``None``, it will be estimated from 
-        Vs30 using an empirical correlation (see `calc_z1_from_Vs30()` 
+        z1 (basin depth) in meters. If ``None``, it will be estimated from
+        Vs30 using an empirical correlation (see `calc_z1_from_Vs30()`
         function in `helper_site_response.py`).
 
     Attributes
