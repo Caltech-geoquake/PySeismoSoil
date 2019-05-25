@@ -179,6 +179,16 @@ class Test_Helper_Generic(unittest.TestCase):
                                  0.667001, 3.97622, 195.136, 34.601, 1])]
         self.assertTrue(np.allclose(param, param_bench))
 
+    def test_merge_curve_matrices(self):
+        m1 = np.array([[1, 2, 3], [-1, -2, -3], [1, 2, 3], [-2, -3, -4],
+                       [1, 2, 3], [-3, -4, -5], [1, 2, 3], [-4, -5, -6]]).T
+        m2 = np.array([[1, 2, 3], [10, 20, 30], [1, 2, 3], [20, 30, 40],
+                       [1, 2, 3], [30, 40, 50], [1, 2, 3], [40, 50, 60]]).T
+        benchmark = np.array([[1, 2, 3], [-1, -2, -3], [1, 2, 3], [20, 30, 40],
+                              [1, 2, 3], [-3, -4, -5], [1, 2, 3], [40, 50, 60]]).T
+        result = hlp.merge_curve_matrices(m1, m2)
+        self.assertTrue(np.allclose(result, benchmark))
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Generic)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
