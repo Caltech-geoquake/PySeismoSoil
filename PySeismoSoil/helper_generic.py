@@ -586,3 +586,59 @@ def extract_from_param_format(params):
 
     return param_list
 
+#%%----------------------------------------------------------------------------
+def merge_curve_matrices(GGmax_matrix, xi_matrix):
+    '''
+    Merge G/Gmax curves matrix and damping curves matrix. Both matrices need to
+    have the following format:
+
+      +------------+--------+------------+-------------+-------------+--------+-----+
+      | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+      +============+========+============+=============+=============+========+=====+
+      |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+      +------------+--------+------------+-------------+-------------+--------+-----+
+
+    They need to have the same shape. This function will take the G/Gmax
+    information from ``GGmax_matrix`` and the damping information from
+    ``xi_matrix``, and produce a new matrix.
+
+    Parameters
+    ----------
+    GGmax_matrix : numpy.ndarray
+        A 2D numpy array of the format above that contains G/Gmax information.
+    xi_matrix : numpy.ndarray
+        A 2D numpy array of the format above that contains damping information.
+
+    Returns
+    -------
+    merged : numpy.ndarray
+        The merged 2D numpy array.
+    '''
+    assert_2D_numpy_array(GGmax_matrix, name='`GGmax_matrix`')
+    assert_2D_numpy_array(xi_matrix, name='`xi_matrix`')
+    if GGmax_matrix.shape[1] % 4 != 0:
+        raise ValueError('The number of columns of `GGmax_matrix` needs '
+                         'to be a multiple of 4. However, your '
+                         '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1])
+    if xi_matrix.shape[1] % 4 != 0:
+        raise ValueError('The number of columns of `xi_matrix` needs '
+                         'to be a multiple of 4. However, your '
+                         '`xi_matrix` has %d columns.' % xi_matrix.shape[1])
+    if GGmax_matrix.shape[1] != xi_matrix.shape[1]:
+        raise ValueError('`GGmax_matrix` and `xi_matrix` need to have the '
+                         'same number of columns. You can use trim one or both'
+                         'of them outside this function to make the shape '
+                         'identical. Sorry for the inconvenience.')
+    if GGmax_matrix.shape[0] != xi_matrix.shape[0]:
+        raise ValueError('`GGmax_matrix` and `xi_matrix` need to have the '
+                         'same number of rows. You can use interpolation '
+                         'outside of this function to make the lengths '
+                         'identical. Sorry for the inconvenience.')
+    n_layer = GGmax_matrix.shape[1] // 4
+    merged = np.column_stack((GGmax_matrix[:, :2], xi_matrix[:, 2:4]))
+    for k in range(1, n_layer):
+        merged = np.column_stack((merged,
+                                  GGmax_matrix[:, k * 4 : k * 4 + 2],
+                                  xi_matrix[:, k * 4 + 2 : k * 4 + 4]))
+    # END FOR
+    return merged

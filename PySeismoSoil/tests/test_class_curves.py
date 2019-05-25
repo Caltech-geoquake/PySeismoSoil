@@ -5,7 +5,8 @@ import numpy as np
 
 from PySeismoSoil.class_curves import Curve, GGmax_Curve, Damping_Curve, \
                                       Stress_Curve, Multiple_Damping_Curves, \
-                                      Multiple_GGmax_Curves
+                                      Multiple_GGmax_Curves, \
+                                      Multiple_GGmax_Damping_Curves
 
 class Test_Class_Curves(unittest.TestCase):
     '''
@@ -177,6 +178,35 @@ class Test_Class_Curves(unittest.TestCase):
                 curve_benchmark[:, j] = GGmax
 
         self.assertTrue(np.allclose(curve, curve_benchmark, rtol=1e-5))
+
+    def test_init_multiple_GGmax_damping_curves(self):
+        # Case 1: with MGC and MDC
+        mgc = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        with self.assertRaisesRegex(ValueError, 'one and only one input parameter'):
+            Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data_array=2.6)
+        with self.assertRaisesRegex(TypeError, 'needs to be of type'):
+            Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mdc, mgc))
+        mgc_ = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
+        del mgc_[-1]
+        with self.assertRaisesRegex(ValueError, 'same number of soil layers'):
+            Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc_, mdc))
+
+        mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
+        matrix = mgdc.get_curve_matrix()
+        benchmark = np.genfromtxt('./files/curve_FKSH14.txt')
+        self.assertTrue(np.allclose(matrix, benchmark))
+
+        # Case 2: with a numpy array
+        array = np.genfromtxt('./files/curve_FKSH14.txt')
+        array_ = np.column_stack((array, array[:, -1]))
+        with self.assertRaisesRegex(ValueError, 'needs to be a multiple of 4'):
+            Multiple_GGmax_Damping_Curves(data_array=array_)
+
+        mgdc = Multiple_GGmax_Damping_Curves(data_array=array)
+        mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
+        self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))
+        self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Curves)
