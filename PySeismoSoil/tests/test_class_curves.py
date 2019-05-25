@@ -165,6 +165,19 @@ class Test_Class_Curves(unittest.TestCase):
 
         self.assertTrue(np.allclose(curve, curve_benchmark, rtol=1e-5))
 
+    def test_multiple_damping_curve_get_curve_matrix(self):
+        GGmax = 0.76  # choose a dummy value
+
+        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        curve = mdc.get_curve_matrix(GGmax_filler_value=GGmax)
+
+        curve_benchmark = np.genfromtxt('./files/curve_FKSH14.txt')
+        for j in range(curve_benchmark.shape[1]):
+            if j % 4 == 1:  # original damping info is lost; use same dummy value
+                curve_benchmark[:, j] = GGmax
+
+        self.assertTrue(np.allclose(curve, curve_benchmark, rtol=1e-5))
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Curves)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
