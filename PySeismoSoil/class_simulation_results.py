@@ -2,6 +2,7 @@
 
 import os
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from .class_ground_motion import Ground_Motion
@@ -159,7 +160,7 @@ class Simulation_Results():
                                 amplif_func_1col_smoothed=ampl_func_smoothed,
                                 phase_func_1col=phase_func, dpi=dpi)
         axes1[0].set_ylabel('Accel. [m/s/s]')
-        axes1[1].set_yscale('log')
+        axes1[1].set_yscale('linear')
         axes1[2].set_xscale('log')
 
         #-------- Plot maximum accel/veloc/displ/strain/stress profiles -------
@@ -173,20 +174,23 @@ class Simulation_Results():
         plt.xlabel('Max. accel. [m/s/s]')
         plt.ylabel('Depth [m]')
         plt.grid(ls=':', lw=0.5)
+        ax21.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
         ax22 = plt.subplot(152)
-        plt.plot(self.max_a_v_d[:, 2], self.max_a_v_d[:, 0], ls='-', marker='.')
+        plt.plot(self.max_a_v_d[:, 2]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
         plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('Max. veloc. [m/s]')
+        plt.xlabel('Max. veloc. [cm/s]')
         plt.grid(ls=':', lw=0.5)
         ax22.get_yaxis().set_ticklabels([])
+        ax22.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
         ax23 = plt.subplot(153)
-        plt.plot(self.max_a_v_d[:, 3], self.max_a_v_d[:, 0], ls='-', marker='.')
+        plt.plot(self.max_a_v_d[:, 3]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
         plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('Max. displ. [m]')
+        plt.xlabel('Max. displ. [cm]')
         plt.grid(ls=':', lw=0.5)
         ax23.get_yaxis().set_ticklabels([])
+        ax23.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
         ax24 = plt.subplot(154)
         plt.plot(self.max_strain_stress[:, 1]*100, self.max_strain_stress[:, 0],
@@ -195,6 +199,7 @@ class Simulation_Results():
         plt.xlabel('$\gamma_{\max}$ [%]')
         plt.grid(ls=':', lw=0.5)
         ax24.get_yaxis().set_ticklabels([])
+        ax24.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
         ax25 = plt.subplot(155)
         plt.plot(self.max_strain_stress[:, 2]/1000., self.max_strain_stress[:, 0],
@@ -203,6 +208,7 @@ class Simulation_Results():
         plt.xlabel(r'$\tau_{\max}$ [kPa]')
         plt.grid(ls=':', lw=0.5)
         ax25.get_yaxis().set_ticklabels([])
+        ax25.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.3)
 
