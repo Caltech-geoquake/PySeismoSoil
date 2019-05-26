@@ -165,9 +165,9 @@ class Nonlinear_Simulation(Simulation):
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
     #%%------------------------------------------------------------------------
-    def run(self, sim_dir=None, profile_name=None, motion_name=None,
-            save_txt=True, save_full_time_history=True, show_fig=False,
-            save_fig=False, remove_sim_dir=False):
+    def run(self, sim_dir=None, motion_name=None, save_txt=True,
+            save_full_time_history=True, show_fig=False, save_fig=False,
+            remove_sim_dir=False, verbose=True):
         '''
         Start nonlinear simulation.
 
@@ -176,10 +176,9 @@ class Nonlinear_Simulation(Simulation):
         sim_dir : str
             Directory for storing temporary input files and storing permenant
             output files/figures.
-        profile_name : str
-            Name of the Vs profile. For example, "FKSH14".
-        motion_name : str
-            Name of the input ground motion. For example, "Northridge".
+        motion_name : str or ``None``
+            Name of the input ground motion. For example, "Northridge". If not
+            provided (i.e., ``None``), the current time stamp will be used.
         save_txt : bool
             Whether to save the simulation results as text files to ``sim_dir``.
         save_full_time_history : bool
@@ -196,13 +195,16 @@ class Nonlinear_Simulation(Simulation):
             Whether to remove ``sim_dir`` from the hard drive after simulations,
             only effective when ``save_txt`` and ``save_fig`` are both set to
             ``False``.
+        verbose : bool
+            Whether to show simulation progress on the console.
 
         Returns
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
         '''
-        print('Nonlinear simulation starting...')
+        if verbose:
+            print('Nonlinear simulation running...')
 
         # Mapping from user input to Fortran kernel:
         #
@@ -221,12 +223,6 @@ class Nonlinear_Simulation(Simulation):
             if os.path.exists(sim_dir):
                 sim_dir += '_'
             os.mkdir(sim_dir, 777)
-
-        if profile_name is None:
-            profile_name = 'profile_%s' % hlp.get_current_time(for_filename=True)
-
-        if motion_name is None:
-            motion_name = 'accel_%s' % hlp.get_current_time(for_filename=True)
 
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
@@ -301,7 +297,8 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        print('Simulation finished. Now post processing.')
+        if verbose:
+            print('Simulation finished. Now post processing.')
 
         #------------ Post-process files --------------------------------------
         layer_boundary_depth = np.genfromtxt('node_depth.dat').T
@@ -357,20 +354,22 @@ class Nonlinear_Simulation(Simulation):
                                  time_history_veloc=out_v,
                                  time_history_displ=out_d,
                                  time_history_strain=out_gamma,
-                                 time_history_stress=out_tau)
+                                 time_history_stress=out_tau,
+                                 motion_name=motion_name, output_dir=sim_dir)
 
-        print('Done.')
+        if verbose:
+            print('Done.')
 
         if show_fig:
-            sim_results.plot(save_fig=save_fig, output_dir=sim_dir)
+            sim_results.plot(save_fig=save_fig)
 
         if save_txt:
-            sim_results.to_txt(motion_name=motion_name, output_dir=sim_dir,
-                               save_full_time_history=save_full_time_history)
-            print('Simulation results saved to %s' % sim_dir)
+            sim_results.to_txt(save_full_time_history=save_full_time_history,
+                               verbose=verbose)
 
         if not save_txt and not save_fig and remove_sim_dir:
             os.rmdir(sim_dir)
-            print('`sim_dir` (%s) removed.' % sim_dir)
+            if verbose:
+                print('`sim_dir` (%s) removed.' % sim_dir)
 
         return sim_results
