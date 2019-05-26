@@ -1,6 +1,7 @@
 # Author: Jian Shi
 
 import numpy as np
+import scipy.fftpack
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -1128,8 +1129,6 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
         input motion at all.
     '''
-    import scipy.fftpack
-
     assert(type(transfer_function_single_sided) == tuple)
     assert(len(transfer_function_single_sided) == 2)
 
