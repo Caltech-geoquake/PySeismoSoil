@@ -15,7 +15,7 @@ from . import helper_signal_processing as sig
 from .class_ground_motion import Ground_Motion
 from .class_Vs_profile import Vs_Profile
 from .class_parameters import Param_Multi_Layer
-from .class_curves import Multiple_Damping_Curves, Multiple_GGmax_Curves
+from .class_curves import Multiple_GGmax_Damping_Curves
 from .class_simulation_results import Simulation_Results
 from .class_frequency_spectrum import Frequency_Spectrum
 
@@ -38,17 +38,15 @@ class Simulation():
         Parameters that describe the G/Gmax curves.
     xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         Parameters that describe the damping curves.
-    GGmax_curves : class_curves.Multiple_GGmax_Curves
-        G/Gmax curves.
-    xi_curves : class_curves.Multiple_Damping_Curves
-        Damping curves.
+    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+        G/Gmax and damping curves.
 
     Attributes
     ----------
     Attributes same as the inputs
     '''
     def __init__(self, soil_profile, input_motion, *, boundary='elastic',
-                 G_param=None, xi_param=None, GGmax_curves=None, xi_curves=None):
+                 G_param=None, xi_param=None, GGmax_and_damping_curves=None):
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
         if not isinstance(soil_profile, Vs_Profile):
@@ -65,14 +63,10 @@ class Simulation():
                             '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
                             'or `MKZ_Param_Multi_Layer`.')
 
-        if GGmax_curves is not None and \
-        not isinstance(GGmax_curves, Multiple_GGmax_Curves):
-            raise TypeError('`GGmax_curves` must be a `Multiple_GGmax_Curves` '
-                            'object.')
-        if xi_curves is not None and \
-        not isinstance(xi_curves, Multiple_Damping_Curves):
-            raise TypeError('`xi_curves` must be a `Multiple_Damping_Curves` '
-                            'object.')
+        if GGmax_and_damping_curves is not None and \
+        not isinstance(GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves):
+            raise TypeError('`GGmax_and_damping_curves` must be a '
+                            '`Multiple_GGmax_Curves` object.')
 
         if boundary not in ['elastic', 'rigid']:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
@@ -82,8 +76,7 @@ class Simulation():
         self.boundary = boundary
         self.G_param = G_param
         self.xi_param = xi_param
-        self.GGmax_curves = GGmax_curves
-        self.xi_curves = xi_curves
+        self.GGmax_and_damping_curves = GGmax_and_damping_curves
 
 #%%============================================================================
 class Linear_Simulation(Simulation):
@@ -126,6 +119,101 @@ class Linear_Simulation(Simulation):
                                        boundary=self.boundary,
                                        show_fig=show_fig, deconv=deconv)
         return Ground_Motion(response, unit='m')  # because GM internally uses SI unit
+
+#%%============================================================================
+class Equiv_Linear_Simulation(Simulation):
+    '''
+    Equivalent linear site response simulation.
+
+    Parameters
+    ----------
+    soil_profile : class_Vs_profile.Vs_Profile
+        Soil profile.
+    input_motion : class_ground_motion.Ground_Motion
+        Input ground motion.
+    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+        G/Gmax and damping curves of every layer.
+    boundary : {'elastic', 'rigid'}
+        Boundary condition. 'Elastic' means that the input motion is the
+        "rock outcrop" motion, and 'rigid' means that the input motion is
+        the recorded motion at the bottom of the Vs profile.
+    '''
+    #%%------------------------------------------------------------------------
+    def __init__(self, soil_profile, input_motion, GGmax_and_damping_curves,
+                 boundary='elastic'):
+        if GGmax_and_damping_curves is None:
+            raise TypeError('`GGmax_and_damping_curves` cannot be None.')
+        super(Equiv_Linear_Simulation, self).__init__(soil_profile, input_motion,
+                                                      GGmax_and_damping_curves=GGmax_and_damping_curves,
+                                                      boundary=boundary)
+        sim.check_layer_count(soil_profile,
+                              GGmax_and_damping_curves=GGmax_and_damping_curves)
+
+    #%%------------------------------------------------------------------------
+    def run(self, verbose=True, show_fig=False, save_fig=False,
+            motion_name=None, save_txt=False, save_full_time_history=False,
+            output_dir=None):
+        '''
+        Start equivalent linear simulation.
+
+        Parameters
+        ----------
+        verbose : bool
+            Whether to print iteration progress on the console.
+        show_fig : bool
+            Whether to show figures of the simulation results (input and
+            output motions, maximum accel/veloc/displ/strain/stress profiles)
+        save_fig : bool
+            Whether to save figures to ``output_dir``. Only effective when
+            ``show_fig`` is set to ``True``.
+        motion_name : str or ``None``
+            Name of the input ground motion. For example, "Northridge". If not
+            provided (i.e., ``None``), the current time stamp will be used.
+        save_txt : bool
+            Whether to save the results as text files to ``output_dir``.
+        save_full_time_history : bool
+            When saving simulation results, whether to save the full time
+            histories (i.e., every time step, every depth) of the acceleration,
+            velocity, displacement, stress, and strain.
+        output_dir : str
+            Directory for saving the figures and/or result files.
+
+        Returns
+        -------
+        sim_results : Simulation_Results
+            An object that contains all the simulation results.
+        '''
+        vs_profile = self.soil_profile.vs_profile
+        input_accel = self.input_motion.accel
+        curve = self.GGmax_and_damping_curves.get_curve_matrix()
+
+        results = sim.equiv_linear(vs_profile, input_accel, curve,
+                                   boundary=self.boundary, verbose=verbose)
+
+        (new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
+         out_d, out_gamma, out_tau, max_avd, max_gt) = results
+
+        sim_results \
+            = Simulation_Results(self.input_motion,
+                                 Ground_Motion(accel_on_surface, unit='m'),
+                                 Vs_Profile(new_profile, density_unit='g/cm^3'),
+                                 max_avd, max_gt,
+                                 Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+                                 time_history_accel=out_a,
+                                 time_history_veloc=out_v,
+                                 time_history_displ=out_d,
+                                 time_history_strain=out_gamma,
+                                 time_history_stress=out_tau,
+                                 motion_name=motion_name, output_dir=output_dir)
+
+        if show_fig:
+            sim_results.plot(save_fig=save_fig)
+
+        if save_txt:
+            sim_results.to_txt(save_full_time_history=save_full_time_history,
+                               verbose=verbose)
+
+        return sim_results
 
 #%%============================================================================
 class Nonlinear_Simulation(Simulation):
