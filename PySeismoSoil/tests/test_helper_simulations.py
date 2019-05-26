@@ -19,7 +19,7 @@ class Test_Helper_Simulations(unittest.TestCase):
 
         # Case 1(b): normal case, with curves
         curves_data = np.genfromtxt('./files/curve_FKSH14.txt')
-        mgdc = Multiple_GGmax_Damping_Curves(data_array=curves_data)
+        mgdc = Multiple_GGmax_Damping_Curves(data=curves_data)
         sim.check_layer_count(vs_profile, GGmax_and_damping_curves=mgdc)
 
         # Case 2(a): abnormal case, with parameters
@@ -30,7 +30,7 @@ class Test_Helper_Simulations(unittest.TestCase):
         # Case 2(b): abnormal case, with curves
         curves_data_ = curves_data[:, :-4]
         with self.assertRaisesRegex(ValueError, 'Not enough sets of curves'):
-            mgdc_ = Multiple_GGmax_Damping_Curves(data_array=curves_data_)
+            mgdc_ = Multiple_GGmax_Damping_Curves(data=curves_data_)
             sim.check_layer_count(vs_profile, GGmax_and_damping_curves=mgdc_)
 
 if __name__ == '__main__':
