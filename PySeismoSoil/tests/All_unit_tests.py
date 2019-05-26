@@ -19,6 +19,7 @@ from test_helper_hh_calibration import Test_Helper_HH_Calibration
 from test_helper_hh_model import Test_Helper_HH_Model
 from test_helper_mkz_model import Test_Helper_MKZ_Model
 from test_helper_signal_processing import Test_Helper_Signal_Processing
+from test_helper_simulations import Test_Helper_Simulations
 from test_helper_site_response import Test_Helper_Site_Response
 
 TS = unittest.TestSuite()
@@ -40,6 +41,7 @@ TS.addTests(unittest.makeSuite(Test_Helper_HH_Calibration))
 TS.addTests(unittest.makeSuite(Test_Helper_HH_Model))
 TS.addTests(unittest.makeSuite(Test_Helper_MKZ_Model))
 TS.addTests(unittest.makeSuite(Test_Helper_Signal_Processing))
+TS.addTests(unittest.makeSuite(Test_Helper_Simulations))
 TS.addTests(unittest.makeSuite(Test_Helper_Site_Response))
 
 print('------ Running all unit tests. -------')
