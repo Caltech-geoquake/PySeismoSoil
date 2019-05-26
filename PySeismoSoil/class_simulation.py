@@ -338,6 +338,7 @@ class Nonlinear_Simulation(Simulation):
         n_layer = new_profile.shape[0] - 1  # exclude bedrock
 
         input_accel = self.input_motion.accel.copy()
+        # On 05/26/2019, confirmed with MATLAB SeismoSoil that this is correct:
         if self.boundary == 'elastic':
             input_accel[:, 1] /= 2  # convert to incident motion
 
