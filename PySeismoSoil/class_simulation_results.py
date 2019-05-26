@@ -46,6 +46,12 @@ class Simulation_Results():
         Time histories of shear stresses of all layers (at layer midpoints).
     time_history_strain : numpy.ndarray
         Time histories of shear strains of all layers (at layer midpoints).
+    motion_name : str or ``None``
+        The name of the input motion to be used as an identifier in the
+        file names. If ``None``, the current time stamp will used.
+    output_dir : str or ``None``
+        Directory to which to save the output files. If ``None``, the current
+        time stamp will be used.
 
     Attributes
     ----------
@@ -56,7 +62,8 @@ class Simulation_Results():
                  max_a_v_d, max_strain_stress, trans_func,
                  trans_func_smoothed=None, time_history_accel=None,
                  time_history_veloc=None, time_history_displ=None,
-                 time_history_stress=None, time_history_strain=None):
+                 time_history_stress=None, time_history_strain=None,
+                 motion_name=None, output_dir=None):
 
         if not isinstance(input_accel, Ground_Motion):
             raise TypeError('`input_accel` needs to be of Ground_Motion type.')
@@ -94,6 +101,12 @@ class Simulation_Results():
         assert(max_a_v_d.shape == (n_layer + 1, 4))
         assert(max_strain_stress.shape == (n_layer, 3))
 
+        current_time = hlp.get_current_time(for_filename=True)
+        if motion_name is None:
+            motion_name = 'accel_%s' % current_time
+        if output_dir is None:
+            output_dir = os.path.join('./', 'sim_%s' % current_time)
+
         self.input_accel = input_accel
         self.accel_on_surface = accel_on_surface
         self.rediscretized_profile = rediscretized_profile
@@ -106,9 +119,11 @@ class Simulation_Results():
         self.time_history_displ = time_history_displ
         self.time_history_stress = time_history_stress
         self.time_history_strain = time_history_strain
+        self.motion_name = motion_name
+        self.output_dir = output_dir
 
     #%%------------------------------------------------------------------------
-    def plot(self, dpi=100, save_fig=False, motion_name=None, output_dir='./'):
+    def plot(self, dpi=100, save_fig=False):
         '''
         Plots simulation results: output vs input motions, transfer functions
         and maximum acceleration, velocity, displacement, strain, and stress
@@ -120,10 +135,6 @@ class Simulation_Results():
             Figure resolution.
         save_fig : bool
             Whether to save figure to ``output_dir``.
-        motion_name : str
-            The name of the ground motion to be used in the file names.
-        output_dir : str
-            Directory for saving the figures.
 
         Returns
         -------
@@ -199,33 +210,37 @@ class Simulation_Results():
         axes = [axes1, [ax21, ax22, ax23, ax24, ax25]]
 
         if save_fig:
-            if motion_name is None:
-                motion_name = hlp.get_current_time(for_filename=True)
-            fn_fig1 = os.path.join(output_dir, '%s_ground_motions.png' % motion_name)
-            fn_fig2 = os.path.join(output_dir, '%s_max_profiles.png' % motion_name)
-            fig1.savefig(fn_fig1, dpi=dpi)
-            fig2.savefig(fn_fig2, dpi=dpi)
+            if not os.path.exists(self.output_dir):
+                os.mkdir(self.output_dir)
+
+            fn_fig1 = os.path.join(self.output_dir,
+                                   '%s_ground_motions.png' % self.motion_name)
+            fn_fig2 = os.path.join(self.output_dir,
+                                   '%s_max_profiles.png' % self.motion_name)
+            fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')
+            fig2.savefig(fn_fig2, dpi=dpi, bbox_inches='tight')
 
         return figs, axes
 
     #%%------------------------------------------------------------------------
-    def to_txt(self, motion_name, output_dir='./', save_full_time_history=True):
+    def to_txt(self, save_full_time_history=True, verbose=False):
         '''
         Save simulation results to hard drive.
 
         Parameters
         ----------
-        motion_name : str
-            The name of the input motion to be used as an identifier in the
-            file names.
-        output_dir : str
-            Directory to which to save the output files.
         save_full_time_history : bool
             Whether to save full time histories (every time step, every layer)
             of accel/veloc/displ/strain/stress to hard drive. They can take
             a lot of disk space.
+        verbose : bool
+            Whether to show on the console where the files are saved to.
         '''
-        od = output_dir
+        if not os.path.exists(self.output_dir):
+            os.mkdir(self.output_dir)
+
+        od = self.output_dir
+        motion_name = self.motion_name
 
         fn_TF_raw = os.path.join(od, '%s_nonlinear_TF_raw.txt' % motion_name)
         fn_TF_smoothed = os.path.join(od, '%s_nonlinear_TF_smoothed.txt' % motion_name)
@@ -265,3 +280,7 @@ class Simulation_Results():
             np.savetxt(fn_TF_smoothed, self.trans_func_smoothed.amplitude_2col,
                        **fmt_dict)
 
+        if verbose:
+            print('Simulation results saved to %s' % od)
+
+        return None
