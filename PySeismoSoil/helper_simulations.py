@@ -123,6 +123,7 @@ def equiv_linear(vs_profile, input_motion, curve_matrix, boundary='elastic',
     hlp.assert_2D_numpy_array(curve_matrix, name='`curve_matrix`')
 
     #-------- Part 1.1: Data preparation -- input ground motion ---------------
+    # On 05/26/2019, confirmed with MATLAB SeismoSoil that this is correct:
     incident_motion = input_motion.copy()
     incident_motion[:, 1] /= 2
 
