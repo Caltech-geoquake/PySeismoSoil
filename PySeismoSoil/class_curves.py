@@ -1093,13 +1093,15 @@ class Multiple_GGmax_Damping_Curves():
         A tuple of two elements, which are the G/Gmax curve information and
         the damping curve information, respectively. The two objects needs to
         have the same ``n_layer`` attribute.
-    data_array : numpy.ndarray or ``None``
+    data : numpy.ndarray, str, or ``None``
         A 2D numpy array of the following format:
           +------------+--------+------------+-------------+-------------+--------+-----+
           | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
           +============+========+============+=============+=============+========+=====+
           |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
           +------------+--------+------------+-------------+-------------+--------+-----+
+
+        Or a full name of a text file containing the 2D array.
 
     Attributes
     ----------
@@ -1109,18 +1111,17 @@ class Multiple_GGmax_Damping_Curves():
     mdc : Multiple_Damping_Curves
         Object containing information of damping curves. It will be ``None`` if
         ``mgc_and_mdc`` is not provided.
-    data_array : numpy.ndarray
-        2D numpy array containing curve information, which is the same as the
-        input parameter. It will be ``None`` if the ``data_array`` is not
-        provided.
+    data : numpy.ndarray
+        2D numpy array containing the curve information in the format shown
+        above. It will be ``None`` if the ``data`` is not provided.
     n_layer : int
         Number of soil layers.
     '''
-    def __init__(self, *, mgc_and_mdc=None, data_array=None):
-        if mgc_and_mdc is None and data_array is None:
+    def __init__(self, *, mgc_and_mdc=None, data=None):
+        if mgc_and_mdc is None and data is None:
             raise ValueError('Both parameters are `None`. Please provide '
                              'one and only one input parameter.')
-        if mgc_and_mdc is not None and data_array is not None:
+        if mgc_and_mdc is not None and data is not None:
             raise ValueError('Both parameters are not `None`. Please provide '
                              'one and only one input parameter.')
         if mgc_and_mdc is not None:
@@ -1136,22 +1137,26 @@ class Multiple_GGmax_Damping_Curves():
                                 'be of type `Multiple_Damping_Curves`.')
             self.mgc = mgc_and_mdc[0]
             self.mdc = mgc_and_mdc[-1]
-            self.data_array = None
+            self.data = None
             if self.mgc.n_layer != self.mdc.n_layer:
                 raise ValueError('The ``Multiple_GGmax_Curves`` instance and '
                                  'the ``Multiple_Damping_Curves`` instance '
                                  'need to have the same number of soil layers.')
             self.n_layer = self.mgc.n_layer
-        else:
+        else:  # `data` is not `None`
+            if not isinstance(data, (np.ndarray, str)):
+                raise TypeError('`data` must be a 2D numpy array or a file name.')
+            if isinstance(data, str):
+                data = np.genfromtxt(data)
             self.mgc = None
             self.mdc = None
-            hlp.assert_2D_numpy_array(data_array, name='`data_array`')
-            if data_array.shape[1] % 4 != 0:
-                raise ValueError('The number of columns of `data_array` needs '
+            hlp.assert_2D_numpy_array(data, name='`data`')
+            if data.shape[1] % 4 != 0:
+                raise ValueError('The number of columns of `data` needs '
                                  'to be a multiple of 4. However, your '
-                                 '`data_array` has %d columns.' % data_array.shape[1])
-            self.data_array = data_array
-            self.n_layer = data_array.shape[1] // 4
+                                 '`data` has %d columns.' % data.shape[1])
+            self.data = data
+            self.n_layer = data.shape[1] // 4
 
     def get_MGC_MDC_objects(self):
         '''
@@ -1168,7 +1173,7 @@ class Multiple_GGmax_Damping_Curves():
             return self.mgc, self.mdc
         else:  # the user provides a matrix containing curve information
             GGmax_curve_list, damping_curves_list \
-                = hlp.extract_from_curve_format(self.data_array)
+                = hlp.extract_from_curve_format(self.data)
             mgc = Multiple_GGmax_Curves(GGmax_curve_list)
             mdc = Multiple_Damping_Curves(damping_curves_list)
             return mgc, mdc
@@ -1187,8 +1192,8 @@ class Multiple_GGmax_Damping_Curves():
               |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
               +------------+--------+------------+-------------+-------------+--------+-----+
         '''
-        if self.data_array is not None:
-            return self.data_array
+        if self.data is not None:
+            return self.data
         else:
             mgc_matrix = self.mgc.get_curve_matrix()
             mdc_matrix = self.mdc.get_curve_matrix()
