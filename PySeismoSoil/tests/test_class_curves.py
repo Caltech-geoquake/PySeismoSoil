@@ -186,7 +186,7 @@ class Test_Class_Curves(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Both parameters are `None`'):
             Multiple_GGmax_Damping_Curves()
         with self.assertRaisesRegex(ValueError, 'one and only one input parameter'):
-            Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data_array=2.6)
+            Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data=2.6)
         with self.assertRaisesRegex(TypeError, 'needs to be of type'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mdc, mgc))
         mgc_ = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
@@ -203,9 +203,17 @@ class Test_Class_Curves(unittest.TestCase):
         array = np.genfromtxt('./files/curve_FKSH14.txt')
         array_ = np.column_stack((array, array[:, -1]))
         with self.assertRaisesRegex(ValueError, 'needs to be a multiple of 4'):
-            Multiple_GGmax_Damping_Curves(data_array=array_)
+            Multiple_GGmax_Damping_Curves(data=array_)
 
-        mgdc = Multiple_GGmax_Damping_Curves(data_array=array)
+        mgdc = Multiple_GGmax_Damping_Curves(data=array)
+        mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
+        self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))
+        self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
+
+        # Case 3: with a file name
+        with self.assertRaisesRegex(TypeError, 'must be a 2D numpy array or a file name'):
+            Multiple_GGmax_Damping_Curves(data=3.5)
+        mgdc = Multiple_GGmax_Damping_Curves(data='./files/curve_FKSH14.txt')
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
         self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))
         self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
