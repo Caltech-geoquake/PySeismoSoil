@@ -81,7 +81,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         HH_G_param_benchmark = HH_Param_Multi_Layer(HH_G_benchmark_data)
         self.assertTrue(np.allclose(HH_G_param.serialize_to_2D_array(),
                                     HH_G_param_benchmark.serialize_to_2D_array(),
-                                    rtol=1e-3))
+                                    rtol=1e-2))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_HH_Calibration)
