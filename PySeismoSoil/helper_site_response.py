@@ -263,7 +263,7 @@ def plot_motion(accel, unit='m', fig=None, ax=None, title=None, figsize=(5, 6),
         if not title: title = accel
         accel = np.loadtxt(accel)
     elif isinstance(accel, np.ndarray):
-        if not title: title = 'accel.'
+        if title is None: title = 'Ground motion'
     else:
         raise TypeError('"accel" must be a str or a 2-columned numpy array.')
 
@@ -1012,7 +1012,7 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
         alpha_star[k] = float(rho[k]) * vs_star[k] / (rho[k+1] * vs_star[k+1])
 
     TF_size = int(np.floor_divide(fmax, freq_resolution))  # length of transfer function
-    freq_array = np.linspace(0, freq_resolution * (TF_size - 1), num=TF_size)
+    freq_array = np.linspace(freq_resolution, freq_resolution * TF_size, num=TF_size)
 
     TF_ro = np.ones(TF_size, dtype=np.complex_)
     TF_in = np.ones(TF_size, dtype=np.complex_)
