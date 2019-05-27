@@ -448,7 +448,7 @@ def fourier_transform(signal_2_col, *, real_val=True, double_sided=False,
         plt.subplot(211)
         plt.plot(time_array,x)
         plt.xlabel('Time [sec]')
-        plt.ylabel('Acceleration [gal]')
+        plt.ylabel('Acceleration')
         plt.grid(ls=':')
 
         plt.subplot(212)
