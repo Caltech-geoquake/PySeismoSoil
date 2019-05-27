@@ -457,6 +457,7 @@ class Multiple_Curves():
         - length: len(foo)
         - deleting iterm: del foo[2]
         - checking existance: bar in foo
+        - appending: foo.append(bar)
 
     Parameters
     ----------
@@ -583,6 +584,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         - length: len(foo)
         - deleting iterm: del foo[2]
         - checking existance: bar in foo
+        - appending: foo.append(bar)
 
     Parameters
     ----------
@@ -961,6 +963,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         - length: len(foo)
         - deleting iterm: del foo[2]
         - checking existance: bar in foo
+        - appending: foo.append(bar)
 
     Parameters
     ----------
