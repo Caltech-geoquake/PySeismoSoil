@@ -169,7 +169,7 @@ class Frequency_Spectrum():
         return fig, ax
 
     #--------------------------------------------------------------------------
-    def get_smoothed(self, win_len=15, show_fig=False, **kwargs):
+    def get_smoothed(self, win_len=15, show_fig=False, *, log_scale, **kwargs):
         '''
         Smooth the spectrum by calculating the convolution of the raw
         signal and the smoothing window.
@@ -180,6 +180,10 @@ class Frequency_Spectrum():
             Length of the smoothing window. Larget numbers means more smoothing.
         show_fig : bool
             Whether to show a before/after figure.
+        log_scale : bool
+            Whether the frequency spacing of this frequency spectrum is in log
+            scale (otherwise, linear scale). If this argument is incorrect, it
+            could lead to strange smoothing results.
         **kwargs :
             Extra keyword arguments get passed to the function
             ``helper_signal_processing.log_smooth()``.
@@ -194,7 +198,7 @@ class Frequency_Spectrum():
             The axes object being created or being passed into this function.
         '''
         sm = sig.log_smooth(self.spectrum, win_len=win_len, fmin=self.fmin,
-                            fmax=self.fmax, **kwargs)
+                            fmax=self.fmax, lin_space=not log_scale, **kwargs)
         if show_fig:
             fig = plt.figure()
             ax = plt.axes()
@@ -204,7 +208,6 @@ class Frequency_Spectrum():
             ax.set_xlabel('Frequency [Hz]')
             ax.set_ylabel('Spectrum')
             ax.legend(loc='best')
-            if self.__file_name: ax.set_title(self.__file_name)
 
         return sm, fig, ax
 
