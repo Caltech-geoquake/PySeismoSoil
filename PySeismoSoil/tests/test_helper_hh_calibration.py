@@ -174,7 +174,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
                         [26501, 64856.6, 148805, 804855, 1.10785e+06],
                         [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]])
         # use higher tolerance because MKZ curve fitting has room for small errors
-        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-3))
+        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2))
 
         ## Case 2: Fit manually specified ("real-world") G/Gmax curves
         ##         (Unable to benchmark because MKZ curve fitting can produce
