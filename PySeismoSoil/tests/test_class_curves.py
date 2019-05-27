@@ -89,6 +89,8 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(np.allclose(mdc[0].raw_data, layer_0_bench))
 
         # Test __setitem__
+        with self.assertRaises(TypeError, msg='new `item` must be of type'):
+            mdc[2] = 2.5  # use an incorrect type
         mdc[4] = Damping_Curve(layer_0_bench)
         self.assertTrue(np.allclose(mdc[0].raw_data, mdc[4].raw_data))
 
@@ -108,6 +110,14 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(len(mdc_slice), 2)
         self.assertTrue(isinstance(mdc_slice, Multiple_Damping_Curves))
         self.assertTrue(isinstance(mdc_slice[0], Damping_Curve))
+
+        # Test append
+        with self.assertRaises(TypeError, msg='new `item` must be of type'):
+            mdc[2] = GGmax_Curve('./files/curve_FKSH14.txt')  # use an incorrect type
+        self.assertEqual(len(mdc), 4)
+        mdc.append(mdc_3)
+        self.assertEqual(len(mdc), 5)
+        self.assertEqual(mdc.n_layer, 5)
 
     def test_HH_x_fit_multi_layer(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')

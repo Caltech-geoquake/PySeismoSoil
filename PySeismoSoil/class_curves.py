@@ -26,8 +26,8 @@ class Curve():
         The unit of the strain.
     interpolate : bool
         Whether to interpolate the input curve or not. If ``False``, the
-        following several parameters (``min_strain``, ``max_strain``, '
-        '``n_pts``, ``log_scale``) have no effects.
+        following several parameters (``min_strain``, ``max_strain``,
+        ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
         Minimum strain value of the strain array. The raw ``data`` is
         internally interpolated at a strain array defined by ``min_strain``,
@@ -469,6 +469,8 @@ class Multiple_Curves():
 
     Attributes
     ----------
+    element_class : PySeismoSoil.class_curves.Curve or its subclass
+        Same as the input parameter.
     curves : list<``element_class``>
         A list of curve objects whose type is specified by the user.
     n_layer : int
@@ -492,18 +494,33 @@ class Multiple_Curves():
     def __repr__(self):
         return 'n_layers = %d, type: %s' % (self.n_layer, type(self.curves[0]))
 
-    def __contains__(self, item): return item in self.curves
-    def __len__(self): return self.n_layer
-    def __setitem__(self, i, item): self.curves[i] = item
+    def __contains__(self, item):
+        return item in self.curves
+
+    def __len__(self):
+        return self.n_layer
+
+    def __setitem__(self, i, item):
+        if not isinstance(item, self.element_class):
+            raise TypeError('The new `item` must be of type %s.' % self.element_class)
+        self.curves[i] = item
+
     def __getitem__(self, i):
         if isinstance(i, int):
             return self.curves[i]
         if isinstance(i, slice):  # return an object of the same class
             return self.__class__(self.curves[i])  # filled with the sliced data
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
+
     def __delitem__(self, i):
         del self.curves[i]
         self.n_layer -= 1
+
+    def append(self, item):
+        if not isinstance(item, self.element_class):
+            raise TypeError('The new `item` must be of type %s.' % self.element_class)
+        self.curves.append(item)
+        self.n_layer += 1
 
     def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
              xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
@@ -1198,3 +1215,7 @@ class Multiple_GGmax_Damping_Curves():
             mgc_matrix = self.mgc.get_curve_matrix()
             mdc_matrix = self.mdc.get_curve_matrix()
             return hlp.merge_curve_matrices(mgc_matrix, mdc_matrix)
+
+    def plot(self):
+        self.mgc.plot(ylabel='$G/G_{\max}$')
+        self.mdc.plot(ylabel='Damping [%]')
