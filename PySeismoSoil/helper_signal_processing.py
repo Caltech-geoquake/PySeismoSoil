@@ -626,7 +626,8 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
         raise ValueError("'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'")
 
     if lin_space and (fmin == None or fmax == None):
-        raise ValueError('If lin_space is True, fmin and fmax must be specified.')
+        raise ValueError('If `lin_space` is `True`, `fmin` and `fmax` must '
+                         'be specified.')
 
     if n_pts == None:
         n_pts = len(signal)
@@ -644,9 +645,9 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
         n = win_len // 2
 
         if beta1 < 0 or beta1 > 1:
-            raise ValueError('beta1 should be within [0, 1].')
+            raise ValueError('`beta1` should be within [0, 1].')
         if beta2 < 0 or beta2 > 1:
-            raise ValueError('beta2 should be within [0, 1].')
+            raise ValueError('`beta2` should be within [0, 1].')
 
         y[0] = np.mean(x[:n])
         for j in range(1,n):  # exponentially weigted average
