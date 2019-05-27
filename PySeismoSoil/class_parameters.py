@@ -59,6 +59,9 @@ class Parameter(collections.UserDict):
         self.data[key] = item
         return None
 
+    def __delitem__(self, key):
+        raise ValueError('Deleting items from the parameter set is not allowed.')
+
     def serialize(self):
         '''
         Serializes the parameter values into an array of floats. The order of
@@ -161,7 +164,7 @@ class Parameter(collections.UserDict):
         ax : list<matplotlib.axes._subplots.AxesSubplot>
             A list of two axes objects.
         '''
-        strain = np.logspace(-2, 1)  # unit: percent
+        strain = np.logspace(-4, 1)  # unit: percent
         GGmax = self.get_GGmax(strain)
         damping = self.get_damping(strain)
 
@@ -198,7 +201,7 @@ class HH_Param(Parameter):
     ----------
     param_dict : dict
         Values of the HH model parameters. Acceptable key names are:
-            gamma_t, a, gamma_ref, beta, s, Gmax, nu, Tmax, d
+            gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Attributes
     ----------
