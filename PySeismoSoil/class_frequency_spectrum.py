@@ -99,7 +99,6 @@ class Frequency_Spectrum():
             freq, spect = hlp.interpolate(fmin, fmax, n_pts,
                                           np.real_if_close(data_[:, 0]),
                                           data_[:, 1], log_scale=log_scale)
-
         self.raw_df = df
         self.raw_data = data_
         self.n_pts = n_pts
@@ -116,7 +115,6 @@ class Frequency_Spectrum():
 
     #--------------------------------------------------------------------------
     def __repr__(self):
-
         text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' \
                % (self.raw_df, self.n_pts, self.fmin, self.fmax)
         return text
@@ -155,7 +153,6 @@ class Frequency_Spectrum():
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         '''
-
         fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
 
         if plot_abs:
@@ -196,10 +193,8 @@ class Frequency_Spectrum():
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         '''
-
         sm = sig.log_smooth(self.spectrum, win_len=win_len, fmin=self.fmin,
                             fmax=self.fmax, **kwargs)
-
         if show_fig:
             fig = plt.figure()
             ax = plt.axes()
@@ -213,15 +208,10 @@ class Frequency_Spectrum():
 
         return sm, fig, ax
 
-#%%----------------------------------------------------------------------------
-class Amplification_Function(Frequency_Spectrum):
-    '''
-    Amplification function, which is the magnitude of a complex-valued transfer
-    function.
-    '''
+    #--------------------------------------------------------------------------
     def get_f0(self):
         '''
-        Get the "fundamental frequency" of an amplification function, which is
+        Get the "fundamental frequency" of the amplitude spectrum, which is
         the frequency of the first amplitude peak.
 
         Returns
@@ -229,17 +219,12 @@ class Amplification_Function(Frequency_Spectrum):
         f0 : float
             The fundamental frequency.
         '''
-        return sr.find_f0(self.spectrum_2col)
+        return sr.find_f0(self.amplitude_2col)
 
-#%%----------------------------------------------------------------------------
-class Phase_Function(Frequency_Spectrum):
-    '''
-    Amplification function, which is the magnitude of a complex-valued transfer
-    function.
-    '''
-    def unwrap(self, robust=True):
+    #--------------------------------------------------------------------------
+    def get_unwrapped_phase(self, robust=True):
         '''
-        Get the unwrpped phase function
+        Unwrpped the phase component of the spectrum.
 
         Parameters
         ----------
@@ -250,62 +235,14 @@ class Phase_Function(Frequency_Spectrum):
 
         Returns
         -------
-        unwrapped : numpy.ndarray
-            The unwrapped phase array.
+        unwrapped : Frequency_Spectrum
+            A frequency spectrum with unwrapped phase component.
         '''
         if robust:
-            unwrapped = sr.robust_unwrap(self.spectrum)
+            unwrapped_phase = sr.robust_unwrap(self.phase)
         else:
-            unwrapped = np.unwrap(self.spectrum)
+            unwrapped_phase = np.unwrap(self.phase)
 
-        return Frequency_Spectrum(unwrapped, df=self.raw_df, interpolate=False)
-
-#%%----------------------------------------------------------------------------
-class Transfer_Function(Frequency_Spectrum):
-    '''
-    Complex-valued transfer function.
-    '''
-    def get_amplitude(self):
-        '''
-        Returns
-        -------
-        amplitude : numpy.ndarray
-            2D numpy array with two columns. Amplitude spectrum with the
-            accompanying frequency array.
-        '''
-        return np.column_stack((self.freq, self.amplitude))
-
-    def get_phase(self, unwrap=False, robust=True):
-        '''
-        Return the phase shift angle (unit: rad) of the transfer function.
-
-        Parameters
-        ----------
-        unwrap : bool
-            Whether to return the unwrapped phase angle. If ``False``, the
-            returned spectrum will be bounded between [-np.pi, np.pi].
-        robust : bool
-            When unwrapping, whether to use the robust adjustment or not. It
-            has no effects if ``unwrap`` is False. Turning this option on can
-            help mitigate some issues associated with incomplete unwrapping
-            due to discretization errors.
-
-        Returns
-        -------
-        phase : numpy.ndarray
-            2D numpy array with two columns. Phase angle with the accompanying
-            frequency array.
-        '''
-        if not self.iscomplex:
-            print('Warning in get_phase(): the frequency spectrum is not '
-                  'a complex array...')
-        if unwrap:
-            if robust:
-                phase = sr.robust_unwrap(np.angle(self.spectrum))
-            else:
-                phase = np.unwrap(np.angle(self.spectrum))
-        else:
-            phase = np.angle(self.spectrum)
-
-        return np.column_stack((self.freq, phase))
-
+        data_1col = self.amplitude * np.exp(1j * unwrapped_phase)
+        unwrapped = Frequency_Spectrum(data_1col, df=self.raw_df, interpolate=False)
+        return unwrapped
