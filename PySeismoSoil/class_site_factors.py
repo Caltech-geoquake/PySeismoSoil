@@ -80,7 +80,8 @@ class Site_Factors():
         ---------
         method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
-            amplification factors. 'nl_hh' is recommended.
+            amplification factors. 'nl_hh' uses the results from nonlinear site 
+            response simulation, which is recommended.
         Fourier : bool
             Whether or not to return Fourier-spectra-based amplification
             factors (True) or response-spectra based factors (``False``).
