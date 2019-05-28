@@ -22,6 +22,10 @@ class Site_Effect_Adjustment():
         z1 (basin depth) in meters. If ``None``, it will be estimated from
         Vs30 using an empirical correlation (see `calc_z1_from_Vs30()`
         function in `helper_site_response.py`).
+    ampl_method : {'nl_hh', 'eq_hh'}
+        Which site response simulation method was used to calculate the
+        amplification factors. 'nl_hh' uses the results from nonlinear site 
+        response simulation, which is recommended.
 
     Attributes
     ----------
