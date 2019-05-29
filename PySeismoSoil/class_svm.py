@@ -21,9 +21,9 @@ class SVM():
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
     z1 : float or ``None``
-        The depth to bedrock (1000 m/s rock). Unit: m. If ``None``, it will be
-        estimated from Vs30 using an empirical correlation (see
-        `calc_z1_from_Vs30()` function in `helper_site_response.py`).
+        The depth to bedrock (1,000 m/s rock). Unit: m. If ``None``, it will be
+        estimated from Vs30 using an empirical correlation (see documentation
+        of `helper_site_response.calc_z1_from_Vs30()`).
     Vs_cap : bool or float
         Whether to "cap" the Vs profile or not.
         If True, then the Vs profile is capped at 1000.0 m/s; if specified
@@ -45,10 +45,11 @@ class SVM():
     iterate : bool
         Whether or not to iteratively adjust the input Vs30 so that the actual
         Vs30 (calculated from the resultant Vs profile) falls within 10 m/s
-        of the ``target_Vs30``.
+        of the ``target_Vs30``. (There is usually no need to do this.)
     verbose : bool
         Whether or not to print iteration progress (trial Vs30 value and
-        calculated Vs30 value) on the terminal.
+        calculated Vs30 value) on the terminal. It has no effects if ``iterate``
+        is ``False``.
 
     Attributes
     ----------
@@ -70,8 +71,10 @@ class SVM():
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
 
         if (target_Vs30 < 173.1) or (target_Vs30 > 1000):
-            print('******Warning: Vs30 out of range. Result could be '
-                  'problematic.******')
+            print('***** Warning in initializing an SVM object: your Vs30 '
+                  '(%.2f m/s) is out of the range of applicability of the '
+                  'SVM (173.1 m/s to 1000 m/s); the result may not be '
+                  'as credible. *****')
 
         if eta <= 0 or eta > 1:
             raise ValueError('`eta` must be between (0, 1].')
@@ -246,7 +249,7 @@ class SVM():
         title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
         fig, ax, h_line = sr.plot_Vs_profile(self._base_profile, title=title,
                                              fig=fig, ax=ax, figsize=figsize,
-                                             dpi=dpi)
+                                             dpi=dpi, **kwargs)
         return fig, ax, h_line
 
     #%%========================================================================

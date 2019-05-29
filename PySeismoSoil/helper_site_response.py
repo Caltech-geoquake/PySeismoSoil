@@ -13,8 +13,10 @@ def calc_z1_from_Vs30(Vs30_in_meter_per_sec):
     '''
     Calculate z1 (basin depth) from Vs30. The correlation used here is
     z1 = 140.511 * exp(-0.00303 * Vs30), where the units of z1 and Vs30 are
-    both SI units. This formula is obtained from the dataset used in
-    Shi & Asimaki (2018).
+    both SI units. This formula is documented in Section 2.5 (page 30) of the
+    following PhD thesis:
+        Shi, Jian (2019) "Improving Site Response Analysis for Earthquake
+        Ground Motion Modeling." PhD thesis, California Institute of Technology
     '''
     z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
     return z1_in_m
