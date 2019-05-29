@@ -826,7 +826,7 @@ def plot_Vs_profile(vs_profile, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100,
     h_line, = ax.plot(x, y, c=c, lw=lw, label=label, **other_kwargs)
     ax.set_xlim(0, np.max(vs) * 1.1)
     ax.set_ylim(zmax, 0)  # reversed Y axis
-    ax.set_xlabel('Shear wave velocity [m/s]', fontsize=12)
+    ax.set_xlabel('Shear-wave velocity [m/s]', fontsize=12)
     ax.set_ylabel('Depth [m]', fontsize=12)
     ax.grid(color=[0.5]*3, ls=':', lw=.5)
     ax.set_axisbelow(True)  # put grid line below data lines
