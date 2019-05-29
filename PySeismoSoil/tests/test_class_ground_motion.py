@@ -140,11 +140,28 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(isinstance(bp, GM))
         self.assertTrue(isinstance(bs, GM))
 
-    def test_deconvolution(self):
+    def test_amplify_via_profile(self):
         gm = GM('./files/sample_accel.txt', unit='m')
         vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
-        deconv_motion = gm.deconvolve(vs_prof, show_fig=True)
-        self.assertTrue(isinstance(deconv_motion, GM))
+        output_motion = gm.amplify(vs_prof, boundary='elastic')
+        self.assertTrue(isinstance(output_motion, GM))
+
+    def test_deconvolution(self):
+        '''
+        Test that `deconvolve()` and `amplify()` are reverse
+        operations to each other.
+        '''
+        gm = GM('./files/sample_accel.txt', unit='m')
+        vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
+
+        for boundary in ['elastic', 'rigid']:
+            deconv_motion = gm.deconvolve(vs_prof, boundary=boundary)
+            output_motion = deconv_motion.amplify(vs_prof, boundary=boundary)
+            self.assertTrue(self.nearly_identical(gm.accel, output_motion.accel))
+
+            amplified_motion = gm.amplify(vs_prof, boundary=boundary)
+            output_motion = amplified_motion.deconvolve(vs_prof, boundary=boundary)
+            self.assertTrue(self.nearly_identical(gm.accel, output_motion.accel))
 
     def test_plot(self):
         filename = './files/sample_accel.txt'
@@ -178,15 +195,62 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(gm.accel[:, 1] * 2, gm_scaled_1.accel[:, 1]))
         self.assertTrue(np.allclose(gm.accel[:, 1] * 0.5, gm_scaled_2.accel[:, 1]))
 
-    def test_amplify_motion(self):
+    def test_amplify_by_tf(self):
+        #---------- Case 1: An artificial transfer function -------------------
         gm = GM('./files/sample_accel.txt', unit='gal')
         ratio_benchmark = 2.76
         freq = np.arange(0.01, 50, step=0.01)
         tf = ratio_benchmark * np.ones_like(freq)
         transfer_function = Frequency_Spectrum(np.column_stack((freq, tf)))
-        new_gm = gm.amplify(transfer_function, show_fig=False)
+        new_gm = gm.amplify_by_tf(transfer_function, show_fig=False)
         ratio = new_gm.accel[:, 1] / gm.accel[:, 1]
         self.assertTrue(np.allclose(ratio, ratio_benchmark))
+
+        #---------- Case 2: A transfer function from a Vs profile -------------
+        vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
+        tf_RO, tf_BH, _ = vs_prof.get_transfer_function()
+        gm_with_tf_RO = gm.amplify_by_tf(tf_RO)
+        gm_with_tf_BH = gm.amplify_by_tf(tf_BH)
+
+        gm_with_tf_RO_ = gm.amplify(vs_prof, boundary='elastic')
+        gm_with_tf_BH_ = gm.amplify(vs_prof, boundary='rigid')
+
+        # Assert that `amplify_by_tf()` and `amplify()` can generate
+        # nearly identical results
+        self.assertTrue(self.nearly_identical(gm_with_tf_RO.accel,
+                                              gm_with_tf_RO_.accel))
+        self.assertTrue(self.nearly_identical(gm_with_tf_BH.accel,
+                                              gm_with_tf_BH_.accel))
+
+    @staticmethod
+    def nearly_identical(motion_1, motion_2, corr_thres=0.99):
+        '''
+        Assert that two ground motions are nearly identical, by checking the
+        correlation coefficient between two time series.
+
+        Parameters
+        ----------
+        motion_1 : numpy.ndarray
+            Two-column array (time, acceleration).
+        motion_2 : numpy.ndarray
+            Two-column array (time, acceleration).
+        corr_thres : float
+            The threshold that the correlation coefficient must be above (or
+            equal to).
+
+        Returns
+        -------
+        result : bool
+            Whether the motions are nearly identical
+        '''
+        if not np.allclose(motion_1[:, 0], motion_2[:, 0], rtol=0.001):
+            return False
+
+        r = np.corrcoef(motion_1[:, 1], motion_2[:, 1])
+        if r[1, 0] < corr_thres:
+            return False
+
+        return True
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Ground_Motion)

@@ -534,8 +534,8 @@ class Ground_Motion:
         return Ground_Motion(truncated, unit='m'), fig, ax, (n1, n2)
 
     #%%------------------------------------------------------------------------
-    def amplify(self, transfer_function, taper=False, extrap_tf=True,
-                deconv=False, show_fig=False, dpi=100, return_fig_obj=False):
+    def amplify_by_tf(self, transfer_function, taper=False, extrap_tf=True,
+                      deconv=False, show_fig=False, dpi=100, return_fig_obj=False):
         '''
         Amplify (or de-amplify) ground motions in the frequency domain. The
         mathematical process behind this function is as follows:
@@ -602,6 +602,37 @@ class Ground_Motion:
             return Ground_Motion(output_accel, unit='m')
 
     #%%------------------------------------------------------------------------
+    def amplify(self, soil_profile, boundary='elastic', show_fig=False):
+        '''
+        Amplify the ground motion via a 1D soil profile, using linear site
+        amplification method.
+
+        Parameters
+        ----------
+        soil_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+            The soil profile through which to deconvolve the gound motion.
+        boundary : {'elastic', 'rigid'}
+            The type of boundary of the bottom of the soil profile.
+        show_fig : bool
+            Whether or not to show a figure that illustrates the deconvolution
+            process.
+
+        Returns
+        -------
+        output_motion : Ground_Motion
+            The amplified ground motion.
+        '''
+        if not isinstance(soil_profile, Vs_Profile):
+            raise TypeError('`soil_profile` must be of type `Vs_Profile`.')
+
+        vs_profile = soil_profile.vs_profile
+        surface_motion = self.accel  # note: unit is SI
+        response = sr.linear_site_resp(vs_profile, surface_motion, deconv=False,
+                                       boundary=boundary, show_fig=show_fig)
+        output_motion = Ground_Motion(response, unit='m')
+        return output_motion
+
+    #%%------------------------------------------------------------------------
     def deconvolve(self, soil_profile, boundary='elastic', show_fig=False):
         '''
         Deconvolve the ground motion, i.e., propagate the motion downwards to
@@ -621,9 +652,10 @@ class Ground_Motion:
         Returns
         -------
         deconv_motion : Ground_Motion
+            The deconvolved motion on the rock outcrop or in a borehole.
         '''
         if not isinstance(soil_profile, Vs_Profile):
-            raise TypeError('`soil_profile` must be of type Vs_Profile.')
+            raise TypeError('`soil_profile` must be of type `Vs_Profile`.')
 
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI
