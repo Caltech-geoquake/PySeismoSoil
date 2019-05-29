@@ -11,16 +11,26 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 
+from test_class_ground_motion import Test_Class_Ground_Motion
+
 class Test_Class_Simulation(unittest.TestCase):
     def test_linear(self):
         input_motion = Ground_Motion('./files/sample_accel.txt', unit='m')
         soil_profile = Vs_Profile('./files/profile_FKSH14.txt')
         ls = Linear_Simulation(soil_profile, input_motion)
-        output = ls.run(show_fig=True)
+        sim_result = ls.run(every_layer=True, show_fig=True)
+        output = sim_result.accel_on_surface
 
         self.assertEqual(output.accel.shape, input_motion.accel.shape)
         self.assertEqual(output.dt, input_motion.dt)
         self.assertEqual(output.npts, input_motion.npts)
+
+        sim_result_ = ls.run(every_layer=False, show_fig=False)
+        output_ = sim_result_.accel_on_surface
+
+        # Check that two algorithms produce nearly identical results
+        nearly_identical = Test_Class_Ground_Motion.nearly_identical
+        self.assertTrue(nearly_identical(output.accel, output_.accel, thres=0.99))
 
     def test_equiv_linear(self):
         soil_profile = Vs_Profile('./files/profile_FKSH14.txt')

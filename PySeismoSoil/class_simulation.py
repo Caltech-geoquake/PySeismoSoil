@@ -98,27 +98,82 @@ class Linear_Simulation(Simulation):
     ----------
     Attributes same as the inputs
     '''
-    def run(self, show_fig=False, deconv=False):
+    def run(self, every_layer=True, deconv=False, show_fig=False,
+            save_fig=False, motion_name=None, save_txt=False,
+            save_full_time_history=False, output_dir=None):
         '''
         Parameters
         ----------
-        show_fig : bool
-            Whether to show a figure that shows the result of the analysis.
+        every_layer : bool
+            If ``True``, use the algorithm that can produce ground motion time
+            histories of every soil layer. If ``False``, use a simpler and
+            faster algorithm to produce the motion on the ground surface only.
         deconv : bool
-            Whether this operation is deconvolution. If True, it means that the
-            `input_motion` will be propagated downwards, and the motion at the
-            bottom will be collected.
+            Whether this operation is deconvolution. If ``True``, it means
+            that the ``input_motion`` will be propagated downwards, and the
+            motion at the bottom will be collected. Only effective if
+            ``every_layer`` is set to ``False``.
+        show_fig : bool
+            Whether to show figures of the simulation results.
+        save_fig : bool
+            Whether to save figures to ``output_dir``. Only effective when
+            ``show_fig`` is set to ``True``.
+        motion_name : str or ``None``
+            Name of the input ground motion. For example, "Northridge". If not
+            provided (i.e., ``None``), the current time stamp will be used.
+        save_txt : bool
+            Whether to save the results as text files to ``output_dir``.
+        save_full_time_history : bool
+            When saving simulation results, whether to save the full time
+            histories (i.e., every time step, every depth) of the acceleration,
+            velocity, displacement, stress, and strain. Only effective if
+            ``every_layer`` is ``True``.
+        output_dir : str
+            Directory for saving the figures and/or result files.
 
         Returns
         -------
-        output_motion : PySeismoSoil.class_ground_motion.Ground_Motion
-            The output ground motion.
+        sim_results : Simulation_Results
+            An object that contains all the simulation results.
         '''
-        response = sr.linear_site_resp(self.soil_profile.vs_profile,
-                                       self.input_motion.accel,  # unit: m/s/s
-                                       boundary=self.boundary,
-                                       show_fig=show_fig, deconv=deconv)
-        return Ground_Motion(response, unit='m')  # because GM internally uses SI unit
+        if every_layer:
+            results = sim.linear(self.soil_profile.vs_profile,
+                                 self.input_motion.accel,
+                                 boundary=self.boundary)
+            (new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
+             out_d, out_gamma, out_tau, max_avd, max_gt) = results
+
+            sim_results \
+            = Simulation_Results(self.input_motion,
+                                 Ground_Motion(accel_on_surface, unit='m'),
+                                 Vs_Profile(new_profile, density_unit='g/cm^3'),
+                                 max_a_v_d=max_avd,
+                                 max_strain_stress=max_gt,
+                                 trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+                                 time_history_accel=out_a,
+                                 time_history_veloc=out_v,
+                                 time_history_displ=out_d,
+                                 time_history_strain=out_gamma,
+                                 time_history_stress=out_tau,
+                                 motion_name=motion_name, output_dir=output_dir)
+            if show_fig:
+                sim_results.plot(save_fig=save_fig)
+            # END IF
+        else:  # `every_layer` is `False`
+            response = sr.linear_site_resp(self.soil_profile.vs_profile,
+                                           self.input_motion.accel,  # unit: m/s/s
+                                           boundary=self.boundary,
+                                           show_fig=show_fig, deconv=deconv)
+            sim_results \
+            = Simulation_Results(self.input_motion,
+                                 Ground_Motion(response, unit='m/s/s'),
+                                 self.soil_profile)
+
+        if save_txt:
+            sim_results.to_txt(save_full_time_history=save_full_time_history)
+        # END IF
+
+        return sim_results
 
 #%%============================================================================
 class Equiv_Linear_Simulation(Simulation):
@@ -197,8 +252,9 @@ class Equiv_Linear_Simulation(Simulation):
             = Simulation_Results(self.input_motion,
                                  Ground_Motion(accel_on_surface, unit='m'),
                                  Vs_Profile(new_profile, density_unit='g/cm^3'),
-                                 max_avd, max_gt,
-                                 Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+                                 max_a_v_d=max_avd,
+                                 max_strain_stress=max_gt,
+                                 trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
                                  time_history_accel=out_a,
                                  time_history_veloc=out_v,
                                  time_history_displ=out_d,
@@ -436,8 +492,9 @@ class Nonlinear_Simulation(Simulation):
             = Simulation_Results(self.input_motion,
                                  Ground_Motion(accel_surface_2col, unit='m'),
                                  Vs_Profile(new_profile, density_unit='g/cm^3'),
-                                 max_avd, max_gt,
-                                 Frequency_Spectrum(tf_unsmoothed),
+                                 max_a_v_d=max_avd,
+                                 max_strain_stress=max_gt,
+                                 trans_func=Frequency_Spectrum(tf_unsmoothed),
                                  trans_func_smoothed=Frequency_Spectrum(tf_smoothed),
                                  time_history_accel=out_a,
                                  time_history_veloc=out_v,

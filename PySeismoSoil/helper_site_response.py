@@ -1360,8 +1360,14 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     '''
     hlp.check_two_column_format(accel_in_2col, name='`accel_in`')
     hlp.check_two_column_format(accel_out_2col, name='`accel_out`')
-    hlp.assert_1D_numpy_array(freq, name='`freq`')
-    hlp.assert_1D_numpy_array(amplif_func_1col, name='`amplif_func_1col`')
+    if freq is not None:
+        hlp.assert_1D_numpy_array(freq, name='`freq`')
+    else:
+        amplif_func_1col = None  # set all to `None` to avoid potential errors
+        amplif_func_1col_smoothed =None
+        phase_func_1col = None
+    if amplif_func_1col is not None:
+        hlp.assert_1D_numpy_array(amplif_func_1col, name='`amplif_func_1col`')
     if amplif_func_1col_smoothed is not None:
         hlp.assert_1D_numpy_array(amplif_func_1col_smoothed,
                                   name='`amplif_func_1col_smoothed`')
@@ -1396,17 +1402,18 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     plt.title('Input and output time histories')
     ax.append(ax_)
 
-    ax_ = plt.subplot2grid((2, 3), (1, 0), fig=fig)
-    plt.semilogx(freq, amplif_func_1col, c=[0.1] * 3, label='Unsmoothed')
-    if amplif_func_1col_smoothed is not None:
-        plt.semilogx(freq, amplif_func_1col_smoothed, c='orange', label='Smoothed')
-    plt.semilogx(freq, np.ones(len(freq)), '--', c='gray')
-    if amplif_func_1col_smoothed is not None:
-        plt.legend(loc='best')
-    plt.xlabel('Frequency [Hz]')
-    plt.ylabel('Amplification')
-    plt.grid(ls=':')
-    ax.append(ax_)
+    if freq is not None:
+        ax_ = plt.subplot2grid((2, 3), (1, 0), fig=fig)
+        plt.semilogx(freq, amplif_func_1col, c=[0.1] * 3, label='Unsmoothed')
+        if amplif_func_1col_smoothed is not None:
+            plt.semilogx(freq, amplif_func_1col_smoothed, c='orange', label='Smoothed')
+        plt.semilogx(freq, np.ones(len(freq)), '--', c='gray')
+        if amplif_func_1col_smoothed is not None:
+            plt.legend(loc='best')
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Amplification')
+        plt.grid(ls=':')
+        ax.append(ax_)
 
     if phase_func_1col is not None:
         ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)

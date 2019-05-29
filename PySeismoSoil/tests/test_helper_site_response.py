@@ -283,6 +283,16 @@ class Test_Helper_Site_Response(unittest.TestCase):
                                        txt_filename='1.txt',  # no effect anyways
                                        func_serialize=mkz.serialize_params_to_array)
 
+    #--------------------------------------------------------------------------
+    def test_plot_site_amp(self):
+        # Test that `_plot_site_amp()` can plot figures without transfer functions
+        time = np.linspace(0, np.pi * 4, num=1000)
+        accel_in = np.sin(time) + np.cos(2 * time + 1) + np.sin(4 * time + 2)
+        accel_out = np.cos(time) + np.sin(2 * time + 1) + np.cos(4 * time + 2)
+        input_motion = np.column_stack((time, accel_in))
+        output_motion = np.column_stack((time, accel_out))
+        sr._plot_site_amp(input_motion, output_motion, None, None)
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Site_Response)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
