@@ -59,8 +59,8 @@ class Simulation_Results():
     Attributes same as inputs
     '''
     #%%------------------------------------------------------------------------
-    def __init__(self, input_accel, accel_on_surface, rediscretized_profile,
-                 max_a_v_d, max_strain_stress, trans_func,
+    def __init__(self, input_accel, accel_on_surface, rediscretized_profile, *,
+                 max_a_v_d=None, max_strain_stress=None, trans_func=None,
                  trans_func_smoothed=None, time_history_accel=None,
                  time_history_veloc=None, time_history_displ=None,
                  time_history_stress=None, time_history_strain=None,
@@ -72,8 +72,9 @@ class Simulation_Results():
             raise TypeError('`accel_on_surface` needs to be of Ground_Motion type.')
         if not isinstance(rediscretized_profile, Vs_Profile):
             raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
-        if not isinstance(trans_func, Frequency_Spectrum):
-            raise TypeError('`trans_func` needs to be of Frequency_Spectrum type.')
+        if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
+            raise TypeError('`trans_func` needs to be either None or of '
+                            'Frequency_Spectrum type.')
         if not isinstance(trans_func_smoothed, (Frequency_Spectrum, type(None))):
             raise TypeError('`trans_func_smoothed` should be either None or '
                             'of Frequency_Spectrum type.')
@@ -97,10 +98,14 @@ class Simulation_Results():
             hlp.assert_2D_numpy_array(time_history_strain, '`time_history_strain`')
             assert(time_history_strain.shape == (n_time_pts, n_layer))
 
-        hlp.assert_2D_numpy_array(max_a_v_d, '`max_a_v_d`')
-        hlp.assert_2D_numpy_array(max_strain_stress, '`max_strain_stress`')
-        assert(max_a_v_d.shape == (n_layer + 1, 4))
-        assert(max_strain_stress.shape == (n_layer, 3))
+        if max_a_v_d is not None and max_strain_stress is not None:
+            hlp.assert_2D_numpy_array(max_a_v_d, '`max_a_v_d`')
+            hlp.assert_2D_numpy_array(max_strain_stress, '`max_strain_stress`')
+            assert(max_a_v_d.shape == (n_layer + 1, 4))
+            assert(max_strain_stress.shape == (n_layer, 3))
+        else:  # only when both are not `None` do we consider using them
+            max_a_v_d = None
+            max_strain_stress = None
 
         current_time = hlp.get_current_time(for_filename=True)
         if motion_name is None:
@@ -147,9 +152,14 @@ class Simulation_Results():
         #-------- Plot output/input motions and transfer functions ------------
         accel_in = self.input_accel.accel
         accel_out = self.accel_on_surface.accel
-        freq = self.trans_func.freq
-        ampl_func = self.trans_func.amplitude
-        phase_func = self.trans_func.phase
+        if self.trans_func is not None:
+            freq = self.trans_func.freq
+            ampl_func = self.trans_func.amplitude
+            phase_func = self.trans_func.phase
+        else:
+            freq = None
+            ampl_func = None
+            phase_func = None
         if self.trans_func_smoothed is not None:
             ampl_func_smoothed = self.trans_func_smoothed.amplitude
         else:
@@ -160,57 +170,62 @@ class Simulation_Results():
                                 amplif_func_1col_smoothed=ampl_func_smoothed,
                                 phase_func_1col=phase_func, dpi=dpi)
         axes1[0].set_ylabel('Accel. [m/s/s]')
-        axes1[1].set_yscale('linear')
-        axes1[2].set_xscale('log')
+        if self.trans_func is not None:
+            axes1[1].set_yscale('linear')
+            axes1[2].set_xscale('log')
 
         #-------- Plot maximum accel/veloc/displ/strain/stress profiles -------
-        max_layer_boundary_depth = np.max(self.max_a_v_d[:, 0])
+        if self.max_a_v_d is not None and self.max_strain_stress is not None:
+            max_layer_boundary_depth = np.max(self.max_a_v_d[:, 0])
 
-        fig2 = plt.figure(figsize=(8.5, 5.5), dpi=dpi)
+            fig2 = plt.figure(figsize=(8.5, 5.5), dpi=dpi)
 
-        ax21 = plt.subplot(151)
-        plt.plot(self.max_a_v_d[:, 1], self.max_a_v_d[:, 0], ls='-', marker='.')
-        plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('Max. accel. [m/s/s]')
-        plt.ylabel('Depth [m]')
-        plt.grid(ls=':', lw=0.5)
-        ax21.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax21 = plt.subplot(151)
+            plt.plot(self.max_a_v_d[:, 1], self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.ylim(max_layer_boundary_depth, 0)
+            plt.xlabel('Max. accel. [m/s/s]')
+            plt.ylabel('Depth [m]')
+            plt.grid(ls=':', lw=0.5)
+            ax21.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
-        ax22 = plt.subplot(152)
-        plt.plot(self.max_a_v_d[:, 2]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
-        plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('Max. veloc. [cm/s]')
-        plt.grid(ls=':', lw=0.5)
-        ax22.get_yaxis().set_ticklabels([])
-        ax22.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax22 = plt.subplot(152)
+            plt.plot(self.max_a_v_d[:, 2]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.ylim(max_layer_boundary_depth, 0)
+            plt.xlabel('Max. veloc. [cm/s]')
+            plt.grid(ls=':', lw=0.5)
+            ax22.get_yaxis().set_ticklabels([])
+            ax22.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
-        ax23 = plt.subplot(153)
-        plt.plot(self.max_a_v_d[:, 3]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
-        plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('Max. displ. [cm]')
-        plt.grid(ls=':', lw=0.5)
-        ax23.get_yaxis().set_ticklabels([])
-        ax23.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax23 = plt.subplot(153)
+            plt.plot(self.max_a_v_d[:, 3]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.ylim(max_layer_boundary_depth, 0)
+            plt.xlabel('Max. displ. [cm]')
+            plt.grid(ls=':', lw=0.5)
+            ax23.get_yaxis().set_ticklabels([])
+            ax23.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
-        ax24 = plt.subplot(154)
-        plt.plot(self.max_strain_stress[:, 1]*100, self.max_strain_stress[:, 0],
-                 ls='-', marker='.')
-        plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel('$\gamma_{\max}$ [%]')
-        plt.grid(ls=':', lw=0.5)
-        ax24.get_yaxis().set_ticklabels([])
-        ax24.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax24 = plt.subplot(154)
+            plt.plot(self.max_strain_stress[:, 1]*100, self.max_strain_stress[:, 0],
+                     ls='-', marker='.')
+            plt.ylim(max_layer_boundary_depth, 0)
+            plt.xlabel('$\gamma_{\max}$ [%]')
+            plt.grid(ls=':', lw=0.5)
+            ax24.get_yaxis().set_ticklabels([])
+            ax24.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
-        ax25 = plt.subplot(155)
-        plt.plot(self.max_strain_stress[:, 2]/1000., self.max_strain_stress[:, 0],
-                 ls='-', marker='.')
-        plt.ylim(max_layer_boundary_depth, 0)
-        plt.xlabel(r'$\tau_{\max}$ [kPa]')
-        plt.grid(ls=':', lw=0.5)
-        ax25.get_yaxis().set_ticklabels([])
-        ax25.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax25 = plt.subplot(155)
+            plt.plot(self.max_strain_stress[:, 2]/1000., self.max_strain_stress[:, 0],
+                     ls='-', marker='.')
+            plt.ylim(max_layer_boundary_depth, 0)
+            plt.xlabel(r'$\tau_{\max}$ [kPa]')
+            plt.grid(ls=':', lw=0.5)
+            ax25.get_yaxis().set_ticklabels([])
+            ax25.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
-        plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.3)
+            plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.3)
+        else:
+            fig2 = None
+            ax21, ax22, ax23, ax24, ax25 = None, None, None, None, None
 
         figs = [fig1, fig2]
         axes = [axes1, [ax21, ax22, ax23, ax24, ax25]]
@@ -224,7 +239,8 @@ class Simulation_Results():
             fn_fig2 = os.path.join(self.output_dir,
                                    '%s_max_profiles.png' % self.motion_name)
             fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')
-            fig2.savefig(fn_fig2, dpi=dpi, bbox_inches='tight')
+            if fig2 is not None:
+                fig2.savefig(fn_fig2, dpi=dpi, bbox_inches='tight')
 
         return figs, axes
 
@@ -238,7 +254,8 @@ class Simulation_Results():
         save_full_time_history : bool
             Whether to save full time histories (every time step, every layer)
             of accel/veloc/displ/strain/stress to hard drive. They can take
-            a lot of disk space.
+            a lot of disk space. Only effective if the full time histories
+            are not ``None``.
         verbose : bool
             Whether to show on the console where the files are saved to.
         '''
@@ -265,8 +282,10 @@ class Simulation_Results():
         np.savetxt(fn_surface_accel, self.accel_on_surface.accel, **fmt_dict)
 
         np.savetxt(fn_new_profile, self.rediscretized_profile.vs_profile, **fmt_dict)
-        np.savetxt(fn_max_avd, self.max_a_v_d, **fmt_dict)
-        np.savetxt(fn_max_gt, self.max_strain_stress, **fmt_dict)
+        if self.max_a_v_d is not None:
+            np.savetxt(fn_max_avd, self.max_a_v_d, **fmt_dict)
+        if self.max_strain_stress is not None:
+            np.savetxt(fn_max_gt, self.max_strain_stress, **fmt_dict)
 
         if save_full_time_history:
             if self.time_history_accel is not None:
@@ -280,7 +299,8 @@ class Simulation_Results():
             if self.time_history_stress is not None:
                 np.savetxt(fn_out_tau, self.time_history_stress, **fmt_dict)
 
-        np.savetxt(fn_TF_raw, self.trans_func.spectrum_2col, **fmt_dict)
+        if self.trans_func is not None:
+            np.savetxt(fn_TF_raw, self.trans_func.spectrum_2col, **fmt_dict)
 
         if self.trans_func_smoothed is not None:
             np.savetxt(fn_TF_smoothed, self.trans_func_smoothed.amplitude_2col,

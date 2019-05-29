@@ -223,7 +223,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
                                               gm_with_tf_BH_.accel))
 
     @staticmethod
-    def nearly_identical(motion_1, motion_2, corr_thres=0.99):
+    def nearly_identical(motion_1, motion_2, thres=0.99):
         '''
         Assert that two ground motions are nearly identical, by checking the
         correlation coefficient between two time series.
@@ -234,7 +234,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
             Two-column array (time, acceleration).
         motion_2 : numpy.ndarray
             Two-column array (time, acceleration).
-        corr_thres : float
+        thres : float
             The threshold that the correlation coefficient must be above (or
             equal to).
 
@@ -247,7 +247,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
             return False
 
         r = np.corrcoef(motion_1[:, 1], motion_2[:, 1])
-        if r[1, 0] < corr_thres:
+        if r[1, 0] < thres:
             return False
 
         return True
