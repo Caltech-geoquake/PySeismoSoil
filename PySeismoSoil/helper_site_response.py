@@ -1251,10 +1251,17 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
     ----------
     soil_profile : numpy.ndarray or str
         1D Vs profile profile. If it is a string, it means the file name that
-        contains the data.
+        contains the data. If it is a 2D array, it has the following format:
+
+         +---------------+----------+---------+------------------+--------------+
+         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
+         +===============+==========+=========+==================+==============+
+         |      ...      |   ...    |   ...   |       ...        |      ...     |
+         +---------------+----------+---------+------------------+--------------+
+        (Damping unit: 1)
     input_motion : numpy.array or str
-        Input motion in the time domain. If it is a string, it means the file
-        name that contains the data.
+        Input motion in the time domain (with two columns). If it is a string,
+        it means the file name that contains the data.
     boundary : {'elastic', 'rigid'}
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -1263,14 +1270,14 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
         Whether to show a figure that shows the result of the analysis
     deconv : bool
         Whether this operation is deconvolution. If True, it means that the
-        `input_motion` will be propagated downwards, and the motion at the
+        ``input_motion`` will be propagated downwards, and the motion at the
         bottom will be collected.
 
     Returns
     -------
     response : numpy.array
         The resultant ground motion in time domain. In the same format as
-        `input_motion`.
+        ``input_motion``.
 
     Notes
     -----
