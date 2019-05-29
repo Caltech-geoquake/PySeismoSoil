@@ -39,6 +39,99 @@ def check_layer_count(vs_profile, *, GGmax_and_damping_curves=None,
     return None
 
 #%%----------------------------------------------------------------------------
+def linear(vs_profile, input_motion, boundary='elastic'):
+    '''
+    Linear site response simulation.
+
+    ``helper_site_response.linear_site_resp()`` also performs linear site
+    response calculation. The difference between this function and
+    ``helper_site_response.linear_site_resp()`` is that this function can
+    produce the time histories of acceleration, velocity, displacement,
+    stress, and strain of every layer, while ``linear_site_resp()``
+    only produces the ground motion time histories on the ground surface.
+
+    If the user only wants the ground surface motion, then ``linear_site_resp()``
+    is faster.
+
+    Parameters
+    ----------
+    vs_profile : numpy.ndarray
+        Shear-wave velocity profile, as a 2D numpy array. It should have the
+        following columns:
+
+         +---------------+----------+---------+------------------+--------------+
+         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
+         +===============+==========+=========+==================+==============+
+         |      ...      |   ...    |   ...   |       ...        |      ...     |
+         +---------------+----------+---------+------------------+--------------+
+        (Damping unit: 1)
+
+    input_motion : numpy.ndarray
+        Input acceleration on rock outcrop (unit: m/s/s). It should have two
+        columns (time and acceleration).
+    boundary : {'elastic', 'rigid'}
+        Boundary condition. 'Elastic' means that the input motion is the
+        "rock outcrop" motion, and 'rigid' means that the input motion is
+        the recorded motion at the bottom of the Vs profile.
+
+    Returns
+    -------
+    new_profile : numpy.ndarray
+        Re-discretized Vs profile.
+    freq_array : numpy.ndarray
+        "Single-sided" frequency. Shape: ``(half_N, )`` or ``(half_N - 1, )``.
+    tf : numpy.ndarray
+        Transfer function (complex-valued). Same shape as ``freq_array``.
+    accel_on_surface : numpy.ndarray
+        Simulated acceleration on the ground surface (two-columed).
+    out_a : numpy.ndarray
+        Simulated acceleration time history of every layer.
+        Shape: ``(num_time_step, n_layer)``.
+    out_v : numpy.ndarray
+        Simulated velocity time history of every layer. Same shape as ``out_a``.
+    out_d : numpy.ndarray
+        Simulated displacement time history of every layer. Same shape as
+        ``out_a``.
+    out_gamma : numpy.ndarray
+        Simulated shear strain time history of every layer.
+        Shape: ``(num_time_step, n_layer - 1)``.
+    out_tau : numpy.ndarray
+        Simulated shear stress time history of every layer. Same shape as
+        ``out_gamma``.
+    max_avd : numpy.ndarray
+        Maximum acceleration, velocity, and displacement during the shaking
+        process, of each layer. Shape: ``(n_layer, )``.
+    max_gt : numpy.ndarray
+        Maximum shear strain and shear stress during the shaking process, of
+        each layer. Shape: ``(n_layer - 1, )``.
+    '''
+    hlp.check_Vs_profile_format(vs_profile)
+    hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
+
+    #-------- Part 1: Data preparation -- soil profile and input motion -------
+    (flag, N, freq, new_profile, h, vs, D, rho, mat_nr, n_layer, Gmax, G, t, dt,
+     ACCEL_IN) = _prepare_inputs(vs_profile=vs_profile, input_motion=input_motion)
+
+    #-------- Part 2: Start calculation ---------------------------------------
+    H, accel_out, veloc, displ, strain, _ \
+        = _lin_resp_every_layer(dt=dt, freq=freq, N=N, n_layer=n_layer, h=h,
+                                G=G, D=D, rho=rho, boundary=boundary,
+                                ACCEL_IN=ACCEL_IN)
+
+    #--------- Part 3: Calculate stress from strain ---------------------------
+    stress, half_N = _calc_stress(G=G, D=D, strain=strain, N=N, n_layer=n_layer)
+
+    #--------- Part 4: Post-processing -----------------------------------------
+    (freq_array, tf, accel_on_surface, out_a, out_v, out_d, out_gamma, out_tau,
+     max_avd, max_gt) = _post_processing(flag=flag, freq=freq, half_N=half_N,
+                                         H=H, t=t, accel_out=accel_out,
+                                         veloc=veloc, displ=displ,
+                                         strain=strain, stress=stress, h=h)
+
+    return (new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
+            out_d, out_gamma, out_tau, max_avd, max_gt)
+
+#%%----------------------------------------------------------------------------
 def equiv_linear(vs_profile, input_motion, curve_matrix, boundary='elastic',
                  tol=0.075, R_gamma=0.65, max_iter=10, verbose=True):
     '''
