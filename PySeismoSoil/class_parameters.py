@@ -327,8 +327,10 @@ class Param_Multi_Layer():
 
         Returns
         -------
-        mgdc : PySeismoSoil.class_curves.Multiple_GGmax_Damping_Curves
-            The G/Gmax and damping curves for each soil layer.
+        mgc : PySeismoSoil.class_curves.Multiple_GGmax_Curves
+            G/Gmax curves for each soil layer.
+        mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
+            Damping curves for each soil layer.
         '''
         strain_in_pct = np.logspace(-2, 1)
         curves = None
@@ -343,7 +345,8 @@ class Param_Multi_Layer():
                                           strain_in_pct, damping))
 
         mgdc = Multiple_GGmax_Damping_Curves(data=curves)
-        return mgdc
+        mgc, mdc = mgdc.get_MGC_MDC_objects()
+        return mgc, mdc
 
     def serialize_to_2D_array(self):
         '''
