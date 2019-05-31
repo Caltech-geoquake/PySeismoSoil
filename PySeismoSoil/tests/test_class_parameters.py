@@ -151,12 +151,16 @@ class Test_Class_HH_Param(unittest.TestCase):
 
     def test_construct_curves(self):
         HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
-        curves = HH_x.construct_curves()
-        self.assertTrue(curves.shape[1] == HH_x.n_layer * 4)
+        mgdc = HH_x.construct_curves()
+        curves = mgdc.get_curve_matrix()
+        self.assertEqual(mgdc.n_layer, HH_x.n_layer)
+        self.assertEqual(curves.shape[1], HH_x.n_layer * 4)
 
         H4_G = MKZ_Param_Multi_Layer('./files/H4_G_IWTH04.txt')
-        curves = H4_G.construct_curves()
-        self.assertTrue(curves.shape[1] == H4_G.n_layer * 4)
+        mgdc = H4_G.construct_curves()
+        curves = mgdc.get_curve_matrix()
+        self.assertEqual(mgdc.n_layer, H4_G.n_layer)
+        self.assertEqual(curves.shape[1], H4_G.n_layer * 4)
 
     def test_param_serialize(self):
         HH_x = HH_Param({'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4,
