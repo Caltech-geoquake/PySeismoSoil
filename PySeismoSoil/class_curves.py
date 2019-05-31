@@ -29,16 +29,18 @@ class Curve():
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
-        Minimum strain value of the strain array. The raw ``data`` is
-        internally interpolated at a strain array defined by ``min_strain``,
-        ``max_strain``, and ``n_pts``.
+        Minimum strain value of the strain array. If ``interpolate`` is ``True``,
+        the raw ``data`` will be internally interpolated at a strain array
+        defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float
-        Maximum strain value of the strain array.
+        Maximum strain value of the strain array. Only effective when
+        ``interpolate`` is set to ``True``.
     n_pts : int
         Number of points of the desired strain array to do the interpolation.
+        Only effective when ``interpolate`` is set to ``True``.
     log_scale : bool
         Whether the strain array for interpolation is in log scale (or linear
-        scale).
+        scale). Only effective when ``interpolate`` is set to ``True``.
     ensure_non_negative : bool
         Whether to ensure that all values in ``data`` >= 0 when a class object
         is being constructed.
@@ -144,17 +146,23 @@ class GGmax_Curve(Curve):
         array, and the 1st column contains the G/Gmax values.
     strain_unit : {'1', '%'}
         The unit of the strain.
+    interpolate : bool
+        Whether to interpolate the input curve or not. If ``False``, the
+        following several parameters (``min_strain``, ``max_strain``,
+        ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
-        Minimum strain value of the strain array. The raw ``data`` is
-        internally interpolated at a strain array defined by ``min_strain``,
-        ``max_strain``, and ``n_pts``.
+        Minimum strain value of the strain array. If ``interpolate`` is ``True``,
+        the raw ``data`` will be internally interpolated at a strain array
+        defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float
-        Maximum strain value of the strain array.
+        Maximum strain value of the strain array. Only effective when
+        ``interpolate`` is set to ``True``.
     n_pts : int
         Number of points of the desired strain array to do the interpolation.
+        Only effective when ``interpolate`` is set to ``True``.
     log_scale : bool
         Whether the strain array for interpolation is in log scale (or linear
-        scale).
+        scale). Only effective when ``interpolate`` is set to ``True``.
     check_values : bool
         Whether to automatically check the validity of the G/Gmax values (i.e.,
         between 0 and 1).
@@ -170,10 +178,12 @@ class GGmax_Curve(Curve):
     GGmax : numpy.array
         The interpolated G/Gmax values; same shape as ``strain``.
     '''
-    def __init__(self, data, *, strain_unit='%', min_strain=0.0001,
-                 max_strain=10., n_pts=50, log_scale=True, check_values=True):
+    def __init__(self, data, *, strain_unit='%', interpolate=False,
+                 min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+                 check_values=True):
 
         super(GGmax_Curve, self).__init__(data, strain_unit=strain_unit,
+                                          interpolate=interpolate,
                                           min_strain=min_strain,
                                           max_strain=max_strain,
                                           n_pts=n_pts, log_scale=log_scale)
@@ -196,17 +206,23 @@ class Damping_Curve(Curve):
         The unit of the strain.
     damping_unit : {'1', '%'}
         The unit of damping.
+    interpolate : bool
+        Whether to interpolate the input curve or not. If ``False``, the
+        following several parameters (``min_strain``, ``max_strain``,
+        ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
-        Minimum strain value of the strain array. The raw ``data`` is
-        internally interpolated at a strain array defined by ``min_strain``,
-        ``max_strain``, and ``n_pts``.
+        Minimum strain value of the strain array. If ``interpolate`` is ``True``,
+        the raw ``data`` will be internally interpolated at a strain array
+        defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float
-        Maximum strain value of the strain array.
+        Maximum strain value of the strain array. Only effective when
+        ``interpolate`` is set to ``True``.
     n_pts : int
         Number of points of the desired strain array to do the interpolation.
+        Only effective when ``interpolate`` is set to ``True``.
     log_scale : bool
         Whether the strain array for interpolation is in log scale (or linear
-        scale).
+        scale). Only effective when ``interpolate`` is set to ``True``.
     check_values : bool
         Whether to automatically check the validity of the damping values (i.e.,
         between 0 and 1).
@@ -224,10 +240,11 @@ class Damping_Curve(Curve):
         percent (unit conversion happens internally if applicable).
     '''
     def __init__(self, data, *, strain_unit='%', damping_unit='%',
-                 min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
-                 check_values=True):
+                 interpolate=False, min_strain=0.0001, max_strain=10.,
+                 n_pts=50, log_scale=True, check_values=True):
 
         super(Damping_Curve, self).__init__(data, strain_unit=strain_unit,
+                                            interpolate=interpolate,
                                             min_strain=min_strain,
                                             max_strain=max_strain,
                                             n_pts=n_pts, log_scale=log_scale)
@@ -784,7 +801,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         Return
         ------
         HH_x_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
-            The best parameters for each soil layer found in the optimization
+            The best parameters for each soil layer found in the optimization.
         '''
         from .class_parameters import HH_Param_Multi_Layer
 
