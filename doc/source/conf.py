@@ -66,3 +66,6 @@ html_static_path = ['_static']
 # NOT sort output in alphabetical order
 # https://stackoverflow.com/a/37210251
 autodoc_member_order = 'bysource'
+
+# Specify master document: index.rst
+master_doc = 'index'
