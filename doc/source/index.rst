@@ -43,7 +43,7 @@ Copyright and license
 
 Copyright: |copy| 2019, Jian Shi
 
-License: `GPL v3.0 <https://github.com/jsh9/PySeismoSoil/blob/master/LICENSE>`_
+License: `BSD 3 <https://github.com/jsh9/PySeismoSoil/blob/master/LICENSE>`_
 
 
 GitHub repository
