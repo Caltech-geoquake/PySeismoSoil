@@ -3,6 +3,7 @@
 import unittest
 
 from test_class_curves import Test_Class_Curves
+from test_class_damping_calibration import Test_Class_Damping_Calibration
 from test_class_frequency_spectrum import Test_Class_Frequency_Spectrum
 from test_class_ground_motion import Test_Class_Ground_Motion
 from test_class_hh_calibration import Test_Class_HH_Calibration
@@ -25,6 +26,7 @@ from test_helper_site_response import Test_Helper_Site_Response
 TS = unittest.TestSuite()
 
 TS.addTests(unittest.makeSuite(Test_Class_Curves))
+TS.addTests(unittest.makeSuite(Test_Class_Damping_Calibration))
 TS.addTests(unittest.makeSuite(Test_Class_Frequency_Spectrum))
 TS.addTests(unittest.makeSuite(Test_Class_Ground_Motion))
 TS.addTests(unittest.makeSuite(Test_Class_HH_Calibration))

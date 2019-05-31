@@ -9,6 +9,7 @@ Here are the documentations of the utility classes:
    :maxdepth: 2
 
    api_docs/class_curves
+   api_docs/class_damping_calibration
    api_docs/class_frequency_spectrum
    api_docs/class_ground_motion
    api_docs/class_hh_calibration
