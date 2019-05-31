@@ -57,8 +57,8 @@ class Vs_Profile:
         filled in. The damping and density values are automatically converted
         to have SI units.
     vs30 : float
-        Reciprocal of the weighted average travel time through the top 30 m.
-        Unit: m/s.
+        The Vs30 value of this profile. (Definition of Vs30: reciprocal of the
+        weighted average travel time through the top 30 m.) Unit: m/s.
     damping_unit : str
         Same meaning as the input parameter.
     density_unit : str
