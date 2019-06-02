@@ -9,7 +9,6 @@ from PySeismoSoil.class_parameters import HH_Param, MKZ_Param, \
     HH_Param_Multi_Layer, MKZ_Param_Multi_Layer
 
 class Test_Class_HH_Param(unittest.TestCase):
-
     def test_init(self):
         # Test that invalid parameter names are blocked as expected
         invalid_data = {'key': 1, 'lock': 2}
@@ -150,17 +149,29 @@ class Test_Class_HH_Param(unittest.TestCase):
                                     [0.000856, 0, 0.88832, 1.7492], atol=1e-6))
 
     def test_construct_curves(self):
+        HH_G = HH_Param_Multi_Layer('./files/HH_G_FKSH14.txt')
+        mgc, _ = HH_G.construct_curves()
+        curves = mgc.get_curve_matrix()
+        self.assertEqual(mgc.n_layer, HH_G.n_layer)
+        self.assertEqual(curves.shape[1], HH_G.n_layer * 4)
+
         HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
-        mgdc = HH_x.construct_curves()
-        curves = mgdc.get_curve_matrix()
-        self.assertEqual(mgdc.n_layer, HH_x.n_layer)
+        _, mdc = HH_x.construct_curves()
+        curves = mdc.get_curve_matrix()
+        self.assertEqual(mdc.n_layer, HH_x.n_layer)
         self.assertEqual(curves.shape[1], HH_x.n_layer * 4)
 
         H4_G = MKZ_Param_Multi_Layer('./files/H4_G_IWTH04.txt')
-        mgdc = H4_G.construct_curves()
-        curves = mgdc.get_curve_matrix()
-        self.assertEqual(mgdc.n_layer, H4_G.n_layer)
+        mgc, _ = H4_G.construct_curves()
+        curves = mgc.get_curve_matrix()
+        self.assertEqual(mgc.n_layer, H4_G.n_layer)
         self.assertEqual(curves.shape[1], H4_G.n_layer * 4)
+
+        H4_x = MKZ_Param_Multi_Layer('./files/H4_x_IWTH04.txt')
+        mgc, mdc = H4_x.construct_curves()
+        curves = mdc.get_curve_matrix()
+        self.assertEqual(mdc.n_layer, H4_x.n_layer)
+        self.assertEqual(curves.shape[1], H4_x.n_layer * 4)
 
     def test_param_serialize(self):
         HH_x = HH_Param({'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4,
