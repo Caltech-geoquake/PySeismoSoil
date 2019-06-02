@@ -1630,6 +1630,7 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
                   strain[i] * G_Gmax[i]) * (strain[i] - strain[i-1])
         damping[i] = 2. / np.pi * (2 * area[i] / G_Gmax[i] / strain[i]**2 - 1)
 
+    damping = np.maximum(damping, 0.0)  # make sure all damping values are >= 0
     return damping
 
 #%%----------------------------------------------------------------------------

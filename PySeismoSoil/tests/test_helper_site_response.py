@@ -224,14 +224,14 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_calc_damping_from_stress_strain(self):
-        # Test linear stress strain: damping should be 0
+        # Case 1: Test linear stress strain: damping should be 0
         strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([2, 4, 6])
         Gmax = stress[0] / strain[0]
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
         self.assertTrue(np.allclose(damping, [0, 0, 0]))
 
-        # Test elasto-perfectly-plastic: damping can be hand-calculated
+        # Case 2: Test elasto-perfectly-plastic: damping can be hand-calculated
         #
         #                 ^ stress
         #                _|___________
@@ -253,6 +253,14 @@ class Test_Helper_Site_Response(unittest.TestCase):
         Gmax = stress[0] / strain[0]
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
         self.assertTrue(np.allclose(damping, [0, 0, 2./3./np.pi, 1./np.pi]))
+
+        # Case 3: An edge case -- the initial damping is, in theory, almost 0
+        strain_in_1 = np.array([0.0001, 0.00011514, 0.000132571, 0.000152642,
+                                0.000175751])
+        stress = np.array([274768, 304917, 336106, 369023, 403429])
+        Gmax = 3102980000.0
+        damping = sr.calc_damping_from_stress_strain(strain_in_1, stress, Gmax)
+        self.assertGreaterEqual(damping[0], 0.0)  # make sure it is >= 0
 
     #--------------------------------------------------------------------------
     def test_fit_all_damping_curves(self):
