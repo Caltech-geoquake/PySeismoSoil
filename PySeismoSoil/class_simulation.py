@@ -402,7 +402,9 @@ class Nonlinear_Simulation(Simulation):
         nt_out = len(t)
 
         #--------- Create a dummy "curves" for Fortran ------------------------
-        curves = self.G_param.construct_curves(strain_in_pct=strain_in_pct)
+        mgc, mdc = self.G_param.construct_curves(strain_in_pct=strain_in_pct)
+        mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
+        curves = mgdc.get_curve_matrix()
 
         #--------- Prepare tabk.dat file --------------------------------------
         if hlp.detect_OS() == 'Windows':
