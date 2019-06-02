@@ -129,7 +129,7 @@ class Simulation_Results():
         self.output_dir = output_dir
 
     #%%------------------------------------------------------------------------
-    def plot(self, dpi=100, save_fig=False):
+    def plot(self, dpi=100, save_fig=False, amplif_func_ylog=True):
         '''
         Plots simulation results: output vs input motions, transfer functions
         and maximum acceleration, velocity, displacement, strain, and stress
@@ -168,11 +168,9 @@ class Simulation_Results():
         fig1, axes1 \
             = sr._plot_site_amp(accel_in, accel_out, freq, ampl_func,
                                 amplif_func_1col_smoothed=ampl_func_smoothed,
-                                phase_func_1col=phase_func, dpi=dpi)
+                                phase_func_1col=phase_func, dpi=dpi,
+                                amplif_func_ylog=amplif_func_ylog)
         axes1[0].set_ylabel('Accel. [m/s/s]')
-        if self.trans_func is not None:
-            axes1[1].set_yscale('linear')
-            axes1[2].set_xscale('log')
 
         #-------- Plot maximum accel/veloc/displ/strain/stress profiles -------
         if self.max_a_v_d is not None and self.max_strain_stress is not None:

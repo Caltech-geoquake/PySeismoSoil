@@ -157,7 +157,7 @@ class Linear_Simulation(Simulation):
                                  time_history_stress=out_tau,
                                  motion_name=motion_name, output_dir=output_dir)
             if show_fig:
-                sim_results.plot(save_fig=save_fig)
+                sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
             # END IF
         else:  # `every_layer` is `False`
             response = sr.linear_site_resp(self.soil_profile.vs_profile,
@@ -263,7 +263,7 @@ class Equiv_Linear_Simulation(Simulation):
                                  motion_name=motion_name, output_dir=output_dir)
 
         if show_fig:
-            sim_results.plot(save_fig=save_fig)
+            sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history,
@@ -509,7 +509,7 @@ class Nonlinear_Simulation(Simulation):
             print('Done.')
 
         if show_fig:
-            sim_results.plot(save_fig=save_fig)
+            sim_results.plot(save_fig=save_fig, amplif_func_ylog=True)
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history,

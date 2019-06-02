@@ -1231,7 +1231,8 @@ def amplify_motion(input_motion, transfer_function_single_sided, taper=False,
         accel_in = np.column_stack((t, a))
         accel_out = np.column_stack((t, resp))
         fig, ax = _plot_site_amp(accel_in, accel_out, f_array, amp_ss_interp,
-                                 phase_func_1col=phase_ss_interp)
+                                 phase_func_1col=phase_ss_interp,
+                                 amplif_func_ylog=False)
     else:
         fig = None
         ax = None
@@ -1320,7 +1321,7 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
 #%%----------------------------------------------------------------------------
 def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
                    amplif_func_1col_smoothed=None, phase_func_1col=None,
-                   fig=None, figsize=(8, 4.5), dpi=100):
+                   fig=None, figsize=(8, 4.5), dpi=100, amplif_func_ylog=True):
     '''
     Plot site amplification simulation results: input and output ground
     motions, amplification and phase factors, and Fourier amplitudes of the
@@ -1350,6 +1351,9 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     dpi : float
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
+    amplif_func_ylog : bool
+        If ``True``, show the Y axis of the amplification function subplot in
+        the logarithmic scale. Otherwise, show that in the linear scale.
 
     Returns
     -------
@@ -1413,11 +1417,13 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Amplification')
         plt.grid(ls=':')
+        if amplif_func_ylog:
+            plt.yscale('log')
         ax.append(ax_)
 
     if phase_func_1col is not None:
         ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)
-        plt.plot(freq, phase_func_1col, c=[0.1] * 3)
+        plt.semilogx(freq, phase_func_1col, c=[0.1] * 3)
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Phase shift [rad]')
         plt.grid(ls=':')
