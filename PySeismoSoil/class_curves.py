@@ -41,7 +41,7 @@ class Curve():
     log_scale : bool
         Whether the strain array for interpolation is in log scale (or linear
         scale). Only effective when ``interpolate`` is set to ``True``.
-    ensure_non_negative : bool
+    check_values : bool
         Whether to ensure that all values in ``data`` >= 0 when a class object
         is being constructed.
 
@@ -58,10 +58,9 @@ class Curve():
     '''
     def __init__(self, data, *, strain_unit='%', interpolate=False,
                  min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
-                 ensure_non_negative=True):
+                 check_values=True):
 
-        hlp.check_two_column_format(data, '`curve`',
-                                    ensure_non_negative=ensure_non_negative)
+        hlp.check_two_column_format(data, '`curve`', ensure_non_negative=check_values)
 
         if interpolate:
             strain, values = hlp.interpolate(min_strain, max_strain, n_pts,
@@ -186,10 +185,11 @@ class GGmax_Curve(Curve):
                                           interpolate=interpolate,
                                           min_strain=min_strain,
                                           max_strain=max_strain,
-                                          n_pts=n_pts, log_scale=log_scale)
+                                          n_pts=n_pts, log_scale=log_scale,
+                                          check_values=check_values)
         self.GGmax = self.values
 
-        if check_values and np.any(self.GGmax > 1) or np.any(self.GGmax < 0):
+        if check_values and (np.any(self.GGmax > 1) or np.any(self.GGmax < 0)):
             raise ValueError('The provided G/Gmax values must be between [0, 1].')
 
 #%%============================================================================
@@ -247,7 +247,8 @@ class Damping_Curve(Curve):
                                             interpolate=interpolate,
                                             min_strain=min_strain,
                                             max_strain=max_strain,
-                                            n_pts=n_pts, log_scale=log_scale)
+                                            n_pts=n_pts, log_scale=log_scale,
+                                            check_values=check_values)
         self.damping = self.values
 
         if damping_unit not in ['1', '%']:
@@ -256,7 +257,7 @@ class Damping_Curve(Curve):
         if damping_unit == '1':
             self.damping *= 100  # unit: 1 --> %
 
-        if check_values and np.any(self.damping > 100) or np.any(self.damping < 0):
+        if check_values and (np.any(self.damping > 100) or np.any(self.damping < 0)):
             raise ValueError('The provided damping values must be between [0, 100].')
 
     #--------------------------------------------------------------------------
@@ -421,8 +422,7 @@ class Stress_Curve(Curve):
         Whether the strain array for interpolation is in log scale (or linear
         scale).
     check_values : bool
-        Whether to automatically check the validity of the G/Gmax values (i.e.,
-        >= 0)
+        Whether to assert that all the stress values are non negative.
 
     Attributes
     ----------
@@ -444,7 +444,7 @@ class Stress_Curve(Curve):
                                            min_strain=min_strain,
                                            max_strain=max_strain,
                                            n_pts=n_pts, log_scale=log_scale,
-                                           ensure_non_negative=check_values)
+                                           check_values=check_values)
         self.stress = self.values
 
         if stress_unit not in ['Pa', 'kPa', 'MPa', 'GPa']:
@@ -668,9 +668,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
         Returns
         -------
         fig : matplotlib.figure.Figure
-        The figure object being created or being passed into this function.
-    ax : matplotlib.axes._subplots.AxesSubplot
-        The axes object being created or being passed into this function.
+            The figure object being created or being passed into this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object being created or being passed into this function.
         '''
         fig, ax = super(Multiple_Damping_Curves, self)\
                       .plot(plot_interpolated=plot_interpolated, fig=fig,
@@ -1210,7 +1210,7 @@ class Multiple_GGmax_Damping_Curves():
             return self.mgc, self.mdc
         else:  # the user provides a matrix containing curve information
             GGmax_curve_list, damping_curves_list \
-                = hlp.extract_from_curve_format(self.data)
+                = hlp.extract_from_curve_format(self.data, ensure_non_negative=False)
             mgc = Multiple_GGmax_Curves(GGmax_curve_list)
             mdc = Multiple_Damping_Curves(damping_curves_list)
             return mgc, mdc
