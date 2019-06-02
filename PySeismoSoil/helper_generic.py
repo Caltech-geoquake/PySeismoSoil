@@ -489,7 +489,7 @@ def mean_absolute_error(y_true, y_pred):
     return mae
 
 #%%----------------------------------------------------------------------------
-def extract_from_curve_format(curves):
+def extract_from_curve_format(curves, ensure_non_negative=True):
     '''
     Extract G/Gmax and damping curves from a "curve formatted" 2D numpy array.
     All G/Gmax curves are organized into a list, and all damping curves are
@@ -507,6 +507,9 @@ def extract_from_curve_format(curves):
 
         Such an array can be constructed by hand, or by directly imported from
         a "curve_STATION_NAME.txt" file.
+    ensure_non_negative : bool
+        If ``True``, raise an exception if there exists at least one negative
+        G/Gmax value or damping value in the data in ``curves``.
 
     Returns
     -------
@@ -537,10 +540,10 @@ def extract_from_curve_format(curves):
             damping = curves[:, j * 4 + 2 : j * 4 + 4]
             check_two_column_format(GGmax,
                                     name='G/Gmax curve for layer #%d' % j,
-                                    ensure_non_negative=True)
+                                    ensure_non_negative=ensure_non_negative)
             check_two_column_format(damping,
                                     name='Damping curve for layer #%d' % j,
-                                    ensure_non_negative=True)
+                                    ensure_non_negative=ensure_non_negative)
             GGmax_curves_list.append(GGmax)
             damping_curves_list.append(damping)
 
