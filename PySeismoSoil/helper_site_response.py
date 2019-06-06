@@ -436,8 +436,8 @@ def response_spectra(accel, T_min=0.01, T_max=10, n_pts=60, damping=0.05,
                      subsample_interval=1):
     '''
     Single-degree-of-freedom elastic response spectra, using the "exact"
-    solution to the equation of motion (Section 5.2, Dynamics of Structures
-    by Chopra).
+    solution to the equation of motion (Section 5.2, Dynamics of Structures,
+    Second Edition, by Anil K. Chopra).
 
     The input acceleration must be in m/s/s.
 
@@ -448,14 +448,15 @@ def response_spectra(accel, T_min=0.01, T_max=10, n_pts=60, damping=0.05,
     accel : numpy.ndarray
         Input acceleration. Must have exactly two columns (time and accel.).
     T_min : float
-        Minimum period value to calculate the response spectra.
+        Minimum period value to calculate the response spectra. Unit: sec.
     T_max : float
-        Maximum period value to calculate the response spectra.
+        Maximum period value to calculate the response spectra. Unit: sec.
     n_pts : int
         Number of points you want for the response spectra. A high number
         increases computation time.
     damping : float
-        Damping of the dash pots. Do not use "percent" as unit. Use 1-based.
+        Damping of the dash pots. Do not use "percent" as unit. Unit: 1 (i.e.,
+        not percent).
     show_fig : bool
         Whether to show a figure of the response spectra.
     parallel : bool
@@ -463,15 +464,16 @@ def response_spectra(accel, T_min=0.01, T_max=10, n_pts=60, damping=0.05,
     n_cores : int or None
         Number of cores to use in parallel. Not necessary if not ``parallel``.
     subsample_interval : int
-        The interval at which to subsample the input acceleration. A higher
-        number saves computation time.
+        The interval at which to subsample the input acceleration in the time
+        domain. A higher number reduces computation time, but could lead to
+        less accurate results.
 
     Returns
     -------
-    Tn, SA, PSA, SV, PSV, SD, fn : numpy.ndarray
+    (Tn, SA, PSA, SV, PSV, SD, fn) : tuple of 1D numpy.ndarray
         Periods, spectral acceleration, pseudo spectral acceleration, spectral
         velocity, pseudo spectral velocity, spectral displacement, and
-        frequencies, respectively.
+        frequencies, respectively. Units: SI.
     '''
     import itertools
     import multiprocessing as mp
@@ -500,11 +502,13 @@ def response_spectra(accel, T_min=0.01, T_max=10, n_pts=60, damping=0.05,
     PSV = np.zeros(len_wd)
     PSA = np.zeros(len_wd)
 
+    # A, B, C, and D in Table 5.2.1, page 169
     A = np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt)+np.cos(wd*dt))
     B = np.exp(-xi*wn*dt)*(1./wd*np.sin(wd*dt))
     C = 1./wn**2.*(2.*xi/wn/dt + np.exp(-xi*wn*dt)*(((1.-2.*xi**2.)/wd/dt-xi/np.sqrt(1.-xi**2.))*np.sin(wd*dt) - (1+2.*xi/wn/dt)*np.cos(wd*dt)))
     D = 1./wn**2.*(1 - 2.*xi/wn/dt + np.exp(-xi*wn*dt)*((2.*xi**2.-1)/wd/dt*np.sin(wd*dt)+2.*xi/wn/dt*np.cos(wd*dt)))
 
+    # A', B', C', and D' in Table 5.2.1, page 169
     A_ = -np.exp(-xi*wn*dt)*(wn/np.sqrt(1.-xi**2.)*np.sin(wd*dt))
     B_ = np.exp(-xi*wn*dt)*(np.cos(wd*dt) - xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt))
     C_ = 1./wn**2.*(-1./dt + np.exp(-xi*wn*dt)*((wn/np.sqrt(1.-xi**2.)+xi/dt/np.sqrt(1.-xi**2.))*np.sin(wd*dt)+1./dt*np.cos(wd*dt)))
@@ -524,37 +528,37 @@ def response_spectra(accel, T_min=0.01, T_max=10, n_pts=60, damping=0.05,
 
     utdd_max, ud_max, u_max, PSA, PSV = zip(*result)  # transpose list of tuples
 
-    SA = np.array(utdd_max)  # (Total or Absolute) Spectral Acceleration in
-    SV = np.array(ud_max)    # (Relative) Spectral Velocity
-    SD = np.array(u_max)     # (Relative) Spectral Displacement
-    PSA = np.array(PSA)      # (Total) Pseudo-spectral Acceleration in
-    PSV = np.array(PSV)      # (Relative) Pseudo-spectral Velocity
+    SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration
+    SV = np.array(ud_max)    # (Relative) spectral velocity
+    SD = np.array(u_max)     # (Relative) spectral displacement
+    PSA = np.array(PSA)      # (Total) pseudo-spectral acceleration
+    PSV = np.array(PSV)      # (Relative) pseudo-spectral velocity
 
     fn = 1./Tn
 
     if show_fig:
-        plt.figure(figsize=(8,4))
+        plt.figure(figsize=(8, 4))
 
-        plt.subplot(2,2,(1,2))
-        plt.plot(t,a,lw=1)
+        plt.subplot(2, 2, (1, 2))
+        plt.plot(t, a, lw=1)
         plt.xlabel('Time [sec]')
-        plt.ylabel('Input accel. (m/s/s)')
-        plt.grid(ls=':')
-        plt.xlim(np.min(t),np.max(t))
+        plt.ylabel('Input accel. [m/s/s]')
+        plt.grid(ls=':', lw=0.5)
+        plt.xlim(np.min(t), np.max(t))
 
-        plt.subplot(2,2,3)
-        plt.semilogx(Tn,SA,lw=1.5)
+        plt.subplot(2, 2, 3)
+        plt.semilogx(Tn, SA, lw=1.5)
         plt.xlabel('Period [sec]')
-        plt.ylabel('Spec. accel. (m/s/s)')
-        plt.grid(ls=':')
-        plt.xlim(T_min,T_max)
+        plt.ylabel('Spec. accel. [m/s/s]')
+        plt.grid(ls=':', lw=0.5)
+        plt.xlim(T_min, T_max)
 
-        plt.subplot(2,2,4)
-        plt.semilogx(Tn,PSA,lw=1.5)
+        plt.subplot(2, 2, 4)
+        plt.semilogx(Tn, PSA, lw=1.5)
         plt.xlabel('Period [sec]')
-        plt.ylabel('Pseudo S.A. (m/s/s)')
-        plt.grid(ls=':')
-        plt.xlim(T_min,T_max)
+        plt.ylabel('Pseudo S.A. [m/s/s]')
+        plt.grid(ls=':', lw=0.5)
+        plt.xlim(T_min, T_max)
 
         plt.tight_layout(pad=0.5)
 

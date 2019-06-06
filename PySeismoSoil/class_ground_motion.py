@@ -28,9 +28,9 @@ class Ground_Motion:
         is supplied, another input parameter ``dt`` must also be supplied.
     unit : str
         Valid values include:
-            ['m', 'cm', 'ft', 'in',
-            'm/s', 'cm/s', 'ft/s', 'in/s',
-            'm/s/s', 'cm/s/s', 'ft/s/s', 'in/s/s', 'gal', 'g']
+            ['m', 'cm',
+            'm/s', 'cm/s',
+            'm/s/s', 'cm/s/s', 'gal', 'g']
     motion_type : {'accel', 'veloc', 'displ'}
         Specifying what type of motion "data" contains. It needs to be
         consistent with "unit". For example, if motion_type is "accel" and
@@ -194,35 +194,39 @@ class Ground_Motion:
                              damping=0.05, show_fig=True, parallel=False,
                              n_cores=None, subsample_interval=1):
         '''
-        Get response spectra of the ground motion.
+        Get elastic response spectra of the ground motion, using the "exact"
+        solution to the equation of motion (Section 5.2, Dynamics of Structures,
+        Second Edition, by Anil K. Chopra).
 
         Parameters
         ----------
         T_min : float
-            Minimum period value to calculate the response spectra.
+            Minimum period value to calculate the response spectra. Unit: sec.
         T_max : float
-            Maximum period value to calculate the response spectra.
+            Maximum period value to calculate the response spectra. Unit: sec.
         n_pts : int
             Number of points you want for the response spectra. A high number
             increases computation time.
         damping : float
-            Damping of the dash pots. Do not use "percent" as unit. Use 1-based.
+            Damping of the dash pots. Do not use "percent" as unit. Unit: 1
+            (i.e., not percent).
         show_fig : bool
             Whether to show a figure of the response spectra.
         parallel : bool
             Whether to perform the calculation in parallel.
-        n_cores : int or None
+        n_cores : int or ``None``
             Number of cores to use in parallel. Not necessary if not ``parallel``.
         subsample_interval : int
-            The interval at which to subsample the input acceleration. A higher
-            number saves computation time.
+            The interval at which to subsample the input acceleration in the
+            time domain. A higher number reduces computation time, but could
+            lead to less accurate results.
 
         Returns
         -------
-        (Tn, SA, PSA, SV, PSV, SD, fn) : a tuple of 1D numpy.ndarray
+        (Tn, SA, PSA, SV, PSV, SD, fn) : tuple of 1D numpy.ndarray
             Periods, spectral acceleration, pseudo spectral acceleration,
             spectral velocity, pseudo spectral velocity, spectral displacement,
-            and frequencies, respectively.
+            and frequencies, respectively. Units: SI.
         '''
         rs = sr.response_spectra(self.accel, damping=damping, T_min=T_min,
                                  T_max=T_max, n_pts=n_pts, show_fig=show_fig,
