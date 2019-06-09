@@ -44,15 +44,15 @@ Install most recent stable version:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/jsh9/PySeismoSoil@v0.1.0
-	
+    pip install git+https://github.com/jsh9/PySeismoSoil@v0.1.1
+
 Or, install with latest changes (may contain features ahead of the stable version):
 
 .. code-block:: bash
 
     pip install git+https://github.com/jsh9/PySeismoSoil
-	
-    
+
+
 Dependencies
 ------------
 
@@ -79,8 +79,8 @@ https://github.com/jsh9/PySeismoSoil
 
 To report bugs and submit suggestions, please use the `"Issues" section <https://github.com/jsh9/PySeismoSoil/issues>`_ of the GitHub repository.
 
-   
-   
+
+
 Indices and tables
 ------------------
 
