@@ -38,7 +38,7 @@ class Test_Class_HH_Param(unittest.TestCase):
                        0.114114, 0.0955634, 0.0795192, 0.0657761, 0.0541104,
                        0.0442915, 0.0360909, 0.02929, 0.0236855, 0.0190929,
                        0.0153483, 0.0123084, 0.00985001, 0.00786843, 0.00627576]
-        self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4))
+        self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
         # Actual H4_G parameter of IBRH17 (the 0th layer)
         params = np.array([0.00028511, 0, 0.919, 1.7522])
@@ -53,7 +53,7 @@ class Test_Class_HH_Param(unittest.TestCase):
                        0.057631, 0.047395, 0.038902, 0.03188, 0.026091, 0.02133,
                        0.017423, 0.01422, 0.0116, 0.0094575, 0.0077078, 0.0062797,
                        0.0051149, 0.0041652]
-        self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4))
+        self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
     def test_get_damping(self):
         # Actual HH_x parameter from profile 350_750_01
@@ -71,7 +71,7 @@ class Test_Class_HH_Param(unittest.TestCase):
                          21.6271, 21.4606, 21.2554, 21.0184, 20.7555, 20.472,
                          20.1723, 19.8606]
         # The error could be high, due to curve-fitting errors of genetic algorithms
-        self.assertTrue(np.allclose(damping, damping_bench, atol=7.))
+        self.assertTrue(np.allclose(damping, damping_bench, atol=7.0, rtol=0.0))
 
         # Actual H4_x parameter from IBRH17 (the 0th layer)
         params = np.array([0.00062111, 0, 0.60001, 1.797])
@@ -86,7 +86,7 @@ class Test_Class_HH_Param(unittest.TestCase):
                          21.801, 22.089, 22.292, 22.417, 22.471, 22.462,
                          22.396, 22.282, 22.125, 21.933, 21.71, 21.463,
                          21.197, 20.914]
-        self.assertTrue(np.allclose(damping, damping_bench, atol=7.))
+        self.assertTrue(np.allclose(damping, damping_bench, atol=7.0, rtol=0.0))
 
     def test_plot_curves(self):
         data = {'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
@@ -146,7 +146,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertTrue(isinstance(H4_G_1, MKZ_Param))
         self.assertTrue(H4_G_1.keys(), {'gamma_ref', 'beta', 's', 'Gmax'})
         self.assertTrue(np.allclose(mkz.serialize_params_to_array(H4_G_1),
-                                    [0.000856, 0, 0.88832, 1.7492], atol=1e-6))
+                                    [0.000856, 0, 0.88832, 1.7492], atol=1e-6, rtol=0.0))
 
     def test_construct_curves(self):
         HH_G = HH_Param_Multi_Layer('./files/HH_G_FKSH14.txt')

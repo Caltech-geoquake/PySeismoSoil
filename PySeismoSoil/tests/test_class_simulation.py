@@ -54,7 +54,7 @@ class Test_Class_Simulation(unittest.TestCase):
                            0.300202, 0.295505, 0.29226, 0.289536, 0.287653,
                            0.287429, 0.290265, 0.292502]  # from MATLAB SeismoSoil
         tol = 0.01  # FFT of scipy and MATLAB are different, hence a lenient tolerance
-        self.assertTrue(np.allclose(max_v, max_v_benchmark, rtol=tol))
+        self.assertTrue(np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0))
 
     def test_nonlinear_init(self):
         input_motion = Ground_Motion('./files/sample_accel.txt', unit='m')

@@ -121,8 +121,8 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         FS_bench = [60.0000 + 0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
                     -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
                     -7.5000 + 2.4369j, -1.5000 + 0.1577j]
-        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001))
-        self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001))
+        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0))
+        self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001, rtol=0.0))
 
     def test_baseline_correction(self):
         gm = GM('./files/sample_accel.txt', unit='m/s/s')
@@ -243,7 +243,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         result : bool
             Whether the motions are nearly identical
         '''
-        if not np.allclose(motion_1[:, 0], motion_2[:, 0], rtol=0.001):
+        if not np.allclose(motion_1[:, 0], motion_2[:, 0], rtol=0.001, atol=0.0):
             return False
 
         r = np.corrcoef(motion_1[:, 1], motion_2[:, 1])

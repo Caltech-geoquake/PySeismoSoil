@@ -110,7 +110,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
                              1.9156, 1.5218])
 
         self.assertTrue(np.allclose(Tn, Tn_bench))
-        self.assertTrue(np.allclose(SA, SA_bench, rtol=0.0001))
+        self.assertTrue(np.allclose(SA, SA_bench, rtol=0.0001, atol=0.0))
 
     #--------------------------------------------------------------------------
     def test_find_f0(self):
@@ -134,10 +134,10 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         self.assertTrue(np.allclose(sr.get_xi_rho(vs, formula_type=2)[0],
                                     [0.0484, 0.0295, 0.0167, 0.0108, 0.0077],
-                                    atol=0.01))
+                                    atol=0.01, rtol=0.0))
         self.assertTrue(np.allclose(sr.get_xi_rho(vs, formula_type=3)[0],
                                     [0.0833, 0.0278, 0.0167, 0.0119, 0.0093],
-                                    atol=0.01))
+                                    atol=0.01, rtol=0.0))
 
     #--------------------------------------------------------------------------
     def test_calc_Vs30_and_VsZ(self):
@@ -203,7 +203,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         motion_out_bench = np.column_stack((time, accel_out_bench))
 
         self.assertTrue(np.all(np.isreal(motion_out)))
-        self.assertTrue(np.allclose(motion_out, motion_out_bench, atol=0.02))
+        self.assertTrue(np.allclose(motion_out, motion_out_bench, atol=0.02, rtol=0.0))
 
     #--------------------------------------------------------------------------
     def test_gen_profile_plot_array(self):

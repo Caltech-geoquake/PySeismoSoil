@@ -23,8 +23,8 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
                     -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
                     -7.5000 + 2.4369j,   -1.5000 + 0.1577j]
 
-        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001))
-        self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001))
+        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0))
+        self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001, rtol=0.0))
 
     def test_calc_transfer_function(self):
         input_accel = np.genfromtxt('./files/sample_accel.txt')
