@@ -160,6 +160,16 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertAlmostEqual(vs30, vs30_benchmark)
 
     #--------------------------------------------------------------------------
+    def test_calc_z1(self):
+        # Normal case: Vs reaches 1000 m/s
+        vs_prof_1 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
+        self.assertAlmostEqual(sr.calc_z1(vs_prof_1), 12)
+
+        # Abnormal case: Vs does not reach 1000 m/s ---> use total depth
+        vs_prof_2 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 800, 900]]).T
+        self.assertAlmostEqual(sr.calc_z1(vs_prof_2), 15)
+
+    #--------------------------------------------------------------------------
     def test_thk2dep_and_dep2thk(self):
         thk = np.array([6, 5, 4, 3, 2, 0])
         dep_mid = np.array([3, 8.5, 13, 16.5, 19])
