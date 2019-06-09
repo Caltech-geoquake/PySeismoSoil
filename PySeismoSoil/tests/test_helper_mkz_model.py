@@ -26,13 +26,13 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         # note: benchmark results come from comparable functions in MATLAB
         self.assertTrue(np.allclose(T, [0.0400, 0.0750, 0.1404, 0.2630, 0.4913,
                                         0.9018, 1.4898, 1.5694, 0.7578, 0.2413,
-                                        0.0700, 0.0200], atol=self.atol))
+                                        0.0700, 0.0200], atol=self.atol, rtol=0.0))
 
     def test_calc_damping_from_param(self):
         xi = sr.calc_damping_from_param(self.param, self.strain, mkz.tau_MKZ)
         self.assertTrue(np.allclose(xi, [0, 0.0072, 0.0101, 0.0119, 0.0133,
                                          0.0147, 0.0163, 0.0178, 0.0195, 0.0213,
-                                         0.0232, 0.0251], atol=self.atol))
+                                         0.0232, 0.0251], atol=self.atol, rtol=0.0))
 
     def test_serialize_params_to_array(self):
         array = mkz.serialize_params_to_array(self.param)

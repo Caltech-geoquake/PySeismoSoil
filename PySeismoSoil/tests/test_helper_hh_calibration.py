@@ -11,20 +11,20 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         Vs = np.array([200, 300, 400, 500])
         rho = hhc._calc_rho(h, Vs)
         rho_ = np.array([1.6500, 2.0375, 1.9892, 1.9995]) * 1000
-        self.assertTrue(np.allclose(rho, rho_, rtol=0.001))
+        self.assertTrue(np.allclose(rho, rho_, rtol=0.001, atol=0.0))
 
     def test_calc_Gmax(self):
         rho = np.array([1600, 1700, 1800])
         Vs = np.array([200, 300, 400])
         self.assertTrue(np.allclose(hhc._calc_Gmax(Vs, rho),
-                                    [6.4e7, 1.53e8, 2.88e8], rtol=1e-2))
+                                    [6.4e7, 1.53e8, 2.88e8], rtol=1e-2, atol=0.0))
 
     def test_calc_vertical_stress(self):
         h = np.array([80, 90, 100])
         rho = np.array([1600, 1700, 1800])
         sigma = hhc._calc_vertical_stress(h, rho)
         sigma_ = [627840, 2006145, 3639510]  # from MATLAB
-        self.assertTrue(np.allclose(sigma, sigma_, rtol=1e-3))
+        self.assertTrue(np.allclose(sigma, sigma_, rtol=1e-3, atol=0.0))
 
     def test_calc_OCR(self):
         # Case #1: no upper limit
@@ -46,13 +46,13 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         phi = 30
         K0 = hhc._calc_K0(OCR, phi=phi)
         self.assertTrue(np.allclose(K0, [0.5, 0.707, 0.866 , 1., 1.118],
-                                    atol=1e-3))
+                                    atol=1e-3, rtol=0.0))
 
         # Case #2: phi is a vector
         phi = np.array([30, 40, 50, 60, 70])
         K0 = hhc._calc_K0(OCR, phi=phi)
         self.assertTrue(np.allclose(K0, [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]],
-                                    atol=1e-3))
+                                    atol=1e-3, rtol=0.0))
 
     def test_calc_PI(self):
         Vs = np.array([100, 300, 500])
@@ -67,7 +67,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         phi = 35.0
         Tmax = hhc._calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)
         Tmax_bench = [106405.11792473, 112706.83771548, 44359.02160861]
-        self.assertTrue(np.allclose(Tmax, Tmax_bench, rtol=1e-3))
+        self.assertTrue(np.allclose(Tmax, Tmax_bench, rtol=1e-3, atol=0.0))
 
     def test_calc_mean_confining_stress(self):
         sigma_v0 = np.array([1e6, 1.5e6, 2.2e6])
@@ -88,14 +88,14 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
 
         GGmax_bench = np.array([[0.1223930, 0.1482878, 0.165438],  # from MATLAB
                                 [0.0165279, 0.0205492, 0.023331]])
-        self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-5))
+        self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-5, rtol=0.0))
 
         D_bench = np.array([[0.2041934, 0.1906769, 0.1827475],
                             [0.2305960, 0.2260726, 0.2236005]])
-        self.assertTrue(np.allclose(D, D_bench, atol=1e-5))
+        self.assertTrue(np.allclose(D, D_bench, atol=1e-5, rtol=0.0))
 
         gamma_ref_bench = np.array([0.1172329, 0.1492445, 0.1718822]) * 1e-3
-        self.assertTrue(np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5))
+        self.assertTrue(np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5, rtol=0.0))
 
         # Case #2: one of the inputs has incorrect length
         with self.assertRaisesRegex(ValueError, '`PI` must have length 3, but not 6'):
@@ -155,7 +155,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
                                                verbose=False)
         HH_G_benchmark = np.genfromtxt('./files/HH_G_FKSH14.txt')  # calculated by MATLAB
         # use low tolerance because the whole process is highly reproducible
-        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5))
+        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
 
     def test_hh_param_from_curves(self):
         ## Case 1: Fit G/Gmax curves generated using Darendeli (2001)
@@ -174,7 +174,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
                         [26501, 64856.6, 148805, 804855, 1.10785e+06],
                         [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]])
         # use higher tolerance because MKZ curve fitting has room for small errors
-        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2))
+        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0))
 
         ## Case 2: Fit manually specified ("real-world") G/Gmax curves
         ##         (Unable to benchmark because MKZ curve fitting can produce

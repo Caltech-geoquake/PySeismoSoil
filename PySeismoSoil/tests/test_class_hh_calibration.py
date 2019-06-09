@@ -62,7 +62,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         HH_G_param_benchmark = HH_Param_Multi_Layer('./files/HH_G_FKSH14.txt')
         self.assertTrue(np.allclose(HH_G_param.serialize_to_2D_array(),
                                     HH_G_param_benchmark.serialize_to_2D_array(),
-                                    rtol=1e-5))
+                                    rtol=1e-5, atol=0.0))
 
         # Case 2: users have both Vs profile and G/Gmax curves
         curves = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
@@ -81,7 +81,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         HH_G_param_benchmark = HH_Param_Multi_Layer(HH_G_benchmark_data)
         self.assertTrue(np.allclose(HH_G_param.serialize_to_2D_array(),
                                     HH_G_param_benchmark.serialize_to_2D_array(),
-                                    rtol=1e-2))
+                                    rtol=1e-2, atol=0.0))
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_HH_Calibration)

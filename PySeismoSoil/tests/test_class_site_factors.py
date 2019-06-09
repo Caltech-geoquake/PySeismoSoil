@@ -118,12 +118,12 @@ class Test_Class_Site_Factors(unittest.TestCase):
         # assert that linear amplification factor starts from ~1.0 at small freq
         amp = sf.get_amplification(Fourier=True, show_interp_plots=False)
         self.assertTrue(isinstance(amp, FS))
-        self.assertTrue(np.allclose(amp.raw_data[0, 1], 1.0, atol=0.1))
+        self.assertTrue(np.allclose(amp.raw_data[0, 1], 1.0, atol=0.1, rtol=0.0))
 
         # assert that phase start from ~0.0 at small freq
         phase = sf.get_phase_shift(show_interp_plots=False, method='eq_hh')
         self.assertTrue(isinstance(phase, FS))
-        self.assertTrue(np.allclose(phase.raw_data[0, 1], 0.0, atol=0.1))
+        self.assertTrue(np.allclose(phase.raw_data[0, 1], 0.0, atol=0.1, rtol=0.0))
 
         # test out-of-bound values (not lenient)
         with self.assertRaisesRegex(ValueError, 'Vs30 should be between'):

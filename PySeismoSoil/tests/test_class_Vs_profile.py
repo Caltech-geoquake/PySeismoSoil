@@ -164,7 +164,8 @@ class Test_Class_Vs_Profile(unittest.TestCase):
                                  [14, 3.31112261403936],
                                  [14.5, 2.61283127927210],
                                  [15, 2.69868407060282]])
-        self.assertTrue(np.allclose(af_RO.spectrum_2col, af_benchmark, atol=1e-9))
+        self.assertTrue(np.allclose(af_RO.spectrum_2col, af_benchmark, atol=1e-9,
+		                            rtol=0.0))
 
     def test_f0_BH(self):
         self.assertAlmostEqual(self.prof.get_f0_BH(), 1.05, delta=1e-2)
