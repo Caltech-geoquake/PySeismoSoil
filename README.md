@@ -19,7 +19,7 @@ The authors of this library are the current and past members of the [Geoquake Re
 Install most recent stable version:
 
 ```bash
-    pip install git+https://github.com/jsh9/PySeismoSoil@v0.1.0
+    pip install git+https://github.com/jsh9/PySeismoSoil@v0.1.1
 ```
 
 Or, install with latest changes (may contain features ahead of the stable version):
