@@ -845,6 +845,58 @@ def plot_Vs_profile(vs_profile, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100,
     return fig, ax, h_line  # return figure, axes, and line handles
 
 #%%----------------------------------------------------------------------------
+def calc_basin_depth(vs_profile, bedrock_Vs=1000.0):
+    '''
+    Query the depth of the basin as indicated in ``vs_profile``.
+    The basin is defined as the material whose Vs is at least `bedrock_Vs`.
+
+    Parameters
+    ----------
+    vs_profile : np.ndarray
+        A 2D numpy array that represents a Vs profile.
+    bedrock_Vs : float
+        The shear-wave velocity that you consider as the bedrock.
+
+    Returns
+    -------
+    basin_depth : float
+        The basin depth. If no Vs values in the profile reaches
+        ``bedrock_Vs``, return total depth (bottom) of the profile.
+    '''
+    thk = vs_profile[:, 0]
+    vs = vs_profile[:, 1]
+
+    depth = thk2dep(thk, midpoint=False)
+    assert(depth[0] == 0)  # assert that `depth` means the layer top
+    basin_depth = -1
+    for j in range(len(vs)):
+        current_depth = depth[j]
+        if vs[j] >= bedrock_Vs:
+            basin_depth = current_depth
+            break
+    else:
+        basin_depth = np.sum(thk)
+
+    return basin_depth
+
+#%%----------------------------------------------------------------------------
+def calc_z1(vs_profile):
+    '''
+    Calculate z1 (the depth to Vs = 1000 m/s) from ``vs_profile``.
+
+    Parameters
+    ----------
+    vs_profile : np.ndarray
+        A 2D numpy array that represents a Vs profile.
+
+    Returns
+    -------
+    z1 : float
+        The depth to Vs = 1000 m/s.
+    '''
+    return calc_basin_depth(vs_profile, bedrock_Vs=1000.0)
+
+#%%----------------------------------------------------------------------------
 def _gen_profile_plot_array(thk, vs, zmax):
     '''
     Generates (x, y) for plotting, from Vs profile information.
