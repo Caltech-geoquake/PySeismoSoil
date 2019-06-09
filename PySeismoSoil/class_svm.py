@@ -333,19 +333,35 @@ class SVM():
         prof_ = discr_prof.vs_profile
 
         if show_fig:
-            title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
-            fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='smooth')
-            sr.plot_Vs_profile(prof_, fig=fig, ax=ax, c='orange', alpha=0.85,
-                               label='discretized')
-            ax.set_title(title)
-            ax.legend(loc='best')
-            ax.set_xlim(0, np.max(np.append(prof_[:, 1], 1000)) * 1.1)
+            self._plot_additional_profile(prof_, 'Discretized')
 
         return discr_prof
 
     #%%========================================================================
+    def _plot_additional_profile(self, addtl_profile, label):
+        '''
+        Plot an additional Vs profile on top of the base Vs profile.
+
+        Parameters
+        ----------
+        addtl_profile : numpy.ndarray
+            Additional Vs profile.
+        label : str
+            Label of the additional profile, to be shown in the legend.
+        '''
+        title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
+        fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='Smooth')
+        sr.plot_Vs_profile(addtl_profile, fig=fig, ax=ax, c='orange',
+                           alpha=0.85, label=label)
+        ax.set_title(title)
+        ax.legend(loc='best')
+        ax.set_xlim(0, np.max(np.append(addtl_profile[:, 1], 1000)) * 1.1)
+        return None
+
+    #%%========================================================================
     def get_randomized_profile(self, seed=None, show_fig=False,
-                               use_Toros_layering=False, use_Toros_std=False):
+                               use_Toros_layering=False, use_Toros_std=False,
+                               vs30_z1_compliance=False, verbose=True):
         '''
         Returns a randomized a 1D profile.
 
@@ -362,13 +378,95 @@ class SVM():
         use_Toros_std : bool
             Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
             in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
+        vs30_z1_compliance : bool
+            Whether or not to ensure that the resultant Vs30 and z1 of the
+            randomized profile are compliant with the user-specified Vs30 and z1
+            values. The criteria for "compliance" are:
+                1. The absolute difference between the randomized and target
+                   Vs30 is < 25 m/s;
+                2. The relative difference (between the randomized profile and
+                   the base profile) of the last soil layer’s Vs is < 5%;
+                3. The relative difference of the randomized and target z1 is
+                   < 20%.
+        verbose : bool
+            Whether or not to show the progress of iteratively searching for
+            compliant randomized Vs profile. Only effective if
+            ``vs30_z1_compliance`` is ``True``.
 
         Returns
         -------
         Vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
             The randomzed Vs profile.
         '''
+        if not isinstance(seed, (type(None), int, float, np.number)):
+            raise TypeError('`seed` needs to be a number, or `None`.')
 
+        options = dict(seed=seed, show_fig=show_fig, use_Toros_std=use_Toros_std,
+                       use_Toros_layering=use_Toros_layering,)
+
+        if not vs30_z1_compliance:
+            Vs_profile = self._helper_get_rand_profile(**options)
+        else:
+            iterate = True
+            counter = 0
+            if verbose: print('Iterating for compliant Vs profile:')
+            while iterate:
+                seed_ = None if seed is None else seed + counter
+                options.update(dict(seed=seed_, show_fig=False))
+                Vs_profile = self._helper_get_rand_profile(**options)
+                rand_Vs30 = sr.calc_Vs30(Vs_profile, option_for_profile_shallower_than_30m=1)
+                rand_Vs_last = Vs_profile[-1, 1]
+                rand_z1 = sr.calc_z1(Vs_profile)
+                base_Vs30 = self.Vs30
+                base_Vs_last = self._base_profile[-1, 1]
+                base_z1 = sr.calc_z1(self._base_profile)
+
+                condition_1 = np.abs(rand_Vs30 - base_Vs30) < 25.0
+                condition_2 = np.abs(rand_Vs_last - base_Vs_last) / base_Vs_last < 0.05
+                condition_3 = np.abs(rand_z1 - base_z1) / base_z1 < 0.20
+
+                if condition_1 and condition_2 and condition_3:
+                    iterate = False
+                    if verbose: print('')
+                else:
+                    iterate = True
+                    counter += 1
+                    if verbose:
+                        print('.', end='\n' if counter % 80 == 0 else '')
+                # END IF
+            # END WHILE
+            if show_fig:
+                self._plot_additional_profile(Vs_profile, 'Stochastic')
+        # END IF
+
+        return Vs_Profile(Vs_profile)
+
+    #%%========================================================================
+    def _helper_get_rand_profile(self, seed=None, show_fig=False,
+                                use_Toros_layering=False, use_Toros_std=False):
+        '''
+        Helper function to get randomized 1D profile.
+
+        Parameters
+        ----------
+        seed : int
+            The seed value for setting the random state. It not set, this
+            method automatically uses the current time to generate a seed.
+            Not effective if ``vs30_z1_compliance`` is set to ``True``.
+        show_fig : bool
+            Whether or not to show the figure of smooth and randomized profiles.
+        use_Toros_layering : bool
+            Whether or not to use the layering relation in Toro (1995) instead
+            of Eq (7) of Shi & Asimaki (2018).
+        use_Toros_std : bool
+            Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
+            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
+
+        Returns
+        -------
+        Vs_profile : np.ndarray
+            The randomzed Vs profile.
+        '''
         if seed == None:
             cc = time.localtime(time.time())
             seed = cc[5] * 1e7
@@ -522,15 +620,9 @@ class SVM():
 
         '''-------------  Part 5: Plot Vs profile (optional) ---------------'''
         if show_fig is True:
-            hf1,ha1,hl1 = sr.plot_Vs_profile(Vs_profile)
-            ___,___,hl2 = sr.plot_Vs_profile(self._base_profile,hf1,ha1)
-            plt.setp(hl1,linewidth=1.25,color='orange')
-            plt.legend([hl1,hl2],['Stochastic','Smooth'],loc='best',fontsize=11)
-            ha1.set_title('$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' %
-                          (self.Vs30, self.z1))
-            ha1.set_xlim(0, np.max(np.append(Vs_profile[:, 1], 1000)) * 1.1)
+            self._plot_additional_profile(Vs_profile, 'Stochastic')
 
-        return Vs_Profile(Vs_profile)
+        return Vs_profile
 
     #%%========================================================================
     @staticmethod

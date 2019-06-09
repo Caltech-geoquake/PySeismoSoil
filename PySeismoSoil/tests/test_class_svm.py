@@ -9,7 +9,6 @@ class Test_Class_SVM(unittest.TestCase):
     '''
     Unit test for SVM class
     '''
-
     def test_init(self):
         Vs30 = 256
         z1 = 100
@@ -81,6 +80,11 @@ class Test_Class_SVM(unittest.TestCase):
         if svm.has_bedrock_Vs:  # bedrock Vs must match
             self.assertTrue(svm.bedrock_Vs == random_profile.vs_profile[-1, 1])
             self.assertTrue(random_profile.vs_profile[-1, 0] == 0)
+
+        # Use iteration to pick compliant randomized Vs profile
+        random_profile = svm.get_randomized_profile(show_fig=True,
+                                                    vs30_z1_compliance=True,
+                                                    verbose=True)
 
     def test_index_closest(self):
         array = [0, 1, 2, 1.1, 0.4, -3.2]
