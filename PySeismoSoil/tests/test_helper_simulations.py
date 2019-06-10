@@ -44,7 +44,7 @@ class Test_Helper_Simulations(unittest.TestCase):
 
         #---------- Elastic boundary ------------------------------------------
         result_1 = sim.linear(vs_profile, accel_in, boundary='elastic')[3]
-        result_1_ = sr.linear_site_resp(vs_profile, accel_in, boundary='elastic')
+        result_1_ = sr.linear_site_resp(vs_profile, accel_in, boundary='elastic')[0]
 
         # Time arrays need to match well
         self.assertTrue(np.allclose(result_1[:, 0], result_1_[:, 0], rtol=0.0001,
@@ -58,7 +58,7 @@ class Test_Helper_Simulations(unittest.TestCase):
 
         #---------- Rigid boundary --------------------------------------------
         result_2 = sim.linear(vs_profile, accel_in, boundary='rigid')[3]
-        result_2_ = sr.linear_site_resp(vs_profile, accel_in, boundary='rigid')
+        result_2_ = sr.linear_site_resp(vs_profile, accel_in, boundary='rigid')[0]
         self.assertTrue(np.allclose(result_2[:, 0], result_2_[:, 0], rtol=0.0001,
 		                            atol=0.0))
         r_2 = np.corrcoef(result_2[:, 1], result_2_[:, 1])

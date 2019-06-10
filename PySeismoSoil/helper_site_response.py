@@ -1332,9 +1332,14 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
 
     Returns
     -------
-    response : numpy.array
+    response : numpy.ndarray
         The resultant ground motion in time domain. In the same format as
         ``input_motion``.
+    transfer_function : tuple<numpy.ndarray>
+        The transfer function (complex-valued) that corresponding to the given
+        ``soil_profile`` and ``boundary``. It is a tuple of two 1D numpy arrays.
+        The 0th array is frequency (real values) and the 1st array is the
+        spectrum (complex values).
 
     Notes
     -----
@@ -1368,11 +1373,10 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
         raise ValueError('`boundary` should be "elastic" or "rigid".')
 
     transfer_function = (f_array, tf_ss)
-
     response = amplify_motion(input_motion, transfer_function,
                               show_fig=show_fig, deconv=deconv)
 
-    return response
+    return response, transfer_function
 
 #%%----------------------------------------------------------------------------
 def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
