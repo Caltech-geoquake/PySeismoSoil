@@ -68,7 +68,7 @@ class Batch_Simulation():
             Options to be passed to the ``run()`` methods of the relevant
             simulation classes (linear, equivalent linear, or nonlinear). Check
             out the API documentation of the ``run()`` methods here:
-            https://pyseismosoil.readthedocs.io/en/latest/api_docs/class_simulation.html
+            https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_simulation.html
 
         Returns
         -------
