@@ -48,5 +48,6 @@ TS.addTests(unittest.makeSuite(Test_Helper_Signal_Processing))
 TS.addTests(unittest.makeSuite(Test_Helper_Simulations))
 TS.addTests(unittest.makeSuite(Test_Helper_Site_Response))
 
-print('------ Running all unit tests. -------')
-unittest.TextTestRunner(verbosity=2).run(TS)
+if __name__ == '__main__':
+    print('------ Running all unit tests. -------')
+    unittest.TextTestRunner(verbosity=2).run(TS)
