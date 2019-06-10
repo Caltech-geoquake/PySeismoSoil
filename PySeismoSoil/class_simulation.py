@@ -318,7 +318,7 @@ class Nonlinear_Simulation(Simulation):
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
     #%%------------------------------------------------------------------------
-    def run(self, sim_dir=None, motion_name=None, save_txt=True,
+    def run(self, sim_dir=None, motion_name=None, save_txt=False,
             save_full_time_history=True, show_fig=False, save_fig=False,
             remove_sim_dir=False, verbose=True):
         '''
