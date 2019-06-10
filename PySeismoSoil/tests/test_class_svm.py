@@ -61,13 +61,13 @@ class Test_Class_SVM(unittest.TestCase):
             self.assertTrue(discr_profile.vs_profile[-1, 0] == 0)
 
         # Test invalid Vs_increment
-        with self.assertRaisesRegex(ValueError, 'max Vs of the smooth profile'):
+        with self.assertRaises(ValueError, msg='max Vs of the smooth profile'):
             svm.get_discretized_profile(Vs_increment=5000)
 
         # Test input parameter checking
-        with self.assertRaisesRegex(ValueError, 'You need to provide either'):
+        with self.assertRaises(ValueError, msg='You need to provide either'):
             svm.get_discretized_profile(Vs_increment=None, fixed_thk=None)
-        with self.assertRaisesRegex(ValueError, 'do not provide both'):
+        with self.assertRaises(ValueError, msg='do not provide both'):
             svm.get_discretized_profile(Vs_increment=1, fixed_thk=2)
 
     def test_get_randomized_profile(self):
@@ -100,7 +100,7 @@ class Test_Class_SVM(unittest.TestCase):
         i, val = SVM._find_index_closest([1], 10000)
         self.assertEqual((i, val), (0, 1))
 
-        with self.assertRaisesRegex(ValueError, 'length of `array` needs to'):
+        with self.assertRaises(ValueError, msg='length of `array` needs to'):
             SVM._find_index_closest([], 2)
 
     def test_svm_profiles_plotting(self):

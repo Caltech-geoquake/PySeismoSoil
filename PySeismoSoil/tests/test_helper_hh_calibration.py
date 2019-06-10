@@ -98,7 +98,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         self.assertTrue(np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5, rtol=0.0))
 
         # Case #2: one of the inputs has incorrect length
-        with self.assertRaisesRegex(ValueError, '`PI` must have length 3, but not 6'):
+        with self.assertRaises(ValueError, msg='`PI` must have length 3, but not 6'):
             hhc.produce_Darendeli_curves(sigma_v0, PI=np.append(PI, PI),
                                          OCR=OCR, K0=K0, strain_in_pct=strain*100)
     def test_optimization_kernel(self):

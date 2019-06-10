@@ -49,11 +49,11 @@ class Test_Helper_HH_Model(unittest.TestCase):
         self.assertTrue(np.allclose(array, self.array))
 
         # Test error with incorrect number of dict items
-        with self.assertRaisesRegex(AssertionError, ''):
+        with self.assertRaises(AssertionError, msg=''):
             hh.serialize_params_to_array({'test': 2})
 
         # Test error with incorrect dict keys: only one key name is wrong
-        with self.assertRaisesRegex(KeyError, ''):
+        with self.assertRaises(KeyError, msg=''):
             hh.serialize_params_to_array({'gamma_t': 1,
                                           'a': 1,
                                           'gamma_ref': 1,
@@ -69,11 +69,11 @@ class Test_Helper_HH_Model(unittest.TestCase):
         self.assertEqual(param, self.param)
 
         # Test error with input data type
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
             hh.deserialize_array_to_params([1,2,3,4,5,6,7,8])
 
         # Test error with incorrecto number of parameters (should be 9)
-        with self.assertRaisesRegex(AssertionError, ''):
+        with self.assertRaises(AssertionError, msg=''):
             hh.deserialize_array_to_params(np.array([1,2,3,4,5,6,7,8]))
 
 if __name__ == '__main__':

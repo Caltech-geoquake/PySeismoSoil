@@ -71,10 +71,10 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_x_data = HH_x.param_list
         HH_G_ = HH_Param_Multi_Layer(HH_G_data[:-1])  # exclude one layer
         HH_x_ = HH_Param_Multi_Layer(HH_x_data[:-1])  # exclude one layer
-        with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
+        with self.assertRaises(ValueError, msg='Not enough sets of parameters'):
             Nonlinear_Simulation(soil_profile, input_motion, G_param=HH_G_,
                                  xi_param=HH_x)
-        with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
+        with self.assertRaises(ValueError, msg='Not enough sets of parameters'):
             Nonlinear_Simulation(soil_profile, input_motion, G_param=HH_G,
                                  xi_param=HH_x_)
 

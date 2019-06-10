@@ -15,7 +15,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         hh_c = HH_Calibration(vs_profile)
 
         # Type of vs_profile not correct
-        with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
+        with self.assertRaises(TypeError, msg='must be of type Vs_Profile'):
             HH_Calibration(np.array([1, 2, 3, 4, 5]))
 
         # This should pass
@@ -23,13 +23,13 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         hh_c = HH_Calibration(vs_profile, GGmax_curves=curves)
 
         # Type of curves not correct
-        with self.assertRaisesRegex(TypeError, 'If `GGmax_curves` is not `None`,'
+        with self.assertRaises(TypeError, msg='If `GGmax_curves` is not `None`,'
                                     ' it must be of type Multiple_GGmax_Curves'):
             HH_Calibration(vs_profile, GGmax_curves=np.array([1, 2, 3]))
 
         # Length of curves not correct
         del curves[-1]  # remove the last layer
-        with self.assertRaisesRegex(ValueError, 'The number of layers implied '
+        with self.assertRaises(ValueError, msg='The number of layers implied '
                                     'in `GGmax_curves` and `vs_profile` must be'
                                     ' the same.'):
             HH_Calibration(vs_profile, GGmax_curves=curves)
@@ -37,13 +37,13 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         # Type of Tmax not correct
         curves = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
         Tmax = [1, 2, 3, 4, 5]
-        with self.assertRaisesRegex(TypeError, '`Tmax_profile` must be a 1D '
+        with self.assertRaises(TypeError, msg='`Tmax_profile` must be a 1D '
                                     'numpy array.'):
             HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 
         # Length of Tmax not correct
         Tmax = np.array([1, 2, 3])
-        with self.assertRaisesRegex(ValueError, 'The length of `Tmax_profile` '
+        with self.assertRaises(ValueError, msg='The length of `Tmax_profile` '
                                     'needs to equal'):
             HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 
