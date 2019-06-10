@@ -24,41 +24,41 @@ class Test_Class_Vs_Profile(unittest.TestCase):
     def test_Vs_profile_format(self):
         # Test `None` as `data`
         data = None
-        with self.assertRaisesRegex(TypeError, 'must be a file name or a numpy array'):
+        with self.assertRaises(TypeError, msg='must be a file name or a numpy array'):
             Vs_Profile(data)
 
         # Test other type as `data`
         data = 3.6
-        with self.assertRaisesRegex(TypeError, 'must be a file name or a numpy array'):
+        with self.assertRaises(TypeError, msg='must be a file name or a numpy array'):
             Vs_Profile(data)
 
         # Test NaN values
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 1] = np.nan
-        with self.assertRaisesRegex(ValueError, 'should contain no NaN values'):
+        with self.assertRaises(ValueError, msg='should contain no NaN values'):
             Vs_Profile(data)
 
         # Test non-positive values in thickness
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 0] = 0
-        with self.assertRaisesRegex(ValueError, 'should be all positive, except'):
+        with self.assertRaises(ValueError, msg='should be all positive, except'):
             Vs_Profile(data)
 
         # Test negative values in last layer thickness
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[-1, 0] = -1
-        with self.assertRaisesRegex(ValueError, 'last layer thickness should be'):
+        with self.assertRaises(ValueError, msg='last layer thickness should be'):
             Vs_Profile(data)
 
         # Test correct number of dimensions
         data = np.array([[[1, 2, 3, 0], [1, 2, 3, 4]]]).T  # one more dimension
-        with self.assertRaisesRegex(ValueError, 'should be a 2D numpy array'):
+        with self.assertRaises(ValueError, msg='should be a 2D numpy array'):
             Vs_Profile(data)
 
         # Test negative values in Vs
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 1] = -1
-        with self.assertRaisesRegex(ValueError, 'Vs column should be all positive.'):
+        with self.assertRaises(ValueError, msg='Vs column should be all positive.'):
             Vs_Profile(data)
 
         # Test non-positive values in damping and density
@@ -69,30 +69,30 @@ class Test_Class_Vs_Profile(unittest.TestCase):
                          [1, 2, 3, 0]], dtype=float).T
         data_ = data.copy()
         data_[2, 3] = 0
-        with self.assertRaisesRegex(ValueError, 'damping and density columns'):
+        with self.assertRaises(ValueError, msg='damping and density columns'):
             Vs_Profile(data_)
 
         # Test "material number" column: all integers
         data_ = data.copy()
         data_[1, -1] = 2.2
-        with self.assertRaisesRegex(ValueError, 'should be all integers'):
+        with self.assertRaises(ValueError, msg='should be all integers'):
             Vs_Profile(data_)
 
         # Test "material number" column: all positive
         data_ = data.copy()
         data_[1, -1] = 0
-        with self.assertRaisesRegex(ValueError, 'should be all positive'):
+        with self.assertRaises(ValueError, msg='should be all positive'):
             Vs_Profile(data_)
 
         # Test "material number" column: last layer should >= 0
         data_ = data.copy()
         data_[-1, -1] = -1
-        with self.assertRaisesRegex(ValueError, 'last layer should be non-negative'):
+        with self.assertRaises(ValueError, msg='last layer should be non-negative'):
             Vs_Profile(data_)
 
         # Test correct number of columns
         data_ = data[:, 0:-1]  # one fewer column
-        with self.assertRaisesRegex(ValueError, 'either 2 or 5 columns'):
+        with self.assertRaises(ValueError, msg='either 2 or 5 columns'):
             Vs_Profile(data_)
 
     def test_plot(self):
@@ -238,26 +238,26 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(is_all_close)
 
         # (7) Test invalid input: list
-        with self.assertRaisesRegex(TypeError, 'needs to be a single number'):
+        with self.assertRaises(TypeError, msg='needs to be a single number'):
             prof.query_Vs_at_depth([1, 2])
-        with self.assertRaisesRegex(TypeError, 'needs to be a single number'):
+        with self.assertRaises(TypeError, msg='needs to be a single number'):
             prof.query_Vs_at_depth({1, 2})
-        with self.assertRaisesRegex(TypeError, 'needs to be a single number'):
+        with self.assertRaises(TypeError, msg='needs to be a single number'):
             prof.query_Vs_at_depth((1, 2))
 
         # (8) Test invalid input: negative values
-        with self.assertRaisesRegex(ValueError, 'Please provide non-negative'):
+        with self.assertRaises(ValueError, msg='Please provide non-negative'):
             prof.query_Vs_at_depth(-2)
-        with self.assertRaisesRegex(ValueError, 'Please provide non-negative'):
+        with self.assertRaises(ValueError, msg='Please provide non-negative'):
             prof.query_Vs_at_depth(np.array([-2, 1]))
 
         #--------------- Query Vs_Profile objects as results ------------------
         # (1) Test invalid input: non-increasing array
-        with self.assertRaisesRegex(ValueError, 'needs to be monotonically increasing'):
+        with self.assertRaises(ValueError, msg='needs to be monotonically increasing'):
             prof.query_Vs_at_depth(np.array([1, 2, 5, 4, 6]), as_profile=True)
 
         # (2) Test invalid input: repeated values
-        with self.assertRaisesRegex(ValueError, 'should not contain duplicate values'):
+        with self.assertRaises(ValueError, msg='should not contain duplicate values'):
             prof.query_Vs_at_depth(np.array([1, 2, 4, 4, 6]), as_profile=True)
 
         # (3) Test a scalar input
@@ -300,11 +300,11 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(is_all_close)
 
         # (3a) Test invalid input
-        with self.assertRaisesRegex(ValueError, 'should be positive'):
+        with self.assertRaises(ValueError, msg='should be positive'):
             result = prof.query_Vs_given_thk(1, n_layers=0)
 
         # (3b) Test invalid input
-        with self.assertRaisesRegex(TypeError, 'needs to be a scalar or a numpy'):
+        with self.assertRaises(TypeError, msg='needs to be a scalar or a numpy'):
             result = prof.query_Vs_given_thk([1, 2], n_layers=0)
 
         # (4a) Test large thickness: top of layer

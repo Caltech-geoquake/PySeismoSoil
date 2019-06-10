@@ -12,7 +12,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
         vs_profile_array = np.genfromtxt(filename)
 
         # Case 1: incorrect input type
-        with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
+        with self.assertRaises(TypeError, msg='must be of type Vs_Profile'):
             Damping_Calibration(vs_profile_array)
 
         # Case 2: correct input type

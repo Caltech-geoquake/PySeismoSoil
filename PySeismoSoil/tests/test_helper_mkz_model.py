@@ -4,8 +4,6 @@ import unittest
 import numpy as np
 from scipy import stats
 
-import matplotlib.pyplot as plt
-
 import PySeismoSoil.helper_mkz_model as mkz
 import PySeismoSoil.helper_site_response as sr
 
@@ -39,11 +37,11 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         self.assertTrue(np.allclose(array, self.array))
 
         # Test error with incorrect number of dict items
-        with self.assertRaisesRegex(AssertionError, ''):
+        with self.assertRaises(AssertionError, msg=''):
             mkz.serialize_params_to_array({'test': 2})
 
         # Test error with incorrect dict keys: only one key name is wrong
-        with self.assertRaisesRegex(KeyError, ''):
+        with self.assertRaises(KeyError, msg=''):
             mkz.serialize_params_to_array({'gamma_ref': 1,
                                            's': 1,
                                            'beta': 1,
@@ -54,11 +52,11 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         self.assertEqual(param, self.param)
 
         # Test error with input data type
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
             mkz.deserialize_array_to_params([1,2,3,4])
 
         # Test error with incorrecto number of parameters (should be 4)
-        with self.assertRaisesRegex(AssertionError, ''):
+        with self.assertRaises(AssertionError, msg=''):
             mkz.deserialize_array_to_params(np.array([1,2,3,4,5]))
 
     def test_fit_MKZ(self):

@@ -45,17 +45,17 @@ class Test_Helper_Generic(unittest.TestCase):
         self.assertAlmostEqual(dt__, benchmark[1, 0] - benchmark[0, 0])
 
     def test_check_two_column_format(self):
-        with self.assertRaisesRegex(TypeError, '1.5 should be an numpy array.'):
+        with self.assertRaises(TypeError, msg='1.5 should be an numpy array.'):
             hlp.check_two_column_format(1.5, '1.5')
-        with self.assertRaisesRegex(TypeError, '_a_ should be a 2D numpy array.'):
+        with self.assertRaises(TypeError, msg='_a_ should be a 2D numpy array.'):
             hlp.check_two_column_format(np.array([1,2,3]), '_a_')
-        with self.assertRaisesRegex(TypeError, '_b_ should have two columns.'):
+        with self.assertRaises(TypeError, msg='_b_ should have two columns.'):
             hlp.check_two_column_format(np.ones((2, 3)), '_b_')
 
     def test_find_closest_index(self):
         array = [1, 2, 3]
         value = 3
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array.'):
             hlp.find_closest_index(array, value)
 
         array = np.array([1])
@@ -84,17 +84,17 @@ class Test_Helper_Generic(unittest.TestCase):
         self.assertEqual(hlp.check_numbers_valid(np.array([1, 2, -1])), -3)
 
     def test_assert_1D_numpy_array(self):
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array.'):
             hlp.assert_1D_numpy_array([1, 2, 3, 4])
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array.'):
             hlp.assert_1D_numpy_array(np.array([[1, 2, 3, 4]]))
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array.'):
             hlp.assert_1D_numpy_array(np.array([[1, 2], [3, 4]]))
 
     def test_assert_array_length(self):
         # Case #1: not an array
         thing = None
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
             hlp.assert_array_length(thing, name='`thing`', length=None)
 
         # Case #2: 1D numpy array, length check successful
@@ -103,12 +103,12 @@ class Test_Helper_Generic(unittest.TestCase):
 
         # Case #3: 1D numpy array, length check failed
         thing = np.array([1, 2, 3])
-        with self.assertRaisesRegex(ValueError, 'have length 4, but not 3'):
+        with self.assertRaises(ValueError, msg='have length 4, but not 3'):
             hlp.assert_array_length(thing, length=4)
 
     def test_extend_scalar(self):
         # Case #1: not a single number
-        with self.assertRaisesRegex(TypeError, 'must be a float, int'):
+        with self.assertRaises(TypeError, msg='must be a float, int'):
             hlp.extend_scalar(np.ones(3), 2)
 
         # Case #2: `length` is something strange
@@ -119,20 +119,20 @@ class Test_Helper_Generic(unittest.TestCase):
                                     np.array([2.5, 2.5, 2.5])))
 
         # Case #4: `length` is not an integer
-        with self.assertRaisesRegex(TypeError, "cannot be interpreted as an integer"):
+        with self.assertRaises(TypeError, msg="cannot be interpreted as an integer"):
             hlp.extend_scalar(2.5, 3.5)
 
     def test_check_length_or_extend_to_array(self):
         # Case #1: a 2D numpy array -- error
         a = np.array([[1, 2], [3, 4]])
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
             hlp.check_length_or_extend_to_array(a, 3)
 
         # Case #2: a 1D numpy array with correct length
         hlp.check_length_or_extend_to_array(np.array([1, 2, 3]), 3)
 
         # Case #3: a 1D numpy array with incorrect length
-        with self.assertRaisesRegex(ValueError, 'have length 6, but not 3'):
+        with self.assertRaises(ValueError, msg='have length 6, but not 3'):
             hlp.check_length_or_extend_to_array(np.array([1, 2, 3]), 6)
 
         # Case #4: a single value
@@ -141,7 +141,7 @@ class Test_Helper_Generic(unittest.TestCase):
         self.assertTrue(np.allclose(array, array_bench))
 
         # Case #5: other data types
-        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
+        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
             hlp.check_length_or_extend_to_array(None, 3)
 
     def test_extract_from_curve_format(self):

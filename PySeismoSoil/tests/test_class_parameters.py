@@ -12,14 +12,14 @@ class Test_Class_HH_Param(unittest.TestCase):
     def test_init(self):
         # Test that invalid parameter names are blocked as expected
         invalid_data = {'key': 1, 'lock': 2}
-        with self.assertRaisesRegex(KeyError, 'Invalid keys exist in your input'):
+        with self.assertRaises(KeyError, msg='Invalid keys exist in your input'):
             hhp = HH_Param(invalid_data)
 
         # Test that querying a nonexistent parameter name produces KeyError
         data = {'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
                 'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9}
         hhp = HH_Param(data)
-        with self.assertRaisesRegex(KeyError, "'haha'"):
+        with self.assertRaises(KeyError, msg="'haha'"):
             hhp['haha']
 
     def test_get_GGmax(self):
