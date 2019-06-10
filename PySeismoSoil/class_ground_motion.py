@@ -632,7 +632,7 @@ class Ground_Motion:
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI
         response = sr.linear_site_resp(vs_profile, surface_motion, deconv=False,
-                                       boundary=boundary, show_fig=show_fig)
+                                       boundary=boundary, show_fig=show_fig)[0]
         output_motion = Ground_Motion(response, unit='m')
         return output_motion
 
@@ -664,7 +664,7 @@ class Ground_Motion:
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI
         response = sr.linear_site_resp(vs_profile, surface_motion, deconv=True,
-                                       boundary=boundary, show_fig=show_fig)
+                                       boundary=boundary, show_fig=show_fig)[0]
         deconv_motion = Ground_Motion(response, unit='m')
         return deconv_motion
 
