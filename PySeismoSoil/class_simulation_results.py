@@ -230,7 +230,7 @@ class Simulation_Results():
 
         if save_fig:
             if not os.path.exists(self.output_dir):
-                os.mkdir(self.output_dir)
+                os.makedirs(self.output_dir)
 
             fn_fig1 = os.path.join(self.output_dir,
                                    '%s_ground_motions.png' % self.motion_name)
@@ -258,7 +258,7 @@ class Simulation_Results():
             Whether to show on the console where the files are saved to.
         '''
         if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)
+            os.makedirs(self.output_dir)
 
         od = self.output_dir
         motion_name = self.motion_name

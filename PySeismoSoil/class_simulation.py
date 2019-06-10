@@ -100,7 +100,7 @@ class Linear_Simulation(Simulation):
     '''
     def run(self, every_layer=True, deconv=False, show_fig=False,
             save_fig=False, motion_name=None, save_txt=False,
-            save_full_time_history=False, output_dir=None):
+            save_full_time_history=False, output_dir=None, verbose=True):
         '''
         Parameters
         ----------
@@ -130,12 +130,17 @@ class Linear_Simulation(Simulation):
             ``every_layer`` is ``True``.
         output_dir : str
             Directory for saving the figures and/or result files.
+        verbose : bool
+            Whether to show simulation progress.
 
         Returns
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
         '''
+        if verbose:
+            print('Linear site response simulation running... ', end='')
+
         if every_layer:
             results = sim.linear(self.soil_profile.vs_profile,
                                  self.input_motion.accel,
@@ -160,18 +165,22 @@ class Linear_Simulation(Simulation):
                 sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
             # END IF
         else:  # `every_layer` is `False`
-            response = sr.linear_site_resp(self.soil_profile.vs_profile,
-                                           self.input_motion.accel,  # unit: m/s/s
-                                           boundary=self.boundary,
-                                           show_fig=show_fig, deconv=deconv)
-            sim_results \
-            = Simulation_Results(self.input_motion,
-                                 Ground_Motion(response, unit='m/s/s'),
-                                 self.soil_profile)
+            response, tf = sr.linear_site_resp(self.soil_profile.vs_profile,
+                                               self.input_motion.accel,  # unit: m/s/s
+                                               boundary=self.boundary,
+                                               show_fig=show_fig, deconv=deconv)
+            trans_func = Frequency_Spectrum(tf[1], df=tf[0][1] - tf[0][0])
+            sim_results = Simulation_Results(self.input_motion,
+                                             Ground_Motion(response, unit='m'),
+                                             self.soil_profile,
+                                             trans_func=trans_func)
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history)
         # END IF
+
+        if verbose:
+            print('done.')
 
         return sim_results
 
@@ -364,9 +373,10 @@ class Nonlinear_Simulation(Simulation):
         if sim_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
             sim_dir = './nonlinear_sim_%s' % current_time
-            if os.path.exists(sim_dir):
-                sim_dir += '_'
-            os.mkdir(sim_dir, 777)
+
+        if os.path.exists(sim_dir):
+            sim_dir += '_'
+        os.makedirs(sim_dir, 777)
 
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
@@ -516,7 +526,7 @@ class Nonlinear_Simulation(Simulation):
                                verbose=verbose)
 
         if not save_txt and not save_fig and remove_sim_dir:
-            os.rmdir(sim_dir)
+            os.removedirs(sim_dir)
             if verbose:
                 print('`sim_dir` (%s) removed.' % sim_dir)
 
