@@ -363,7 +363,7 @@ class Vs_Profile:
         return Vs_Profile(profile_)
 
     #--------------------------------------------------------------------------
-    def query_Vs_at_depth(self, depth, as_profile=False):
+    def query_Vs_at_depth(self, depth, as_profile=False, show_fig=False):
         '''
         Query Vs values at given ``depth`` values. If the given depth values
         happen to be at layer interfaces, return the Vs of the layer *below*
@@ -402,9 +402,15 @@ class Vs_Profile:
                 thk_array = sr.dep2thk(depth)
             vs_ = np.column_stack((thk_array, vs_queried))
 
+            if show_fig:
+                fig, ax, _ = self.plot()
+                sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
+
             # A halfspace is already implicitly added by sr.depth2thk()
             return Vs_Profile(vs_, add_halfspace=False)
         else:
+            if show_fig:
+                self._plot_queried_Vs(vs_queried, depth)
             if is_scalar:
                 return float(vs_queried)
             else:
@@ -412,7 +418,7 @@ class Vs_Profile:
 
     #--------------------------------------------------------------------------
     def query_Vs_given_thk(self, thk, n_layers=None, as_profile=False,
-                           at_midpoint=True, add_halfspace=True):
+                           at_midpoint=True, add_halfspace=True, show_fig=False):
         '''
         Query Vs values from a thickness layer ``thk``. The starting point of
         querying is the ground surface.
@@ -450,10 +456,36 @@ class Vs_Profile:
                                                       at_midpoint=at_midpoint)
 
         if not as_profile:
+            if show_fig:
+                depth = sr.thk2dep(thk_array, midpoint=at_midpoint)
+                self._plot_queried_Vs(vs_queried, depth)
             return vs_queried
         else:
             vs_ = np.column_stack((thk_array, vs_queried))
+            if show_fig:
+                fig, ax, _ = self.plot()
+                sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
             return Vs_Profile(vs_, add_halfspace=add_halfspace)
+
+    #--------------------------------------------------------------------------
+    def _plot_queried_Vs(self, vs_queried, depth, dpi=100):
+        '''
+        Helper subroutine that plots queried Vs values on top of the Vs profile.
+
+        Parameters
+        ----------
+        vs_quereid: float or numpy.ndaray
+            Queried Vs values.
+        depth : float or numpy.ndarray
+            Depth.
+        '''
+        fig, ax, _ = self.plot(dpi=dpi)
+        ax.plot(vs_queried, depth, c='red', marker='o', ls='', alpha=0.55)
+        y_lim = ax.get_ylim()
+        if np.max(y_lim) <= np.max(depth):
+            ax.set_ylim((np.max(depth), np.min(y_lim)))
+
+        return None
 
     #--------------------------------------------------------------------------
     def get_basin_depth(self, bedrock_Vs=1000.0):
