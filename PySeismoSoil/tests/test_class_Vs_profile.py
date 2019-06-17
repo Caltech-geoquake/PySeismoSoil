@@ -350,7 +350,8 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
         # (6a) Test returning Vs_Profile object: multiple layers, top of layers
         result = prof.query_Vs_given_thk(3, n_layers=5, as_profile=True,
-                                         at_midpoint=False, add_halfspace=True)
+                                         at_midpoint=False, add_halfspace=True,
+                                         show_fig=True)
         benchmark = Vs_Profile(np.array([[3, 3, 3, 3, 3, 0],
                                          [10, 40, 70, 100, 120, 120]]).T)
         compare = np.allclose(result.vs_profile, benchmark.vs_profile)
@@ -358,7 +359,8 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
         # (6b) Test returning Vs_Profile object: multiple layers, mid of layers
         result = prof.query_Vs_given_thk(3, n_layers=5, as_profile=True,
-                                         at_midpoint=True, add_halfspace=True)
+                                         at_midpoint=True, add_halfspace=True,
+                                         show_fig=True)
         benchmark = Vs_Profile(np.array([[3, 3, 3, 3, 3, 0],
                                          [20, 50, 80, 110, 120, 120]]).T)
         compare = np.allclose(result.vs_profile, benchmark.vs_profile)
