@@ -2,6 +2,7 @@
 
 PySeismoSoil is a Python library for performing 1D seismic site response analysis.
 
+
 ## Copyright and license
 
 Copyright (c) 2019, California Institute of Technology, based on research supported by the National Science Foundation (NSF) Cooperative Agreement EAR-1033462 and the U.S. Geological Survey (USGS) Cooperative Agreement G12AC20038. All rights reserved.
@@ -67,3 +68,7 @@ The models and algorithms used in this library mainly come from these research p
 ## Report issues
 
 To report bugs and submit suggestions, please use the ["Issues" section](https://github.com/jsh9/PySeismoSoil/issues) of this GitHub repository.
+
+## How to cite this library
+
+To cite this library, please include this DOI in your publication: 10.5281/zenodo.3342016.
