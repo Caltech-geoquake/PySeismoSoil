@@ -378,7 +378,7 @@ class Nonlinear_Simulation(Simulation):
         if os.path.exists(sim_dir):
             sim_dir += '_'
         os.makedirs(sim_dir)
-        os.chmod(sim_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.SIROTH | stat.S_IXOTH)
+        os.chmod(sim_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
