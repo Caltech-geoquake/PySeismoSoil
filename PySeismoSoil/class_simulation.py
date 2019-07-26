@@ -2,6 +2,7 @@
 
 import os
 import glob
+import stat
 import shutil
 import subprocess
 import numpy as np
@@ -448,8 +449,14 @@ class Nonlinear_Simulation(Simulation):
         if hlp.detect_OS() == 'Windows':
             subprocess.run('NLHH.exe')
         elif hlp.detect_OS() == 'Darwin':
+            current_status = os.stat('NLHH.mac')
+            os.chmod('NLHH.mac',
+                     current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             subprocess.run('./NLHH.mac', stdout=True)
         elif hlp.detect_OS() == 'Linux':
+            current_status = os.stat('NLHH.unix')
+            os.chmod('NLHH.unix',
+                     current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             subprocess.run('./NLHH.unix', stdout=True)
         else:
             raise ValueError('Unknown operating system.')
