@@ -44,7 +44,7 @@ Install most recent stable version:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/jsh9/PySeismoSoil@v0.2.4
+    pip install git+https://github.com/jsh9/PySeismoSoil@v0.2.5
 
 Or, install with latest changes (may contain features ahead of the stable version):
 
