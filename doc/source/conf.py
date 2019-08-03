@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'PySeismoSoil'
-copyright = '2019, Jian Shi'
+copyright = '2019, California Institute of Technology'
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = '0.2.6'
 
 
 # -- General configuration ---------------------------------------------------
@@ -41,7 +41,7 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon']
-    
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
