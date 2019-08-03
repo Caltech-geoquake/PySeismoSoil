@@ -19,6 +19,6 @@ setup(
                       'scipy>=1.1.0',
                       'numba>=0.38.0'
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     include_package_data=True,
 )

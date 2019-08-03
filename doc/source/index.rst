@@ -56,7 +56,7 @@ Or, install with latest changes (may contain features ahead of the stable versio
 Dependencies
 ------------
 
-* Python: 3.5+
+* Python: 3.6+
 * matplotlib: 2.0.0+
 * numpy: 1.11.0+
 * scipy: 1.1.0+
