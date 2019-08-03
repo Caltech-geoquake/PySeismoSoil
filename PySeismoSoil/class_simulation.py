@@ -2,6 +2,7 @@
 
 import os
 import glob
+import stat
 import shutil
 import subprocess
 import numpy as np
@@ -376,7 +377,8 @@ class Nonlinear_Simulation(Simulation):
 
         if os.path.exists(sim_dir):
             sim_dir += '_'
-        os.makedirs(sim_dir, 777)
+        os.makedirs(sim_dir)
+        os.chmod(sim_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
@@ -448,8 +450,14 @@ class Nonlinear_Simulation(Simulation):
         if hlp.detect_OS() == 'Windows':
             subprocess.run('NLHH.exe')
         elif hlp.detect_OS() == 'Darwin':
+            current_status = os.stat('NLHH.mac').st_mode
+            os.chmod('NLHH.mac',
+                     current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             subprocess.run('./NLHH.mac', stdout=True)
         elif hlp.detect_OS() == 'Linux':
+            current_status = os.stat('NLHH.unix').st_mode
+            os.chmod('NLHH.unix',
+                     current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             subprocess.run('./NLHH.unix', stdout=True)
         else:
             raise ValueError('Unknown operating system.')
