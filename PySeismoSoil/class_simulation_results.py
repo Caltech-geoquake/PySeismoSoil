@@ -129,7 +129,8 @@ class Simulation_Results():
         self.output_dir = output_dir
 
     #%%------------------------------------------------------------------------
-    def plot(self, dpi=100, save_fig=False, amplif_func_ylog=True):
+    def plot(self, dpi=100, save_fig=False, amplif_func_ylog=True,
+             output_dir=None):
         '''
         Plots simulation results: output vs input motions, transfer functions
         and maximum acceleration, velocity, displacement, strain, and stress
@@ -141,6 +142,12 @@ class Simulation_Results():
             Figure resolution.
         save_fig : bool
             Whether to save figure to ``output_dir``.
+        amplif_func_ylog : bool
+            Whether to show the Y axis of the amplification function in log
+            scale.
+        output_dir : str
+            The directory to save the plots. This overrides the ``output_dir``
+            parameter when constructing the this class.
 
         Returns
         -------
@@ -229,10 +236,12 @@ class Simulation_Results():
         axes = [axes1, [ax21, ax22, ax23, ax24, ax25]]
 
         if save_fig:
-            if not os.path.exists(self.output_dir):
-                os.makedirs(self.output_dir)
+            if output_dir is None:
+                output_dir = self.output_dir
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
 
-            fn_fig1 = os.path.join(self.output_dir,
+            fn_fig1 = os.path.join(output_dir,
                                    '%s_ground_motions.png' % self.motion_name)
             fn_fig2 = os.path.join(self.output_dir,
                                    '%s_max_profiles.png' % self.motion_name)
@@ -243,9 +252,11 @@ class Simulation_Results():
         return figs, axes
 
     #%%------------------------------------------------------------------------
-    def to_txt(self, save_full_time_history=True, verbose=False):
+    def to_txt(self, save_full_time_history=True, verbose=False, output_dir=None):
         '''
-        Save simulation results to hard drive.
+        Save simulation results (output time history, transfer function, the
+        profile of maximum acceleration/velocity/displacement/stress/train, etc.)
+        as text files to the hard drive.
 
         Parameters
         ----------
@@ -256,11 +267,17 @@ class Simulation_Results():
             are not ``None``.
         verbose : bool
             Whether to show on the console where the files are saved to.
+        output_dir : str
+            The directory to save the files. This overrides the ``output_dir``
+            parameter when constructing the this class.
         '''
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
+        if output_dir is None:
+            output_dir = self.output_dir
 
-        od = self.output_dir
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        od = output_dir  # shorten the variable name
         motion_name = self.motion_name
 
         fn_TF_raw = os.path.join(od, '%s_nonlinear_TF_raw.txt' % motion_name)
