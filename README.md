@@ -71,4 +71,4 @@ To report bugs and submit suggestions, please use the ["Issues" section](https:/
 
 ## How to cite this library
 
-To cite this library, please include this DOI in your publication: 10.5281/zenodo.3342016.
+To cite this library, please include this DOI in your publication: [![DOI](https://zenodo.org/badge/169386936.svg)](https://zenodo.org/badge/latestdoi/169386936).
