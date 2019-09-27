@@ -48,23 +48,24 @@ class Site_Factors():
 
         status = Site_Factors._range_check(Vs30_in_meter_per_sec, z1_in_m,
                                            PGA_in_g)
-        if 1 in status:
+        if 'Vs30 out of range' in status:
             if not lenient:
                 raise ValueError('Vs30 should be between [175, 950] m/s')
             else:
                 Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950
-        if 2 in status:
+        if 'z1 out of range' in status:
             if not lenient:
                 raise ValueError('z1_in_m should be between [8, 900] m')
             else:
                 z1_in_m = 8 if z1_in_m < 8 else 900
-        if 3 in status:
+        if 'PGA out of range' in status:
             if not lenient:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
             else:
                 PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
-        if 4 in status:  # TODO: add leniency for out-of-bound combinations
-            raise ValueError('Vs30 and z1 combination not valid')
+        if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
+            raise ValueError('Vs30 and z1 combination not valid. (The `lenient` '
+                             'option does not apply to this type of issue.)')
 
         self.Vs30 = Vs30_in_meter_per_sec
         self.z1 = z1_in_m
@@ -80,7 +81,7 @@ class Site_Factors():
         ---------
         method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
-            amplification factors. 'nl_hh' uses the results from nonlinear site 
+            amplification factors. 'nl_hh' uses the results from nonlinear site
             response simulation, which is recommended.
         Fourier : bool
             Whether or not to return Fourier-spectra-based amplification
@@ -323,7 +324,6 @@ class Site_Factors():
 
         The three inputs need to already within the correct range.
         '''
-
         Vs30_loc = Site_Factors._search_sorted(Vs30_in_mps, Site_Factors.Vs30_array)
         z1_loc = Site_Factors._search_sorted(z1_in_m, Site_Factors.z1_array)
         PGA_loc = Site_Factors._search_sorted(PGA_in_g, Site_Factors.PGA_array)
@@ -345,13 +345,11 @@ class Site_Factors():
 
             In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
             Out: [0, 1]
-
-        It is assumed that ``value`` is already within ``array``.  If you
-        want to add robustness for cases where value < min(array) or
-        value > max(array), just add two "``if``" statements::
-            if value < array[0] or value > array[-1]
         '''
-
+        if value < array[0] or value > array[-1]:
+            raise ValueError('You have encountered an internal bug. Please '
+                             'copy the whole error message, and contact '
+                             'the author of this library for help.')
         if value == array[0]:
             return [0, 1]
         if value == array[-1]:
@@ -522,13 +520,9 @@ class Site_Factors():
         Check if the provided Vs30, z1_in_m, and PGA_in_g values are within
         the pre-computed range.
 
-        Meanings of different return values:
-        1 - Vs30 outside of range [175, 950] m/s
-        2 - z1_in_m outside of range [8, 900] m
-        3 - PGA outside of range [0.01g, 1.5g]
-        4 - Vs30 and z1 combination is not valid
+        The return value (``status``) indicates the kind(s) of errors
+        associated with the given input parameters.
         '''
-
         if not isinstance(Vs30_in_mps, (float, int, np.number)):
             raise TypeError('Vs30 must be int, float, or numpy.number.')
         if not isinstance(z1_in_m, (float, int, np.number)):
@@ -539,30 +533,28 @@ class Site_Factors():
         status = []
 
         if Vs30_in_mps < 175 or Vs30_in_mps > 950:
-            status.append(1)
-            return status
+            status.append('Vs30 out of range')
         if z1_in_m < 8 or z1_in_m > 900:
-            status.append(2)
-            return status
+            status.append('z1 out of range')
         if PGA_in_g < 0.01 or PGA_in_g > 1.5:
-            status.append(3)
+            status.append('PGA out of range')
 
         if Vs30_in_mps > 400 and z1_in_m > 750:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 450 and z1_in_m > 600:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 550 and z1_in_m > 450:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 600 and z1_in_m > 300:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 650 and z1_in_m > 150:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 750 and z1_in_m > 75:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 800 and z1_in_m > 36:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         elif Vs30_in_mps > 850 and z1_in_m > 16:
-            status.append(4)
+            status.append('Invalid Vs30-z1 combination')
         else:
             pass
 
