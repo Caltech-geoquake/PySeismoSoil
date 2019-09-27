@@ -1,3 +1,3 @@
 # Author: Jian Shi
 
-__version__ = '0.2.6'
+__version__ = 'v0.2.7'
