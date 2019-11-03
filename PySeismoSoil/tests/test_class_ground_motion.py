@@ -14,7 +14,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
     '''
     Unit test for Ground_Motion class
     '''
-    def test_loading_data(self):
+    def test_loading_data__two_columns_from_file(self):
         # Two columns from file
         gm = GM('./files/sample_accel.txt', unit='gal')
 
@@ -29,42 +29,42 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertAlmostEqual(gm.peak_Arias_Intensity, 1.524, delta=tol)
         self.assertAlmostEqual(gm.rms_accel, 0.4645, delta=tol)
 
+    def test_loading_data__two_columns_from_numpy_array(self):
         # Two columns from numpy array
         gm = GM(np.array([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]]).T, unit='m/s/s')
         self.assertAlmostEqual(gm.pga, 4)
 
+    def test_loading_data__one_column_from_file(self):
         # One column from file
         gm = GM('./files/one_column_data_example.txt', unit='g', dt=0.2)
         self.assertAlmostEqual(gm.pga_in_g, 12.0)
 
+    def test_loading_data__one_column_from_numpy_array(self):
         # One column from numpy array
         gm = GM(np.array([1, 2, 3, 4, 5]), unit='gal', dt=0.1)
         self.assertAlmostEqual(gm.pga_in_gal, 5.0)
 
+    def test_loading_data__one_column_without_specifying_dt(self):
         # One column without specifying dt
         error_msg = 'is needed for one-column `data`.'
         with self.assertRaises(ValueError, msg=error_msg):
             gm = GM(np.array([1, 2, 3, 4, 5]), unit='gal')
 
+    def test_loading_data__test_invalid_unit_names(self):
         # Test invalid unit names
         with self.assertRaises(ValueError, msg='Invalid `unit` name.'):
             GM(np.array([1, 2, 3, 4, 5]), unit='test', dt=0.1)
         with self.assertRaises(ValueError, msg="use '/s/s' instead of 's^2'"):
             GM(np.array([1, 2, 3, 4, 5]), unit='m/s^2', dt=0.1)
 
-    def test_integration_and_differentiation(self):
-        '''
-        Test that converting among acceleration/velocity/displacement is
-        correct.
-        '''
-        #------- Test differentiation -------
+    def test_differentiation(self):
         veloc = np.array([[.1, .2, .3, .4, .5, .6], [1, 3, 7, -1, -3, 5]]).T
         gm = GM(veloc, unit='m', motion_type='veloc')
         accel_benchmark = np.array([[.1, .2, .3, .4, .5, .6],
                                     [0, 20, 40, -80, -20, 80]]).T
         self.assertTrue(np.allclose(gm.accel, accel_benchmark))
 
-        #------- Test integartion (artificial example) ----------
+    def test_integration__artificial_example(self):
         gm = GM('./files/two_column_data_example.txt', unit='m/s/s')
         v_bench = np.array([[0.1000, 0.1000],  # from MATLAB
                             [0.2000, 0.3000],
@@ -99,7 +99,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(gm.veloc, v_bench))
         self.assertTrue(np.allclose(gm.displ, u_bench))
 
-        #------- Test integration (real-world example) -------
+    def test_integration__real_world_example(self):
         # Note: In this test, the result by cumulative trapezoidal numerical
         #       integration is used as the benchmark. Since it is infeasible to
         #       achieve perfect "alignment" between the two time histories,
@@ -129,15 +129,24 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         corrected = gm.baseline_correct(show_fig=True)
         self.assertTrue(isinstance(corrected, GM))
 
-    def test_filters(self):
+    def test_high_pass_filter(self):
         gm = GM('./files/sample_accel.txt', unit='m')
         hp = gm.highpass(cutoff_freq=1.0, show_fig=True)
-        lp = gm.lowpass(cutoff_freq=1.0, show_fig=True)
-        bp = gm.bandpass(cutoff_freq=[0.5, 8], show_fig=True)
-        bs = gm.bandstop(cutoff_freq=[0.5, 8], show_fig=True)
         self.assertTrue(isinstance(hp, GM))
+
+    def test_low_pass_filter(self):
+        gm = GM('./files/sample_accel.txt', unit='m')
+        lp = gm.lowpass(cutoff_freq=1.0, show_fig=True)
         self.assertTrue(isinstance(lp, GM))
+
+    def test_band_pass_filter(self):
+        gm = GM('./files/sample_accel.txt', unit='m')
+        bp = gm.bandpass(cutoff_freq=[0.5, 8], show_fig=True)
         self.assertTrue(isinstance(bp, GM))
+
+    def test_band_stop_filter(self):
+        gm = GM('./files/sample_accel.txt', unit='m')
+        bs = gm.bandstop(cutoff_freq=[0.5, 8], show_fig=True)
         self.assertTrue(isinstance(bs, GM))
 
     def test_amplify_via_profile(self):
@@ -195,8 +204,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(gm.accel[:, 1] * 2, gm_scaled_1.accel[:, 1]))
         self.assertTrue(np.allclose(gm.accel[:, 1] * 0.5, gm_scaled_2.accel[:, 1]))
 
-    def test_amplify_by_tf(self):
-        #---------- Case 1: An artificial transfer function -------------------
+    def test_amplify_by_tf__case_1_an_artificial_transfer_function(self):
         gm = GM('./files/sample_accel.txt', unit='gal')
         ratio_benchmark = 2.76
         freq = np.arange(0.01, 50, step=0.01)
@@ -206,7 +214,8 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         ratio = new_gm.accel[:, 1] / gm.accel[:, 1]
         self.assertTrue(np.allclose(ratio, ratio_benchmark))
 
-        #---------- Case 2: A transfer function from a Vs profile -------------
+    def test_amplify_by_tf__case_2_a_transfer_function_from_a_Vs_profile(self):
+        gm = GM('./files/sample_accel.txt', unit='gal')
         vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
         tf_RO, tf_BH, _ = vs_prof.get_transfer_function()
         gm_with_tf_RO = gm.amplify_by_tf(tf_RO)

@@ -13,20 +13,19 @@ from PySeismoSoil.class_simulation import Linear_Simulation, \
 from PySeismoSoil.class_batch_simulation import Batch_Simulation
 
 class Test_Class_Batch_Simulation(unittest.TestCase):
-    def test_init(self):
-        # Case 1: Not a list
+    def test_init__case_1_not_a_list(self):
         with self.assertRaises(TypeError, msg='`list_of_simulations` should be a list.'):
             Batch_Simulation(1.4)
 
-        # Case 2: A list of 0 length
+    def test_init__case_2_a_list_of_0_length(self):
         with self.assertRaises(ValueError, msg='should have at least one element'):
             Batch_Simulation([])
 
-        # Case 3: Wrong type
+    def test_init__case_3_wrong_type(self):
         with self.assertRaises(TypeError, msg='Elements of `list_of_simulations` should be of type'):
             Batch_Simulation([1, 2, 3])
 
-        # Case 4: Inhomogeneous element type
+    def test_init__case_4_inhomogeneous_element_type(self):
         with self.assertRaises(TypeError, msg='should be of the same type'):
             gm = Ground_Motion('./files/sample_accel.txt', unit='gal')
             prof = Vs_Profile('./files/profile_FKSH14.txt')

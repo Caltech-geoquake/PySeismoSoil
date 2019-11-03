@@ -12,7 +12,6 @@ class Test_Class_Curves(unittest.TestCase):
     '''
     Unit test for curve-related class
     '''
-
     def test_init(self):
         data = np.genfromtxt('./files/curve_FKSH14.txt')
         curve = Curve(data[:, 2:4])
@@ -119,11 +118,9 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(len(mdc), 5)
         self.assertEqual(mdc.n_layer, 5)
 
-    def test_HH_x_fit_multi_layer(self):
+    def test_HH_x_fit_multi_layer__differential_evolution_algorithm(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
-
-        # Test differential evolution
         hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=True)
         self.assertEqual(len(hhx), 2)
@@ -131,7 +128,9 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(hhx[0].keys(), {'gamma_t', 'a', 'gamma_ref', 'beta',
                                          's', 'Gmax', 'mu', 'Tmax', 'd'})
 
-        # Test DEAP
+    def test_HH_x_fit_multi_layer__DEAP_algorithm(self):
+        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc_ = mdc[:2]
         try:
             hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
                                            use_scipy=False)
@@ -142,18 +141,18 @@ class Test_Class_Curves(unittest.TestCase):
         except ImportError:  # DEAP library may not be installed
             pass
 
-    def test_H4_x_fit_multi_layer(self):
+    def test_H4_x_fit_multi_layer__differential_evolution_algorithm(self):
         mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
         mdc_ = mdc[:2]
-
-        # Test differential evolution
         h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=True)
         self.assertEqual(len(h4x), 2)
         self.assertTrue(isinstance(h4x[0].data, dict))
         self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
-        # Test DEAP
+    def test_H4_x_fit_multi_layer__DEAP_algorithm(self):
+        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc_ = mdc[:2]
         try:
             h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
                                            use_scipy=False)

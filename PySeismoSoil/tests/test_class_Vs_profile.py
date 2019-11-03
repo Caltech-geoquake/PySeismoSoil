@@ -12,7 +12,6 @@ class Test_Class_Vs_Profile(unittest.TestCase):
     '''
     Unit test for Vs_Profile class
     '''
-
     def __init__(self, methodName='runTest'):
         data, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
         data[:, 0] *= 10
@@ -21,46 +20,53 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.prof = prof
         super(Test_Class_Vs_Profile, self).__init__(methodName=methodName)
 
-    def test_Vs_profile_format(self):
+    def test_Vs_profile_format__case_1(self):
         # Test `None` as `data`
         data = None
         with self.assertRaises(TypeError, msg='must be a file name or a numpy array'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_2(self):
         # Test other type as `data`
         data = 3.6
         with self.assertRaises(TypeError, msg='must be a file name or a numpy array'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_3(self):
         # Test NaN values
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 1] = np.nan
         with self.assertRaises(ValueError, msg='should contain no NaN values'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_4(self):
         # Test non-positive values in thickness
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 0] = 0
         with self.assertRaises(ValueError, msg='should be all positive, except'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_5(self):
         # Test negative values in last layer thickness
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[-1, 0] = -1
         with self.assertRaises(ValueError, msg='last layer thickness should be'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_6(self):
         # Test correct number of dimensions
         data = np.array([[[1, 2, 3, 0], [1, 2, 3, 4]]]).T  # one more dimension
         with self.assertRaises(ValueError, msg='should be a 2D numpy array'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_7(self):
         # Test negative values in Vs
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 1] = -1
         with self.assertRaises(ValueError, msg='Vs column should be all positive.'):
             Vs_Profile(data)
 
+    def test_Vs_profile_format__case_8(self):
         # Test non-positive values in damping and density
         data = np.array([[10, 20, 30, 0],
                          [100, 120, 160, 190],
@@ -72,25 +78,49 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         with self.assertRaises(ValueError, msg='damping and density columns'):
             Vs_Profile(data_)
 
+    def test_Vs_profile_format__case_9(self):
         # Test "material number" column: all integers
+        data = np.array([[10, 20, 30, 0],
+                         [100, 120, 160, 190],
+                         [0.01, 0.01, 0.01, 0.01],
+                         [1600, 1600, 1600, 1600],
+                         [1, 2, 3, 0]], dtype=float).T
         data_ = data.copy()
         data_[1, -1] = 2.2
         with self.assertRaises(ValueError, msg='should be all integers'):
             Vs_Profile(data_)
 
+    def test_Vs_profile_format__case_10(self):
         # Test "material number" column: all positive
+        data = np.array([[10, 20, 30, 0],
+                         [100, 120, 160, 190],
+                         [0.01, 0.01, 0.01, 0.01],
+                         [1600, 1600, 1600, 1600],
+                         [1, 2, 3, 0]], dtype=float).T
         data_ = data.copy()
         data_[1, -1] = 0
         with self.assertRaises(ValueError, msg='should be all positive'):
             Vs_Profile(data_)
 
+    def test_Vs_profile_format__case_11(self):
         # Test "material number" column: last layer should >= 0
+        data = np.array([[10, 20, 30, 0],
+                         [100, 120, 160, 190],
+                         [0.01, 0.01, 0.01, 0.01],
+                         [1600, 1600, 1600, 1600],
+                         [1, 2, 3, 0]], dtype=float).T
         data_ = data.copy()
         data_[-1, -1] = -1
         with self.assertRaises(ValueError, msg='last layer should be non-negative'):
             Vs_Profile(data_)
 
+    def test_Vs_profile_format__case_12(self):
         # Test correct number of columns
+        data = np.array([[10, 20, 30, 0],
+                         [100, 120, 160, 190],
+                         [0.01, 0.01, 0.01, 0.01],
+                         [1600, 1600, 1600, 1600],
+                         [1, 2, 3, 0]], dtype=float).T
         data_ = data[:, 0:-1]  # one fewer column
         with self.assertRaises(ValueError, msg='either 2 or 5 columns'):
             Vs_Profile(data_)
@@ -103,8 +133,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.prof.plot(fig=fig, ax=ax, label='profile')
         ax.legend(loc='best')
 
-    def test_add_halfspace(self):
-        # Test case 1: already has a half space
+    def test_add_halfspace__case_1__already_a_half_space(self):
         data = np.genfromtxt('./files/sample_profile.txt')  # already has halfspace
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
@@ -116,7 +145,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertEqual(prof_1.n_layer, 12)
         self.assertEqual(prof_1.n_layer, prof_2.n_layer)
 
-        # Test case 2: no half space
+    def test_add_halfspace__case_1__no_half_space(self):
         data = np.genfromtxt('./files/two_column_data_example.txt')  # no halfspace
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
@@ -173,26 +202,32 @@ class Test_Class_Vs_Profile(unittest.TestCase):
     def test_f0_RO(self):
         self.assertAlmostEqual(self.prof.get_f0_RO(), 1.10, delta=1e-2)
 
-    def test_truncate(self):
+    def test_truncate__case_1(self):
+        # Case 1: Truncation in the middle of a layer
         data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
         prof = Vs_Profile(data)
-
-        # Case 1: Truncation in the middle of a layer
         new_prof = prof.truncate(depth=8, Vs=2000)
         benchmark = np.array([[5, 3, 0], [200, 500, 2000]]).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
+    def test_truncate__case_2(self):
         # Case 2: Truncation on the boundary of a layer
+        data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
+        prof = Vs_Profile(data)
         new_prof = prof.truncate(depth=9, Vs=2000)
         benchmark = np.array([[5, 4, 0], [200, 500, 2000]]).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
+    def test_truncate__case_3(self):
         # Case 3: Truncation beyond the total depth of original profile
+        data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
+        prof = Vs_Profile(data)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array([[5, 4, 3, 2, 16, 0],
                               [200, 500, 700, 1000, 1200, 2000]]).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
+    def test_truncate__case_3b(self):
         # Case 3b: Truncation beyond the total depth of original profile
         data_ = np.array([[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1500]]).T
         prof = Vs_Profile(data_)
@@ -201,6 +236,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
                               [200, 500, 700, 1000, 1200, 1500, 2000]]).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
+    def test_truncate__case_3c(self):
         # Case 3c: Truncation beyond the total depth of original profile
         data_ = np.array([[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1200]]).T
         prof = Vs_Profile(data_)
@@ -209,10 +245,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
                               [200, 500, 700, 1000, 1200, 1200, 2000]]).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
-    def test_query_Vs_at_depth(self):
+    def test_query_Vs_at_depth__query_numpy_array(self):
         prof = Vs_Profile('./files/profile_FKSH14.txt')
 
-        #--------------- Query numpy array as results -------------------------
         # (1) Test ground surface
         self.assertAlmostEqual(prof.query_Vs_at_depth(0.0, as_profile=False), 120.0)
 
@@ -251,7 +286,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         with self.assertRaises(ValueError, msg='Please provide non-negative'):
             prof.query_Vs_at_depth(np.array([-2, 1]))
 
-        #--------------- Query Vs_Profile objects as results ------------------
+    def test_query_Vs_at_depth__query_Vs_Profile_objects(self):
+        prof = Vs_Profile('./files/profile_FKSH14.txt')
+
         # (1) Test invalid input: non-increasing array
         with self.assertRaises(ValueError, msg='needs to be monotonically increasing'):
             prof.query_Vs_at_depth(np.array([1, 2, 5, 4, 6]), as_profile=True)
@@ -274,10 +311,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         compare = np.allclose(result.vs_profile, benchmark.vs_profile)
         self.assertTrue(compare)
 
-    def test_query_Vs_given_thk(self):
+    def test_query_Vs_given_thk__using_a_scalar_as_thk(self):
         prof = Vs_Profile('./files/sample_profile.txt')
 
-        #-------------- Using a scalar as `thk` -------------------------------
         # (1a) Test trivial case: top of layer
         result = prof.query_Vs_given_thk(9, n_layers=1, at_midpoint=False)
         is_all_close = np.allclose(result, [10])

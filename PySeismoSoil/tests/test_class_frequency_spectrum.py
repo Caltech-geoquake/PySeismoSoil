@@ -12,7 +12,6 @@ class Test_Class_Frequency_Spectrum(unittest.TestCase):
     '''
     Unit test for Frequency_Spectrum class
     '''
-
     def test_load_data(self):
 
         txt_filename = './files/two_column_data_example.txt'

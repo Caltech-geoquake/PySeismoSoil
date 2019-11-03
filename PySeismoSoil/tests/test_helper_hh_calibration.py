@@ -26,8 +26,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         sigma_ = [627840, 2006145, 3639510]  # from MATLAB
         self.assertTrue(np.allclose(sigma, sigma_, rtol=1e-3, atol=0.0))
 
-    def test_calc_OCR(self):
-        # Case #1: no upper limit
+    def test_calc_OCR__case_1_no_upper_limit(self):
         Vs = np.array([200, 300, 400])
         rho = np.array([1600, 1700, 1800])
         sigma_v0 = np.array([6e4, 8e4, 1e5])
@@ -35,20 +34,23 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         OCR_bench = [4.26254237, 5.80208548, 7.08490535]
         self.assertTrue(np.allclose(OCR, OCR_bench))
 
-        # Case #2: with upper limit of 6
+    def test_calc_OCR__case_2_with_an_upper_limit_of_6(self):
+        Vs = np.array([200, 300, 400])
+        rho = np.array([1600, 1700, 1800])
+        sigma_v0 = np.array([6e4, 8e4, 1e5])
         OCR = hhc._calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=6.0)
-        OCR_bench[2] = 6
+        OCR_bench = [4.26254237, 5.80208548, 6.0]
         self.assertTrue(np.allclose(OCR, OCR_bench))
 
-    def test_calc_K0(self):
-        # Case #1: phi is a scalar
+    def test_calc_K0__case_1_phi_is_a_scalar(self):
         OCR = np.array([1, 2, 3, 4, 5])
         phi = 30
         K0 = hhc._calc_K0(OCR, phi=phi)
         self.assertTrue(np.allclose(K0, [0.5, 0.707, 0.866 , 1., 1.118],
                                     atol=1e-3, rtol=0.0))
 
-        # Case #2: phi is a vector
+    def test_calc_K0__case_1_phi_is_a_vector(self):
+        OCR = np.array([1, 2, 3, 4, 5])
         phi = np.array([30, 40, 50, 60, 70])
         K0 = hhc._calc_K0(OCR, phi=phi)
         self.assertTrue(np.allclose(K0, [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]],
@@ -75,16 +77,15 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         sigma_m0 = hhc._calc_mean_confining_stress(sigma_v0, K0)
         self.assertTrue(np.allclose(sigma_m0, [0.6e6, 1.05e6, 1.76e6]))
 
-    def test_produce_Darendeli_curves(self):
+    def test_produce_Darendeli_curves__normal_case(self):
         # Case #1: normal case
         strain = np.array([0.001, 0.01])
         sigma_v0 = np.array([3000, 6000, 9000])
         PI = np.array([10, 10, 10])
         K0 = np.array([0.4, 0.4, 0.4])
         OCR = np.array([2, 2, 2])
-        GGmax, D, gamma_ref \
-            = hhc.produce_Darendeli_curves(sigma_v0, PI=PI, OCR=OCR, K0=K0,
-                                           strain_in_pct=strain*100)
+        GGmax, D, gamma_ref = hhc.produce_Darendeli_curves(
+                sigma_v0, PI=PI, OCR=OCR, K0=K0, strain_in_pct=strain*100)
 
         GGmax_bench = np.array([[0.1223930, 0.1482878, 0.165438],  # from MATLAB
                                 [0.0165279, 0.0205492, 0.023331]])
@@ -97,15 +98,20 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         gamma_ref_bench = np.array([0.1172329, 0.1492445, 0.1718822]) * 1e-3
         self.assertTrue(np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5, rtol=0.0))
 
+    def test_produce_Darendeli_curves__one_of_the_inputs_has_incorrect_length(self):
         # Case #2: one of the inputs has incorrect length
+        strain = np.array([0.001, 0.01])
+        sigma_v0 = np.array([3000, 6000, 9000])
+        PI = np.array([10, 10, 10])
+        K0 = np.array([0.4, 0.4, 0.4])
+        OCR = np.array([2, 2, 2])
         with self.assertRaises(ValueError, msg='`PI` must have length 3, but not 6'):
             hhc.produce_Darendeli_curves(sigma_v0, PI=np.append(PI, PI),
                                          OCR=OCR, K0=K0, strain_in_pct=strain*100)
-    def test_optimization_kernel(self):
+
+    def test_optimization_kernel__case_1(self):
         # Comparing results with MATLAB for different test cases
         x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
-
-        # Case 1
         x_ref = 0.000924894
         beta = 1.0
         s = 0.919
@@ -116,7 +122,9 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         param_bench = [100.0, 0.000104122, 0.944975]  # results by MATLAB
         self.assertTrue(np.allclose([a, x_t, d], param_bench))
 
-        # Case 2
+    def test_optimization_kernel__case_2(self):
+        # Comparing results with MATLAB for different test cases
+        x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
         x_ref = 0.000423305
         beta = 1.0
         s = 0.919
@@ -127,7 +135,9 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         param_bench = [100.0, 0.000101161, 0.702563]
         self.assertTrue(np.allclose([a, x_t, d], param_bench))
 
-        # Case 3
+    def test_optimization_kernel__case_3(self):
+        # Comparing results with MATLAB for different test cases
+        x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
         x_ref = 0.000600213
         beta = 1.0
         s = 0.919
@@ -138,7 +148,9 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         param_bench = [100.0, 5.06128e-05, 0.686577]
         self.assertTrue(np.allclose([a, x_t, d], param_bench))
 
-        # Case 4
+    def test_optimization_kernel__case_4(self):
+        # Comparing results with MATLAB for different test cases
+        x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
         x_ref = 0.000898872
         beta = 1.0
         s = 0.919
@@ -157,7 +169,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         # use low tolerance because the whole process is highly reproducible
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
 
-    def test_hh_param_from_curves(self):
+    def test_hh_param_from_curves__case_1(self):
         ## Case 1: Fit G/Gmax curves generated using Darendeli (2001)
         vs_profile = np.genfromtxt('./files/profile_FKSH14.txt')
         curves = np.genfromtxt('./files/curve_FKSH14.txt')
@@ -176,6 +188,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         # use higher tolerance because MKZ curve fitting has room for small errors
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0))
 
+    def test_hh_param_from_curves__case_2(self):
         ## Case 2: Fit manually specified ("real-world") G/Gmax curves
         ##         (Unable to benchmark because MKZ curve fitting can produce
         ##          different parameters with similar curve-fitting error.)
