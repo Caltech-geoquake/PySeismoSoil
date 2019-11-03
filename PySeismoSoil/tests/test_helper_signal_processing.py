@@ -11,9 +11,7 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
     '''
     Unit test for helper functions in helper_signal_processing.py
     '''
-
     def test_fourier_transform(self):
-
         accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
@@ -39,7 +37,7 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         log_smoothed = sig.log_smooth(raw_signal[:, 1], lin_space=False)
         lin_smoothed = sig.lin_smooth(raw_signal[:, 1])
 
-        alpha=0.75
+        alpha = 0.75
         plt.figure()
         plt.semilogx(freq, raw_signal[:, 1], alpha=alpha, label='raw')
         plt.semilogx(freq, lin_smoothed, alpha=alpha, label='lin smoothed')

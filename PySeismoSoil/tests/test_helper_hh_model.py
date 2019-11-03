@@ -10,7 +10,6 @@ class Test_Helper_HH_Model(unittest.TestCase):
     '''
     Unit tests for helper functions in helper_hh_model.py
     '''
-
     def __init__(self, methodName='runTest'):
         self.strain = np.logspace(-2, 1, num=12)
         self.atol = 1e-4
@@ -44,15 +43,16 @@ class Test_Helper_HH_Model(unittest.TestCase):
                                          0.0334, 0.0430, 0.0544, 0.0675, 0.0820,
                                          0.0973, 0.1128], atol=self.atol, rtol=0.0))
 
-    def test_serialize_params_to_array(self):
+    def test_serialize_params_to_array__success(self):
         array = hh.serialize_params_to_array(self.param)
         self.assertTrue(np.allclose(array, self.array))
 
-        # Test error with incorrect number of dict items
+    def test_serialize_params_to_array__incorrect_number_of_dict_items(self):
         with self.assertRaises(AssertionError, msg=''):
             hh.serialize_params_to_array({'test': 2})
 
-        # Test error with incorrect dict keys: only one key name is wrong
+    def test_serialize_params_to_array__incorrect_dict_keys(self):
+        # Only one key name is wrong
         with self.assertRaises(KeyError, msg=''):
             hh.serialize_params_to_array({'gamma_t': 1,
                                           'a': 1,
@@ -62,19 +62,19 @@ class Test_Helper_HH_Model(unittest.TestCase):
                                           'Gmax': 1,
                                           'mu': 1,
                                           'Tmax': 1,
-                                          'd___': 1})
+                                          'd___': 1})  # should be "d"
 
-    def test_deserialize_array_to_params(self):
+    def test_deserialize_array_to_params__success(self):
         param = hh.deserialize_array_to_params(self.array)
         self.assertEqual(param, self.param)
 
-        # Test error with input data type
+    def test_deserialize_array_to_params__incorrect_input_data_type(self):
         with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
-            hh.deserialize_array_to_params([1,2,3,4,5,6,7,8])
+            hh.deserialize_array_to_params([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-        # Test error with incorrecto number of parameters (should be 9)
+    def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
         with self.assertRaises(AssertionError, msg=''):
-            hh.deserialize_array_to_params(np.array([1,2,3,4,5,6,7,8]))
+            hh.deserialize_array_to_params(np.arange(8))  # should have 9 parameters
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_HH_Model)

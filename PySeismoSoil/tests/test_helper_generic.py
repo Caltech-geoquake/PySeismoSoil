@@ -9,7 +9,6 @@ class Test_Helper_Generic(unittest.TestCase):
     '''
     Unit test for helper functions in helper_generic.py
     '''
-
     def test_is_int(self):
         self.assertTrue(hlp.is_int(3))
         self.assertTrue(hlp.is_int(np.array([3])[0]))
