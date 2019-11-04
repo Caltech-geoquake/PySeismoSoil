@@ -12,39 +12,34 @@ class Test_Class_SVM(unittest.TestCase):
     def test_init(self):
         Vs30 = 256
         z1 = 100
-        svm = SVM(Vs30, z1=z1, show_fig=False)
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         self.assertEqual(svm.Vs30, Vs30)
         self.assertEqual(svm.z1, z1)
 
-    def test_Vs_cap(self):
+    def test_Vs_cap_is_True(self):
         Vs30 = 256
         z1 = 10
-
-        # Case 1: Vs_cap is True (automatically chosen as 1,000 m/s)
         svm = SVM(Vs30, z1=z1, Vs_cap=True)
         self.assertEqual(svm.base_profile.vs_profile[-1, 0], 0)
         self.assertEqual(svm.base_profile.vs_profile[-1, 1], 1000)
 
-        # Case 2: Vs_cap is user-defined
+    def test_Vs_cap_is_user_defined(self):
+        Vs30 = 256
+        z1 = 10
         svm = SVM(Vs30, z1=z1, Vs_cap=1234.5)
         self.assertEqual(svm.base_profile.vs_profile[-1, 0], 0)
         self.assertEqual(svm.base_profile.vs_profile[-1, 1], 1234.5)
 
-        # Case 3: Vs_cap is False --- this case is hard to test...
+    def test_Vs_cap_is_False(self):
+        pass  # this case is hard to test; skipped for now
 
     def test_base_profile(self):
-        Vs30 = 256
-        z1 = 100
-        svm = SVM(Vs30, z1=z1, show_fig=False)
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         base_profile = svm.base_profile
         self.assertTrue(isinstance(base_profile, Vs_Profile))
 
-    def test_get_discretized_profile(self):
-        Vs30 = 256
-        z1 = 100
-        svm = SVM(Vs30, z1=z1, show_fig=False)
-
-        # Test fixed_thk
+    def test_get_discretized_profile__fixed_thk(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         discr_profile = svm.get_discretized_profile(fixed_thk=10,
                                                     show_fig=False)
         self.assertTrue(isinstance(discr_profile, Vs_Profile))
@@ -52,7 +47,8 @@ class Test_Class_SVM(unittest.TestCase):
             self.assertTrue(svm.bedrock_Vs == discr_profile.vs_profile[-1, 1])
             self.assertTrue(discr_profile.vs_profile[-1, 0] == 0)
 
-        # Test Vs_increment
+    def test_get_discretized_profile__valid_Vs_increment(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         discr_profile = svm.get_discretized_profile(Vs_increment=100,
                                                     show_fig=False)
         self.assertTrue(isinstance(discr_profile, Vs_Profile))
@@ -60,20 +56,23 @@ class Test_Class_SVM(unittest.TestCase):
             self.assertTrue(svm.bedrock_Vs == discr_profile.vs_profile[-1, 1])
             self.assertTrue(discr_profile.vs_profile[-1, 0] == 0)
 
-        # Test invalid Vs_increment
+    def test_get_discretized_profile__invalid_Vs_increment(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         with self.assertRaises(ValueError, msg='max Vs of the smooth profile'):
             svm.get_discretized_profile(Vs_increment=5000)
 
-        # Test input parameter checking
+    def test_get_discretized_profile__both_input_param_are_None(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         with self.assertRaises(ValueError, msg='You need to provide either'):
             svm.get_discretized_profile(Vs_increment=None, fixed_thk=None)
+
+    def test_get_discretized_profile__both_input_param_are_provided(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         with self.assertRaises(ValueError, msg='do not provide both'):
             svm.get_discretized_profile(Vs_increment=1, fixed_thk=2)
 
     def test_get_randomized_profile(self):
-        Vs30 = 256
-        z1 = 100
-        svm = SVM(Vs30, z1=z1, show_fig=False)
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         random_profile = svm.get_randomized_profile(show_fig=False)
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
@@ -82,9 +81,8 @@ class Test_Class_SVM(unittest.TestCase):
             self.assertTrue(random_profile.vs_profile[-1, 0] == 0)
 
         # Use iteration to pick compliant randomized Vs profile
-        random_profile = svm.get_randomized_profile(show_fig=True,
-                                                    vs30_z1_compliance=True,
-                                                    verbose=True)
+        random_profile = svm.get_randomized_profile(
+                show_fig=True, vs30_z1_compliance=True, verbose=True)
 
     def test_index_closest(self):
         array = [0, 1, 2, 1.1, 0.4, -3.2]
