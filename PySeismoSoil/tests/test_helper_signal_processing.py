@@ -7,12 +7,16 @@ import matplotlib.pyplot as plt
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Helper_Signal_Processing(unittest.TestCase):
     '''
     Unit test for helper functions in helper_signal_processing.py
     '''
     def test_fourier_transform(self):
-        accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
         freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
@@ -25,14 +29,14 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001, rtol=0.0))
 
     def test_calc_transfer_function(self):
-        input_accel = np.genfromtxt('./files/sample_accel.txt')
+        input_accel = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
         output_accel = input_accel.copy()
         output_accel[:, 1] *= 2.3
         transfer_func = sig.calc_transfer_function(input_accel, output_accel)
         self.assertTrue(np.allclose(transfer_func[:, 1], 2.3))
 
     def test_lin_smooth(self):
-        raw_signal = sig.fourier_transform(np.genfromtxt('./files/sample_accel.txt'))
+        raw_signal = sig.fourier_transform(np.genfromtxt(_join(f_dir, 'sample_accel.txt')))
         freq = raw_signal[:, 0]
         log_smoothed = sig.log_smooth(raw_signal[:, 1], lin_space=False)
         lin_smoothed = sig.lin_smooth(raw_signal[:, 1])

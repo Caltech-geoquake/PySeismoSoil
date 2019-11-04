@@ -3,6 +3,10 @@
 import unittest
 import numpy as np
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 from PySeismoSoil.class_curves import Curve, GGmax_Curve, Damping_Curve, \
                                       Stress_Curve, Multiple_Damping_Curves, \
                                       Multiple_GGmax_Curves, \
@@ -13,7 +17,7 @@ class Test_Class_Curves(unittest.TestCase):
     Unit test for curve-related class
     '''
     def test_init(self):
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = Curve(data[:, 2:4])
         damping_data = curve.raw_data[:, 1]
         damping_bench = [1.6683, 1.8386, 2.4095, 3.8574, 7.4976,
@@ -21,7 +25,7 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(np.allclose(damping_data, damping_bench))
 
     def test_plot(self):
-        filename = './files/curve_FKSH14.txt'
+        filename = _join(f_dir, 'curve_FKSH14.txt')
         data = np.genfromtxt(filename)
         curve = Curve(data[:, 2:4])
         curve.plot(marker='.')
@@ -30,7 +34,7 @@ class Test_Class_Curves(unittest.TestCase):
         curves.plot()
 
     def test_HH_x_fit_single_layer(self):
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = Damping_Curve(data[:, 2:4])
 
         try:
@@ -49,7 +53,7 @@ class Test_Class_Curves(unittest.TestCase):
                                       's', 'Gmax', 'mu', 'Tmax', 'd'})
 
     def test_H4_x_fit_single_layer(self):
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = Damping_Curve(data[:, 2:4])
 
         try:
@@ -66,7 +70,7 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
     def test_value_check(self):
-        data = np.genfromtxt('./files/curve_FKSH14.txt')[:, 2:4]
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))[:, 2:4]
         with self.assertRaises(ValueError, msg='G/Gmax values must be between'):
             GGmax_Curve(data)
         with self.assertRaises(ValueError, msg='damping values must be between'):
@@ -75,7 +79,7 @@ class Test_Class_Curves(unittest.TestCase):
             Stress_Curve(data * -1)
 
     def test_multiple_damping_curves(self):
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
 
         # Test __len__
         self.assertEqual(len(mdc), 5)
@@ -112,14 +116,14 @@ class Test_Class_Curves(unittest.TestCase):
 
         # Test append
         with self.assertRaises(TypeError, msg='new `item` must be of type'):
-            mdc[2] = GGmax_Curve('./files/curve_FKSH14.txt')  # use an incorrect type
+            mdc[2] = GGmax_Curve(_join(f_dir, 'curve_FKSH14.txt'))  # use an incorrect type
         self.assertEqual(len(mdc), 4)
         mdc.append(mdc_3)
         self.assertEqual(len(mdc), 5)
         self.assertEqual(mdc.n_layer, 5)
 
     def test_HH_x_fit_multi_layer__differential_evolution_algorithm(self):
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc_ = mdc[:2]
         hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=True)
@@ -129,7 +133,7 @@ class Test_Class_Curves(unittest.TestCase):
                                          's', 'Gmax', 'mu', 'Tmax', 'd'})
 
     def test_HH_x_fit_multi_layer__DEAP_algorithm(self):
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc_ = mdc[:2]
         try:
             hhx = mdc_.get_all_HH_x_params(pop_size=1, n_gen=1, save_txt=False,
@@ -142,7 +146,7 @@ class Test_Class_Curves(unittest.TestCase):
             pass
 
     def test_H4_x_fit_multi_layer__differential_evolution_algorithm(self):
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc_ = mdc[:2]
         h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
                                        use_scipy=True)
@@ -151,7 +155,7 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(h4x[0].keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
 
     def test_H4_x_fit_multi_layer__DEAP_algorithm(self):
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc_ = mdc[:2]
         try:
             h4x = mdc_.get_all_H4_x_params(pop_size=1, n_gen=1, save_txt=False,
@@ -165,10 +169,10 @@ class Test_Class_Curves(unittest.TestCase):
     def test_multiple_GGmax_curve_get_curve_matrix(self):
         damping = 1.23  # choose a dummy value
 
-        mgc = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
+        mgc = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         curve = mgc.get_curve_matrix(damping_filler_value=damping)
 
-        curve_benchmark = np.genfromtxt('./files/curve_FKSH14.txt')
+        curve_benchmark = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         for j in range(curve_benchmark.shape[1]):
             if j % 4 == 3:  # original damping info is lost; use same dummy value
                 curve_benchmark[:, j] = damping
@@ -178,10 +182,10 @@ class Test_Class_Curves(unittest.TestCase):
     def test_multiple_damping_curve_get_curve_matrix(self):
         GGmax = 0.76  # choose a dummy value
 
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         curve = mdc.get_curve_matrix(GGmax_filler_value=GGmax)
 
-        curve_benchmark = np.genfromtxt('./files/curve_FKSH14.txt')
+        curve_benchmark = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         for j in range(curve_benchmark.shape[1]):
             if j % 4 == 1:  # original damping info is lost; use same dummy value
                 curve_benchmark[:, j] = GGmax
@@ -190,26 +194,26 @@ class Test_Class_Curves(unittest.TestCase):
 
     def test_init_multiple_GGmax_damping_curves(self):
         # Case 1: with MGC and MDC
-        mgc = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
-        mdc = Multiple_Damping_Curves('./files/curve_FKSH14.txt')
+        mgc = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
+        mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         with self.assertRaises(ValueError, msg='Both parameters are `None`'):
             Multiple_GGmax_Damping_Curves()
         with self.assertRaises(ValueError, msg='one and only one input parameter'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data=2.6)
         with self.assertRaises(TypeError, msg='needs to be of type'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mdc, mgc))
-        mgc_ = Multiple_GGmax_Curves('./files/curve_FKSH14.txt')
+        mgc_ = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         del mgc_[-1]
         with self.assertRaises(ValueError, msg='same number of soil layers'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc_, mdc))
 
         mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
         matrix = mgdc.get_curve_matrix()
-        benchmark = np.genfromtxt('./files/curve_FKSH14.txt')
+        benchmark = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         self.assertTrue(np.allclose(matrix, benchmark))
 
         # Case 2: with a numpy array
-        array = np.genfromtxt('./files/curve_FKSH14.txt')
+        array = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         array_ = np.column_stack((array, array[:, -1]))
         with self.assertRaises(ValueError, msg='needs to be a multiple of 4'):
             Multiple_GGmax_Damping_Curves(data=array_)
@@ -222,7 +226,7 @@ class Test_Class_Curves(unittest.TestCase):
         # Case 3: with a file name
         with self.assertRaises(TypeError, msg='must be a 2D numpy array or a file name'):
             Multiple_GGmax_Damping_Curves(data=3.5)
-        mgdc = Multiple_GGmax_Damping_Curves(data='./files/curve_FKSH14.txt')
+        mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
         self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))
         self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))

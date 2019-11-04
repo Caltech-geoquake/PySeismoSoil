@@ -10,13 +10,17 @@ from PySeismoSoil.class_ground_motion import Ground_Motion as GM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Class_Ground_Motion(unittest.TestCase):
     '''
     Unit test for Ground_Motion class
     '''
     def test_loading_data__two_columns_from_file(self):
         # Two columns from file
-        gm = GM('./files/sample_accel.txt', unit='gal')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='gal')
 
         PGA_benchmark = 294.30  # unit: cm/s/s
         PGV_benchmark = 31.46   # unit: cm/s
@@ -36,7 +40,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
 
     def test_loading_data__one_column_from_file(self):
         # One column from file
-        gm = GM('./files/one_column_data_example.txt', unit='g', dt=0.2)
+        gm = GM(_join(f_dir, 'one_column_data_example.txt'), unit='g', dt=0.2)
         self.assertAlmostEqual(gm.pga_in_g, 12.0)
 
     def test_loading_data__one_column_from_numpy_array(self):
@@ -65,7 +69,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(gm.accel, accel_benchmark))
 
     def test_integration__artificial_example(self):
-        gm = GM('./files/two_column_data_example.txt', unit='m/s/s')
+        gm = GM(_join(f_dir, 'two_column_data_example.txt'), unit='m/s/s')
         v_bench = np.array([[0.1000, 0.1000],  # from MATLAB
                             [0.2000, 0.3000],
                             [0.3000, 0.6000],
@@ -105,7 +109,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         #       achieve perfect "alignment" between the two time histories,
         #       we check the correlation coefficient instead of element-wise
         #       check.
-        veloc_ = np.genfromtxt('./files/sample_accel.txt')
+        veloc_ = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
         gm = GM(veloc_, unit='m/s', motion_type='veloc')
         displ = gm.displ[:, 1]
         displ_cumtrapz = np.append(0, sp.integrate.cumtrapz(veloc_[:, 1], dx=gm.dt))
@@ -113,7 +117,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(r >= 0.999)
 
     def test_fourier_transform(self):
-        gm = GM('./files/two_column_data_example.txt', unit='m/s/s')
+        gm = GM(_join(f_dir, 'two_column_data_example.txt'), unit='m/s/s')
         freq, spec = gm.get_Fourier_spectrum(real_val=False).raw_data.T
 
         freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
@@ -125,33 +129,33 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001, rtol=0.0))
 
     def test_baseline_correction(self):
-        gm = GM('./files/sample_accel.txt', unit='m/s/s')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m/s/s')
         corrected = gm.baseline_correct(show_fig=True)
         self.assertTrue(isinstance(corrected, GM))
 
     def test_high_pass_filter(self):
-        gm = GM('./files/sample_accel.txt', unit='m')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
         hp = gm.highpass(cutoff_freq=1.0, show_fig=True)
         self.assertTrue(isinstance(hp, GM))
 
     def test_low_pass_filter(self):
-        gm = GM('./files/sample_accel.txt', unit='m')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
         lp = gm.lowpass(cutoff_freq=1.0, show_fig=True)
         self.assertTrue(isinstance(lp, GM))
 
     def test_band_pass_filter(self):
-        gm = GM('./files/sample_accel.txt', unit='m')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
         bp = gm.bandpass(cutoff_freq=[0.5, 8], show_fig=True)
         self.assertTrue(isinstance(bp, GM))
 
     def test_band_stop_filter(self):
-        gm = GM('./files/sample_accel.txt', unit='m')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
         bs = gm.bandstop(cutoff_freq=[0.5, 8], show_fig=True)
         self.assertTrue(isinstance(bs, GM))
 
     def test_amplify_via_profile(self):
-        gm = GM('./files/sample_accel.txt', unit='m')
-        vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
+        vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         output_motion = gm.amplify(vs_prof, boundary='elastic')
         self.assertTrue(isinstance(output_motion, GM))
 
@@ -160,8 +164,8 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         Test that `deconvolve()` and `amplify()` are reverse
         operations to each other.
         '''
-        gm = GM('./files/sample_accel.txt', unit='m')
-        vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
+        vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
 
         for boundary in ['elastic', 'rigid']:
             deconv_motion = gm.deconvolve(vs_prof, boundary=boundary)
@@ -173,7 +177,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
             self.assertTrue(self.nearly_identical(gm.accel, output_motion.accel))
 
     def test_plot(self):
-        filename = './files/sample_accel.txt'
+        filename = _join(f_dir, 'sample_accel.txt')
         gm = GM(filename, unit='m')
 
         fig, axes = gm.plot()  # automatically generate fig/ax objects
@@ -205,7 +209,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(gm.accel[:, 1] * 0.5, gm_scaled_2.accel[:, 1]))
 
     def test_amplify_by_tf__case_1_an_artificial_transfer_function(self):
-        gm = GM('./files/sample_accel.txt', unit='gal')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='gal')
         ratio_benchmark = 2.76
         freq = np.arange(0.01, 50, step=0.01)
         tf = ratio_benchmark * np.ones_like(freq)
@@ -215,8 +219,8 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(np.allclose(ratio, ratio_benchmark))
 
     def test_amplify_by_tf__case_2_a_transfer_function_from_a_Vs_profile(self):
-        gm = GM('./files/sample_accel.txt', unit='gal')
-        vs_prof = Vs_Profile('./files/profile_FKSH14.txt')
+        gm = GM(_join(f_dir, 'sample_accel.txt'), unit='gal')
+        vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         tf_RO, tf_BH, _ = vs_prof.get_transfer_function()
         gm_with_tf_RO = gm.amplify_by_tf(tf_RO)
         gm_with_tf_BH = gm.amplify_by_tf(tf_BH)

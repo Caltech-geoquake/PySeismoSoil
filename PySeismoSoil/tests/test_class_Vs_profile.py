@@ -8,12 +8,16 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 import PySeismoSoil.helper_generic as hlp
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Class_Vs_Profile(unittest.TestCase):
     '''
     Unit test for Vs_Profile class
     '''
     def __init__(self, methodName='runTest'):
-        data, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        data, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         data[:, 0] *= 10
         data[:, 1] *= 100
         prof = Vs_Profile(data)
@@ -134,7 +138,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         ax.legend(loc='best')
 
     def test_add_halfspace__case_1__already_a_half_space(self):
-        data = np.genfromtxt('./files/sample_profile.txt')  # already has halfspace
+        data = np.genfromtxt(_join(f_dir, 'sample_profile.txt'))  # already has halfspace
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
 
@@ -146,7 +150,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertEqual(prof_1.n_layer, prof_2.n_layer)
 
     def test_add_halfspace__case_1__no_half_space(self):
-        data = np.genfromtxt('./files/two_column_data_example.txt')  # no halfspace
+        data = np.genfromtxt(_join(f_dir, 'two_column_data_example.txt'))  # no halfspace
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
 
@@ -161,7 +165,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertAlmostEqual(self.prof.vs30, 276.9231, delta=1e-4)
 
     def test_get_amplif_function(self):
-        profile_FKSH14 = Vs_Profile('./files/profile_FKSH14.txt')
+        profile_FKSH14 = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         af_RO = profile_FKSH14.get_ampl_function(freq_resolution=0.5, fmax=15)[0]
         af_benchmark = np.array([[0.50, 1.20218233839345],  # from MATLAB
                                  [1, 2.40276180417506],
@@ -246,7 +250,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
     def test_query_Vs_at_depth__query_numpy_array(self):
-        prof = Vs_Profile('./files/profile_FKSH14.txt')
+        prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
 
         # (1) Test ground surface
         self.assertAlmostEqual(prof.query_Vs_at_depth(0.0, as_profile=False), 120.0)
@@ -287,7 +291,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
             prof.query_Vs_at_depth(np.array([-2, 1]))
 
     def test_query_Vs_at_depth__query_Vs_Profile_objects(self):
-        prof = Vs_Profile('./files/profile_FKSH14.txt')
+        prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
 
         # (1) Test invalid input: non-increasing array
         with self.assertRaises(ValueError, msg='needs to be monotonically increasing'):
@@ -312,7 +316,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(compare)
 
     def test_query_Vs_given_thk__using_a_scalar_as_thk(self):
-        prof = Vs_Profile('./files/sample_profile.txt')
+        prof = Vs_Profile(_join(f_dir, 'sample_profile.txt'))
 
         # (1a) Test trivial case: top of layer
         result = prof.query_Vs_given_thk(9, n_layers=1, at_midpoint=False)

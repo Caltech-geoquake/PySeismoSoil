@@ -7,13 +7,17 @@ import scipy.stats
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_site_response as sr
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Helper_Site_Response(unittest.TestCase):
     '''
     Unit test for helper functions in helper_site_response.py
     '''
     #--------------------------------------------------------------------------
     def test_num_int(self):
-        accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         v, u = sr.num_int(accel)
 
         v_bench = np.array([[0.1000, 0.1000],
@@ -89,7 +93,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_response_spectra(self):
-        accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
 
         T_min = 0.01
         T_max = 10
@@ -113,7 +117,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_find_f0(self):
-        data, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        data, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         f0 = sr.find_f0(data)
         f0_benchmark = 0.5
         self.assertAlmostEqual(f0, f0_benchmark)
@@ -279,7 +283,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         import PySeismoSoil.helper_hh_model as hh
         import PySeismoSoil.helper_mkz_model as mkz
 
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
         res = sr.fit_all_damping_curves([curve],
                                          hh.fit_HH_x_single_layer, hh.tau_HH,
@@ -291,7 +295,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
     def test_fit_all_damping_curves__exception_when_no_func_serialize(self):
         import PySeismoSoil.helper_hh_model as hh
 
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
         with self.assertRaises(ValueError, msg='provide a function to serialize'):
             sr.fit_all_damping_curves(
@@ -302,7 +306,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         import PySeismoSoil.helper_hh_model as hh
         import PySeismoSoil.helper_mkz_model as mkz
 
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
         with self.assertRaises(AssertionError, msg=''):
             sr.fit_all_damping_curves(

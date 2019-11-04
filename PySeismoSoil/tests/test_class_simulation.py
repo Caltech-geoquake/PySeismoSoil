@@ -13,10 +13,14 @@ from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 
 from test_class_ground_motion import Test_Class_Ground_Motion
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Class_Simulation(unittest.TestCase):
     def test_linear(self):
-        input_motion = Ground_Motion('./files/sample_accel.txt', unit='m')
-        soil_profile = Vs_Profile('./files/profile_FKSH14.txt')
+        input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='m')
+        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         ls = Linear_Simulation(soil_profile, input_motion)
         sim_result = ls.run(every_layer=True, show_fig=True)
         output = sim_result.accel_on_surface
@@ -33,9 +37,9 @@ class Test_Class_Simulation(unittest.TestCase):
         self.assertTrue(nearly_identical(output.accel, output_.accel, thres=0.99))
 
     def test_equiv_linear(self):
-        soil_profile = Vs_Profile('./files/profile_FKSH14.txt')
-        input_motion = Ground_Motion('./files/sample_accel.txt', unit='gal')
-        curves = Multiple_GGmax_Damping_Curves(data='./files/curve_FKSH14.txt')
+        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+        curves = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
         equiv_lin_sim = Equiv_Linear_Simulation(soil_profile, input_motion,
                                                 curves, boundary='elastic')
         output = equiv_lin_sim.run(show_fig=True)
@@ -57,10 +61,10 @@ class Test_Class_Simulation(unittest.TestCase):
         self.assertTrue(np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0))
 
     def test_nonlinear_init(self):
-        input_motion = Ground_Motion('./files/sample_accel.txt', unit='m')
-        soil_profile = Vs_Profile('./files/profile_FKSH14.txt')
-        HH_G = HH_Param_Multi_Layer('./files/HH_G_FKSH14.txt')
-        HH_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
+        input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='m')
+        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        HH_G = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
+        HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
 
         # this should succeed
         Nonlinear_Simulation(soil_profile, input_motion, G_param=HH_G,
