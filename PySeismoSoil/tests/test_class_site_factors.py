@@ -108,36 +108,40 @@ class Test_Class_Site_Factors(unittest.TestCase):
 
         self.assertEqual(answer, benchmark)
 
-    def test_site_factors(self):
+    def test_site_factors__assert_data_type(self):
         sf = SF(265, 128, 0.012)
-
-        # assert data type
         amp = sf.get_amplification(Fourier=False, show_interp_plots=False)
         self.assertTrue(isinstance(amp, FS))
 
-        # assert that linear amplification factor starts from ~1.0 at small freq
+    def test_site_factors__assert_linear_amp_factor_is_approx_1_at_small_freq(self):
+        sf = SF(265, 128, 0.012)
         amp = sf.get_amplification(Fourier=True, show_interp_plots=False)
         self.assertTrue(isinstance(amp, FS))
         self.assertTrue(np.allclose(amp.raw_data[0, 1], 1.0, atol=0.1, rtol=0.0))
 
-        # assert that phase start from ~0.0 at small freq
+    def test_site_factors__assert_phase_starts_from_approx_0_at_small_freq(self):
+        sf = SF(265, 128, 0.012)
         phase = sf.get_phase_shift(show_interp_plots=False, method='eq_hh')
         self.assertTrue(isinstance(phase, FS))
         self.assertTrue(np.allclose(phase.raw_data[0, 1], 0.0, atol=0.1, rtol=0.0))
 
-        # test out-of-bound values (not lenient)
+    def test_site_factors__out_of_bound_Vs30_values__not_lenient(self):
         with self.assertRaises(ValueError, msg='Vs30 should be between'):
             SF(174, 125, 0.3, lenient=False)
+
+    def test_site_factors__out_of_bound_z1_values__not_lenient(self):
         with self.assertRaises(ValueError, msg='z1_in_m should be between'):
             SF(180, 901, 0.3, lenient=False)
+
+    def test_site_factors__out_of_bount_PGA_values__not_lenient(self):
         with self.assertRaises(ValueError, msg='PGA should be between'):
             SF(180, 650, 1.6, lenient=False)
 
-        # test invalid combinations (not lenient)
+    def test_site_factors__invalid_combinations__not_lenient(self):
         with self.assertRaises(ValueError, msg='combination not valid'):
             SF(650, 900, 1.0, lenient=False)
 
-        # test lenient cases: out-of-bound Vs30
+    def test_site_factors__out_of_bound_Vs30__lenient_case_1(self):
         sf1 = SF(170, 125, 0.3, lenient=True)
         sf2 = SF(175, 125, 0.3)
         self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
@@ -145,6 +149,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
                                     sf2.get_phase_shift().spectrum))
 
+    def test_site_factors__out_of_bound_Vs30__lenient_case_2(self):
         sf1 = SF(980, 10, 0.3, lenient=True)
         sf2 = SF(950, 10, 0.3)
         self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
@@ -152,7 +157,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
                                     sf2.get_phase_shift().spectrum))
 
-        # test lenient cases: out-of-bound z1
+    def test_site_factors__out_of_bound_z1__lenient_case_1(self):
         sf1 = SF(275, 5, 0.3, lenient=True)
         sf2 = SF(275, 8, 0.3)
         self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
@@ -160,6 +165,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
                                     sf2.get_phase_shift().spectrum))
 
+    def test_site_factors__out_of_bound_z1__lenient_case_2(self):
         sf1 = SF(275, 980, 0.3, lenient=True)
         sf2 = SF(275, 900, 0.3)
         self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
@@ -167,7 +173,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
                                     sf2.get_phase_shift().spectrum))
 
-        # test lenient cases: out-of-bound PGA
+    def test_site_factors__out_of_bound_PGA__lenient_case_1(self):
         sf1 = SF(300, 120, 0.008, lenient=True)
         sf2 = SF(300, 120, 0.01)
         self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
@@ -175,6 +181,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
                                     sf2.get_phase_shift().spectrum))
 
+    def test_site_factors__out_of_bound_PGA__lenient_case_2(self):
         sf1 = SF(300, 120, 1.75, lenient=True)
         sf2 = SF(300, 120, 1.5)
         self.assertTrue(np.allclose(sf1.get_amplification().spectrum,

@@ -11,7 +11,6 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
     '''
     Unit tests for helper functions in helper_mkz_model.py
     '''
-
     def __init__(self, methodName='runTest'):
         self.strain = np.logspace(-2, 1, num=12)
         self.atol = 1e-4
@@ -32,32 +31,32 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
                                          0.0147, 0.0163, 0.0178, 0.0195, 0.0213,
                                          0.0232, 0.0251], atol=self.atol, rtol=0.0))
 
-    def test_serialize_params_to_array(self):
+    def test_serialize_params_to_array__success(self):
         array = mkz.serialize_params_to_array(self.param)
         self.assertTrue(np.allclose(array, self.array))
 
-        # Test error with incorrect number of dict items
+    def test_serialize_params_to_array__incorrect_number_of_dict_items(self):
         with self.assertRaises(AssertionError, msg=''):
             mkz.serialize_params_to_array({'test': 2})
 
-        # Test error with incorrect dict keys: only one key name is wrong
+    def test_serialize_params_to_array__only_one_key_name_is_wrong(self):
         with self.assertRaises(KeyError, msg=''):
             mkz.serialize_params_to_array({'gamma_ref': 1,
                                            's': 1,
                                            'beta': 1,
-                                           'Gmax__': 1})
+                                           'Gmax__': 1})  # should be "Gmax"
 
-    def test_deserialize_array_to_params(self):
+    def test_deserialize_array_to_params__success(self):
         param = mkz.deserialize_array_to_params(self.array)
         self.assertEqual(param, self.param)
 
-        # Test error with input data type
+    def test_deserialize_array_to_params__incorrect_input_data_type(self):
         with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
             mkz.deserialize_array_to_params([1,2,3,4])
 
-        # Test error with incorrecto number of parameters (should be 4)
+    def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
         with self.assertRaises(AssertionError, msg=''):
-            mkz.deserialize_array_to_params(np.array([1,2,3,4,5]))
+            mkz.deserialize_array_to_params(np.array([1,2,3,4,5])) # should be 4
 
     def test_fit_MKZ(self):
         strain_in_1 = np.geomspace(1e-6, 0.1, num=50)  # unit: 1

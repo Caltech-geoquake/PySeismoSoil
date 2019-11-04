@@ -12,33 +12,36 @@ from PySeismoSoil.class_simulation import Linear_Simulation, \
                                           Nonlinear_Simulation
 from PySeismoSoil.class_batch_simulation import Batch_Simulation
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Class_Batch_Simulation(unittest.TestCase):
-    def test_init(self):
-        # Case 1: Not a list
+    def test_init__case_1_not_a_list(self):
         with self.assertRaises(TypeError, msg='`list_of_simulations` should be a list.'):
             Batch_Simulation(1.4)
 
-        # Case 2: A list of 0 length
+    def test_init__case_2_a_list_of_0_length(self):
         with self.assertRaises(ValueError, msg='should have at least one element'):
             Batch_Simulation([])
 
-        # Case 3: Wrong type
+    def test_init__case_3_wrong_type(self):
         with self.assertRaises(TypeError, msg='Elements of `list_of_simulations` should be of type'):
             Batch_Simulation([1, 2, 3])
 
-        # Case 4: Inhomogeneous element type
+    def test_init__case_4_inhomogeneous_element_type(self):
         with self.assertRaises(TypeError, msg='should be of the same type'):
-            gm = Ground_Motion('./files/sample_accel.txt', unit='gal')
-            prof = Vs_Profile('./files/profile_FKSH14.txt')
-            mgdc = Multiple_GGmax_Damping_Curves(data='./files/curve_P001.txt')
+            gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+            prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+            mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_P001.txt'))
             lin_sim = Linear_Simulation(gm, prof)
             equiv_sim = Equiv_Linear_Simulation(gm, prof, mgdc)
             Batch_Simulation([lin_sim, equiv_sim])
 
     def test_linear(self):
-        gm = Ground_Motion('./files/sample_accel.txt', unit='gal')
-        prof_1 = Vs_Profile('./files/profile_FKSH14.txt')
-        prof_2 = Vs_Profile('./files/profile_P001.txt')
+        gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+        prof_1 = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
 
         sim_1 = Linear_Simulation(prof_1, gm, boundary='elastic')
         sim_2 = Linear_Simulation(prof_2, gm, boundary='elastic')
@@ -56,11 +59,11 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
                                     atol=0.0, rtol=1e-3))
 
     def test_equiv_linear(self):
-        gm_raw = Ground_Motion('./files/sample_accel.txt', unit='gal')
+        gm_raw = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         # Make a very weak motion to speed up equivalent linear calculation
         gm = gm_raw.scale_motion(target_PGA_in_g=0.001)
-        prof_2 = Vs_Profile('./files/profile_P001.txt')
-        mgdc_2 = Multiple_GGmax_Damping_Curves(data='./files/curve_P001.txt')
+        prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
+        mgdc_2 = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_P001.txt'))
 
         sim_2 = Equiv_Linear_Simulation(prof_2, gm, mgdc_2, boundary='elastic')
         sim_list = [sim_2]
@@ -77,12 +80,12 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
                                     atol=0.0, rtol=1e-3))
 
     def test_nonlinear(self):
-        accel_data = np.genfromtxt('./files/sample_accel.txt')
+        accel_data = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
         accel_downsample = accel_data[::50]  # for faster testing speed
         gm = Ground_Motion(accel_downsample, unit='gal')
-        prof = Vs_Profile('./files/profile_FKSH14.txt')
-        hh_g = HH_Param_Multi_Layer('./files/HH_G_FKSH14.txt')
-        hh_x = HH_Param_Multi_Layer('./files/HH_X_FKSH14.txt')
+        prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        hh_g = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
+        hh_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
         sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
 
         batch_sim = Batch_Simulation([sim])

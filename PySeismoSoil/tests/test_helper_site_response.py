@@ -7,14 +7,17 @@ import scipy.stats
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_site_response as sr
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Helper_Site_Response(unittest.TestCase):
     '''
     Unit test for helper functions in helper_site_response.py
     '''
-
     #--------------------------------------------------------------------------
     def test_num_int(self):
-        accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         v, u = sr.num_int(accel)
 
         v_bench = np.array([[0.1000, 0.1000],
@@ -90,7 +93,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_response_spectra(self):
-        accel, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
 
         T_min = 0.01
         T_max = 10
@@ -114,7 +117,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     #--------------------------------------------------------------------------
     def test_find_f0(self):
-        data, _ = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        data, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         f0 = sr.find_f0(data)
         f0_benchmark = 0.5
         self.assertAlmostEqual(f0, f0_benchmark)
@@ -160,11 +163,11 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertAlmostEqual(vs30, vs30_benchmark)
 
     #--------------------------------------------------------------------------
-    def test_calc_z1(self):
-        # Normal case: Vs reaches 1000 m/s
+    def test_calc_z1__normal_case__Vs_reaches_1000_meters_per_sec(self):
         vs_prof_1 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
         self.assertAlmostEqual(sr.calc_z1(vs_prof_1), 12)
 
+    def test_calc_z1__abnormal_case__Vs_doesnt_reaches_1000_meters_per_sec(self):
         # Abnormal case: Vs does not reach 1000 m/s ---> use total depth
         vs_prof_2 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 800, 900]]).T
         self.assertAlmostEqual(sr.calc_z1(vs_prof_2), 15)
@@ -220,20 +223,21 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(np.allclose(y, y_benchmark))
 
     #--------------------------------------------------------------------------
-    def test_calc_GGmax_from_stress_strain_curve(self):
+    def test_calc_GGmax_from_stress_strain_curve__linear_case_GGmax_should_be_1(self):
         # Test linear stress strain: G/Gmax should be all 1's
         strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([2, 4, 6])
         GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
         self.assertTrue(np.allclose(GGmax, [1, 1, 1]))
 
-        # Test a hand-calculable case:
+    def test_calc_GGmax_from_stress_strain_curve__a_hand_calculated_case(self):
+        strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([4, 6, 7])
         GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
         self.assertTrue(np.allclose(GGmax, [1., 3./4, 7./3./4]))
 
     #--------------------------------------------------------------------------
-    def test_calc_damping_from_stress_strain(self):
+    def test_calc_damping_from_stress_strain__case_1(self):
         # Case 1: Test linear stress strain: damping should be 0
         strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([2, 4, 6])
@@ -241,6 +245,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
         self.assertTrue(np.allclose(damping, [0, 0, 0]))
 
+    def test_calc_damping_from_stress_strain__case_2(self):
         # Case 2: Test elasto-perfectly-plastic: damping can be hand-calculated
         #
         #                 ^ stress
@@ -264,6 +269,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
         self.assertTrue(np.allclose(damping, [0, 0, 2./3./np.pi, 1./np.pi]))
 
+    def test_calc_damping_from_stress_strain__case_3(self):
         # Case 3: An edge case -- the initial damping is, in theory, almost 0
         strain_in_1 = np.array([0.0001, 0.00011514, 0.000132571, 0.000152642,
                                 0.000175751])
@@ -273,11 +279,11 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertGreaterEqual(damping[0], 0.0)  # make sure it is >= 0
 
     #--------------------------------------------------------------------------
-    def test_fit_all_damping_curves(self):
+    def test_fit_all_damping_curves__success(self):
         import PySeismoSoil.helper_hh_model as hh
         import PySeismoSoil.helper_mkz_model as mkz
 
-        data = np.genfromtxt('./files/curve_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
         res = sr.fit_all_damping_curves([curve],
                                          hh.fit_HH_x_single_layer, hh.tau_HH,
@@ -286,20 +292,27 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(isinstance(res[0], dict))
         self.assertEqual(len(res[0]), 9)  # HH model: 9 parameters
 
-        # Test exception when no func_serialize
-        with self.assertRaises(ValueError, msg='provide a function to serialize'):
-            sr.fit_all_damping_curves([curve],
-                                       hh.fit_HH_x_single_layer, hh.tau_HH,
-                                       pop_size=1, n_gen=1, save_txt=True,
-                                       func_serialize=None)
+    def test_fit_all_damping_curves__exception_when_no_func_serialize(self):
+        import PySeismoSoil.helper_hh_model as hh
 
-        # Test exception with incorrect func_serialize
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
+        curve = data[:, 2:4]
+        with self.assertRaises(ValueError, msg='provide a function to serialize'):
+            sr.fit_all_damping_curves(
+                    [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
+                    n_gen=1, save_txt=True, func_serialize=None)
+
+    def test_fit_all_damping_curves__exception_with_incorrect_func_serialize(self):
+        import PySeismoSoil.helper_hh_model as hh
+        import PySeismoSoil.helper_mkz_model as mkz
+
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
+        curve = data[:, 2:4]
         with self.assertRaises(AssertionError, msg=''):
-            sr.fit_all_damping_curves([curve],
-                                       hh.fit_HH_x_single_layer, hh.tau_HH,
-                                       pop_size=1, n_gen=1, save_txt=True,
-                                       txt_filename='1.txt',  # no effect anyways
-                                       func_serialize=mkz.serialize_params_to_array)
+            sr.fit_all_damping_curves(
+                    [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
+                    n_gen=1, save_txt=True, txt_filename='1.txt',  # no effect anyways
+                    func_serialize=mkz.serialize_params_to_array)
 
     #--------------------------------------------------------------------------
     def test_plot_site_amp(self):
