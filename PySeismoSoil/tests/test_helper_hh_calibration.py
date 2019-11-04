@@ -5,6 +5,10 @@ import numpy as np
 
 import PySeismoSoil.helper_hh_calibration as hhc
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Helper_HH_Calibration(unittest.TestCase):
     def test_calc_rho(self):
         h = np.array([2, 3, 4, 5])
@@ -162,17 +166,17 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         self.assertTrue(np.allclose([a, x_t, d], param_bench))
 
     def test_hh_param_from_profile(self):
-        vs_profile = np.genfromtxt('./files/profile_FKSH14.txt')
+        vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
         HH_G_param = hhc.hh_param_from_profile(vs_profile, show_fig=False,
                                                verbose=False)
-        HH_G_benchmark = np.genfromtxt('./files/HH_G_FKSH14.txt')  # calculated by MATLAB
+        HH_G_benchmark = np.genfromtxt(_join(f_dir, 'HH_G_FKSH14.txt'))  # calculated by MATLAB
         # use low tolerance because the whole process is highly reproducible
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
 
     def test_hh_param_from_curves__case_1(self):
         ## Case 1: Fit G/Gmax curves generated using Darendeli (2001)
-        vs_profile = np.genfromtxt('./files/profile_FKSH14.txt')
-        curves = np.genfromtxt('./files/curve_FKSH14.txt')
+        vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
+        curves = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         HH_G_param = hhc.hh_param_from_curves(vs_profile, curves, show_fig=False,
                                               verbose=False)
         HH_G_benchmark \
@@ -193,8 +197,8 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         ##         (Unable to benchmark because MKZ curve fitting can produce
         ##          different parameters with similar curve-fitting error.)
         ##         The user needs to do a visual inspection.
-        vs_profile = np.genfromtxt('./files/profile_P001.txt')
-        curves = np.genfromtxt('./files/curve_P001.txt')
+        vs_profile = np.genfromtxt(_join(f_dir, 'profile_P001.txt'))
+        curves = np.genfromtxt(_join(f_dir, 'curve_P001.txt'))
         HH_G_param = hhc.hh_param_from_curves(vs_profile, curves, show_fig=True,
                                               verbose=False)
 

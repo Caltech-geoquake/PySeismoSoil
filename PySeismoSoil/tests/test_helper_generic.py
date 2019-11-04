@@ -5,6 +5,10 @@ import numpy as np
 
 import PySeismoSoil.helper_generic as hlp
 
+import os
+from os.path import join as _join
+f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 class Test_Helper_Generic(unittest.TestCase):
     '''
     Unit test for helper functions in helper_generic.py
@@ -22,7 +26,7 @@ class Test_Helper_Generic(unittest.TestCase):
 
     def test_read_two_column_stuff(self):
         # Load from file
-        data, dt = hlp.read_two_column_stuff('./files/two_column_data_example.txt')
+        data, dt = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         benchmark = np.array([[.1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0,
                                1.1, 1.2, 1.3, 1.4, 1.5],
                               [1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7]]).T
@@ -144,7 +148,7 @@ class Test_Helper_Generic(unittest.TestCase):
             hlp.check_length_or_extend_to_array(None, 3)
 
     def test_extract_from_curve_format(self):
-        data = np.genfromtxt('./files/curve_FKSH14.txt')[:, :8]
+        data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))[:, :8]
         GGmax, damping = hlp.extract_from_curve_format(data)
 
         strain = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
@@ -164,7 +168,7 @@ class Test_Helper_Generic(unittest.TestCase):
         self.assertTrue(np.allclose(damping, damping_bench))
 
     def test_extract_from_param_format(self):
-        data = np.genfromtxt('./files/HH_X_FKSH14.txt')
+        data = np.genfromtxt(_join(f_dir, 'HH_X_FKSH14.txt'))
         param = hlp.extract_from_param_format(data)
         param_bench = [np.array([0.010161, 1, 0.10468, 39.317, 0.630114,
                                  18.7975, 149.535, 29.053, 1]),
