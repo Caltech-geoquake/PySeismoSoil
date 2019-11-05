@@ -637,6 +637,43 @@ class Ground_Motion:
         return output_motion
 
     #%%------------------------------------------------------------------------
+    def compare(self, another_ground_motion, this_ground_motion_as_input=True,
+                smooth=True):
+        '''
+        Compare with another ground motion: plot comparison figures showing
+        two time histories and the transfer function between them.
+
+        Parameters
+        ----------
+        another_ground_motion : Ground_Motion
+            Another ground motion object.
+        this_ground_motion_as_input : bool
+            If ``True``, this ground motion is treated as the input ground
+            motion. Otherwise, the other ground motion is treated as the input.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The figure object created in this function.
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes object created in this function.
+        '''
+        if not isinstance(another_ground_motion, Ground_Motion):
+            raise TypeError('`another_ground_motion` must be a `Ground_Motion`.')
+        # END IF
+
+        if this_ground_motion_as_input:
+            accel_in = self.accel
+            accel_out = another_ground_motion.accel
+        else:
+            accel_in = another_ground_motion.accel
+            accel_out = self.accel
+        # END IF-ELSE
+
+        fig, ax = sr.compare_two_accel(accel_in, accel_out, smooth=smooth)
+        return fig, ax
+
+    #%%------------------------------------------------------------------------
     def deconvolve(self, soil_profile, boundary='elastic', show_fig=False):
         '''
         Deconvolve the ground motion, i.e., propagate the motion downwards to
