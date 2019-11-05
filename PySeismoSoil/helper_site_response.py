@@ -1506,6 +1506,72 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     return fig, ax
 
 #%%----------------------------------------------------------------------------
+def compare_two_accel(input_accel, output_accel, smooth=True):
+    '''
+    Compare two acceleration time histories.
+
+    Parameters
+    ----------
+    input_accel : numpy.ndarray
+        Input acceleration. (2 columns.)
+    output_accel : numpy.ndarray
+        Output acceleration. (2 columns.)
+    smooth : bool
+        In the comparison plot, whether or not to also show the smoothed
+        amplification factor.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The figure object created in this function.
+    ax : matplotlib.axes._subplots.AxesSubplot
+        The axes object created in this function.
+    '''
+    hlp.assert_2D_numpy_array(input_accel, name='input_accel')
+    hlp.assert_2D_numpy_array(output_accel, name='output_accel')
+
+    t_in = input_accel[:, 0]
+    a_in = input_accel[:, 1]
+    t_out = output_accel[:, 0]
+    a_out = output_accel[:, 1]
+
+    dt_in = t_in[1] - t_in[0]
+    dt_out = t_out[1] - t_out[0]
+    tmax_in = t_in[-1]
+    tmax_out = t_out[-1]
+
+    dt = min(dt_in, dt_out)
+    n_time = int(np.ceil(max(tmax_in, tmax_out) / dt))
+    tmax = dt * n_time
+
+    t_ = np.linspace(dt, tmax, num=n_time)
+    a_in_ = np.interp(t_, t_in, a_in)
+    a_out_ = np.interp(t_, t_out, a_out)
+
+    a_in_2col = np.column_stack((t_, a_in_))
+    a_out_2col = np.column_stack((t_, a_out_))
+
+    fs_in = sig.fourier_transform(a_in_2col, real_val=False)
+    fs_out = sig.fourier_transform(a_out_2col, real_val=False)
+
+    freq = np.real(fs_in[:, 0])  # values in fs_in[:, 0] all look like: 1.23 + 0j
+    tf = fs_out[:, 1] / fs_in[:, 1]
+    amp_func = np.abs(tf)
+    phase_shift = np.angle(tf)
+
+    if smooth:
+        amp_func_smoothed = sig.log_smooth(amp_func, lin_space=False)
+    else:
+        amp_func_smoothed = None
+    # END IF-ELSE
+
+    fig, ax = _plot_site_amp(a_in_2col, a_out_2col, freq, amp_func,
+                             phase_func_1col=phase_shift,
+                             amplif_func_1col_smoothed=amp_func_smoothed)
+
+    return fig, ax
+
+#%%----------------------------------------------------------------------------
 def _get_freq_interval(input_motion):
     '''
     Get frequency interval from a 2-columed input motion.
