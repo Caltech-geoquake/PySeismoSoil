@@ -1508,14 +1508,15 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
 #%%----------------------------------------------------------------------------
 def compare_two_accel(input_accel, output_accel, smooth=True):
     '''
-    Compare two acceleration time histories.
+    Compare two acceleration time histories: plot comparison figures showing
+    two time histories and the transfer function between them.
 
     Parameters
     ----------
     input_accel : numpy.ndarray
-        Input acceleration. (2 columns.)
+        Input acceleration. (2 columns: time and acceleration.)
     output_accel : numpy.ndarray
-        Output acceleration. (2 columns.)
+        Output acceleration. (2 columns: time and acceleration.)
     smooth : bool
         In the comparison plot, whether or not to also show the smoothed
         amplification factor.
