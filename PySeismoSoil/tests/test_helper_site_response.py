@@ -324,6 +324,27 @@ class Test_Helper_Site_Response(unittest.TestCase):
         output_motion = np.column_stack((time, accel_out))
         sr._plot_site_amp(input_motion, output_motion, None, None)
 
+    #--------------------------------------------------------------------------
+    def test_align_two_time_arrays__normal_case__not_identical_arrays(self):
+        t1 = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
+        t2 = np.array([0.1, 0.2, 0.3])
+        t_ = sr._align_two_time_arrays(t1, t2)
+        benchmark = np.linspace(0.01, 0.3, num=int(0.3 / 0.01))
+        self.assertTrue(np.allclose(t_, benchmark))
+
+    def test_align_two_time_arrays__normal_case__identical_arrays(self):
+        t1 = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
+        t2 = t1.copy()
+        t_ = sr._align_two_time_arrays(t1, t2)
+        benchmark = t1.copy()
+        self.assertTrue(np.allclose(t_, benchmark))
+
+    def test_align_two_time_arrays__failure__length_less_than_2(self):
+        t1 = np.array([3])
+        t2 = np.array([1, 2, 3])
+        with self.assertRaises(ValueError, msg='Both time arrays need to have'):
+            sr._align_two_time_arrays(t1, t2)
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Site_Response)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
