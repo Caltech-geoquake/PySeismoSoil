@@ -1536,16 +1536,8 @@ def compare_two_accel(input_accel, output_accel, smooth=True):
     t_out = output_accel[:, 0]
     a_out = output_accel[:, 1]
 
-    dt_in = t_in[1] - t_in[0]
-    dt_out = t_out[1] - t_out[0]
-    tmax_in = t_in[-1]
-    tmax_out = t_out[-1]
+    t_ = _align_two_time_arrays(t_in, t_out)
 
-    dt = min(dt_in, dt_out)
-    n_time = int(np.ceil(max(tmax_in, tmax_out) / dt))
-    tmax = dt * n_time
-
-    t_ = np.linspace(dt, tmax, num=n_time)
     a_in_ = np.interp(t_, t_in, a_in)
     a_out_ = np.interp(t_, t_out, a_out)
 
@@ -1571,6 +1563,28 @@ def compare_two_accel(input_accel, output_accel, smooth=True):
                              amplif_func_1col_smoothed=amp_func_smoothed)
 
     return fig, ax
+
+#%%----------------------------------------------------------------------------
+def _align_two_time_arrays(t1, t2):
+    hlp.assert_1D_numpy_array(t1)
+    hlp.assert_1D_numpy_array(t2)
+
+    if len(t1) < 2 or len(t2) < 2:
+        raise ValueError('Both time arrays need to have at least 2 elements.')
+    # END IF
+
+    dt1 = t1[1] - t1[0]
+    dt2 = t2[1] - t2[0]
+
+    tmax1 = t1[-1]
+    tmax2 = t2[-1]
+
+    dt = min(dt1, dt2)  # use the smaller time interval of the two time array
+    n_time = int(np.ceil(max(tmax1, tmax2) / dt))
+    tmax = dt * n_time  # use the larger end time of the two as the end time
+
+    t_output = np.linspace(dt, tmax, num=n_time)
+    return t_output
 
 #%%----------------------------------------------------------------------------
 def _get_freq_interval(input_motion):
