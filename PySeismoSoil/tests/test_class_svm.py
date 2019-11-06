@@ -58,17 +58,17 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_get_discretized_profile__invalid_Vs_increment(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-        with self.assertRaises(ValueError, msg='max Vs of the smooth profile'):
+        with self.assertRaisesRegex(ValueError, 'max Vs of the smooth profile'):
             svm.get_discretized_profile(Vs_increment=5000)
 
     def test_get_discretized_profile__both_input_param_are_None(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-        with self.assertRaises(ValueError, msg='You need to provide either'):
+        with self.assertRaisesRegex(ValueError, 'You need to provide either'):
             svm.get_discretized_profile(Vs_increment=None, fixed_thk=None)
 
     def test_get_discretized_profile__both_input_param_are_provided(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-        with self.assertRaises(ValueError, msg='do not provide both'):
+        with self.assertRaisesRegex(ValueError, 'do not provide both'):
             svm.get_discretized_profile(Vs_increment=1, fixed_thk=2)
 
     def test_get_randomized_profile(self):
@@ -98,7 +98,7 @@ class Test_Class_SVM(unittest.TestCase):
         i, val = SVM._find_index_closest([1], 10000)
         self.assertEqual((i, val), (0, 1))
 
-        with self.assertRaises(ValueError, msg='length of `array` needs to'):
+        with self.assertRaisesRegex(ValueError, 'length of `array` needs to'):
             SVM._find_index_closest([], 2)
 
     def test_svm_profiles_plotting(self):

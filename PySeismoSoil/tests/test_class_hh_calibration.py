@@ -18,7 +18,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         hh_c = HH_Calibration(vs_profile)
 
     def test_init__wrong_vs_profile_type(self):
-        with self.assertRaises(TypeError, msg='must be of type Vs_Profile'):
+        with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
             HH_Calibration(np.array([1, 2, 3, 4, 5]))
 
     def test_init__success_with_vs_profile_and_curve(self):
@@ -28,7 +28,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
 
     def test_init__incorrect_curves_type(self):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        with self.assertRaises(TypeError, msg='If `GGmax_curves` is not `None`,'
+        with self.assertRaisesRegex(TypeError, 'If `GGmax_curves` is not `None`,'
                                     ' it must be of type Multiple_GGmax_Curves'):
             HH_Calibration(vs_profile, GGmax_curves=np.array([1, 2, 3]))
 
@@ -36,7 +36,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         del curves[-1]  # remove the last layer
-        with self.assertRaises(ValueError, msg='The number of layers implied '
+        with self.assertRaisesRegex(ValueError, 'The number of layers implied '
                                     'in `GGmax_curves` and `vs_profile` must be'
                                     ' the same.'):
             HH_Calibration(vs_profile, GGmax_curves=curves)
@@ -45,7 +45,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         Tmax = [1, 2, 3, 4, 5]
-        with self.assertRaises(TypeError, msg='`Tmax_profile` must be a 1D '
+        with self.assertRaisesRegex(TypeError, '`Tmax_profile` must be a 1D '
                                     'numpy array.'):
             HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 
@@ -53,7 +53,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         Tmax = np.array([1, 2, 3])
-        with self.assertRaises(ValueError, msg='The length of `Tmax_profile` '
+        with self.assertRaisesRegex(ValueError, 'The length of `Tmax_profile` '
                                     'needs to equal'):
             HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 

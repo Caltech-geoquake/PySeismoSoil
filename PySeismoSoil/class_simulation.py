@@ -48,10 +48,13 @@ class Simulation():
     '''
     def __init__(self, soil_profile, input_motion, *, boundary='elastic',
                  G_param=None, xi_param=None, GGmax_and_damping_curves=None):
-        if not isinstance(input_motion, Ground_Motion):
-            raise TypeError('`input_motion` must be of class `Ground_Motion`.')
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
+        if not isinstance(input_motion, Ground_Motion):
+            raise TypeError('`input_motion` must be of class `Ground_Motion`.')
+
+        if boundary not in ['elastic', 'rigid']:
+            raise ValueError('`boundary` should be "elastic" or "rigid".')
 
         if type(G_param) != type(xi_param):
             raise TypeError('`G_param` and `xi_param` must be of the same type.')
@@ -68,9 +71,6 @@ class Simulation():
         not isinstance(GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves):
             raise TypeError('`GGmax_and_damping_curves` must be a '
                             '`Multiple_GGmax_Curves` object.')
-
-        if boundary not in ['elastic', 'rigid']:
-            raise ValueError('`boundary` should be "elastic" or "rigid".')
 
         self.input_motion = input_motion
         self.soil_profile = soil_profile

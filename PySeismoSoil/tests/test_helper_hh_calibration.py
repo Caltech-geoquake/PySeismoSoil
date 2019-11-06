@@ -109,7 +109,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         PI = np.array([10, 10, 10])
         K0 = np.array([0.4, 0.4, 0.4])
         OCR = np.array([2, 2, 2])
-        with self.assertRaises(ValueError, msg='`PI` must have length 3, but not 6'):
+        with self.assertRaisesRegex(ValueError, '`PI` must have length 3, but not 6'):
             hhc.produce_Darendeli_curves(sigma_v0, PI=np.append(PI, PI),
                                          OCR=OCR, K0=K0, strain_in_pct=strain*100)
 

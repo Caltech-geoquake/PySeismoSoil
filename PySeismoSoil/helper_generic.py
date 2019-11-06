@@ -301,7 +301,7 @@ def check_two_column_format(something, name=None, ensure_non_negative=False,
         name = '`something`'
 
     if not isinstance(something, np.ndarray):
-        raise TypeError('%s should be an numpy array.' % name)
+        raise TypeError('%s should be a numpy array.' % name)
     if something.ndim != 2:
         raise TypeError('%s should be a 2D numpy array.' % name)
     if not at_least_two_columns and something.shape[1] != 2:

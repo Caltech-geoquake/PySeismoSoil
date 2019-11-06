@@ -29,12 +29,12 @@ class Test_Helper_Simulations(unittest.TestCase):
 
         # Case 2(a): abnormal case, with parameters
         del HH_G[-1]
-        with self.assertRaises(ValueError, msg='Not enough sets of parameters'):
+        with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
             sim.check_layer_count(vs_profile, G_param=HH_G)
 
         # Case 2(b): abnormal case, with curves
         curves_data_ = curves_data[:, :-4]
-        with self.assertRaises(ValueError, msg='Not enough sets of curves'):
+        with self.assertRaisesRegex(ValueError, 'Not enough sets of curves'):
             mgdc_ = Multiple_GGmax_Damping_Curves(data=curves_data_)
             sim.check_layer_count(vs_profile, GGmax_and_damping_curves=mgdc_)
 

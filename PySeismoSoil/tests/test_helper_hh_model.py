@@ -48,12 +48,12 @@ class Test_Helper_HH_Model(unittest.TestCase):
         self.assertTrue(np.allclose(array, self.array))
 
     def test_serialize_params_to_array__incorrect_number_of_dict_items(self):
-        with self.assertRaises(AssertionError, msg=''):
+        with self.assertRaisesRegex(AssertionError, ''):
             hh.serialize_params_to_array({'test': 2})
 
     def test_serialize_params_to_array__incorrect_dict_keys(self):
         # Only one key name is wrong
-        with self.assertRaises(KeyError, msg=''):
+        with self.assertRaisesRegex(KeyError, ''):
             hh.serialize_params_to_array({'gamma_t': 1,
                                           'a': 1,
                                           'gamma_ref': 1,
@@ -69,11 +69,11 @@ class Test_Helper_HH_Model(unittest.TestCase):
         self.assertEqual(param, self.param)
 
     def test_deserialize_array_to_params__incorrect_input_data_type(self):
-        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
+        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
             hh.deserialize_array_to_params([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
-        with self.assertRaises(AssertionError, msg=''):
+        with self.assertRaisesRegex(AssertionError, ''):
             hh.deserialize_array_to_params(np.arange(8))  # should have 9 parameters
 
 if __name__ == '__main__':

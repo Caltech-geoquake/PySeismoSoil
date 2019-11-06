@@ -13,7 +13,7 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_Damping_Calibration(unittest.TestCase):
     def test_init__case_1_incorrect_input_type(self):
         vs_profile_array = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
-        with self.assertRaises(TypeError, msg='must be of type Vs_Profile'):
+        with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
             Damping_Calibration(vs_profile_array)
 
     def test_init__case_2_correct_input_type(self):

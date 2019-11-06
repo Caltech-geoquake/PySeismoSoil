@@ -126,19 +126,19 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertTrue(np.allclose(phase.raw_data[0, 1], 0.0, atol=0.1, rtol=0.0))
 
     def test_site_factors__out_of_bound_Vs30_values__not_lenient(self):
-        with self.assertRaises(ValueError, msg='Vs30 should be between'):
+        with self.assertRaisesRegex(ValueError, 'Vs30 should be between'):
             SF(174, 125, 0.3, lenient=False)
 
     def test_site_factors__out_of_bound_z1_values__not_lenient(self):
-        with self.assertRaises(ValueError, msg='z1_in_m should be between'):
+        with self.assertRaisesRegex(ValueError, 'z1_in_m should be between'):
             SF(180, 901, 0.3, lenient=False)
 
     def test_site_factors__out_of_bount_PGA_values__not_lenient(self):
-        with self.assertRaises(ValueError, msg='PGA should be between'):
+        with self.assertRaisesRegex(ValueError, 'PGA should be between'):
             SF(180, 650, 1.6, lenient=False)
 
     def test_site_factors__invalid_combinations__not_lenient(self):
-        with self.assertRaises(ValueError, msg='combination not valid'):
+        with self.assertRaisesRegex(ValueError, 'combination not valid'):
             SF(650, 900, 1.0, lenient=False)
 
     def test_site_factors__out_of_bound_Vs30__lenient_case_1(self):

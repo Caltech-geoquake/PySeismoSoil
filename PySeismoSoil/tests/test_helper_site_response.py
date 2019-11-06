@@ -297,7 +297,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
-        with self.assertRaises(ValueError, msg='provide a function to serialize'):
+        with self.assertRaisesRegex(ValueError, 'provide a function to serialize'):
             sr.fit_all_damping_curves(
                     [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
                     n_gen=1, save_txt=True, func_serialize=None)
@@ -308,7 +308,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
-        with self.assertRaises(AssertionError, msg=''):
+        with self.assertRaisesRegex(AssertionError, ''):
             sr.fit_all_damping_curves(
                     [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
                     n_gen=1, save_txt=True, txt_filename='1.txt',  # no effect anyways
@@ -342,7 +342,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
     def test_align_two_time_arrays__failure__length_less_than_2(self):
         t1 = np.array([3])
         t2 = np.array([1, 2, 3])
-        with self.assertRaises(ValueError, msg='Both time arrays need to have'):
+        with self.assertRaisesRegex(ValueError, 'Both time arrays need to have'):
             sr._align_two_time_arrays(t1, t2)
 
 if __name__ == '__main__':
