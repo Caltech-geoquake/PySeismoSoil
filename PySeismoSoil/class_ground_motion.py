@@ -650,6 +650,9 @@ class Ground_Motion:
         this_ground_motion_as_input : bool
             If ``True``, this ground motion is treated as the input ground
             motion. Otherwise, the other ground motion is treated as the input.
+        smooth : bool
+            In the comparison plot, whether or not to also show the smoothed
+            amplification factor.
 
         Returns
         -------
