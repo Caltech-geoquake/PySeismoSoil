@@ -71,11 +71,11 @@ class Test_Class_Curves(unittest.TestCase):
 
     def test_value_check(self):
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))[:, 2:4]
-        with self.assertRaises(ValueError, msg='G/Gmax values must be between'):
+        with self.assertRaisesRegex(ValueError, 'G/Gmax values must be between'):
             GGmax_Curve(data)
-        with self.assertRaises(ValueError, msg='damping values must be between'):
+        with self.assertRaisesRegex(ValueError, 'damping values must be between'):
             Damping_Curve(data * 100.0)
-        with self.assertRaises(ValueError, msg='should have all non-negative'):
+        with self.assertRaisesRegex(ValueError, 'should have all non-negative'):
             Stress_Curve(data * -1)
 
     def test_multiple_damping_curves(self):
@@ -92,7 +92,7 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(np.allclose(mdc[0].raw_data, layer_0_bench))
 
         # Test __setitem__
-        with self.assertRaises(TypeError, msg='new `item` must be of type'):
+        with self.assertRaisesRegex(TypeError, 'new `item` must be of type'):
             mdc[2] = 2.5  # use an incorrect type
         mdc[4] = Damping_Curve(layer_0_bench)
         self.assertTrue(np.allclose(mdc[0].raw_data, mdc[4].raw_data))
@@ -115,8 +115,9 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(isinstance(mdc_slice[0], Damping_Curve))
 
         # Test append
-        with self.assertRaises(TypeError, msg='new `item` must be of type'):
+        with self.assertRaisesRegex(TypeError, '`curve` should be a numpy array'):
             mdc[2] = GGmax_Curve(_join(f_dir, 'curve_FKSH14.txt'))  # use an incorrect type
+
         self.assertEqual(len(mdc), 4)
         mdc.append(mdc_3)
         self.assertEqual(len(mdc), 5)
@@ -196,15 +197,15 @@ class Test_Class_Curves(unittest.TestCase):
         # Case 1: with MGC and MDC
         mgc = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
-        with self.assertRaises(ValueError, msg='Both parameters are `None`'):
+        with self.assertRaisesRegex(ValueError, 'Both parameters are `None`'):
             Multiple_GGmax_Damping_Curves()
-        with self.assertRaises(ValueError, msg='one and only one input parameter'):
+        with self.assertRaisesRegex(ValueError, 'one and only one input parameter'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data=2.6)
-        with self.assertRaises(TypeError, msg='needs to be of type'):
+        with self.assertRaisesRegex(TypeError, 'needs to be of type'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mdc, mgc))
         mgc_ = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         del mgc_[-1]
-        with self.assertRaises(ValueError, msg='same number of soil layers'):
+        with self.assertRaisesRegex(ValueError, 'same number of soil layers'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc_, mdc))
 
         mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
@@ -215,7 +216,7 @@ class Test_Class_Curves(unittest.TestCase):
         # Case 2: with a numpy array
         array = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         array_ = np.column_stack((array, array[:, -1]))
-        with self.assertRaises(ValueError, msg='needs to be a multiple of 4'):
+        with self.assertRaisesRegex(ValueError, 'needs to be a multiple of 4'):
             Multiple_GGmax_Damping_Curves(data=array_)
 
         mgdc = Multiple_GGmax_Damping_Curves(data=array)
@@ -224,7 +225,7 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
 
         # Case 3: with a file name
-        with self.assertRaises(TypeError, msg='must be a 2D numpy array or a file name'):
+        with self.assertRaisesRegex(TypeError, 'must be a 2D numpy array or a file name'):
             Multiple_GGmax_Damping_Curves(data=3.5)
         mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()

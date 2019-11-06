@@ -15,14 +15,14 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_HH_Param(unittest.TestCase):
     def test_init__ensure_invalid_parameter_names_are_blocked(self):
         invalid_data = {'key': 1, 'lock': 2}
-        with self.assertRaises(KeyError, msg='Invalid keys exist in your input'):
+        with self.assertRaisesRegex(KeyError, 'Invalid keys exist in your input'):
             hhp = HH_Param(invalid_data)
 
     def test_init__ensure_querying_nonexistent_parameter_name_raises_KeyError(self):
         data = {'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
                 'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9}
         hhp = HH_Param(data)
-        with self.assertRaises(KeyError, msg="'haha'"):
+        with self.assertRaisesRegex(KeyError, "'haha'"):
             hhp['haha']
 
     def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01(self):

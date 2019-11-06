@@ -51,14 +51,14 @@ class Test_Class_Ground_Motion(unittest.TestCase):
     def test_loading_data__one_column_without_specifying_dt(self):
         # One column without specifying dt
         error_msg = 'is needed for one-column `data`.'
-        with self.assertRaises(ValueError, msg=error_msg):
+        with self.assertRaisesRegex(ValueError, error_msg):
             gm = GM(np.array([1, 2, 3, 4, 5]), unit='gal')
 
     def test_loading_data__test_invalid_unit_names(self):
         # Test invalid unit names
-        with self.assertRaises(ValueError, msg='Invalid `unit` name.'):
+        with self.assertRaisesRegex(ValueError, 'Invalid `unit` name.'):
             GM(np.array([1, 2, 3, 4, 5]), unit='test', dt=0.1)
-        with self.assertRaises(ValueError, msg="use '/s/s' instead of 's^2'"):
+        with self.assertRaisesRegex(ValueError, r"use '/s/s' instead of 's\^2'"):
             GM(np.array([1, 2, 3, 4, 5]), unit='m/s^2', dt=0.1)
 
     def test_differentiation(self):

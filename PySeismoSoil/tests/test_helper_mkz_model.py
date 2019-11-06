@@ -36,11 +36,11 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         self.assertTrue(np.allclose(array, self.array))
 
     def test_serialize_params_to_array__incorrect_number_of_dict_items(self):
-        with self.assertRaises(AssertionError, msg=''):
+        with self.assertRaisesRegex(AssertionError, ''):
             mkz.serialize_params_to_array({'test': 2})
 
     def test_serialize_params_to_array__only_one_key_name_is_wrong(self):
-        with self.assertRaises(KeyError, msg=''):
+        with self.assertRaisesRegex(KeyError, ''):
             mkz.serialize_params_to_array({'gamma_ref': 1,
                                            's': 1,
                                            'beta': 1,
@@ -51,11 +51,11 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         self.assertEqual(param, self.param)
 
     def test_deserialize_array_to_params__incorrect_input_data_type(self):
-        with self.assertRaises(TypeError, msg='must be a 1D numpy array'):
+        with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array'):
             mkz.deserialize_array_to_params([1,2,3,4])
 
     def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
-        with self.assertRaises(AssertionError, msg=''):
+        with self.assertRaisesRegex(AssertionError, ''):
             mkz.deserialize_array_to_params(np.array([1,2,3,4,5])) # should be 4
 
     def test_fit_MKZ(self):

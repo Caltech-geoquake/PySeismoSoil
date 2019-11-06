@@ -18,24 +18,24 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 class Test_Class_Batch_Simulation(unittest.TestCase):
     def test_init__case_1_not_a_list(self):
-        with self.assertRaises(TypeError, msg='`list_of_simulations` should be a list.'):
+        with self.assertRaisesRegex(TypeError, '`list_of_simulations` should be a list.'):
             Batch_Simulation(1.4)
 
     def test_init__case_2_a_list_of_0_length(self):
-        with self.assertRaises(ValueError, msg='should have at least one element'):
+        with self.assertRaisesRegex(ValueError, 'should have at least one element'):
             Batch_Simulation([])
 
     def test_init__case_3_wrong_type(self):
-        with self.assertRaises(TypeError, msg='Elements of `list_of_simulations` should be of type'):
+        with self.assertRaisesRegex(TypeError, 'Elements of `list_of_simulations` should be of type'):
             Batch_Simulation([1, 2, 3])
 
     def test_init__case_4_inhomogeneous_element_type(self):
-        with self.assertRaises(TypeError, msg='should be of the same type'):
+        with self.assertRaisesRegex(TypeError, 'should be of the same type'):
             gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
             prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-            mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_P001.txt'))
-            lin_sim = Linear_Simulation(gm, prof)
-            equiv_sim = Equiv_Linear_Simulation(gm, prof, mgdc)
+            mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
+            lin_sim = Linear_Simulation(prof, gm)
+            equiv_sim = Equiv_Linear_Simulation(prof, gm, mgdc)
             Batch_Simulation([lin_sim, equiv_sim])
 
     def test_linear(self):
