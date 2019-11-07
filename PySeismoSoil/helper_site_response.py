@@ -1381,7 +1381,8 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
 #%%----------------------------------------------------------------------------
 def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
                    amplif_func_1col_smoothed=None, phase_func_1col=None,
-                   fig=None, figsize=(8, 4.5), dpi=100, amplif_func_ylog=True):
+                   fig=None, figsize=(8, 4.5), dpi=100, amplif_func_ylog=True,
+                   input_accel_label='Input', output_accel_label='Output'):
     '''
     Plot site amplification simulation results: input and output ground
     motions, amplification and phase factors, and Fourier amplitudes of the
@@ -1453,17 +1454,17 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
 
     ax_ = plt.subplot2grid((2, 3), (0, 0), fig=fig, colspan=3)
     if np.max(np.abs(accel_out)) >= np.max(np.abs(accel_in)):
-        plt.plot(time, accel_out, c=blue, label='Output')
-        plt.plot(time, accel_in, c=red, label='Input', alpha=alpha)
+        plt.plot(time, accel_out, c=blue, label=output_accel_label)
+        plt.plot(time, accel_in, c=red, label=input_accel_label, alpha=alpha)
     else:
-        plt.plot(time, accel_in, c=red, label='Input', alpha=alpha_)
-        plt.plot(time, accel_out, c=blue, label='Output', alpha=alpha_)
+        plt.plot(time, accel_in, c=red, label=input_accel_label, alpha=alpha_)
+        plt.plot(time, accel_out, c=blue, label=output_accel_label, alpha=alpha_)
     plt.grid(ls=':')
     plt.legend(loc='upper right')
     plt.xlim(np.min(time), np.max(time))
     plt.xlabel('Time [sec]')
-    plt.ylabel('Motion')
-    plt.title('Input and output time histories')
+    plt.ylabel('Acceleration')
+    plt.title('Time histories')
     ax.append(ax_)
 
     if freq is not None:
@@ -1493,8 +1494,8 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     freq_out, ACCEL_OUT = sig.fourier_transform(accel_out_2col).T
 
     ax_ = plt.subplot2grid((2, 3), (1, 2), fig=fig)
-    plt.loglog(freq_out, ACCEL_OUT, c=blue, label='Output')
-    plt.loglog(freq_in, ACCEL_IN, c=red, label='Input', alpha=alpha)
+    plt.loglog(freq_out, ACCEL_OUT, c=blue, label=output_accel_label)
+    plt.loglog(freq_in, ACCEL_IN, c=red, label=input_accel_label, alpha=alpha)
     plt.legend(loc='best')
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('Fourier amplitudes')
@@ -1506,7 +1507,8 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
     return fig, ax
 
 #%%----------------------------------------------------------------------------
-def compare_two_accel(input_accel, output_accel, smooth=True):
+def compare_two_accel(input_accel, output_accel, smooth=True,
+                      input_accel_label='Input', output_accel_label='Output'):
     '''
     Compare two acceleration time histories: plot comparison figures showing
     two time histories and the transfer function between them.
@@ -1520,6 +1522,10 @@ def compare_two_accel(input_accel, output_accel, smooth=True):
     smooth : bool
         In the comparison plot, whether or not to also show the smoothed
         amplification factor.
+    input_accel_label : str
+        The text label for the input acceleration in the figure legend.
+    output_accel_label : str
+        The text label for the output acceleration in the figure legend.
 
     Returns
     -------
@@ -1560,7 +1566,9 @@ def compare_two_accel(input_accel, output_accel, smooth=True):
 
     fig, ax = _plot_site_amp(a_in_2col, a_out_2col, freq, amp_func,
                              phase_func_1col=phase_shift,
-                             amplif_func_1col_smoothed=amp_func_smoothed)
+                             amplif_func_1col_smoothed=amp_func_smoothed,
+                             input_accel_label=input_accel_label,
+                             output_accel_label=output_accel_label)
 
     return fig, ax
 
