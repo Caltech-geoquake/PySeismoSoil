@@ -638,7 +638,7 @@ class Ground_Motion:
 
     #%%------------------------------------------------------------------------
     def compare(self, another_ground_motion, this_ground_motion_as_input=True,
-                smooth=True):
+                smooth=True, input_accel_label='Input', output_accel_label='Output'):
         '''
         Compare with another ground motion: plot comparison figures showing
         two time histories and the transfer function between them.
@@ -653,6 +653,10 @@ class Ground_Motion:
         smooth : bool
             In the comparison plot, whether or not to also show the smoothed
             amplification factor.
+        input_accel_label : str
+            The text label for the input acceleration in the figure legend.
+        output_accel_label : str
+            The text label for the output acceleration in the figure legend.
 
         Returns
         -------
@@ -673,7 +677,9 @@ class Ground_Motion:
             accel_out = self.accel
         # END IF-ELSE
 
-        fig, ax = sr.compare_two_accel(accel_in, accel_out, smooth=smooth)
+        fig, ax = sr.compare_two_accel(accel_in, accel_out, smooth=smooth,
+                                       input_accel_label=input_accel_label,
+                                       output_accel_label=output_accel_label)
         return fig, ax
 
     #%%------------------------------------------------------------------------
