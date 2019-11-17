@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='PySeismoSoil',
-    version='v0.3.2',
+    version='v0.3.3',
     description='PySeismoSoil',
     author='Jian Shi',
     license='BSD 3',
