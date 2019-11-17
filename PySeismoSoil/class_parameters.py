@@ -270,7 +270,7 @@ class Param_Multi_Layer():
         - slicing: foo[:4]
         - setting values: foo[2] = ...
         - length: len(foo)
-        - deleting iterm: del foo[2]
+        - deleting item: del foo[2]
         - checking existance: bar in foo
 
     Parameters
@@ -398,7 +398,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         - slicing: foo[:4]
         - setting values: foo[2] = ...
         - length: len(foo)
-        - deleting iterm: del foo[2]
+        - deleting item: del foo[2]
         - checking existance: bar in foo
 
     Parameters
@@ -466,7 +466,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
         - slicing: foo[:4]
         - setting values: foo[2] = ...
         - length: len(foo)
-        - deleting iterm: del foo[2]
+        - deleting item: del foo[2]
         - checking existance: bar in foo
 
     Parameters
