@@ -1382,7 +1382,9 @@ def linear_site_resp(soil_profile, input_motion, boundary='elastic',
 def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
                    amplif_func_1col_smoothed=None, phase_func_1col=None,
                    fig=None, figsize=(8, 4.5), dpi=100, amplif_func_ylog=True,
-                   input_accel_label='Input', output_accel_label='Output'):
+                   input_accel_label='Input', output_accel_label='Output',
+                   amplification_ylabel='Amplification',
+                   phase_shift_ylabel='Phase shift [rad]'):
     '''
     Plot site amplification simulation results: input and output ground
     motions, amplification and phase factors, and Fourier amplitudes of the
@@ -1476,7 +1478,7 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
         if amplif_func_1col_smoothed is not None:
             plt.legend(loc='best')
         plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Amplification')
+        plt.ylabel(amplification_ylabel)
         plt.grid(ls=':')
         if amplif_func_ylog:
             plt.yscale('log')
@@ -1486,7 +1488,7 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
         ax_ = plt.subplot2grid((2, 3), (1, 1), fig=fig)
         plt.semilogx(freq, phase_func_1col, c=[0.1] * 3)
         plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Phase shift [rad]')
+        plt.ylabel(phase_shift_ylabel)
         plt.grid(ls=':')
         ax.append(ax_)
 
@@ -1508,7 +1510,9 @@ def _plot_site_amp(accel_in_2col, accel_out_2col, freq, amplif_func_1col,
 
 #%%----------------------------------------------------------------------------
 def compare_two_accel(input_accel, output_accel, smooth=True,
-                      input_accel_label='Input', output_accel_label='Output'):
+                      input_accel_label='Input', output_accel_label='Output',
+                      amplification_ylabel='Amplification',
+                      phase_shift_ylabel='Phase shift [rad]'):
     '''
     Compare two acceleration time histories: plot comparison figures showing
     two time histories and the transfer function between them.
@@ -1568,7 +1572,9 @@ def compare_two_accel(input_accel, output_accel, smooth=True,
                              phase_func_1col=phase_shift,
                              amplif_func_1col_smoothed=amp_func_smoothed,
                              input_accel_label=input_accel_label,
-                             output_accel_label=output_accel_label)
+                             output_accel_label=output_accel_label,
+                             amplification_ylabel=amplification_ylabel,
+                             phase_shift_ylabel=phase_shift_ylabel)
 
     return fig, ax
 

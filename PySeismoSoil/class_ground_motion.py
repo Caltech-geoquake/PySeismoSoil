@@ -677,9 +677,14 @@ class Ground_Motion:
             accel_out = self.accel
         # END IF-ELSE
 
+        amp_ylabel = f'Amplification\n({input_accel_label} ➡ {output_accel_label})'
+        phs_ylabel = f'Phase shift [rad]\n({input_accel_label} ➡ {output_accel_label})'
+
         fig, ax = sr.compare_two_accel(accel_in, accel_out, smooth=smooth,
                                        input_accel_label=input_accel_label,
-                                       output_accel_label=output_accel_label)
+                                       output_accel_label=output_accel_label,
+                                       amplification_ylabel=amp_ylabel,
+                                       phase_shift_ylabel=phs_ylabel)
         return fig, ax
 
     #%%------------------------------------------------------------------------
@@ -867,4 +872,3 @@ class Ground_Motion:
             data[:,1] = data[:,1] * 100.0
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)
-
