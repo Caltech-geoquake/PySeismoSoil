@@ -1237,5 +1237,6 @@ class Multiple_GGmax_Damping_Curves():
             return hlp.merge_curve_matrices(mgc_matrix, mdc_matrix)
 
     def plot(self):
-        self.mgc.plot(ylabel='$G/G_{\max}$')
-        self.mdc.plot(ylabel='Damping [%]')
+        mgc, mdc = self.get_MGC_MDC_objects()
+        mgc.plot(ylabel='$G/G_{\max}$')
+        mdc.plot(ylabel='Damping [%]')
