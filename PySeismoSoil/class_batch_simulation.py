@@ -1,16 +1,16 @@
-# Author: Jian Shi
-
 import os
 import itertools
 import multiprocessing as mp
 
-from .class_simulation import Linear_Simulation, Equiv_Linear_Simulation, \
-                              Nonlinear_Simulation
+from .class_simulation import (
+    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+)
 
 from . import helper_generic as hlp
 
-class Batch_Simulation():
-    '''
+
+class Batch_Simulation:
+    """
     Run site response simulations in batch.
 
     Parameters
@@ -28,22 +28,28 @@ class Batch_Simulation():
         Number of simulations in the list.
     sim_type : {``Linear_Simulation``, ``Equiv_Linear_Simulation``, ``Nonlinear_Simulation``}
         The object type of the site response simulations.
-    '''
+    """
     def __init__(self, list_of_simulations):
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
         if len(list_of_simulations) == 0:
-            raise ValueError('`list_of_simulations` should have at least one '
-                             'element.')
+            raise ValueError(
+                '`list_of_simulations` should have at least one element.'
+            )
         sim_0 = list_of_simulations[0]
-        if not isinstance(sim_0, (Linear_Simulation, Equiv_Linear_Simulation,
-                                  Nonlinear_Simulation)):
-            raise TypeError('Elements of `list_of_simulations` should be of '
-                            'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
-                            'or `Nonlinear_Simulation`.')
+        if not isinstance(
+            sim_0,
+            (Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation),
+        ):
+            raise TypeError(
+                'Elements of `list_of_simulations` should be of '
+                'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
+                'or `Nonlinear_Simulation`.'
+            )
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
-            raise TypeError('All the elements of `list_of_simulations` should '
-                            'be of the same type.')
+            raise TypeError(
+                'All the elements of `list_of_simulations` should be of the same type.'
+            )
         n_simulations = len(list_of_simulations)
 
         self.list_of_simulations = list_of_simulations
@@ -51,7 +57,7 @@ class Batch_Simulation():
         self.sim_type = type(sim_0)
 
     def run(self, parallel=False, n_cores=1, base_output_dir=None, options={}):
-        '''
+        """
         Run simulations in batch.
 
         Parameters
@@ -74,7 +80,7 @@ class Batch_Simulation():
         -------
         sim_results : list<Simulation_Result>
             Simulation results corresponding to each simulation object.
-        '''
+        """
         N = self.n_simulations
         n_digits = len(str(N))
 
@@ -94,8 +100,10 @@ class Batch_Simulation():
             if options.get('verbose', True):  # default value is `True`
                 print('Parallel computing in progress...', end=' ')
             p = mp.Pool(n_cores)
-            sim_results = p.map(self._run_single_sim,
-                                itertools.product(range(N), [other_params]))
+            sim_results = p.map(
+                self._run_single_sim,
+                itertools.product(range(N), [other_params]),
+            )
             if options.get('verbose', True):
                 print('done.')
 
@@ -110,7 +118,7 @@ class Batch_Simulation():
         return sim_results
 
     def _run_single_sim(self, all_params):
-        '''
+        """
         Helper function to run a single simulation.
 
         Parameters
@@ -131,7 +139,7 @@ class Batch_Simulation():
         -------
         sim_result : PySeismoSoil.class_simulation_result.Simulation_Result
             Simulation result of a single simulation object.
-        '''
+        """
         i, other_params = all_params  # unpack
         n_digits, base_output_dir, options = other_params  # unpack
         output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))

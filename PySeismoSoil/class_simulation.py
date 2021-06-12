@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import os
 import glob
 import stat
@@ -20,9 +18,9 @@ from .class_curves import Multiple_GGmax_Damping_Curves
 from .class_simulation_results import Simulation_Results
 from .class_frequency_spectrum import Frequency_Spectrum
 
-#%%============================================================================
-class Simulation():
-    '''
+
+class Simulation:
+    """
     Class implementation of a base site response simulation.
 
     Parameters
@@ -45,9 +43,11 @@ class Simulation():
     Attributes
     ----------
     Attributes same as the inputs
-    '''
-    def __init__(self, soil_profile, input_motion, *, boundary='elastic',
-                 G_param=None, xi_param=None, GGmax_and_damping_curves=None):
+    """
+    def __init__(
+            self, soil_profile, input_motion, *, boundary='elastic',
+            G_param=None, xi_param=None, GGmax_and_damping_curves=None,
+    ):
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
         if not isinstance(input_motion, Ground_Motion):
@@ -59,18 +59,26 @@ class Simulation():
         if type(G_param) != type(xi_param):
             raise TypeError('`G_param` and `xi_param` must be of the same type.')
         if G_param is not None and not isinstance(G_param, Param_Multi_Layer):
-            raise TypeError('`G_param` must be of a subclass of '
-                            '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
-                            'or `MKZ_Param_Multi_Layer`.')
+            raise TypeError(
+                '`G_param` must be of a subclass of '
+                '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
+                'or `MKZ_Param_Multi_Layer`.'
+            )
         if xi_param is not None and not isinstance(xi_param, Param_Multi_Layer):
-            raise TypeError('`xi_param` must be of a subclass of '
-                            '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
-                            'or `MKZ_Param_Multi_Layer`.')
+            raise TypeError(
+                '`xi_param` must be of a subclass of '
+                '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
+                'or `MKZ_Param_Multi_Layer`.'
+            )
 
-        if GGmax_and_damping_curves is not None and \
-        not isinstance(GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves):
-            raise TypeError('`GGmax_and_damping_curves` must be a '
-                            '`Multiple_GGmax_Curves` object.')
+        if (
+            GGmax_and_damping_curves is not None and
+            not isinstance(GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves)
+        ):
+            raise TypeError(
+                '`GGmax_and_damping_curves` must be a '
+                '`Multiple_GGmax_Curves` object.'
+            )
 
         self.input_motion = input_motion
         self.soil_profile = soil_profile
@@ -79,9 +87,9 @@ class Simulation():
         self.xi_param = xi_param
         self.GGmax_and_damping_curves = GGmax_and_damping_curves
 
-#%%============================================================================
+
 class Linear_Simulation(Simulation):
-    '''
+    """
     Linear site response simulation.
 
     Parameters
@@ -98,11 +106,12 @@ class Linear_Simulation(Simulation):
     Attributes
     ----------
     Attributes same as the inputs
-    '''
+    """
     def run(self, every_layer=True, deconv=False, show_fig=False,
             save_fig=False, motion_name=None, save_txt=False,
-            save_full_time_history=False, output_dir=None, verbose=True):
-        '''
+            save_full_time_history=False, output_dir=None, verbose=True,
+    ):
+        """
         Parameters
         ----------
         every_layer : bool
@@ -138,43 +147,54 @@ class Linear_Simulation(Simulation):
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
-        '''
+        """
         if verbose:
             print('Linear site response simulation running... ', end='')
 
         if every_layer:
-            results = sim.linear(self.soil_profile.vs_profile,
-                                 self.input_motion.accel,
-                                 boundary=self.boundary)
-            (new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
-             out_d, out_gamma, out_tau, max_avd, max_gt) = results
+            results = sim.linear(
+                self.soil_profile.vs_profile,
+                self.input_motion.accel,
+                boundary=self.boundary,
+            )
+            (
+                new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
+                out_d, out_gamma, out_tau, max_avd, max_gt,
+            ) = results
 
-            sim_results \
-            = Simulation_Results(self.input_motion,
-                                 Ground_Motion(accel_on_surface, unit='m'),
-                                 Vs_Profile(new_profile, density_unit='g/cm^3'),
-                                 max_a_v_d=max_avd,
-                                 max_strain_stress=max_gt,
-                                 trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
-                                 time_history_accel=out_a,
-                                 time_history_veloc=out_v,
-                                 time_history_displ=out_d,
-                                 time_history_strain=out_gamma,
-                                 time_history_stress=out_tau,
-                                 motion_name=motion_name, output_dir=output_dir)
+            sim_results = Simulation_Results(
+                self.input_motion,
+                Ground_Motion(accel_on_surface, unit='m'),
+                Vs_Profile(new_profile, density_unit='g/cm^3'),
+                max_a_v_d=max_avd,
+                max_strain_stress=max_gt,
+                trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+                time_history_accel=out_a,
+                time_history_veloc=out_v,
+                time_history_displ=out_d,
+                time_history_strain=out_gamma,
+                time_history_stress=out_tau,
+                motion_name=motion_name,
+                output_dir=output_dir,
+            )
             if show_fig:
                 sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
             # END IF
         else:  # `every_layer` is `False`
-            response, tf = sr.linear_site_resp(self.soil_profile.vs_profile,
-                                               self.input_motion.accel,  # unit: m/s/s
-                                               boundary=self.boundary,
-                                               show_fig=show_fig, deconv=deconv)
+            response, tf = sr.linear_site_resp(
+                self.soil_profile.vs_profile,
+                self.input_motion.accel,  # unit: m/s/s
+                boundary=self.boundary,
+                show_fig=show_fig,
+                deconv=deconv,
+            )
             trans_func = Frequency_Spectrum(tf[1], df=tf[0][1] - tf[0][0])
-            sim_results = Simulation_Results(self.input_motion,
-                                             Ground_Motion(response, unit='m'),
-                                             self.soil_profile,
-                                             trans_func=trans_func)
+            sim_results = Simulation_Results(
+                self.input_motion,
+                Ground_Motion(response, unit='m'),
+                self.soil_profile,
+                trans_func=trans_func,
+            )
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history)
@@ -185,9 +205,9 @@ class Linear_Simulation(Simulation):
 
         return sim_results
 
-#%%============================================================================
+
 class Equiv_Linear_Simulation(Simulation):
-    '''
+    """
     Equivalent linear site response simulation.
 
     Parameters
@@ -202,23 +222,28 @@ class Equiv_Linear_Simulation(Simulation):
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
         the recorded motion at the bottom of the Vs profile.
-    '''
-    #%%------------------------------------------------------------------------
-    def __init__(self, soil_profile, input_motion, GGmax_and_damping_curves,
-                 boundary='elastic'):
+    """
+    def __init__(
+            self, soil_profile, input_motion, GGmax_and_damping_curves,
+            boundary='elastic',
+    ):
         if GGmax_and_damping_curves is None:
             raise TypeError('`GGmax_and_damping_curves` cannot be None.')
-        super(Equiv_Linear_Simulation, self).__init__(soil_profile, input_motion,
-                                                      GGmax_and_damping_curves=GGmax_and_damping_curves,
-                                                      boundary=boundary)
-        sim.check_layer_count(soil_profile,
-                              GGmax_and_damping_curves=GGmax_and_damping_curves)
+        super(Equiv_Linear_Simulation, self).__init__(
+            soil_profile,
+            input_motion,
+            GGmax_and_damping_curves=GGmax_and_damping_curves,
+            boundary=boundary,
+        )
+        sim.check_layer_count(
+            soil_profile, GGmax_and_damping_curves=GGmax_and_damping_curves,
+        )
 
-    #%%------------------------------------------------------------------------
     def run(self, verbose=True, show_fig=False, save_fig=False,
             motion_name=None, save_txt=False, save_full_time_history=False,
-            output_dir=None):
-        '''
+            output_dir=None,
+    ):
+        """
         Start equivalent linear simulation.
 
         Parameters
@@ -247,43 +272,50 @@ class Equiv_Linear_Simulation(Simulation):
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
-        '''
+        """
         vs_profile = self.soil_profile.vs_profile
         input_accel = self.input_motion.accel
         curve = self.GGmax_and_damping_curves.get_curve_matrix()
 
-        results = sim.equiv_linear(vs_profile, input_accel, curve,
-                                   boundary=self.boundary, verbose=verbose)
+        results = sim.equiv_linear(
+            vs_profile, input_accel, curve,
+            boundary=self.boundary, verbose=verbose,
+        )
 
-        (new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
-         out_d, out_gamma, out_tau, max_avd, max_gt) = results
+        (
+            new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
+            out_d, out_gamma, out_tau, max_avd, max_gt,
+        ) = results
 
-        sim_results \
-            = Simulation_Results(self.input_motion,
-                                 Ground_Motion(accel_on_surface, unit='m'),
-                                 Vs_Profile(new_profile, density_unit='g/cm^3'),
-                                 max_a_v_d=max_avd,
-                                 max_strain_stress=max_gt,
-                                 trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
-                                 time_history_accel=out_a,
-                                 time_history_veloc=out_v,
-                                 time_history_displ=out_d,
-                                 time_history_strain=out_gamma,
-                                 time_history_stress=out_tau,
-                                 motion_name=motion_name, output_dir=output_dir)
+        sim_results = Simulation_Results(
+            self.input_motion,
+            Ground_Motion(accel_on_surface, unit='m'),
+            Vs_Profile(new_profile, density_unit='g/cm^3'),
+            max_a_v_d=max_avd,
+            max_strain_stress=max_gt,
+            trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+            time_history_accel=out_a,
+            time_history_veloc=out_v,
+            time_history_displ=out_d,
+            time_history_strain=out_gamma,
+            time_history_stress=out_tau,
+            motion_name=motion_name,
+            output_dir=output_dir,
+        )
 
         if show_fig:
             sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
 
         if save_txt:
-            sim_results.to_txt(save_full_time_history=save_full_time_history,
-                               verbose=verbose)
+            sim_results.to_txt(
+                save_full_time_history=save_full_time_history, verbose=verbose,
+            )
 
         return sim_results
 
-#%%============================================================================
+
 class Nonlinear_Simulation(Simulation):
-    '''
+    """
     Nonlinear site response simulation.
 
     Parameters
@@ -304,25 +336,26 @@ class Nonlinear_Simulation(Simulation):
     Attributes
     ----------
     Attributes same as the inputs
-    '''
-    #%%------------------------------------------------------------------------
-    def __init__(self, soil_profile, input_motion, *, G_param, xi_param,
-                 boundary='elastic'):
+    """
+    def __init__(
+            self, soil_profile, input_motion, *, G_param, xi_param,
+            boundary='elastic',
+    ):
         if G_param is None:
             raise TypeError('`G_param` cannot be None.')
         if xi_param is None:
             raise TypeError('`xi_param` cannot be None.')
-        super(Nonlinear_Simulation, self).__init__(soil_profile, input_motion,
-                                                   G_param=G_param,
-                                                   xi_param=xi_param,
-                                                   boundary=boundary)
+        super(Nonlinear_Simulation, self).__init__(
+            soil_profile, input_motion,
+            G_param=G_param, xi_param=xi_param, boundary=boundary,
+        )
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
-    #%%------------------------------------------------------------------------
     def run(self, sim_dir=None, motion_name=None, save_txt=False,
             save_full_time_history=True, show_fig=False, save_fig=False,
-            remove_sim_dir=False, verbose=True):
-        '''
+            remove_sim_dir=False, verbose=True,
+    ):
+        """
         Start nonlinear simulation.
 
         Parameters
@@ -356,7 +389,7 @@ class Nonlinear_Simulation(Simulation):
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
-        '''
+        """
         if verbose:
             print('Nonlinear simulation running...')
 
@@ -390,14 +423,16 @@ class Nonlinear_Simulation(Simulation):
 
         # Three coefficients (tau, alpha, beta) for modeling Q, from Table 1
         # of Liu and Archuleta (2006) BSSA
-        tabk = np.array([[1.72333E-03, 1.66958E-02, 8.98758E-02],
-                         [1.80701E-03, 3.81644E-02, 6.84635E-02],
-                         [5.38887E-03, 9.84666E-03, 9.67052E-02],
-                         [1.99322E-02, -1.36803E-02, 1.20172E-01],
-                         [8.49833E-02, -2.85125E-02, 1.30728E-01],
-                         [4.09335E-01, -5.37309E-02, 1.38746E-01],
-                         [2.05951E+00, -6.65035E-02, 1.40705E-01],
-                         [1.32629E+01, -1.33696E-01, 2.14647E-01]])
+        tabk = np.array([
+            [1.72333E-03, 1.66958E-02, 8.98758E-02],
+            [1.80701E-03, 3.81644E-02, 6.84635E-02],
+            [5.38887E-03, 9.84666E-03, 9.67052E-02],
+            [1.99322E-02, -1.36803E-02, 1.20172E-01],
+            [8.49833E-02, -2.85125E-02, 1.30728E-01],
+            [4.09335E-01, -5.37309E-02, 1.38746E-01],
+            [2.05951E+00, -6.65035E-02, 1.40705E-01],
+            [1.32629E+01, -1.33696E-01, 2.14647E-01],
+        ])
 
         #--------- Re-discretize Vs profile -----------------------------------
         new_profile = sr.stratify(self.soil_profile.vs_profile)
@@ -427,15 +462,18 @@ class Nonlinear_Simulation(Simulation):
             exec_ext = 'unix'
         else:
             raise ValueError('Unknown operating system.')
-        dir_exec_files = pkg_resources.resource_filename('PySeismoSoil',
-                                                         'exec_files')
+        dir_exec_files = pkg_resources.resource_filename(
+            'PySeismoSoil', 'exec_files',
+        )
         shutil.copy(os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir)
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
         #-------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
-            fp.write('%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f' \
-                     % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs))
+            fp.write(
+                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f' \
+                % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs)
+            )
 
         #-------- Write data to files for the Fortran kernel to read ----------
         np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
@@ -451,13 +489,17 @@ class Nonlinear_Simulation(Simulation):
             subprocess.run('NLHH.exe')
         elif hlp.detect_OS() == 'Darwin':
             current_status = os.stat('NLHH.mac').st_mode
-            os.chmod('NLHH.mac',
-                     current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            os.chmod(
+                'NLHH.mac',
+                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+            )
             subprocess.run('./NLHH.mac', stdout=True)
         elif hlp.detect_OS() == 'Linux':
             current_status = os.stat('NLHH.unix').st_mode
-            os.chmod('NLHH.unix',
-                     current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            os.chmod(
+                'NLHH.unix',
+                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+            )
             subprocess.run('./NLHH.unix', stdout=True)
         else:
             raise ValueError('Unknown operating system.')
@@ -498,30 +540,32 @@ class Nonlinear_Simulation(Simulation):
 
         accel_surface = out_a[:, 0]
         accel_surface_2col = np.column_stack((t, accel_surface))
-        tf_unsmoothed = sig.calc_transfer_function(self.input_motion.accel,
-                                                   accel_surface_2col,
-                                                   amplitude_only=False)
-        tf_smoothed = sig.calc_transfer_function(self.input_motion.accel,
-                                                 accel_surface_2col,
-                                                 amplitude_only=True,
-                                                 smooth_signal=True)
+        tf_unsmoothed = sig.calc_transfer_function(
+            self.input_motion.accel, accel_surface_2col, amplitude_only=False,
+        )
+        tf_smoothed = sig.calc_transfer_function(
+            self.input_motion.accel, accel_surface_2col,
+            amplitude_only=True, smooth_signal=True,
+        )
         os.chdir(cwd)
 
         #------------ Create sim_results object and plot and/or save ----------
-        sim_results \
-            = Simulation_Results(self.input_motion,
-                                 Ground_Motion(accel_surface_2col, unit='m'),
-                                 Vs_Profile(new_profile, density_unit='g/cm^3'),
-                                 max_a_v_d=max_avd,
-                                 max_strain_stress=max_gt,
-                                 trans_func=Frequency_Spectrum(tf_unsmoothed),
-                                 trans_func_smoothed=Frequency_Spectrum(tf_smoothed),
-                                 time_history_accel=out_a,
-                                 time_history_veloc=out_v,
-                                 time_history_displ=out_d,
-                                 time_history_strain=out_gamma,
-                                 time_history_stress=out_tau,
-                                 motion_name=motion_name, output_dir=sim_dir)
+        sim_results = Simulation_Results(
+            self.input_motion,
+            Ground_Motion(accel_surface_2col, unit='m'),
+            Vs_Profile(new_profile, density_unit='g/cm^3'),
+            max_a_v_d=max_avd,
+            max_strain_stress=max_gt,
+            trans_func=Frequency_Spectrum(tf_unsmoothed),
+            trans_func_smoothed=Frequency_Spectrum(tf_smoothed),
+            time_history_accel=out_a,
+            time_history_veloc=out_v,
+            time_history_displ=out_d,
+            time_history_strain=out_gamma,
+            time_history_stress=out_tau,
+            motion_name=motion_name,
+            output_dir=sim_dir,
+        )
 
         if verbose:
             print('Done.')
@@ -530,8 +574,9 @@ class Nonlinear_Simulation(Simulation):
             sim_results.plot(save_fig=save_fig, amplif_func_ylog=True)
 
         if save_txt:
-            sim_results.to_txt(save_full_time_history=save_full_time_history,
-                               verbose=verbose)
+            sim_results.to_txt(
+                save_full_time_history=save_full_time_history, verbose=verbose,
+            )
 
         if not save_txt and not save_fig and remove_sim_dir:
             os.removedirs(sim_dir)

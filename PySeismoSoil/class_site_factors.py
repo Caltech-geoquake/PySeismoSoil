@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import os
 import itertools
 import numpy as np
@@ -8,9 +6,9 @@ from scipy.interpolate import griddata
 
 from .class_frequency_spectrum import Frequency_Spectrum
 
-#%%----------------------------------------------------------------------------
-class Site_Factors():
-    '''
+
+class Site_Factors:
+    """
     Class implementation of site response factors proposed by Shi, Asimaki, and
     Graves (2019).
 
@@ -31,23 +29,29 @@ class Site_Factors():
     Attributes
     ----------
     Attributes same as the inputs
-    '''
-
-    Vs30_array = [175, 200, 250, 300, 350, 400, 450, 500, 550, 600,
-                  650, 700, 750, 800, 850, 900, 950]
+    """
+    Vs30_array = [
+        175, 200, 250, 300, 350, 400, 450, 500, 550, 600,
+        650, 700, 750, 800, 850, 900, 950,
+    ]
     z1_array = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
     PGA_array = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
 
-    #%%------------------------------------------------------------------------
-    def __init__(self, Vs30_in_meter_per_sec, z1_in_m, PGA_in_g,
-                 lenient=False):
-        self.dir_amplif = pkg_resources.resource_filename('PySeismoSoil',
-                                                          'data/amplification/')
-        self.dir_phase = pkg_resources.resource_filename('PySeismoSoil',
-                                                         'data/phase/')
-
-        status = Site_Factors._range_check(Vs30_in_meter_per_sec, z1_in_m,
-                                           PGA_in_g)
+    def __init__(
+            self,
+            Vs30_in_meter_per_sec,
+            z1_in_m, PGA_in_g,
+            lenient=False,
+    ):
+        self.dir_amplif = pkg_resources.resource_filename(
+            'PySeismoSoil', 'data/amplification/',
+        )
+        self.dir_phase = pkg_resources.resource_filename(
+            'PySeismoSoil', 'data/phase/',
+        )
+        status = Site_Factors._range_check(
+            Vs30_in_meter_per_sec, z1_in_m, PGA_in_g,
+        )
         if 'Vs30 out of range' in status:
             if not lenient:
                 raise ValueError('Vs30 should be between [175, 950] m/s')
@@ -64,17 +68,22 @@ class Site_Factors():
             else:
                 PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
         if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
-            raise ValueError('Vs30 and z1 combination not valid. (The `lenient` '
-                             'option does not apply to this type of issue.)')
+            raise ValueError(
+                'Vs30 and z1 combination not valid. (The `lenient` '
+                'option does not apply to this type of issue.)',
+            )
 
         self.Vs30 = Vs30_in_meter_per_sec
         self.z1 = z1_in_m
         self.PGA = PGA_in_g
 
-    #%%------------------------------------------------------------------------
-    def get_amplification(self, method='nl_hh', Fourier=True,
-                          show_interp_plots=False):
-        '''
+    def get_amplification(
+            self,
+            method='nl_hh',
+            Fourier=True,
+            show_interp_plots=False,
+    ):
+        """
         Get site amplification factors.
 
         Parmeters
@@ -98,14 +107,17 @@ class Site_Factors():
             querying response spectral amplification, the returned result
             is still (freq, amplif). The user can take the reciprocal of
             frequency to get period.)
-        '''
+        """
         if method not in {'nl_hh', 'eq_hh'}:
             raise ValueError("Currently, only 'nl_hh' and 'eq_hh' are valid.")
 
-        period_or_freq, amplif \
-            = self._get_results('amplif', self.dir_amplif,
-                                method=method, Fourier=Fourier,
-                                show_interp_plots=show_interp_plots)
+        period_or_freq, amplif = self._get_results(
+            'amplif',
+            self.dir_amplif,
+            method=method,
+            Fourier=Fourier,
+            show_interp_plots=show_interp_plots,
+        )
         if Fourier:
             freq = period_or_freq
             result = np.column_stack((freq, amplif))
@@ -114,9 +126,8 @@ class Site_Factors():
             result = np.column_stack((freq, amplif))[::-1, :]  # so that freq increases
         return Frequency_Spectrum(result)
 
-    #%%------------------------------------------------------------------------
     def get_phase_shift(self, method='eq_hh', show_interp_plots=False):
-        '''
+        """
         Get site amplification factors
 
         Parmeters
@@ -132,19 +143,21 @@ class Site_Factors():
         -------
         phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
             Phase shift as a function of frequency.
-        '''
+        """
         if method not in {'eq_hh'}:
             raise ValueError("Currently, only 'eq_hh' is valid.")
 
-        freq, phase_shift \
-            = self._get_results('phase', self.dir_phase,
-                                method=method, Fourier=True,
-                                show_interp_plots=show_interp_plots)
+        freq, phase_shift  = self._get_results(
+            'phase',
+            self.dir_phase,
+            method=method,
+            Fourier=True,
+            show_interp_plots=show_interp_plots,
+        )
         return Frequency_Spectrum(np.column_stack((freq, phase_shift)))
 
-    #%%------------------------------------------------------------------------
     def get_both_amplf_and_phase(self, method='nl_hh', show_interp_plots=False):
-        '''
+        """
         Get both amplification and phase-shift factors
 
         Parmeters
@@ -160,17 +173,25 @@ class Site_Factors():
         -------
         amplif, phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
             Amplification and phase-shift as functions of frequency.
-        '''
-        amplif = self.get_amplification(method=method, Fourier=True,
-                                        show_interp_plots=show_interp_plots)
-        phase = self.get_phase_shift(method='eq_hh',  # always use eq_hh
-                                     show_interp_plots=show_interp_plots)
+        """
+        amplif = self.get_amplification(
+            method=method, Fourier=True, show_interp_plots=show_interp_plots,
+        )
+        phase = self.get_phase_shift(
+            method='eq_hh',  # always use eq_hh
+            show_interp_plots=show_interp_plots,
+        )
         return amplif, phase
 
-    #%%------------------------------------------------------------------------
-    def _get_results(self, amplif_or_phase, data_dir, method='nl_hh',
-                     Fourier=True, show_interp_plots=False):
-        '''
+    def _get_results(
+            self,
+            amplif_or_phase,
+            data_dir,
+            method='nl_hh',
+            Fourier=True,
+            show_interp_plots=False,
+    ):
+        """
         Helper function: get amplification or phase results.
 
         Parameters
@@ -195,7 +216,7 @@ class Site_Factors():
             Frequency or period array.
         y_interp : numpy.ndarray
             Amplification or phase shift, interpolated.
-        '''
+        """
         Vs30 = self.Vs30
         z1 = self.z1
         PGA = self.PGA
@@ -208,15 +229,19 @@ class Site_Factors():
             Vs30_grid = Site_Factors.Vs30_array[Vs30_i]
             z1_grid = Site_Factors.z1_array[z1_i]
             PGA_grid = Site_Factors.PGA_array[PGA_i]
-            x, y  = Site_Factors._query(amplif_or_phase,
-                                        Vs30_grid, z1_grid, PGA_grid,
-                                        method=method, Fourier=Fourier,
-                                        data_dir=data_dir)
+            x, y = Site_Factors._query(
+                amplif_or_phase,
+                Vs30_grid,
+                z1_grid,
+                PGA_grid,
+                method=method,
+                Fourier=Fourier,
+                data_dir=data_dir,
+            )
             points.append((Vs30_grid, z1_grid, PGA_grid))
             y_list.append(y)
 
-        y_interp \
-            = Site_Factors._interpolate(points, y_list, (Vs30, z1, PGA))
+        y_interp = Site_Factors._interpolate(points, y_list, (Vs30, z1, PGA))
 
         if Fourier:
             index_trunc = 139  # truncate at frequency = 20 Hz
@@ -226,16 +251,23 @@ class Site_Factors():
                 y_list[ii] = y_list[ii][:index_trunc + 1]
 
         if show_interp_plots:
-            Site_Factors._plot_interp(points, (Vs30, z1, PGA),
-                                      x, y_list, y_interp, Fourier=Fourier)
+            Site_Factors._plot_interp(
+                points, (Vs30, z1, PGA), x, y_list, y_interp, Fourier=Fourier,
+            )
 
         return x, y_interp
 
-    #%%------------------------------------------------------------------------
     @staticmethod
-    def _query(amplif_or_phase, Vs30, z1, PGA, Fourier=True,
-               method='nl_hh', data_dir=None):
-        '''
+    def _query(
+            amplif_or_phase,
+            Vs30,
+            z1,
+            PGA,
+            Fourier=True,
+            method='nl_hh',
+            data_dir=None,
+    ):
+        """
         Query amplification or phase factors from pre-computed .csv files. The
         given Vs30, z1_in_m, and PGA_in_g values need to match the
         pre-defined values (see `Vs30_array`, `z1_array`, and `PGA_array`
@@ -268,8 +300,7 @@ class Site_Factors():
         y_values_at_given_PGA : numpy.ndarray
             Amplificatino or phase shift corresponding to each period (or
             frequency).
-        '''
-
+        """
         if Vs30 not in Site_Factors.Vs30_array:
             raise ValueError('`Vs30` should be in %s.' % Site_Factors.Vs30_array)
         if z1 not in Site_Factors.z1_array:
@@ -298,14 +329,13 @@ class Site_Factors():
 
         return x, y_values_at_given_PGA
 
-    #%%------------------------------------------------------------------------
     def _locate_grids(self):
-        '''
+        """
         Locates the "reference grids", i.e., rereference Vs30, z1, and PGA
         values (in terms of the indices, not actual values).
 
         Returns all possible combinations of Vs30, z1, and PGA values.
-        '''
+        """
         Vs30_loc, z1_loc, PGA_loc \
             = Site_Factors._find_neighbors(self.Vs30, self.z1, self.PGA)
 
@@ -314,26 +344,24 @@ class Site_Factors():
 
         return combinations
 
-    #%%------------------------------------------------------------------------
     @staticmethod
     def _find_neighbors(Vs30_in_mps, z1_in_m, PGA_in_g):
-        '''
+        """
         Find the indices of Vs30, z1, and PGA that surround the provided values.
         If the provided values fall onto the "reference" Vs30, z1, or PGA values,
         two indices are still returned.
 
         The three inputs need to already within the correct range.
-        '''
+        """
         Vs30_loc = Site_Factors._search_sorted(Vs30_in_mps, Site_Factors.Vs30_array)
         z1_loc = Site_Factors._search_sorted(z1_in_m, Site_Factors.z1_array)
         PGA_loc = Site_Factors._search_sorted(PGA_in_g, Site_Factors.PGA_array)
 
         return Vs30_loc, z1_loc, PGA_loc
 
-    #%%------------------------------------------------------------------------
     @staticmethod
     def _search_sorted(value, array):
-        '''
+        """
         Search for the location of `value` within `array`.
 
         Example behaviors:
@@ -345,11 +373,13 @@ class Site_Factors():
 
             In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
             Out: [0, 1]
-        '''
+        """
         if value < array[0] or value > array[-1]:
-            raise ValueError('You have encountered an internal bug. Please '
-                             'copy the whole error message, and contact '
-                             'the author of this library for help.')
+            raise ValueError(
+                'You have encountered an internal bug. Please '
+                'copy the whole error message, and contact '
+                'the author of this library for help.'
+            )
         if value == array[0]:
             return [0, 1]
         if value == array[-1]:
@@ -358,10 +388,9 @@ class Site_Factors():
         i = np.searchsorted(array, value, side='left')
         return [i - 1, i]
 
-    #%%------------------------------------------------------------------------
     @staticmethod
     def _interpolate(ref_points, values, interp_points, method='linear'):
-        '''
+        """
         High-dimensional interpolation.
 
         Parameters
@@ -397,8 +426,7 @@ class Site_Factors():
         interp_result : numpy.ndarray
             The interpolation result having the same length as the number of
             "versions" in ``values``.
-        '''
-
+        """
         assert(type(ref_points) == list)
         assert(type(values) == list)
         assert(isinstance(interp_points, (tuple, list)))
@@ -419,11 +447,18 @@ class Site_Factors():
 
         return np.array(interp_result)
 
-    #%%------------------------------------------------------------------------
     @staticmethod
-    def _plot_interp(ref_points, query_point, T_or_freq, amps, amp_interp,
-                     phases=None, phase_interp=None, Fourier=True):
-        '''
+    def _plot_interp(
+            ref_points,
+            query_point,
+            T_or_freq,
+            amps,
+            amp_interp,
+            phases=None,
+            phase_interp=None,
+            Fourier=True,
+    ):
+        """
         Show a plot of the amplification and/or phase shift factors at the
         reference (Vs30, z1, PGA) points, as well as the interpolated factors.
 
@@ -455,8 +490,7 @@ class Site_Factors():
             If the user also passes in the phase factors, then two subplots are
             produced, and ``ax1`` and ``ax2`` are the axes objects of the two
             subplots.
-        '''
-
+        """
         import matplotlib.pyplot as plt
 
         if phases is not None and phase_interp is not None:
@@ -513,16 +547,15 @@ class Site_Factors():
         else:
             return fig, ax
 
-    #%%------------------------------------------------------------------------
     @staticmethod
     def _range_check(Vs30_in_mps, z1_in_m, PGA_in_g):
-        '''
+        """
         Check if the provided Vs30, z1_in_m, and PGA_in_g values are within
         the pre-computed range.
 
         The return value (``status``) indicates the kind(s) of errors
         associated with the given input parameters.
-        '''
+        """
         if not isinstance(Vs30_in_mps, (float, int, np.number)):
             raise TypeError('Vs30 must be int, float, or numpy.number.')
         if not isinstance(z1_in_m, (float, int, np.number)):

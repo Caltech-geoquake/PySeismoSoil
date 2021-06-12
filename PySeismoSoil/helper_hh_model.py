@@ -1,14 +1,12 @@
-# Author: Jian Shi
-
 import numpy as np
 
 from . import helper_generic as hlp
 from . import helper_mkz_model as mkz
 from . import helper_site_response as sr
 
-#%%----------------------------------------------------------------------------
+
 def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
-    '''
+    """
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
     (2017), in Equation (6), and has the following form::
 
@@ -45,15 +43,15 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
     T_FKZ : numpy.ndarray
         The shear stress determined by the formula above. Same shape as ``x``,
         and same unit as ``Gmax``.
-    '''
+    """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_FKZ = mu * Gmax * gamma**d / ( 1 + Gmax / Tmax * mu * np.abs(gamma)**d )
 
     return T_FKZ
 
-#%%----------------------------------------------------------------------------
+
 def transition_function(gamma, *, a, gamma_t):
-    '''
+    """
     The transition function of the HH model, as defined in Equation (7) of Shi
     & Asimaki (2017).
 
@@ -71,17 +69,17 @@ def transition_function(gamma, *, a, gamma_t):
     -------
     w : numpy.array
         The transition function, ranging from 0 to 1. Same shape as ``x``.
-    '''
+    """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     assert(gamma_t > 0)
-    w = 1 - 1. / (1 + np.power(10, -a * (np.log10(np.abs(gamma)/gamma_t) \
-                                         - 4.039 * a**(-1.036)) ))
+    w = 1 - 1. / (1 + np.power(10, -a * (
+            np.log10(np.abs(gamma)/gamma_t) - 4.039 * a**(-1.036)) ))
 
     return w
 
-#%%----------------------------------------------------------------------------
+
 def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
-    '''
+    """
     Calculate the HH shear stress, which is proposed in Shi & Asimaki (2017).
 
     Parameters
@@ -113,7 +111,7 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
     T_FKZ : numpy.ndarray
         The shear stress determined by the HH model. Same shape as ``x``,
         and same unit as ``Gmax``.
-    '''
+    """
     w = transition_function(gamma, a=a, gamma_t=gamma_t)
     T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
     T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)
@@ -122,13 +120,24 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
 
     return T_HH
 
-#%%----------------------------------------------------------------------------
-def fit_HH_x_single_layer(damping_data_in_pct, *, use_scipy=True,
-                          pop_size=800, n_gen=100, lower_bound_power=-4,
-                          upper_bound_power=6, eta=0.1, seed=0, show_fig=False,
-                          verbose=False, suppress_warnings=True,
-                          parallel=False, n_cores=None):
-    '''
+
+def fit_HH_x_single_layer(
+        damping_data_in_pct,
+        *,
+        use_scipy=True,
+        pop_size=800,
+        n_gen=100,
+        lower_bound_power=-4,
+        upper_bound_power=6,
+        eta=0.1,
+        seed=0,
+        show_fig=False,
+        verbose=False,
+        suppress_warnings=True,
+        parallel=False,
+        n_cores=None,
+):
+    """
     Perform HH_x curve fitting for one damping curve using the genetic
     algorithm.
 
@@ -176,10 +185,10 @@ def fit_HH_x_single_layer(damping_data_in_pct, *, use_scipy=True,
     ------
     best_param : dict
         The best parameters found in the optimization.
-    '''
-
-    hlp.check_two_column_format(damping_data_in_pct, name='damping_data_in_pct',
-                                ensure_non_negative=True)
+    """
+    hlp.check_two_column_format(
+        damping_data_in_pct, name='damping_data_in_pct', ensure_non_negative=True,
+    )
 
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
     damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
@@ -188,23 +197,35 @@ def fit_HH_x_single_layer(damping_data_in_pct, *, use_scipy=True,
     n_param = 9  # number of HH model parameters; do not change this for HH model
     N = 122  # denser strain array for more accurate damping calculation
     strain_dense = np.logspace(-6, -1, N)  # unit: 1
-    damping_dense = np.interp(strain_dense, damping_data_in_unit_1[:, 0],
-                              damping_data_in_unit_1[:, 1])
+    damping_dense = np.interp(
+        strain_dense,
+        damping_data_in_unit_1[:, 0],
+        damping_data_in_unit_1[:, 1],
+    )
 
     damping_data_ = np.column_stack((strain_dense, damping_dense))
 
     crossover_prob = 0.8  # hard-coded, because not much useful to tune them
     mutation_prob = 0.8
 
-    result = sr.ga_optimization(n_param, lower_bound_power, upper_bound_power,
-                                _damping_misfit, damping_data_,
-                                use_scipy=use_scipy, pop_size=pop_size,
-                                n_gen=n_gen, eta=eta, seed=seed,
-                                crossover_prob=crossover_prob,
-                                mutation_prob=mutation_prob,
-                                suppress_warnings=suppress_warnings,
-                                verbose=verbose, parallel=parallel,
-                                n_cores=n_cores)
+    result = sr.ga_optimization(
+        n_param,
+        lower_bound_power,
+        upper_bound_power,
+        _damping_misfit,
+        damping_data_,
+        use_scipy=use_scipy,
+        pop_size=pop_size,
+        n_gen=n_gen,
+        eta=eta,
+        seed=seed,
+        crossover_prob=crossover_prob,
+        mutation_prob=mutation_prob,
+        suppress_warnings=suppress_warnings,
+        verbose=verbose,
+        parallel=parallel,
+        n_cores=n_cores,
+    )
 
     best_param = {}
     best_param['gamma_t']   = 10 ** result[0]
@@ -222,9 +243,9 @@ def fit_HH_x_single_layer(damping_data_in_pct, *, use_scipy=True,
 
     return best_param
 
-#%%----------------------------------------------------------------------------
+
 def _damping_misfit(param, damping_data):
-    '''
+    """
     Calculate the misfit given a set of HH parameters. Note that the values
     in `param` are actually the 10-based power of the actual HH parameters.
     Using the powers in the genetic algorithm searching turns out to work
@@ -244,8 +265,7 @@ def _damping_misfit(param, damping_data):
     error : float
         The mean absolute error between the true damping values and the
         predicted damping values at each strain level.
-    '''
-
+    """
     gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
 
     gamma_t = 10 ** gamma_t_
@@ -261,16 +281,26 @@ def _damping_misfit(param, damping_data):
     strain = damping_data[:, 0]
     damping_true = damping_data[:, 1]
 
-    Tau_HH = tau_HH(strain, gamma_t=gamma_t, a=a, gamma_ref=gamma_ref,
-                    beta=beta, s=s, Gmax=Gmax, mu=mu, Tmax=Tmax, d=d)
+    Tau_HH = tau_HH(
+        strain,
+        gamma_t=gamma_t,
+        a=a,
+        gamma_ref=gamma_ref,
+        beta=beta,
+        s=s,
+        Gmax=Gmax,
+        mu=mu,
+        Tmax=Tmax,
+        d=d,
+    )
     damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_HH, Gmax)
     error = hlp.mean_absolute_error(damping_true, damping_pred)
 
     return error
 
-#%%----------------------------------------------------------------------------
+
 def serialize_params_to_array(param):
-    '''
+    """
     Convert the HH parameters from a dictionary to an array, according to this
     order:
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
@@ -285,7 +315,7 @@ def serialize_params_to_array(param):
     param_array : numpy.array
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
-    '''
+    """
     assert(len(param) == 9)
     order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
     param_array = []
@@ -294,9 +324,9 @@ def serialize_params_to_array(param):
 
     return np.array(param_array)
 
-#%%----------------------------------------------------------------------------
+
 def deserialize_array_to_params(array):
-    '''
+    """
     Reconstruct a HH model parameter dictionary from an array of values.
 
     The users needs to ensure the order of values in ``array`` are in this order:
@@ -312,8 +342,7 @@ def deserialize_array_to_params(array):
     -------
     param : dict
         The dictionary with parameter name as keys and values as values.
-    '''
-
+    """
     hlp.assert_1D_numpy_array(array)
     assert(len(array) == 9)
 

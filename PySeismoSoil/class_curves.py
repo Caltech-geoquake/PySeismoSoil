@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,9 +7,9 @@ from . import helper_hh_model as hh
 from . import helper_mkz_model as mkz
 from . import helper_site_response as sr
 
-#%%============================================================================
-class Curve():
-    '''
+
+class Curve:
+    """
     Class implementation of a strain-dependent curve. It can be a stress-strain
     curve, a G/Gmax curve as a function of strain, or a damping curve as
     a function of strain.
@@ -55,17 +53,20 @@ class Curve():
         internally if applicable).
     values : numpy.array
         The interpolated values; same shape as ``strain``
-    '''
-    def __init__(self, data, *, strain_unit='%', interpolate=False,
-                 min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
-                 check_values=True):
+    """
+    def __init__(
+            self, data, *, strain_unit='%', interpolate=False,
+            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            check_values=True,
+    ):
 
         hlp.check_two_column_format(data, '`curve`', ensure_non_negative=check_values)
 
         if interpolate:
-            strain, values = hlp.interpolate(min_strain, max_strain, n_pts,
-                                             data[:, 0], data[:, 1],
-                                             log_scale=log_scale)
+            strain, values = hlp.interpolate(
+                min_strain, max_strain, n_pts, data[:, 0], data[:, 1],
+                log_scale=log_scale,
+            )
         else:
             strain, values = data[:, 0], data[:, 1]
 
@@ -82,10 +83,12 @@ class Curve():
     def __repr__(self):
         return '%s object:\n%s' % (self.__class__, str(self.raw_data))
 
-    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
-             xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
-             **kwargs_to_matplotlib):
-        '''
+    def plot(
+            self, plot_interpolated=True, fig=None, ax=None, title=None,
+            xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+            **kwargs_to_matplotlib,
+    ):
+        """
         Plot the curve (y axis: values, x axis: strain)
 
         Parameters
@@ -117,15 +120,16 @@ class Curve():
             The figure object being created or being passed into this function.
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
-        '''
+        """
         fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
         if plot_interpolated:
             ax.semilogx(self.strain, self.values, **kwargs_to_matplotlib)
         else:
-            ax.semilogx(self.raw_data[:, 0], self.raw_data[:, 1],
-                        **kwargs_to_matplotlib)
+            ax.semilogx(
+                self.raw_data[:, 0], self.raw_data[:, 1], **kwargs_to_matplotlib,
+            )
         ax.grid(ls=':')
-        ax.set_xlabel('Strain [%]')
+        ax.set_xlabel(xlabel)
         if ylabel:
             ax.set_ylabel(ylabel)
         if title:
@@ -133,9 +137,9 @@ class Curve():
 
         return fig, ax
 
-#%%============================================================================
+
 class GGmax_Curve(Curve):
-    '''
+    """
     Class implementation of a G/Gmax curve, as a function of shear strain.
 
     Parameters
@@ -176,25 +180,31 @@ class GGmax_Curve(Curve):
         internally if applicable).
     GGmax : numpy.array
         The interpolated G/Gmax values; same shape as ``strain``.
-    '''
-    def __init__(self, data, *, strain_unit='%', interpolate=False,
-                 min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
-                 check_values=True):
+    """
+    def __init__(
+            self, data, *, strain_unit='%', interpolate=False,
+            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            check_values=True,
+    ):
 
-        super(GGmax_Curve, self).__init__(data, strain_unit=strain_unit,
-                                          interpolate=interpolate,
-                                          min_strain=min_strain,
-                                          max_strain=max_strain,
-                                          n_pts=n_pts, log_scale=log_scale,
-                                          check_values=check_values)
+        super(GGmax_Curve, self).__init__(
+            data,
+            strain_unit=strain_unit,
+            interpolate=interpolate,
+            min_strain=min_strain,
+            max_strain=max_strain,
+            n_pts=n_pts,
+            log_scale=log_scale,
+            check_values=check_values,
+        )
         self.GGmax = self.values
 
         if check_values and (np.any(self.GGmax > 1) or np.any(self.GGmax < 0)):
             raise ValueError('The provided G/Gmax values must be between [0, 1].')
 
-#%%============================================================================
+
 class Damping_Curve(Curve):
-    '''
+    """
     Class implementation of a damping curve, as a function of shear strain.
 
     Parameters
@@ -238,17 +248,22 @@ class Damping_Curve(Curve):
     damping : numpy.array
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
-    '''
-    def __init__(self, data, *, strain_unit='%', damping_unit='%',
-                 interpolate=False, min_strain=0.0001, max_strain=10.,
-                 n_pts=50, log_scale=True, check_values=True):
-
-        super(Damping_Curve, self).__init__(data, strain_unit=strain_unit,
-                                            interpolate=interpolate,
-                                            min_strain=min_strain,
-                                            max_strain=max_strain,
-                                            n_pts=n_pts, log_scale=log_scale,
-                                            check_values=check_values)
+    """
+    def __init__(
+            self, data, *, strain_unit='%', damping_unit='%',
+            interpolate=False, min_strain=0.0001, max_strain=10.,
+            n_pts=50, log_scale=True, check_values=True,
+    ):
+        super(Damping_Curve, self).__init__(
+            data,
+            strain_unit=strain_unit,
+            interpolate=interpolate,
+            min_strain=min_strain,
+            max_strain=max_strain,
+            n_pts=n_pts,
+            log_scale=log_scale,
+            check_values=check_values,
+        )
         self.damping = self.values
 
         if damping_unit not in ['1', '%']:
@@ -260,12 +275,13 @@ class Damping_Curve(Curve):
         if check_values and (np.any(self.damping > 100) or np.any(self.damping < 0)):
             raise ValueError('The provided damping values must be between [0, 100].')
 
-    #--------------------------------------------------------------------------
-    def get_HH_x_param(self, use_scipy=True, pop_size=800, n_gen=100,
-                       lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-                       seed=0, show_fig=False, verbose=False, parallel=False,
-                       n_cores=None):
-        '''
+    def get_HH_x_param(
+            self, use_scipy=True, pop_size=800, n_gen=100,
+            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
+            seed=0, show_fig=False, verbose=False, parallel=False,
+            n_cores=None,
+    ):
+        """
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
 
@@ -314,26 +330,34 @@ class Damping_Curve(Curve):
         ------
         HH_x_param : PySeismoSoil.class_parameters.HH_Param
             The best parameters found in the optimization.
-        '''
+        """
         from .class_parameters import HH_Param
 
-        HH_x_param = hh.fit_HH_x_single_layer(self.raw_data, use_scipy=use_scipy,
-                                              pop_size=pop_size, n_gen=n_gen,
-                                              lower_bound_power=lower_bound_power,
-                                              upper_bound_power=upper_bound_power,
-                                              eta=eta, seed=seed,
-                                              show_fig=show_fig, verbose=verbose,
-                                              parallel=parallel, n_cores=n_cores)
+        HH_x_param = hh.fit_HH_x_single_layer(
+            self.raw_data,
+            use_scipy=use_scipy,
+            pop_size=pop_size,
+            n_gen=n_gen,
+            lower_bound_power=lower_bound_power,
+            upper_bound_power=upper_bound_power,
+            eta=eta,
+            seed=seed,
+            show_fig=show_fig,
+            verbose=verbose,
+            parallel=parallel,
+            n_cores=n_cores,
+        )
 
         self.HH_x_param = HH_Param(HH_x_param)
         return self.HH_x_param
 
-    #--------------------------------------------------------------------------
-    def get_H4_x_param(self, use_scipy=True, pop_size=800, n_gen=100,
-                       lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-                       seed=0, show_fig=False, verbose=False, parallel=False,
-                       n_cores=None):
-        '''
+    def get_H4_x_param(
+            self, use_scipy=True, pop_size=800, n_gen=100,
+            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
+            seed=0, show_fig=False, verbose=False, parallel=False,
+            n_cores=None,
+    ):
+        """
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
 
@@ -382,23 +406,30 @@ class Damping_Curve(Curve):
         ------
         H4_x_param : PySeismoSoil.class_parameters.MKZ_Param
             The best parameters found in the optimization.
-        '''
+        """
         from .class_parameters import MKZ_Param
 
-        H4_x_param = mkz.fit_H4_x_single_layer(self.raw_data, use_scipy=use_scipy,
-                                               pop_size=pop_size, n_gen=n_gen,
-                                               lower_bound_power=lower_bound_power,
-                                               upper_bound_power=upper_bound_power,
-                                               eta=eta, seed=seed,
-                                               show_fig=show_fig, verbose=verbose,
-                                               parallel=parallel, n_cores=n_cores)
+        H4_x_param = mkz.fit_H4_x_single_layer(
+            self.raw_data,
+            use_scipy=use_scipy,
+            pop_size=pop_size,
+            n_gen=n_gen,
+            lower_bound_power=lower_bound_power,
+            upper_bound_power=upper_bound_power,
+            eta=eta,
+            seed=seed,
+            show_fig=show_fig,
+            verbose=verbose,
+            parallel=parallel,
+            n_cores=n_cores,
+        )
 
         self.H4_x_param = MKZ_Param(H4_x_param)
         return self.H4_x_param
 
-#%%============================================================================
+
 class Stress_Curve(Curve):
-    '''
+    """
     Class implementation of a stress curve, as a function of shear strain.
 
     Parameters
@@ -435,16 +466,21 @@ class Stress_Curve(Curve):
     stress : numpy.array
         The interpolated damping values; same shape as ``strain``. The unit is
         always 'kPa'.
-    '''
-    def __init__(self, data, *, strain_unit='1', stress_unit='kPa',
-                 min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
-                 check_values=True):
-
-        super(Stress_Curve, self).__init__(data, strain_unit=strain_unit,
-                                           min_strain=min_strain,
-                                           max_strain=max_strain,
-                                           n_pts=n_pts, log_scale=log_scale,
-                                           check_values=check_values)
+    """
+    def __init__(
+            self, data, *, strain_unit='1', stress_unit='kPa',
+            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            check_values=True,
+    ):
+        super(Stress_Curve, self).__init__(
+            data,
+            strain_unit=strain_unit,
+            min_strain=min_strain,
+            max_strain=max_strain,
+            n_pts=n_pts,
+            log_scale=log_scale,
+            check_values=check_values,
+        )
         self.stress = self.values
 
         if stress_unit not in ['Pa', 'kPa', 'MPa', 'GPa']:
@@ -459,9 +495,9 @@ class Stress_Curve(Curve):
         else:  # GPa
             self.stress *= 1e6
 
-#%%============================================================================
-class Multiple_Curves():
-    '''
+
+class Multiple_Curves:
+    """
     Class implementation of multiple curves.
 
     Its behavior is similar to a list, but with a more stringent requirement:
@@ -493,7 +529,7 @@ class Multiple_Curves():
         A list of curve objects whose type is specified by the user.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
-    '''
+    """
     def __init__(self, list_of_curves, *, element_class=Curve):
         curves = []
         for curve in list_of_curves:
@@ -502,8 +538,9 @@ class Multiple_Curves():
             elif isinstance(curve, element_class):
                 curves.append(curve)
             else:
-                raise TypeError('An element in `list_of_curves` has invalid '
-                                'type.')
+                raise TypeError(
+                    'An element in `list_of_curves` has invalid type.'
+                )
 
         self.element_class = element_class
         self.curves = curves
@@ -540,10 +577,12 @@ class Multiple_Curves():
         self.curves.append(item)
         self.n_layer += 1
 
-    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
-             xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
-             **kwargs_to_matplotlib):
-        '''
+    def plot(
+            self, plot_interpolated=True, fig=None, ax=None, title=None,
+            xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+            **kwargs_to_matplotlib,
+    ):
+        """
         Plot multiple curves together on one figure.
 
         Parameters
@@ -575,19 +614,21 @@ class Multiple_Curves():
             The figure object being created or being passed into this function.
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
-        '''
+        """
         fig = plt.figure()
         ax = plt.axes()
         for curve in self.curves:
-            curve.plot(plot_interpolated=plot_interpolated, fig=fig, ax=ax,
-                       figsize=figsize, dpi=dpi, title=title, xlabel=xlabel,
-                       ylabel=ylabel)
+            curve.plot(
+                plot_interpolated=plot_interpolated, fig=fig, ax=ax,
+                figsize=figsize, dpi=dpi, title=title, xlabel=xlabel,
+                ylabel=ylabel,
+            )
 
         return fig, ax
 
-#%%============================================================================
+
 class Multiple_Damping_Curves(Multiple_Curves):
-    '''
+    """
     Class implementation of multiple damping curves.
 
     Its behavior is similar to a list,
@@ -618,7 +659,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         A list of Damping_Curve objects.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
-    '''
+    """
     def __init__(self, filename_or_list_of_curves, *, sep='\t'):
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
@@ -632,14 +673,17 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         self._sep = sep
 
-        super(Multiple_Damping_Curves, self).__init__(list_of_damping_curves,
-                                                      element_class=Damping_Curve)
+        super(Multiple_Damping_Curves, self).__init__(
+            list_of_damping_curves,
+            element_class=Damping_Curve,
+        )
 
-    #--------------------------------------------------------------------------
-    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
-             xlabel='Strain [%]', ylabel='Damping [%]', figsize=(3, 3), dpi=100,
-             **kwargs_to_matplotlib):
-        '''
+    def plot(
+            self, plot_interpolated=True, fig=None, ax=None, title=None,
+            xlabel='Strain [%]', ylabel='Damping [%]', figsize=(3, 3), dpi=100,
+            **kwargs_to_matplotlib,
+    ):
+        """
         Plot multiple curves together on one figure.
 
         Parameters
@@ -671,25 +715,32 @@ class Multiple_Damping_Curves(Multiple_Curves):
             The figure object being created or being passed into this function.
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
-        '''
-        fig, ax = super(Multiple_Damping_Curves, self)\
-                      .plot(plot_interpolated=plot_interpolated, fig=fig,
-                            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
-                            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib)
+        """
+        fig, ax = super(Multiple_Damping_Curves, self).plot(
+            plot_interpolated=plot_interpolated,
+            fig=fig,
+            ax=ax,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            figsize=figsize,
+            dpi=dpi,
+            **kwargs_to_matplotlib,
+        )
 
         return fig, ax
 
-    #--------------------------------------------------------------------------
-    def get_curve_matrix(self, GGmax_filler_value=1.0, save_to_file=False,
-                         full_file_name=None):
-        '''
+    def get_curve_matrix(
+            self, GGmax_filler_value=1.0, save_to_file=False, full_file_name=None,
+    ):
+        """
         Based on the damping data defined in objects of this class, produce a
         full "curve matrix" in the following format:
-         +------------+--------+------------+-------------+-------------+--------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-         +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-------------+--------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+            +============+========+============+=============+=============+========+=====+
+            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+            +------------+--------+------------+-------------+-------------+--------+-----+
 
         Since this class only defines damping curves, not G/Gmax curves,
         G/Gmax will be filled with some dummy values.
@@ -708,7 +759,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         -------
         curve_matrix : numpy.ndarray
             A matrix containing damping curves in the above-mentioned format.
-        '''
+        """
         lengths = []  # lengths of strain array of each layer
         for curve_ in self.curves:
             lengths.append(len(curve_.strain))
@@ -735,14 +786,15 @@ class Multiple_Damping_Curves(Multiple_Curves):
         # END FOR
         return curve_matrix
 
-    #--------------------------------------------------------------------------
-    def get_all_HH_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
-                            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-                            seed=0, show_fig=False, verbose=False,
-                            parallel=False, n_cores=None,
-                            save_txt=False, txt_filename=None, sep=None,
-                            save_fig=False, fig_filename=None, dpi=100):
-        '''
+    def get_all_HH_x_params(
+            self, use_scipy=True, pop_size=800, n_gen=100,
+            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
+            seed=0, show_fig=False, verbose=False,
+            parallel=False, n_cores=None,
+            save_txt=False, txt_filename=None, sep=None,
+            save_fig=False, fig_filename=None, dpi=100,
+    ):
+        """
         Obtain the HH_x parameters from the damping curve data (for all the
         curves), using the genetic algorithm provided in DEAP.
 
@@ -802,7 +854,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         ------
         HH_x_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
-        '''
+        """
         from .class_parameters import HH_Param_Multi_Layer
 
         if save_fig and fig_filename is None:
@@ -815,32 +867,41 @@ class Multiple_Damping_Curves(Multiple_Curves):
                 sep = self._sep
 
         list_of_np_array = [_.raw_data for _ in self.curves]
-        params = sr.fit_all_damping_curves(list_of_np_array,
-                                           hh.fit_HH_x_single_layer,
-                                           hh.tau_HH,
-                                           use_scipy=use_scipy,
-                                           pop_size=pop_size, n_gen=n_gen,
-                                           lower_bound_power=lower_bound_power,
-                                           upper_bound_power=upper_bound_power,
-                                           eta=eta, seed=seed,
-                                           show_fig=show_fig, verbose=verbose,
-                                           parallel=parallel, n_cores=n_cores,
-                                           save_fig=save_fig,
-                                           fig_filename=fig_filename, dpi=dpi,
-                                           save_txt=save_txt,
-                                           txt_filename=txt_filename, sep=sep,
-                                           func_serialize=hh.serialize_params_to_array)
+        params = sr.fit_all_damping_curves(
+            list_of_np_array,
+            hh.fit_HH_x_single_layer,
+            hh.tau_HH,
+            use_scipy=use_scipy,
+            pop_size=pop_size,
+            n_gen=n_gen,
+            lower_bound_power=lower_bound_power,
+            upper_bound_power=upper_bound_power,
+            eta=eta,
+            seed=seed,
+            show_fig=show_fig,
+            verbose=verbose,
+            parallel=parallel,
+            n_cores=n_cores,
+            save_fig=save_fig,
+            fig_filename=fig_filename,
+            dpi=dpi,
+            save_txt=save_txt,
+            txt_filename=txt_filename,
+            sep=sep,
+            func_serialize=hh.serialize_params_to_array,
+        )
 
         return HH_Param_Multi_Layer(params)
 
-    #--------------------------------------------------------------------------
-    def get_all_H4_x_params(self, use_scipy=True, pop_size=800, n_gen=100,
-                            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-                            seed=0, show_fig=False, verbose=False,
-                            parallel=False, n_cores=None, save_file=False,
-                            save_txt=False, txt_filename=None, sep=None,
-                            save_fig=False, fig_filename=None, dpi=100):
-        '''
+    def get_all_H4_x_params(
+            self, use_scipy=True, pop_size=800, n_gen=100,
+            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
+            seed=0, show_fig=False, verbose=False,
+            parallel=False, n_cores=None,
+            save_txt=False, txt_filename=None, sep=None,
+            save_fig=False, fig_filename=None, dpi=100,
+    ):
+        """
         Obtain the H4_x parameters from the damping curve data (for all the
         curves), using the genetic algorithm provided in DEAP.
 
@@ -900,7 +961,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         ------
         H4_x_param : PySeismoSoil.class_parameters.H4_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
-        '''
+        """
         from .class_parameters import MKZ_Param_Multi_Layer
 
         if save_fig and fig_filename is None:
@@ -913,27 +974,34 @@ class Multiple_Damping_Curves(Multiple_Curves):
                 sep = self._sep
 
         list_of_np_array = [_.raw_data for _ in self.curves]
-        params = sr.fit_all_damping_curves(list_of_np_array,
-                                           mkz.fit_H4_x_single_layer,
-                                           mkz.tau_MKZ,
-                                           use_scipy=use_scipy,
-                                           pop_size=pop_size, n_gen=n_gen,
-                                           lower_bound_power=lower_bound_power,
-                                           upper_bound_power=upper_bound_power,
-                                           eta=eta, seed=seed,
-                                           show_fig=show_fig, verbose=verbose,
-                                           parallel=parallel, n_cores=n_cores,
-                                           save_fig=save_fig,
-                                           fig_filename=fig_filename, dpi=dpi,
-                                           save_txt=save_txt,
-                                           txt_filename=txt_filename, sep=sep,
-                                           func_serialize=mkz.serialize_params_to_array)
+        params = sr.fit_all_damping_curves(
+            list_of_np_array,
+            mkz.fit_H4_x_single_layer,
+            mkz.tau_MKZ,
+            use_scipy=use_scipy,
+            pop_size=pop_size,
+            n_gen=n_gen,
+            lower_bound_power=lower_bound_power,
+            upper_bound_power=upper_bound_power,
+            eta=eta,
+            seed=seed,
+            show_fig=show_fig,
+            verbose=verbose,
+            parallel=parallel,
+            n_cores=n_cores,
+            save_fig=save_fig,
+            fig_filename=fig_filename,
+            dpi=dpi,
+            save_txt=save_txt,
+            txt_filename=txt_filename,
+            sep=sep,
+            func_serialize=mkz.serialize_params_to_array,
+        )
 
         return MKZ_Param_Multi_Layer(params)
 
-    #--------------------------------------------------------------------------
     def _produce_output_file_name(self, prefix, extension):
-        '''
+        """
         Produce the output file name.
 
         Parameters
@@ -947,11 +1015,13 @@ class Multiple_Damping_Curves(Multiple_Curves):
         -------
         new_file_name : str
             The new file name based on the input "curve" file name.
-        '''
+        """
         if self._filename is None:
-            raise ValueError('Please make sure to create this object from '
-                             'a text file, so that there is an original file '
-                             'name to work with.')
+            raise ValueError(
+                'Please make sure to create this object from '
+                'a text file, so that there is an original file '
+                'name to work with.'
+            )
 
         path_name, file_name = os.path.split(self._filename)
         file_name_, _ = os.path.splitext(file_name)
@@ -964,9 +1034,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         return new_file_name
 
-#%%============================================================================
+
 class Multiple_GGmax_Curves(Multiple_Curves):
-    '''
+    """
     Class implementation of multiple G/Gmax curves.
 
     Its behavior is similar to a list,
@@ -997,7 +1067,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         A list of GGmax_Curve objects.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
-    '''
+    """
     def __init__(self, filename_or_list_of_curves, *, sep='\t'):
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
@@ -1011,14 +1081,17 @@ class Multiple_GGmax_Curves(Multiple_Curves):
 
         self._sep = sep
 
-        super(Multiple_GGmax_Curves, self).__init__(list_of_GGmax_curves,
-                                                    element_class=GGmax_Curve)
+        super(Multiple_GGmax_Curves, self).__init__(
+            list_of_GGmax_curves,
+            element_class=GGmax_Curve,
+        )
 
-    #--------------------------------------------------------------------------
-    def plot(self, plot_interpolated=True, fig=None, ax=None, title=None,
-             xlabel='Strain [%]', ylabel='G/Gmax', figsize=(3, 3), dpi=100,
-             **kwargs_to_matplotlib):
-        '''
+    def plot(
+            self, plot_interpolated=True, fig=None, ax=None, title=None,
+            xlabel='Strain [%]', ylabel='G/Gmax', figsize=(3, 3), dpi=100,
+            **kwargs_to_matplotlib,
+    ):
+        """
         Plot multiple curves together on one figure.
 
         Parameters
@@ -1050,25 +1123,26 @@ class Multiple_GGmax_Curves(Multiple_Curves):
             The figure object being created or being passed into this function.
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
-        '''
-        fig, ax = super(Multiple_GGmax_Curves, self)\
-                      .plot(plot_interpolated=plot_interpolated, fig=fig,
-                            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
-                            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib)
+        """
+        fig, ax = super(Multiple_GGmax_Curves, self).plot(
+            plot_interpolated=plot_interpolated, fig=fig,
+            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
+            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib,
+        )
 
         return fig, ax
 
-    #--------------------------------------------------------------------------
-    def get_curve_matrix(self, damping_filler_value=1.0, save_to_file=False,
-                         full_file_name=None):
-        '''
+    def get_curve_matrix(
+            self, damping_filler_value=1.0, save_to_file=False, full_file_name=None,
+    ):
+        """
         Based on the G/Gmax data defined in objects of this class, produce a
         full "curve matrix" in the following format:
-         +------------+--------+------------+-------------+-------------+--------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-         +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-------------+--------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+            +============+========+============+=============+=============+========+=====+
+            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+            +------------+--------+------------+-------------+-------------+--------+-----+
 
         Since this class only defines G/Gmax curves, not damping curves,
         damping values will be filled with some dummy values.
@@ -1087,7 +1161,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         -------
         curve_matrix : numpy.ndarray
             A matrix containing G/Gmax curves in the above-mentioned format.
-        '''
+        """
         lengths = []  # lengths of strain array of each layer
         for curve_ in self.curves:
             lengths.append(len(curve_.strain))
@@ -1114,9 +1188,9 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         # END FOR
         return curve_matrix
 
-#%%============================================================================
-class Multiple_GGmax_Damping_Curves():
-    '''
+
+class Multiple_GGmax_Damping_Curves:
+    """
     A "parent" class that holds both G/Gmax curves and damping curves
     information. The user can EITHER initialize this class by providing
     instances of ``Multiple_GGmax_Curves`` and ``Multiple_Damping_Curves``
@@ -1132,11 +1206,11 @@ class Multiple_GGmax_Damping_Curves():
         have the same ``n_layer`` attribute.
     data : numpy.ndarray, str, or ``None``
         A 2D numpy array of the following format:
-          +------------+--------+------------+-------------+-------------+--------+-----+
-          | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-          +============+========+============+=============+=============+========+=====+
-          |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-          +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-------------+--------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+            +============+========+============+=============+=============+========+=====+
+            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+            +------------+--------+------------+-------------+-------------+--------+-----+
 
         Or a full name of a text file containing the 2D array.
 
@@ -1153,32 +1227,42 @@ class Multiple_GGmax_Damping_Curves():
         above. It will be ``None`` if the ``data`` is not provided.
     n_layer : int
         Number of soil layers.
-    '''
+    """
     def __init__(self, *, mgc_and_mdc=None, data=None):
         if mgc_and_mdc is None and data is None:
-            raise ValueError('Both parameters are `None`. Please provide '
-                             'one and only one input parameter.')
+            raise ValueError(
+                'Both parameters are `None`. Please provide '
+                'one and only one input parameter.'
+            )
         if mgc_and_mdc is not None and data is not None:
-            raise ValueError('Both parameters are not `None`. Please provide '
-                             'one and only one input parameter.')
+            raise ValueError(
+                'Both parameters are not `None`. Please provide '
+                'one and only one input parameter.'
+            )
         if mgc_and_mdc is not None:
             if not isinstance(mgc_and_mdc, tuple):
                 raise TypeError('`mgc_and_mdc` needs to be a tuple.')
             if len(mgc_and_mdc) != 2:
                 raise ValueError('Length of `mgc_and_mdc` needs to be 2.')
             if not isinstance(mgc_and_mdc[0], Multiple_GGmax_Curves):
-                raise TypeError('The 0th element of `mgc_and_mdc` needs to '
-                                'be of type `Multiple_GGmax_Curves`.')
+                raise TypeError(
+                    'The 0th element of `mgc_and_mdc` needs to '
+                    'be of type `Multiple_GGmax_Curves`.'
+                )
             if not isinstance(mgc_and_mdc[-1], Multiple_Damping_Curves):
-                raise TypeError('The last element of `mgc_and_mdc` needs to '
-                                'be of type `Multiple_Damping_Curves`.')
+                raise TypeError(
+                    'The last element of `mgc_and_mdc` needs to '
+                    'be of type `Multiple_Damping_Curves`.'
+                )
             self.mgc = mgc_and_mdc[0]
             self.mdc = mgc_and_mdc[-1]
             self.data = None
             if self.mgc.n_layer != self.mdc.n_layer:
-                raise ValueError('The ``Multiple_GGmax_Curves`` instance and '
-                                 'the ``Multiple_Damping_Curves`` instance '
-                                 'need to have the same number of soil layers.')
+                raise ValueError(
+                    'The ``Multiple_GGmax_Curves`` instance and '
+                    'the ``Multiple_Damping_Curves`` instance '
+                    'need to have the same number of soil layers.'
+                )
             self.n_layer = self.mgc.n_layer
         else:  # `data` is not `None`
             if not isinstance(data, (np.ndarray, str)):
@@ -1189,14 +1273,16 @@ class Multiple_GGmax_Damping_Curves():
             self.mdc = None
             hlp.assert_2D_numpy_array(data, name='`data`')
             if data.shape[1] % 4 != 0:
-                raise ValueError('The number of columns of `data` needs '
-                                 'to be a multiple of 4. However, your '
-                                 '`data` has %d columns.' % data.shape[1])
+                raise ValueError(
+                    'The number of columns of `data` needs '
+                    'to be a multiple of 4. However, your '
+                    '`data` has %d columns.' % data.shape[1]
+                )
             self.data = data
             self.n_layer = data.shape[1] // 4
 
     def get_MGC_MDC_objects(self):
-        '''
+        """
         Get ``Multiple_GGmax_Curves`` and ``Multiple_Damping_Curves`` objects.
 
         Returns
@@ -1205,30 +1291,31 @@ class Multiple_GGmax_Damping_Curves():
             Object containing information of G/Gmax curves.
         mdc : Multiple_Damping_Curves
             Object containing information of damping curves.
-        '''
+        """
         if self.mgc is not None:
             return self.mgc, self.mdc
         else:  # the user provides a matrix containing curve information
-            GGmax_curve_list, damping_curves_list \
-                = hlp.extract_from_curve_format(self.data, ensure_non_negative=False)
+            GGmax_curve_list, damping_curves_list = hlp.extract_from_curve_format(
+                self.data, ensure_non_negative=False,
+            )
             mgc = Multiple_GGmax_Curves(GGmax_curve_list)
             mdc = Multiple_Damping_Curves(damping_curves_list)
             return mgc, mdc
 
     def get_curve_matrix(self):
-        '''
+        """
         Get a "curve matrix" containing both G/Gmax and damping information.
 
         Returns
         -------
         curve_matrix : numpy.ndarray
-            A 2D numpy array with the following format:
-              +------------+--------+------------+-------------+-------------+--------+-----+
-              | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-              +============+========+============+=============+=============+========+=====+
-              |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-              +------------+--------+------------+-------------+-------------+--------+-----+
-        '''
+            A 2D numpy array with the following format::
+                +------------+--------+------------+-------------+-------------+--------+-----+
+                | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+                +============+========+============+=============+=============+========+=====+
+                |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+                +------------+--------+------------+-------------+-------------+--------+-----+
+        """
         if self.data is not None:
             return self.data
         else:

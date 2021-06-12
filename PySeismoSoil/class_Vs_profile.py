@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import os
 import numpy as np
 
@@ -9,7 +7,7 @@ from . import helper_site_response as sr
 from .class_frequency_spectrum import Frequency_Spectrum
 
 class Vs_Profile:
-    '''
+    """
     Class implementation of a Vs profile
 
     Parameters
@@ -67,11 +65,18 @@ class Vs_Profile:
         Maximum depth of the profile. Unit: m.
     n_layer : int
         Number of soil layers (not including the half space).
-    '''
-    #--------------------------------------------------------------------------
-    def __init__(self, data, *, damping_unit='1', density_unit='kg/m^3', sep='\t',
-                 add_halfspace=False, xi_rho_formula=3, **kwargs_to_genfromtxt):
-
+    """
+    def __init__(
+            self,
+            data,
+            *,
+            damping_unit='1',
+            density_unit='kg/m^3',
+            sep='\t',
+            add_halfspace=False,
+            xi_rho_formula=3,
+            **kwargs_to_genfromtxt,
+    ):
         if isinstance(data, str):  # "data" is a file name
             self._path_name, self._file_name = os.path.split(data)
             data_ = np.genfromtxt(data, delimiter=sep, **kwargs_to_genfromtxt)
@@ -103,15 +108,21 @@ class Vs_Profile:
             xi  = data_[:, 2]
             rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
-                print('Warning in initializing Vs_Profile: min(density) is '
-                      'lower than 1,000 kg/m^3. Possible error.')
+                print(
+                    'Warning in initializing Vs_Profile: min(density) is '
+                    'lower than 1,000 kg/m^3. Possible error.'
+                )
             elif density_unit in ['g/cm^3', 'g/cm3'] and min(rho) <= 1.0:
-                print('Warning in initializing Vs_Profile: min(density) is '
-                      'lower than 1.0 g/cm^3. Possible error.')
+                print(
+                    'Warning in initializing Vs_Profile: min(density) is '
+                    'lower than 1.0 g/cm^3. Possible error.'
+                )
 
             if damping_unit == '1' and max(xi) > 1:
-                print('Warning in initializing Vs_Profile: max(damping) '
-                      'larger than 100%. Possible error.')
+                print(
+                    'Warning in initializing Vs_Profile: max(damping) '
+                    'larger than 100%. Possible error.'
+                )
 
             if density_unit in ['g/cm^3', 'g/cm3']:
                 data_[:, 3] *= 1000.0  # g/cm^3 --> kg/m^3
@@ -121,8 +132,10 @@ class Vs_Profile:
             material_number = data_[:, 4]
             full_data = data_.copy()
         else:
-            raise ValueError('The dimension of the input data is wrong. It '
-                             'should have two or five columns.')
+            raise ValueError(
+                'The dimension of the input data is wrong. It '
+                'should have two or five columns.'
+            )
 
         if add_halfspace and thk[-1] != 0:
             last_row = full_data[-1, :]
@@ -144,11 +157,10 @@ class Vs_Profile:
         self.z_max = np.sum(thk)
         self.n_layer = len(vs) - 1 if thk[-1] == 0 else len(vs)
 
-    #--------------------------------------------------------------------------
     def __repr__(self):
-        '''
+        """
         Defines a presentation of the basic info of a Vs profile.
-        '''
+        """
         text = '\n----------+----------+-------------+------------------+--------------\n'
         text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] | Material No. \n'
         text += '----------+----------+-------------+------------------+--------------\n'
@@ -167,9 +179,8 @@ class Vs_Profile:
 
         return text
 
-    #--------------------------------------------------------------------------
     def plot(self, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100, **kwargs):
-        '''
+        """
         Plot Vs profile.
 
         Parameters
@@ -196,7 +207,7 @@ class Vs_Profile:
             The axes object being created or being passed into this function.
         h_line : matplotlib.lines.Line2D
             The line object.
-        '''
+        """
         if self._file_name:
             title_text = self._file_name
         elif 'title' in kwargs:
@@ -205,14 +216,19 @@ class Vs_Profile:
         else:
             title_text = None
 
-        fig, ax, hl = sr.plot_Vs_profile(self.vs_profile, title=title_text,
-                                         fig=fig, ax=ax, figsize=figsize,
-                                         dpi=dpi, **kwargs)
+        fig, ax, hl = sr.plot_Vs_profile(
+            self.vs_profile,
+            title=title_text,
+            fig=fig,
+            ax=ax,
+            figsize=figsize,
+            dpi=dpi,
+            **kwargs,
+        )
         return fig, ax, hl
 
-    #--------------------------------------------------------------------------
     def get_ampl_function(self, show_fig=False, freq_resolution=.05, fmax=30.):
-        '''
+        """
         Get amplification function of the Vs profile.
 
         Parameters
@@ -232,19 +248,25 @@ class Vs_Profile:
             Amplification function between soil surface and borehole.
         af_IN : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
             Amplification function between soil surface and incident motion.
-        '''
-        freq, af_ro, _, f0_ro, af_in, _, af_bh, _, f0_bh = \
-                sr.linear_tf(self.vs_profile, show_fig=show_fig, fmax=fmax,
-                             freq_resolution=freq_resolution)
+        """
+        freq, af_ro, _, f0_ro, af_in, _, af_bh, _, f0_bh = sr.linear_tf(
+            self.vs_profile,
+            show_fig=show_fig,
+            fmax=fmax,
+            freq_resolution=freq_resolution,
+        )
         af_RO = Frequency_Spectrum(np.column_stack((freq, af_ro)))
         af_BH = Frequency_Spectrum(np.column_stack((freq, af_bh)))
         af_IN = Frequency_Spectrum(np.column_stack((freq, af_in)))
         return af_RO, af_BH, af_IN
 
-    #--------------------------------------------------------------------------
-    def get_transfer_function(self, show_fig=False, freq_resolution=.05,
-                              fmax=30.):
-        '''
+    def get_transfer_function(
+            self,
+            show_fig=False,
+            freq_resolution=.05,
+            fmax=30.,
+    ):
+        """
         Get transfer function (complex-valued) of the Vs profile.
 
         Parameters
@@ -264,55 +286,54 @@ class Vs_Profile:
             Transfer function between soil surface and borehole.
         tf_IN : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
             Transfer function between soil surface and incident motion.
-        '''
-        freq, _, tf_ro, f0_ro, _, tf_in, _, tf_bh, f0_bh = \
-                sr.linear_tf(self.vs_profile, show_fig=show_fig, fmax=fmax,
-                             freq_resolution=freq_resolution)
+        """
+        freq, _, tf_ro, f0_ro, _, tf_in, _, tf_bh, f0_bh = sr.linear_tf(
+            self.vs_profile,
+            show_fig=show_fig,
+            fmax=fmax,
+            freq_resolution=freq_resolution,
+        )
 
         tf_RO = Frequency_Spectrum(np.column_stack((freq, tf_ro)))
         tf_BH = Frequency_Spectrum(np.column_stack((freq, tf_bh)))
         tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))
         return tf_RO, tf_BH, tf_IN
 
-    #--------------------------------------------------------------------------
     def get_f0_RO(self):
-        '''
+        """
         Return the rock-outcrop fundamental frequency.
 
         Returns
         -------
         f0_RO : float
             Rock-outcrop fundamental frequency.
-        '''
+        """
         return self.get_ampl_function(show_fig=False)[0].get_f0()
 
-    #--------------------------------------------------------------------------
     def get_f0_BH(self):
-        '''
+        """
         Return the borehole fundamental frequency.
 
         Returns
         -------
         f0_BH : float
             Borehole fundamental frequency.
-        '''
+        """
         return self.get_ampl_function(show_fig=False)[1].get_f0()
 
-    #--------------------------------------------------------------------------
     def get_depth_array(self):
-        '''
+        """
         Returns the depth array.
 
         Returns
         -------
         dep : numpy.ndarray
             The depth array of the Vs profile.
-        '''
+        """
         return sr.thk2dep(self._thk)
 
-    #--------------------------------------------------------------------------
     def truncate(self, depth=None, Vs=1000.0):
-        '''
+        """
         Truncate Vs profile at a given ``depth``, and "glue" the truncated
         profile to a given ``Vs``.
 
@@ -328,7 +349,7 @@ class Vs_Profile:
         -------
         truncated : Vs_Profile
             The truncated Vs profile.
-        '''
+        """
         if depth is None or depth <= 0:
             raise ValueError('`depth` needs to be a positive number.')
         if Vs is None or Vs <= 0:
@@ -362,9 +383,8 @@ class Vs_Profile:
 
         return Vs_Profile(profile_)
 
-    #--------------------------------------------------------------------------
     def query_Vs_at_depth(self, depth, as_profile=False, show_fig=False):
-        '''
+        """
         Query Vs values at given ``depth`` values. If the given depth values
         happen to be at layer interfaces, return the Vs of the layer *below*
         the interface.
@@ -382,17 +402,21 @@ class Vs_Profile:
         vs_array : float, numpy.ndarray, or Vs_Profile
             Vs values corresponding to the given depths. Its type depends on
             the type of ``depth``.
-        '''
+        """
         vs_queried, is_scalar, has_duplicate_values, is_sorted \
             = sr.query_Vs_at_depth(self.vs_profile, depth)
 
         if as_profile:
             if not is_sorted:
-                raise ValueError('If `as_profile` is set to True, the given '
-                                 '`depth` needs to be monotonically increasing.')
+                raise ValueError(
+                    'If `as_profile` is set to True, the given '
+                    '`depth` needs to be monotonically increasing.'
+                )
             if has_duplicate_values:
-                raise ValueError('If `as_profile` is set to True, the given '
-                                 '`depth` should not contain duplicate values.')
+                raise ValueError(
+                    'If `as_profile` is set to True, the given '
+                    '`depth` should not contain duplicate values.'
+                )
 
         if as_profile:
             if not np.any(depth == 0):
@@ -416,10 +440,16 @@ class Vs_Profile:
             else:
                 return vs_queried
 
-    #--------------------------------------------------------------------------
-    def query_Vs_given_thk(self, thk, n_layers=None, as_profile=False,
-                           at_midpoint=True, add_halfspace=True, show_fig=False):
-        '''
+    def query_Vs_given_thk(
+            self,
+            thk,
+            n_layers=None,
+            as_profile=False,
+            at_midpoint=True,
+            add_halfspace=True,
+            show_fig=False,
+    ):
+        """
         Query Vs values from a thickness layer ``thk``. The starting point of
         querying is the ground surface.
 
@@ -448,12 +478,12 @@ class Vs_Profile:
         vs_array : numpy.ndarray or Vs_Profile
             Vs values corresponding to the given depths. Its type depends on
             ``as_profile``.
-        '''
+        """
         if n_layers is None and isinstance(thk, (int, float, np.number)):
             n_layers = int(np.ceil(self.z_max / thk))
-        vs_queried, thk_array = sr.query_Vs_given_thk(self.vs_profile, thk,
-                                                      n_layers=n_layers,
-                                                      at_midpoint=at_midpoint)
+        vs_queried, thk_array = sr.query_Vs_given_thk(
+            self.vs_profile, thk, n_layers=n_layers, at_midpoint=at_midpoint,
+        )
 
         if not as_profile:
             if show_fig:
@@ -467,9 +497,8 @@ class Vs_Profile:
                 sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
             return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
-    #--------------------------------------------------------------------------
     def _plot_queried_Vs(self, vs_queried, depth, dpi=100):
-        '''
+        """
         Helper subroutine that plots queried Vs values on top of the Vs profile.
 
         Parameters
@@ -478,7 +507,7 @@ class Vs_Profile:
             Queried Vs values.
         depth : float or numpy.ndarray
             Depth.
-        '''
+        """
         fig, ax, _ = self.plot(dpi=dpi)
         ax.plot(vs_queried, depth, c='red', marker='o', ls='', alpha=0.55)
         y_lim = ax.get_ylim()
@@ -487,9 +516,8 @@ class Vs_Profile:
 
         return None
 
-    #--------------------------------------------------------------------------
     def get_basin_depth(self, bedrock_Vs=1000.0):
-        '''
+        """
         Query the depth of the basin as indicated in the Vs profile data.
         The basin is defined as the material whose Vs is at least `bedrock_Vs`.
 
@@ -503,24 +531,22 @@ class Vs_Profile:
         basin_depth : float
             The basin depth. If no Vs values in the profile reaches
             ``bedrock_Vs``, return total depth (bottom) of the profile.
-        '''
+        """
         return sr.calc_basin_depth(self.vs_profile, bedrock_Vs=bedrock_Vs)
 
-    #--------------------------------------------------------------------------
     def get_z1(self):
-        '''
+        """
         Get z1 (the depth to Vs = 1000 m/s).
 
         Returns
         -------
         z1 : float
             The depth to Vs = 1000 m/s.
-        '''
+        """
         return sr.calc_z1(self.vs_profile)
 
-    #--------------------------------------------------------------------------
     def get_slowness(self):
-        '''
+        """
         Get "slowness" (reciprocal of wave velocity) as a 2D numpy array
         (including the thickness array).
 
@@ -528,39 +554,40 @@ class Vs_Profile:
         -------
         slowness : numpy.ndarray
             The slowness array.
-        '''
+        """
         slowness = np.ones_like(self.vs_profile)
-        slowness[:,0] = self.vs_profile[:,0]
-        slowness[:,1] = 1.0 / self.vs_profile[:,1]
+        slowness[:, 0] = self.vs_profile[:, 0]
+        slowness[:, 1] = 1.0 / self.vs_profile[:, 1]
         return slowness
 
-    #--------------------------------------------------------------------------
     def output_as_km_unit(self):
-        '''
+        """
         Output the Vs profile in km and km/s unit.
 
         Returns
         -------
         vs_profile : numpy.ndarray
             The Vs profile in km and km/s unit.
-        '''
+        """
         tmp = self.vs_profile.copy()
-        tmp[:,0] /= 1000.0
-        tmp[:,1] /= 1000.0
+        tmp[:, 0] /= 1000.0
+        tmp[:, 1] /= 1000.0
         return tmp
 
-    #--------------------------------------------------------------------------
     def summary(self):
-        '''
+        """
         Display the Vs profile on the console and plot Vs profile.
-        '''
+        """
         print(self)
         self.plot()
 
-    #--------------------------------------------------------------------------
-    def to_txt(self, fname, sep='\t',
-               precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d']):
-        '''
+    def to_txt(
+            self,
+            fname,
+            sep='\t',
+            precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d'],
+    ):
+        """
         Write Vs profile to a text file.
 
         Parameters
@@ -572,8 +599,7 @@ class Vs_Profile:
         precision : list<str>
             A list of precision specifiers, each for the five columns of the
             Vs profile.
-        '''
-
+        """
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
         if len(precision) != 5:

@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import collections
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,9 +9,9 @@ from . import helper_site_response as sr
 
 from .class_curves import Multiple_GGmax_Damping_Curves
 
-#%%============================================================================
+
 class Parameter(collections.UserDict):
-    '''
+    """
     Class implementation of parameters for different soil constitutive models.
     Its objects have dictionary-like behaviors. The keys in the dictionary are
     the parameter names (such as "gamma_ref", "Gmax").
@@ -37,7 +35,7 @@ class Parameter(collections.UserDict):
         The original data, stored as a regular dictionary.
     allowable_keys : set<str>
         Same as the input parameter.
-    '''
+    """
     def __init__(self, param_dict, *, allowable_keys=None, func_stress=None):
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
@@ -45,8 +43,10 @@ class Parameter(collections.UserDict):
            or any([type(_) != str for _ in allowable_keys]):
             raise TypeError('`allowable_keys` should be a set of str.')
         if param_dict.keys() != allowable_keys:
-            raise KeyError("Invalid keys exist in your input data. We only "
-                           "allow %s." % allowable_keys)
+            raise KeyError(
+                "Invalid keys exist in your input data. We only "
+                "allow %s." % allowable_keys
+            )
         self.allowable_keys = allowable_keys
         self.func_stress = func_stress
         super(Parameter, self).__init__(param_dict)
@@ -65,7 +65,7 @@ class Parameter(collections.UserDict):
         raise ValueError('Deleting items from the parameter set is not allowed.')
 
     def serialize(self):
-        '''
+        """
         Serializes the parameter values into an array of floats. The order of
         the parameters are arbitrary, so any subclass of this class is
         recommended to override this method.
@@ -74,14 +74,14 @@ class Parameter(collections.UserDict):
         -------
         result : numpy.ndarray
             Serialized parameters.
-        '''
+        """
         param_array = []
         for key, val in self.data.items():
             param_array.append(val)
         return np.array(param_array)
 
     def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
+        """
         Get the shear stress array inferred from the set of parameters
 
         Parameters
@@ -94,7 +94,7 @@ class Parameter(collections.UserDict):
         result : numpy.ndarray
             The shear stress array, with the same shape as the strain array.
             Its unit is identical to the unit of Gmax (one of the HH parameters).
-        '''
+        """
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
             return None
@@ -102,7 +102,7 @@ class Parameter(collections.UserDict):
         return self.func_stress(strain_in_pct / 100., **self.data)
 
     def get_GGmax(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
+        """
         Get the G/Gmax array inferred from the set of parameters
 
         Parameters
@@ -114,7 +114,7 @@ class Parameter(collections.UserDict):
         -------
         result : numpy.ndarray
             The G/Gmax array, with the same shape as the strain array.
-        '''
+        """
         tau = self.get_stress(strain_in_pct=strain_in_pct)
         if tau is None:
             print('You did not provide a function to calculate shear stress.')
@@ -125,7 +125,7 @@ class Parameter(collections.UserDict):
         return GGmax
 
     def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
+        """
         Get the damping array inferred from the set of parameters
 
         Parameters
@@ -137,16 +137,17 @@ class Parameter(collections.UserDict):
         -------
         result : numpy.ndarray
             The damping array (unit: %), with the same shape as the strain array
-        '''
+        """
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
             return None
-        damping_in_1 = sr.calc_damping_from_param(self.data, strain_in_pct/100.,
-                                                  self.func_stress)
+        damping_in_1 = sr.calc_damping_from_param(
+            self.data, strain_in_pct/100., self.func_stress,
+        )
         return damping_in_1 * 100
 
     def plot_curves(self, figsize=None, dpi=100, **kwargs_to_matplotlib):
-        '''
+        """
         Plot G/Gmax and damping curves from the model parameters
 
         Parameters
@@ -165,7 +166,7 @@ class Parameter(collections.UserDict):
             The figure object.
         ax : list<matplotlib.axes._subplots.AxesSubplot>
             A list of two axes objects.
-        '''
+        """
         strain = np.logspace(-4, 1)  # unit: percent
         GGmax = self.get_GGmax(strain)
         damping = self.get_damping(strain)
@@ -193,9 +194,9 @@ class Parameter(collections.UserDict):
 
         return fig, ax
 
-#%%============================================================================
+
 class HH_Param(Parameter):
-    '''
+    """
     Class implementation of the HH model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
 
@@ -211,23 +212,25 @@ class HH_Param(Parameter):
         HH model parameters with the keys listed above.
     allowable_keys : set<str>
         Valid parameter names of the HH model.
-    '''
+    """
     def __init__(self, param_dict):
-        allowable_keys = {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax',
-                          'mu', 'Tmax', 'd'}
-        super(HH_Param, self).__init__(param_dict, func_stress=hh.tau_HH,
-                                       allowable_keys=allowable_keys)
+        allowable_keys = {
+            'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd',
+        }
+        super(HH_Param, self).__init__(
+            param_dict, func_stress=hh.tau_HH, allowable_keys=allowable_keys,
+        )
 
     def serialize(self):
-        '''
+        """
         Returns an array of parameter values in the order of:
         {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
-        '''
+        """
         return hh.serialize_params_to_array(self.data)
 
-#%%============================================================================
+
 class MKZ_Param(Parameter):
-    '''
+    """
     Class implementation of the MKZ model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
 
@@ -243,22 +246,23 @@ class MKZ_Param(Parameter):
         MKZ model parameters with the keys listed above.
     allowable_keys : set<str>
         Valid parameter names of the MKZ model.
-    '''
+    """
     def __init__(self, param_dict):
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
-        super(MKZ_Param, self).__init__(param_dict, func_stress=mkz.tau_MKZ,
-                                        allowable_keys=allowable_keys)
+        super(MKZ_Param, self).__init__(
+            param_dict, func_stress=mkz.tau_MKZ, allowable_keys=allowable_keys,
+        )
 
     def serialize(self):
-        '''
+        """
         Returns an array of parameter values in the order of:
         {'gamma_ref', 's', 'beta', 'Gmax'}
-        '''
+        """
         return mkz.serialize_params_to_array(self.data)
 
-#%%============================================================================
+
 class Param_Multi_Layer():
-    '''
+    """
     Class implementation of multiple curves.
 
     Its behavior is similar to a list,
@@ -288,8 +292,7 @@ class Param_Multi_Layer():
         A list of param objects whose type is specified by the user.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
-    '''
-
+    """
     def __init__(self, list_of_param_data, *, element_class):
         param_list = []
         for param_data in list_of_param_data:
@@ -298,26 +301,34 @@ class Param_Multi_Layer():
             elif isinstance(param_data, element_class):
                 param_list.append(param_data)
             else:
-                raise TypeError('An element in ``list_of_param_data`` has '
-                                'invalid type.')
+                raise TypeError(
+                    'An element in ``list_of_param_data`` has invalid type.'
+                )
         self.param_list = param_list
         self.n_layer = len(param_list)
 
-    def __contains__(self, item): return item in self.param_list
-    def __len__(self): return self.n_layer
-    def __setitem__(self, i, item): self.param_list[i] = item
+    def __contains__(self, item):
+        return item in self.param_list
+
+    def __len__(self):
+        return self.n_layer
+
+    def __setitem__(self, i, item):
+        self.param_list[i] = item
+
     def __getitem__(self, i):
         if isinstance(i, int):
             return self.param_list[i]
         if isinstance(i, slice):  # return an object of the same class
             return self.__class__(self.param_list[i])  # filled with the sliced data
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
+
     def __delitem__(self, i):
         del self.param_list[i]
         self.n_layer -= 1
 
     def construct_curves(self, strain_in_pct=np.logspace(-2, 1)):
-        '''
+        """
         Construct G/Gmax and damping curves from parameter values.
 
         Parameters
@@ -331,32 +342,34 @@ class Param_Multi_Layer():
             G/Gmax curves for each soil layer.
         mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
             Damping curves for each soil layer.
-        '''
+        """
         strain_in_pct = np.logspace(-2, 1)
         curves = None
         for param in self.param_list:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
-                curves = np.column_stack((strain_in_pct, GGmax,
-                                          strain_in_pct, damping))
+                curves = np.column_stack(
+                    (strain_in_pct, GGmax, strain_in_pct, damping)
+                )
             else:
-                curves = np.column_stack((curves, strain_in_pct, GGmax,
-                                          strain_in_pct, damping))
+                curves = np.column_stack(
+                    (curves, strain_in_pct, GGmax, strain_in_pct, damping)
+                )
 
         mgdc = Multiple_GGmax_Damping_Curves(data=curves)
         mgc, mdc = mgdc.get_MGC_MDC_objects()
         return mgc, mdc
 
     def serialize_to_2D_array(self):
-        '''
+        """
         Serielizes the parameter data to a 2D numpy array.
 
         Returns
         -------
         param_2D_array : numpy.array
             A 2D numpy array whose columns are parameters of each layer.
-        '''
+        """
         output = []
         for param_single_layer in self.param_list:
             param_array = param_single_layer.serialize()
@@ -366,7 +379,7 @@ class Param_Multi_Layer():
         return param_2D_array
 
     def save_txt(self, filename, precision='%.5g', sep='\t', **kw_to_savetxt):
-        '''
+        """
         Save data as text file.
 
         Parameters
@@ -379,14 +392,15 @@ class Param_Multi_Layer():
             Delimiter identifier.
         **kw_to_savetxt :
             Additional keyword arguments to pass to ``numpy.savetxt()``.
-        '''
+        """
         param_2D_array = self.serialize_to_2D_array()
-        np.savetxt(filename, param_2D_array, fmt=precision, delimiter=sep,
-                   **kw_to_savetxt)
+        np.savetxt(
+            filename, param_2D_array, fmt=precision, delimiter=sep, **kw_to_savetxt,
+        )
 
-#%%============================================================================
+
 class HH_Param_Multi_Layer(Param_Multi_Layer):
-    '''
+    """
     Class implementation of multiple sets of HH parameters for multiple layers.
 
     Its behavior is similar to a list,
@@ -428,19 +442,21 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         A list of HH model parameters.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
-    '''
+    """
     def __init__(self, filename_or_data, *, sep='\t'):
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
-            list_of_param = [hh.deserialize_array_to_params(_)
-                             for _ in list_of_param_array]
+            list_of_param = [
+                hh.deserialize_array_to_params(_) for _ in list_of_param_array
+            ]
         elif isinstance(filename_or_data, np.ndarray):
             hlp.assert_2D_numpy_array(filename_or_data, name='`filename_or_data`')
             list_of_param_array = hlp.extract_from_param_format(filename_or_data)
-            list_of_param = [hh.deserialize_array_to_params(_)
-                             for _ in list_of_param_array]
+            list_of_param = [
+                hh.deserialize_array_to_params(_) for _ in list_of_param_array
+            ]
         elif isinstance(filename_or_data, list):
             self._filename = None
             list_of_param = filename_or_data
@@ -449,12 +465,13 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
         self._sep = sep
 
-        super(HH_Param_Multi_Layer, self).__init__(list_of_param,
-                                                   element_class=HH_Param)
+        super(HH_Param_Multi_Layer, self).__init__(
+            list_of_param, element_class=HH_Param,
+        )
 
-#%%============================================================================
+
 class MKZ_Param_Multi_Layer(Param_Multi_Layer):
-    '''
+    """
     Class implementation of multiple sets of MKZ parameters for multiple layers.
 
     Its behavior is similar to a list,
@@ -496,19 +513,21 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
         A list of MKZ model parameters.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
-    '''
+    """
     def __init__(self, filename_or_data, *, sep='\t'):
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
-            list_of_param = [mkz.deserialize_array_to_params(_)
-                             for _ in list_of_param_array]
+            list_of_param = [
+                mkz.deserialize_array_to_params(_) for _ in list_of_param_array
+            ]
         elif isinstance(filename_or_data, np.ndarray):
             hlp.assert_2D_numpy_array(filename_or_data, name='`filename_or_data`')
             list_of_param_array = hlp.extract_from_param_format(filename_or_data)
-            list_of_param = [mkz.deserialize_array_to_params(_)
-                             for _ in list_of_param_array]
+            list_of_param = [
+                mkz.deserialize_array_to_params(_) for _ in list_of_param_array
+            ]
         elif isinstance(filename_or_data, list):
             self._filename = None
             list_of_param = filename_or_data
@@ -517,6 +536,6 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
         self._sep = sep
 
-        super(MKZ_Param_Multi_Layer, self).__init__(list_of_param,
-                                                    element_class=MKZ_Param)
-
+        super(MKZ_Param_Multi_Layer, self).__init__(
+            list_of_param, element_class=MKZ_Param,
+        )

@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,9 +6,9 @@ from . import helper_generic as hlp
 from . import helper_site_response as sr
 from . import helper_signal_processing as sig
 
-#%%----------------------------------------------------------------------------
-class Frequency_Spectrum():
-    '''
+
+class Frequency_Spectrum:
+    """
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
     array. (If frequency range implied in ``data`` and/or ``df`` goes beyond ``fmin``
@@ -78,10 +76,11 @@ class Frequency_Spectrum():
         A two-column numpy array (frequency and phase).
     iscomplex : bool
         Is ``spectrum`` complex or already real?
-    '''
-    def __init__(self, data, *, df=None, interpolate=False, fmin=0.1, fmax=30,
-                 n_pts=1000, log_scale=True, sep='\t'):
-
+    """
+    def __init__(
+            self, data, *, df=None, interpolate=False, fmin=0.1, fmax=30,
+            n_pts=1000, log_scale=True, sep='\t',
+    ):
         data_, df = hlp.read_two_column_stuff(data, df, sep)
         if isinstance(data, str):  # is a file name
             self._path_name, self._file_name = os.path.split(data)
@@ -96,9 +95,10 @@ class Frequency_Spectrum():
             freq = np.real_if_close(data_[:, 0])
             spect = data_[:, 1]
         else:
-            freq, spect = hlp.interpolate(fmin, fmax, n_pts,
-                                          np.real_if_close(data_[:, 0]),
-                                          data_[:, 1], log_scale=log_scale)
+            freq, spect = hlp.interpolate(
+                fmin, fmax, n_pts, np.real_if_close(data_[:, 0]),
+                data_[:, 1], log_scale=log_scale,
+            )
         self.raw_df = df
         self.raw_data = data_
         self.n_pts = n_pts
@@ -113,16 +113,16 @@ class Frequency_Spectrum():
         self.phase_2col = np.column_stack((freq, self.phase))
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
-    #--------------------------------------------------------------------------
     def __repr__(self):
         text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' \
                % (self.raw_df, self.n_pts, self.fmin, self.fmax)
         return text
 
-    #--------------------------------------------------------------------------
-    def plot(self, fig=None, ax=None, figsize=None, dpi=100,
-             logx=True, logy=False, plot_abs=False, **kwargs_plot):
-        '''
+    def plot(
+            self, fig=None, ax=None, figsize=None, dpi=100,
+            logx=True, logy=False, plot_abs=False, **kwargs_plot,
+    ):
+        """
         Plot the shape of the interpolated spectrum.
 
         Parameters
@@ -152,7 +152,7 @@ class Frequency_Spectrum():
             The figure object being created or being passed into this function.
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
-        '''
+        """
         fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
 
         if plot_abs:
@@ -168,9 +168,8 @@ class Frequency_Spectrum():
 
         return fig, ax
 
-    #--------------------------------------------------------------------------
     def get_smoothed(self, win_len=15, show_fig=False, *, log_scale, **kwargs):
-        '''
+        """
         Smooth the spectrum by calculating the convolution of the raw
         signal and the smoothing window.
 
@@ -196,9 +195,11 @@ class Frequency_Spectrum():
             The figure object being created or being passed into this function.
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
-        '''
-        sm = sig.log_smooth(self.spectrum, win_len=win_len, fmin=self.fmin,
-                            fmax=self.fmax, lin_space=not log_scale, **kwargs)
+        """
+        sm = sig.log_smooth(
+            self.spectrum, win_len=win_len, fmin=self.fmin,
+            fmax=self.fmax, lin_space=not log_scale, **kwargs,
+        )
         if show_fig:
             fig = plt.figure()
             ax = plt.axes()
@@ -211,9 +212,8 @@ class Frequency_Spectrum():
 
         return sm, fig, ax
 
-    #--------------------------------------------------------------------------
     def get_f0(self):
-        '''
+        """
         Get the "fundamental frequency" of the amplitude spectrum, which is
         the frequency of the first amplitude peak.
 
@@ -221,12 +221,11 @@ class Frequency_Spectrum():
         -------
         f0 : float
             The fundamental frequency.
-        '''
+        """
         return sr.find_f0(self.amplitude_2col)
 
-    #--------------------------------------------------------------------------
     def get_unwrapped_phase(self, robust=True):
-        '''
+        """
         Unwrpped the phase component of the spectrum.
 
         Parameters
@@ -240,7 +239,7 @@ class Frequency_Spectrum():
         -------
         unwrapped : Frequency_Spectrum
             A frequency spectrum with unwrapped phase component.
-        '''
+        """
         if robust:
             unwrapped_phase = sr.robust_unwrap(self.phase)
         else:

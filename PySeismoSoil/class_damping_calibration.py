@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import numpy as np
 
 from . import helper_hh_calibration as hhc
@@ -7,19 +5,22 @@ from . import helper_hh_calibration as hhc
 from .class_Vs_profile import Vs_Profile
 from .class_curves import Damping_Curve, Multiple_Damping_Curves
 
-class Damping_Calibration():
-    '''
+
+class Damping_Calibration:
+    """
     A class to generate damping curves (and associated soil model parameters)
     from a given Vs profile.
-    '''
+    """
     def __init__(self, vs_profile):
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
         self.vs_profile = vs_profile
 
-    def get_damping_curves(self, strain_in_pct=np.logspace(-3, 1),
-                           use_Darendeli_Dmin=False, show_fig=False):
-        '''
+    def get_damping_curves(
+            self, strain_in_pct=np.logspace(-3, 1),
+            use_Darendeli_Dmin=False, show_fig=False,
+    ):
+        """
         Calculate damping curves using empirical formulas by Darendeli (2001).
 
         Parameters
@@ -40,7 +41,7 @@ class Damping_Calibration():
         mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
             Damping curves for all the soil layers (i.e., not including the
             rock halfspace at the bottom).
-        '''
+        """
         h = self.vs_profile.vs_profile[:-1, 0]
         Vs = self.vs_profile.vs_profile[:-1, 1]
         n_layer = len(Vs)
@@ -54,9 +55,9 @@ class Damping_Calibration():
         OCR = hhc._calc_OCR(Vs, rho, sigma_v0)
         PI = hhc._calc_PI(Vs)
         phi = 30
-        _, xi, _ = hhc.produce_Darendeli_curves(sigma_v0, PI, OCR=OCR,
-                                                K0=None, phi=phi,
-                                                strain_in_pct=strain_in_pct)
+        _, xi, _ = hhc.produce_Darendeli_curves(
+            sigma_v0, PI, OCR=OCR, K0=None, phi=phi, strain_in_pct=strain_in_pct,
+        )
         assert(xi.shape[1] == n_layer)
 
         curve_list = []
@@ -65,9 +66,11 @@ class Damping_Calibration():
             if not use_Darendeli_Dmin:
                 xi_j -= xi_j[0]
                 xi_j += self.vs_profile.vs_profile[j, 2]
-            dc = Damping_Curve(np.column_stack((strain_in_pct, xi_j)),
-                               strain_unit='%', damping_unit='1',
-                               interpolate=False, check_values=True)
+            dc = Damping_Curve(
+                np.column_stack((strain_in_pct, xi_j)),
+                strain_unit='%', damping_unit='1',
+                interpolate=False, check_values=True,
+            )
             curve_list.append(dc)
         mdc = Multiple_Damping_Curves(curve_list)
 
@@ -77,7 +80,7 @@ class Damping_Calibration():
         return mdc
 
     def get_HH_x_param(self, **kwargs):
-        '''
+        """
         Obtain HH_x parameters for each layer (i.e., HH model parameters
         that best fit given damping values, for each layer).
 
@@ -93,14 +96,15 @@ class Damping_Calibration():
         -------
         HH_x_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
-        '''
-        mdc = self.get_damping_curves(strain_in_pct=np.geomspace(1e-4, 15, 100),
-                                      show_fig=False)
+        """
+        mdc = self.get_damping_curves(
+            strain_in_pct=np.geomspace(1e-4, 15, 100), show_fig=False,
+        )
         HH_x_param = mdc.get_all_HH_x_params(**kwargs)
         return HH_x_param
 
     def get_H4_x_param(self, **kwargs):
-        '''
+        """
         Obtain H4_x parameters for each layer (i.e., MKZ model parameters
         that best fit given damping values, for each layer).
 
@@ -116,8 +120,9 @@ class Damping_Calibration():
         -------
         H4_x_param : PySeismoSoil.class_parameters.H4_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
-        '''
-        mdc = self.get_damping_curves(strain_in_pct=np.geomspace(1e-4, 15, 100),
-                                      show_fig=False)
+        """
+        mdc = self.get_damping_curves(
+            strain_in_pct=np.geomspace(1e-4, 15, 100), show_fig=False,
+        )
         H4_x_param = mdc.get_all_HH_x_params(**kwargs)
         return H4_x_param

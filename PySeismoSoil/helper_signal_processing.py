@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import numpy as np
 import scipy.signal
 import scipy.fftpack
@@ -8,10 +6,10 @@ import matplotlib.pyplot as plt
 from . import helper_generic as hlp
 from . import helper_site_response as sr
 
-#%%############################################################################
-def lowpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
-    '''
-    IIR low pass filter. Zero phase distorsion.
+
+def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+    """
+    IIR low pass filter. Zero phase distortion.
 
     Parameters
     ----------
@@ -31,15 +29,20 @@ def lowpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     filtered : numpy.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
-    '''
+    """
+    return _filter_kernel(
+        orig_signal,
+        cutoff_freq,
+        'lowpass',
+        show_fig=show_fig,
+        filter_order=filter_order,
+        padlen=padlen,
+    )
 
-    return _filter_kernel(orig_signal, cutoff_freq, 'lowpass', show_fig=show_fig,
-                          filter_order=filter_order, padlen=padlen)
 
-#%%############################################################################
-def highpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
-    '''
-    IIR high pass filter. Zero phase distorsion.
+def highpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+    """
+    IIR high pass filter. Zero phase distortion.
 
     Parameters
     ----------
@@ -59,15 +62,20 @@ def highpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     filtered : numpy.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
-    '''
+    """
+    return _filter_kernel(
+        orig_signal,
+        cutoff_freq,
+        'highpass',
+        show_fig=show_fig,
+        filter_order=filter_order,
+        padlen=padlen,
+    )
 
-    return _filter_kernel(orig_signal, cutoff_freq, 'highpass', show_fig=show_fig,
-                          filter_order=filter_order, padlen=padlen)
 
-#%%############################################################################
-def bandpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
-    '''
-    IIR band pass filter. Zero phase distorsion.
+def bandpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+    """
+    IIR band pass filter. Zero phase distortion.
 
     Parameters
     ----------
@@ -87,14 +95,19 @@ def bandpass(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     filtered : numpy.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
-    '''
+    """
+    return _filter_kernel(
+        orig_signal,
+        cutoff_freq,
+        'bandpass',
+        show_fig=show_fig,
+        filter_order=filter_order,
+        padlen=padlen,
+    )
 
-    return _filter_kernel(orig_signal, cutoff_freq, 'bandpass', show_fig=show_fig,
-                          filter_order=filter_order, padlen=padlen)
 
-#%%############################################################################
-def bandstop(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
-    '''
+def bandstop(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+    """
     IIR band stop filter. Zero phase distorsion.
 
     Parameters
@@ -115,18 +128,26 @@ def bandstop(orig_signal,cutoff_freq,show_fig=False,filter_order=4,padlen=None):
     filtered : numpy.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
-    '''
+    """
+    return _filter_kernel(
+        orig_signal,
+        cutoff_freq,
+        'bandstop',
+        show_fig=show_fig,
+        filter_order=filter_order,
+        padlen=padlen,
+    )
 
-    return _filter_kernel(orig_signal, cutoff_freq, 'bandstop', show_fig=show_fig,
-                          filter_order=filter_order, padlen=padlen)
 
-#%%############################################################################
-def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
-                   filter_order=4, padlen=None):
-    '''
-    Common helper function to the four filtering functions.
-    '''
-
+def _filter_kernel(
+        orig_signal,
+        cutoff_freq,
+        filter_type,
+        show_fig=False,
+        filter_order=4,
+        padlen=None,
+):
+    """ Common helper function to the four filtering functions. """
     if filter_type in ['bandpass', 'bandstop']:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
@@ -139,8 +160,9 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
         if not isinstance(cutoff_freq, (float, int, np.number)):
             raise TypeError('`cutoff_freq` must be float, int, or numpy.number.')
     else:
-        raise ValueError("`filter_type` must be in {'highpass', 'lowpass', "
-                         "'bandpass', 'bandstop'}.")
+        raise ValueError(
+            "`filter_type` must be in {'highpass', 'lowpass', 'bandpass', 'bandstop'}."
+        )
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
 
@@ -160,32 +182,40 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
 
     if filter_type == 'bandpass':
         if fmax >= f_nyquist * 0.9999:
-            return _filter_kernel(orig_signal, fmin, 'highpass', show_fig=show_fig,
-                                  filter_order=filter_order, padlen=padlen)
+            return _filter_kernel(
+                orig_signal, fmin, 'highpass', show_fig=show_fig,
+                filter_order=filter_order, padlen=padlen,
+            )
         if fmin <= df:
-            return _filter_kernel(orig_signal, fmax, 'lowpass', show_fig=show_fig,
-                                  filter_order=filter_order, padlen=padlen)
+            return _filter_kernel(
+                orig_signal, fmax, 'lowpass', show_fig=show_fig,
+                filter_order=filter_order, padlen=padlen,
+            )
     if filter_type == 'bandstop':
         if fmax >= f_nyquist * 0.9999:
-            return _filter_kernel(orig_signal, fmin, 'lowpass', show_fig=show_fig,
-                                  filter_order=filter_order, padlen=padlen)
+            return _filter_kernel(
+                orig_signal, fmin, 'lowpass', show_fig=show_fig,
+                filter_order=filter_order, padlen=padlen,
+            )
         if fmin <= df:
-            return _filter_kernel(orig_signal, fmax, 'highpass', show_fig=show_fig,
-                                  filter_order=filter_order, padlen=padlen)
+            return _filter_kernel(
+                orig_signal, fmax, 'highpass', show_fig=show_fig,
+                filter_order=filter_order, padlen=padlen,
+            )
 
     b, a = scipy.signal.butter(filter_order, Wn, btype=filter_type)
     y = scipy.signal.filtfilt(b, a, x, padlen=padlen)
 
-    if show_fig == True:
+    if show_fig:
         plt.figure()
         plt.subplot(221)
-        plt.plot(time,x)
+        plt.plot(time, x)
         plt.title('Original')
         plt.ylabel('Signal')
         plt.grid(ls=':')
 
         plt.subplot(223)
-        plt.plot(time,y)
+        plt.plot(time, y)
         plt.title('After filtering')
         plt.xlabel('Time [sec]')
         plt.ylabel('Signal')
@@ -202,7 +232,7 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
             plt.plot([cutoff_freq] * 2, ylim, c='orange')
         plt.xscale('log')
         plt.xlim(0.01)
-        plt.ylim(0,np.max(spec_orig[1:]))
+        plt.ylim(0, np.max(spec_orig[1:]))
         plt.grid(ls=':')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Fourier amplitude')
@@ -227,9 +257,9 @@ def _filter_kernel(orig_signal, cutoff_freq, filter_type, show_fig=False,
 
     return np.column_stack((time, y))
 
-#%%############################################################################
+
 def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
-    '''
+    """
     Baseline correction of a time-domain signal using high pass filter.
 
     Parameters
@@ -246,12 +276,11 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     -------
     corrected : numpy.ndarray
         The corrected signal.
-    '''
-
+    """
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
 
-    a = orig_signal[:,1]
-    time = orig_signal[:,0]
+    a = orig_signal[:, 1]
+    time = orig_signal[:, 0]
     dt = time[1] - time[0]
     n0 = len(a)
 
@@ -379,9 +408,8 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
 
     return a_new2
 
-#%%############################################################################
-def _remove_linear_trend(signal):
 
+def _remove_linear_trend(signal):
     t = signal[:, 0]
     x = signal[:, 1]
 
@@ -390,10 +418,15 @@ def _remove_linear_trend(signal):
 
     return np.column_stack((t, x - baseline))
 
-#%%############################################################################
-def fourier_transform(signal_2_col, *, real_val=True, double_sided=False,
-                      show_fig=False):
-    '''
+
+def fourier_transform(
+        signal_2_col,
+        *,
+        real_val=True,
+        double_sided=False,
+        show_fig=False,
+):
+    """
     Fourier transform using FFT.
 
     Parameters
@@ -412,8 +445,7 @@ def fourier_transform(signal_2_col, *, real_val=True, double_sided=False,
     -------
     spectra : numpy.ndarray
         A two-column array containing [freq_array, spectrum].
-    '''
-
+    """
     hlp.check_two_column_format(signal_2_col, '`signal_2_col`')
 
     signal_ = signal_2_col
@@ -426,7 +458,7 @@ def fourier_transform(signal_2_col, *, real_val=True, double_sided=False,
 
     X = scipy.fftpack.fft(x)
 
-    if double_sided == False:
+    if not double_sided:
         freq_array = np.arange(1, int(np.ceil(N/2.0)) + 1, 1)/(N*dt)
         if real_val:  # absolute Fourier spectra
             X = abs(X[0 : int(np.ceil(N/2.0))])
@@ -467,9 +499,9 @@ def fourier_transform(signal_2_col, *, real_val=True, double_sided=False,
 
     return np.column_stack((freq_array, spectrum))
 
-#%%############################################################################
+
 def taper_Tukey(input_signal, width=0.05):
-    '''
+    """
     Taper a time-domain signal on both ends with a Tukey window
 
     Parameters
@@ -483,8 +515,7 @@ def taper_Tukey(input_signal, width=0.05):
     -------
     output : numpy.ndarray
         The tapered signal.
-    '''
-
+    """
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
 
@@ -498,15 +529,18 @@ def taper_Tukey(input_signal, width=0.05):
         l = len(input_signal)
         output = input_signal * scipy.signal.tukey(l, width/2.0)
     else:
-        raise TypeError('`input_signal` should be either 1 or 2 dimensional. '
-                        'And if 2D, should have 2 columns.')
+        raise TypeError(
+            '`input_signal` should be either 1 or 2 dimensional. '
+            'And if 2D, should have 2 columns.'
+        )
 
     return output
 
-#%%############################################################################
-def calc_transfer_function(input_signal, output_signal, *, amplitude_only=True,
-                           smooth_signal=False):
-    '''
+
+def calc_transfer_function(
+        input_signal, output_signal, *, amplitude_only=True, smooth_signal=False,
+):
+    """
     Calculates transfer function between the output and input time-domain
     signals. The two signals need to have the same time interval and same
     length.
@@ -528,7 +562,7 @@ def calc_transfer_function(input_signal, output_signal, *, amplitude_only=True,
     trans_func_2col : numpy.ndarray
         The complex-valued or real-valued transfer function with two columns
         (frequency and ratio).
-    '''
+    """
     hlp.check_two_column_format(input_signal, name='`input_signal`')
     hlp.check_two_column_format(output_signal, name='`output_signal`')
     if hlp.check_numbers_valid(input_signal) in [-1, -2]:
@@ -555,15 +589,19 @@ def calc_transfer_function(input_signal, output_signal, *, amplitude_only=True,
     spectrum_out = result_out[:, 1]
 
     if not np.allclose(freq_in, freq_out, atol=1e-6):
-        print('WARNING in `calc_transfer_function()`: The frequency arrays '
-              'of the output and input Fourier spectra do not match.')
+        print(
+            'WARNING in `calc_transfer_function()`: The frequency arrays '
+            'of the output and input Fourier spectra do not match.'
+        )
 
     freq = freq_in
     transfer_func = spectrum_out / spectrum_in
 
     if not amplitude_only and smooth_signal:
-        raise ValueError('If `smooth_signal` is set to True, `amplitude_only` '
-                         'needs to be also set to True.')
+        raise ValueError(
+            'If `smooth_signal` is set to True, `amplitude_only` '
+            'needs to be also set to True.'
+        )
 
     if not smooth_signal:
         if amplitude_only:
@@ -576,10 +614,20 @@ def calc_transfer_function(input_signal, output_signal, *, amplitude_only=True,
 
     return trans_func_2col
 
-#%%############################################################################
-def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
-               fmax=None, n_pts=None, fix_ends=True, beta1=0.9, beta2=0.9):
-    '''
+
+def log_smooth(
+        signal,
+        win_len=15,
+        window='hanning',
+        lin_space=True,
+        fmin=None,
+        fmax=None,
+        n_pts=None,
+        fix_ends=True,
+        beta1=0.9,
+        beta2=0.9,
+):
+    """
     Smooth a frequency spectrum with constant window size in logarithmic space.
 
     Parameters
@@ -615,8 +663,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
     -------
     smoothed_signal : numpy.ndarray
         The smoothed signal which has the same dimension as the original signal.
-    '''
-
+    """
     hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
         raise ValueError("Input vector needs to be bigger than window size.")
@@ -626,8 +673,9 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
         raise ValueError("'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'")
 
     if lin_space and (fmin == None or fmax == None):
-        raise ValueError('If `lin_space` is `True`, `fmin` and `fmax` must '
-                         'be specified.')
+        raise ValueError(
+            'If `lin_space` is `True`, `fmin` and `fmax` must be specified.'
+        )
 
     if n_pts == None:
         n_pts = len(signal)
@@ -650,7 +698,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
             raise ValueError('`beta2` should be within [0, 1].')
 
         y[0] = np.mean(x[:n])
-        for j in range(1,n):  # exponentially weigted average
+        for j in range(1,n):  # exponentially weighted average
             y[j] = beta1 * y[j-1] + (1 - beta1) * x[j]
 
         y[-1] = np.mean(x[len(y)-n:])
@@ -660,7 +708,7 @@ def log_smooth(signal, win_len=15, window='hanning', lin_space=True, fmin=None,
     smoothed_signal = y
     return smoothed_signal
 
-#%%############################################################################
+
 def lin_smooth(x, window_len=15, window='hanning'):
     """
     Smooth the data using a window with requested size.
@@ -705,7 +753,6 @@ def lin_smooth(x, window_len=15, window='hanning'):
     - length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
     - Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
     """
-
     if x.ndim != 1:
         raise ValueError("smooth only accepts one-dimensional arrays.")
     if x.size < window_len:
@@ -715,7 +762,7 @@ def lin_smooth(x, window_len=15, window='hanning'):
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError("'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'")
 
-    if window == 'flat': # moving average
+    if window == 'flat':  # moving average
         w = np.ones(window_len, 'd')
     else:
         w = eval('np.'+window+'(window_len)')

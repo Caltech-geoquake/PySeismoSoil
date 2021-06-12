@@ -1,6 +1,4 @@
-# Author: Jian Shi
-
-'''
+"""
 Hierarchy of subroutines::
 
  hh_param_from_profile
@@ -31,7 +29,7 @@ Hierarchy of subroutines::
                       |--- __find_x_t_and_d()
                                  |--- helper_hh_model.tau_FKZ()
                                  |--- helper_generic.find_closest_index()
-'''
+"""
 
 import os
 import numpy as np
@@ -42,12 +40,20 @@ from . import helper_site_response as sr
 from . import helper_mkz_model as mkz
 from . import helper_hh_model as hh
 
-#%%----------------------------------------------------------------------------
-def hh_param_from_profile(vs_profile, *, Tmax=None, show_fig=False,
-                          save_fig=False, fig_output_dir=None,
-                          save_HH_G_file=False, HH_G_file_dir=None,
-                          profile_name=None, verbose=True):
-    '''
+
+def hh_param_from_profile(
+        vs_profile,
+        *,
+        Tmax=None,
+        show_fig=False,
+        save_fig=False,
+        fig_output_dir=None,
+        save_HH_G_file=False,
+        HH_G_file_dir=None,
+        profile_name=None,
+        verbose=True,
+):
+    """
     Get HH parameters of each soil layer from the Vs values of every layer.
 
     Parameters
@@ -93,7 +99,7 @@ def hh_param_from_profile(vs_profile, *, Tmax=None, show_fig=False,
         ``(9, n_layer)``. For each layer (i.e., column), the values are in
         this order:
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
-    '''
+    """
     phi = 30.  # friction angle (choose 30 degrees, because there is no better info)
 
     hlp.check_Vs_profile_format(vs_profile)
@@ -114,27 +120,43 @@ def hh_param_from_profile(vs_profile, *, Tmax=None, show_fig=False,
     if Tmax is None:
         Tmax = _calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)
 
-    HH_G_param = produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0,
-                                    curves=None, PI=PI, phi=phi,
-                                    show_fig=show_fig, save_fig=save_fig,
-                                    fig_output_dir=fig_output_dir,
-                                    verbose=verbose)
+    HH_G_param = produce_HH_G_param(
+        Vs, Gmax, Tmax, OCR, sigma_v0, K0,
+        curves=None, PI=PI, phi=phi,
+        show_fig=show_fig, save_fig=save_fig,
+        fig_output_dir=fig_output_dir,
+        verbose=verbose,
+    )
 
     if save_HH_G_file:
         if HH_G_file_dir is None:
             raise ValueError('Please specify `HH_G_file_dir`.')
         if profile_name is None:
             profile_name = hlp.get_current_time(for_filename=True)
-        np.savetxt(os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
-                   HH_G_param, delimiter='\t', fmt='%.6g')
+        np.savetxt(
+            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            HH_G_param,
+            delimiter='\t',
+            fmt='%.6g',
+        )
 
     return HH_G_param
 
-#%%----------------------------------------------------------------------------
-def hh_param_from_curves(vs_profile, curves, *, Tmax=None, show_fig=False,
-                         save_fig=False, fig_output_dir=None, save_HH_G_file=False,
-                         HH_G_file_dir=None, profile_name=None, verbose=True):
-    '''
+
+def hh_param_from_curves(
+        vs_profile,
+        curves,
+        *,
+        Tmax=None,
+        show_fig=False,
+        save_fig=False,
+        fig_output_dir=None,
+        save_HH_G_file=False,
+        HH_G_file_dir=None,
+        profile_name=None,
+        verbose=True,
+):
+    """
     Get HH parameters of each soil layer from the Vs profile and G/Gmax curves.
 
     Parameters
@@ -151,11 +173,11 @@ def hh_param_from_curves(vs_profile, curves, *, Tmax=None, show_fig=False,
     curves : numpy.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-         +------------+--------+------------+-------------+-------------+--------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-         +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-------------+--------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+            +============+========+============+=============+=============+========+=====+
+            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+            +------------+--------+------------+-------------+-------------+--------+-----+
 
         The damping information is neglected in this function, so users can
         supply some dummy values.
@@ -190,7 +212,7 @@ def hh_param_from_curves(vs_profile, curves, *, Tmax=None, show_fig=False,
         ``(9, n_layer)``. For each layer (i.e., column), the values are in
         this order:
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
-    '''
+    """
     phi = 30.0
 
     hlp.check_Vs_profile_format(vs_profile)
@@ -226,27 +248,44 @@ def hh_param_from_curves(vs_profile, curves, *, Tmax=None, show_fig=False,
             curves_expanded = np.column_stack((curves_expanded, tmp))
     curves = curves_expanded
 
-    HH_G_param = produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0,
-                                    curves=curves, PI=None, phi=None,
-                                    show_fig=show_fig, save_fig=save_fig,
-                                    fig_output_dir=fig_output_dir,
-                                    verbose=verbose)
+    HH_G_param = produce_HH_G_param(
+        Vs, Gmax, Tmax, OCR, sigma_v0, K0,
+        curves=curves, PI=None, phi=None,
+        show_fig=show_fig, save_fig=save_fig,
+        fig_output_dir=fig_output_dir, verbose=verbose,
+    )
 
     if save_HH_G_file:
         if HH_G_file_dir is None:
             raise ValueError('Please specify `HH_G_file_dir`.')
         if profile_name is None:
             profile_name = hlp.get_current_time(for_filename=True)
-        np.savetxt(os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
-                   HH_G_param, delimiter='\t', fmt='%.6g')
+        np.savetxt(
+            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            HH_G_param,
+            delimiter='\t',
+            fmt='%.6g',
+        )
 
     return HH_G_param
 
-#%%----------------------------------------------------------------------------
-def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
-                       PI=None, phi=None, show_fig=False, save_fig=False,
-                       fig_output_dir=None, verbose=True):
-    '''
+
+def produce_HH_G_param(
+        Vs,
+        Gmax,
+        Tmax,
+        OCR,
+        sigma_v0,
+        K0,
+        curves=None,
+        PI=None,
+        phi=None,
+        show_fig=False,
+        save_fig=False,
+        fig_output_dir=None,
+        verbose=True,
+):
+    """
     Produce HH_G parameters from profiles of Vs, Tmax, OCR, etc.
 
     Parameters
@@ -270,11 +309,11 @@ def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
     curves : numpy.ndarray or ``None``
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-         +------------+--------+------------+-------------+-------------+--------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-         +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-------------+--------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+            +============+========+============+=============+=============+========+=====+
+            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+            +------------+--------+------------+-------------+-------------+--------+-----+
 
         The damping information is neglected in this function, so users can
         supply some dummy values. If ``None``, it means that the users do not
@@ -313,7 +352,7 @@ def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
     Notes
     -----
     This function is based on ``hybridParaKernel_FKZ.m``.
-    '''
+    """
     hlp.assert_1D_numpy_array(Vs, '`Vs`')
     n_layer = len(Vs)
 
@@ -362,8 +401,10 @@ def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
             print('****** MKZ parameters: ******')
         for j in range(n_layer):
             if verbose:
-                print('Layer %d: gamma_ref = %.3g, s = %.3g, beta = %.3g' \
-                      % (j, gamma_ref[j], s[j], beta[j]))
+                print(
+                    f'Layer {j}: gamma_ref = {gamma_ref[j]:.3g}, '
+                    f's = {s[j]:.3g}, beta = {beta[j]:.3g}'
+                )
 
     # ========== Stress-strain curve implied by G/Gmax ========================
     sigma = np.zeros_like(GGmax)
@@ -405,17 +446,39 @@ def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
 
     for j in range(n_layer):
         strain_j = strain[:, j]
-        a, gamma_t, d = _optimization_kernel(strain_j / 100.0, gamma_ref[j],
-                                             beta[j], s[j], Gmax[j], Tmax[j],
-                                             mu[j])
+        a, gamma_t, d = _optimization_kernel(
+            strain_j / 100.0,
+            gamma_ref[j],
+            beta[j],
+            s[j],
+            Gmax[j],
+            Tmax[j],
+            mu[j],
+        )
         if verbose:
-            print('%d/%d: mu = %.3f, a = %.1f, gamma_t = %.3f%%, d = %.3f' \
-                  % (j + 1, n_layer, mu[j], a, gamma_t * 100, d))
-        T_FKZ = hh.tau_FKZ(strain_j / 100.0, Gmax=Gmax[j], mu=mu[j], d=d,
-                           Tmax=Tmax[j])
-        T_HH = hh.tau_HH(strain_j / 100.0, gamma_t=gamma_t, a=a,
-                         gamma_ref=gamma_ref[j], beta=beta[j], s=s[j],
-                         Gmax=Gmax[j], mu=mu[j], Tmax=Tmax[j], d=d)
+            print(
+                f'{j + 1}/{n_layer}: mu = {mu[j]:.3f}, a = {a:.1f}, '
+                'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}'
+            )
+        T_FKZ = hh.tau_FKZ(
+            strain_j / 100.0,
+            Gmax=Gmax[j],
+            mu=mu[j],
+            d=d,
+            Tmax=Tmax[j],
+        )
+        T_HH = hh.tau_HH(
+            strain_j / 100.0,
+            gamma_t=gamma_t,
+            a=a,
+            gamma_ref=gamma_ref[j],
+            beta=beta[j],
+            s=s[j],
+            Gmax=Gmax[j],
+            mu=mu[j],
+            Tmax=Tmax[j],
+            d=d,
+        )
 
         parameters[0, j] = gamma_t
         parameters[1, j] = a
@@ -434,62 +497,84 @@ def produce_HH_G_param(Vs, Gmax, Tmax, OCR, sigma_v0, K0, curves=None,
 
             plt.subplot(211)
             if curves is None:
-                plt.semilogx(strain_j, sigma[:, j] / 1000., c=muted_blue,
-                             lw=lw*2.5, label='MKZ')  # Darendeli's curve
-                plt.semilogx(strain_j, T_FKZ / 1000., c=muted_green, lw=lw*1.75,
-                             label='FKZ')
+                plt.semilogx(
+                    strain_j, sigma[:, j] / 1000.,
+                    c=muted_blue, lw=lw*2.5, label='MKZ',  # Darendeli's curve
+                )
+                plt.semilogx(
+                    strain_j, T_FKZ / 1000.,
+                    c=muted_green, lw=lw*1.75, label='FKZ',
+                )
             else:
-                plt.semilogx(strain_j, sigma[:, j] / 1000., c=muted_blue,
-                             marker='o', ls='-', lw=lw*2.5,
-                             label='Given $G/G_{\max}$')
-                plt.semilogx(strain_j, T_FKZ / 1000., c=muted_green, lw=lw*1.75,
-                             label='FKZ')
+                plt.semilogx(
+                    strain_j, sigma[:, j] / 1000.,
+                    c=muted_blue, marker='o', ls='-', lw=lw*2.5,
+                    label='Given $G/G_{\max}$',
+                )
+                plt.semilogx(
+                    strain_j, T_FKZ / 1000.,
+                    c=muted_green, lw=lw*1.75, label='FKZ',
+                )
             plt.grid(ls=':', lw=0.5)
-            plt.plot([np.min(strain_j), np.max(strain_j)],
-                     np.array([Tmax[j], Tmax[j]]) / 1000., lw=lw, c='gray',
-                     ls='--')
+            plt.plot(
+                [np.min(strain_j), np.max(strain_j)],
+                np.array([Tmax[j], Tmax[j]]) / 1000.,
+                lw=lw, c='gray', ls='--',
+            )
             plt.plot(strain_j, T_HH / 1000., c=muted_red, lw=lw, label='HH')
             plt.plot([gamma_t * 100] * 2, plt.ylim(), ls='--', c='gray')
             plt.ylabel('Stress [kPa]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.legend(loc='upper left')
-            plt.title('$V_S$ = %.1f m/s, $G_{\max}$ = %.3f MPa,'
-                      '\n$\\tau_{\mathrm{ff}}$ = %.3f kPa, '
-                      '$\gamma_{\mathrm{ref}}$ = %.3f%%' \
-                      % (Vs[j], Gmax[j]/1e6, Tmax[j]/1e3, gamma_ref[j]*100))
+            plt.title(
+                '$V_S$ = %.1f m/s, $G_{\max}$ = %.3f MPa,'
+                '\n$\\tau_{\mathrm{ff}}$ = %.3f kPa, '
+                '$\gamma_{\mathrm{ref}}$ = %.3f%%'
+                % (Vs[j], Gmax[j]/1e6, Tmax[j]/1e3, gamma_ref[j]*100)
+            )
 
             plt.subplot(212)
             if curves is None:
                 plt.semilogx(strain_j, GGmax[:, j], c=muted_blue, lw=lw*2.5)
             else:
-                plt.semilogx(strain_j, GGmax[:, j], c=muted_blue, ls='-',
-                             marker='o', lw=lw*2.5)
+                plt.semilogx(
+                    strain_j, GGmax[:, j],
+                    c=muted_blue, ls='-', marker='o', lw=lw*2.5,
+                )
             plt.grid(ls=':', lw=0.5)
-            plt.plot(strain_j,
-                     mu[j] / (1 + Gmax[j]/Tmax[j]*mu[j]*np.abs(strain_j/100.) ),
-                     c=muted_green, lw=lw*1.75)
+            plt.plot(
+                strain_j,
+                mu[j] / (1 + Gmax[j]/Tmax[j]*mu[j]*np.abs(strain_j/100.) ),
+                c=muted_green, lw=lw*1.75,
+            )
             plt.plot(strain_j, GGmax_HH, c=muted_red, lw=lw)
             plt.plot([gamma_t * 100] * 2, plt.ylim(), ls='--', c='gray')
             plt.ylabel('$G/G_{\max}$')
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
-            plt.title("$\mu$ = %.3f, a = %.1f, $\gamma_{\mathrm{t}}$ = %.4f%%\n"
-                      "d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa" \
-                      % (mu[j], a, gamma_t * 100, d, p0[j]))
+            plt.title(
+                "$\mu$ = %.3f, a = %.1f, $\gamma_{\mathrm{t}}$ = %.4f%%\n"
+                "d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
+                % (mu[j], a, gamma_t * 100, d, p0[j])
+            )
 
             fig.tight_layout(pad=0.5, h_pad=1.2, w_pad=0.3)
 
             if save_fig:
                 if fig_output_dir is None:
                     raise ValueError('Please specify `fig_output_dir`.')
-                fig.savefig(os.path.join(fig_output_dir,
-                                         'Stress_GGmax_of_Layer_#%d.png' % (j+1)))
+                fig.savefig(
+                    os.path.join(
+                        fig_output_dir,
+                        'Stress_GGmax_of_Layer_#%d.png' % (j + 1),
+                    )
+                )
 
     return parameters
 
-#%%----------------------------------------------------------------------------
+
 def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
-    '''
+    """
     Calculate shear strength of soils.
 
     Parameters
@@ -511,7 +596,7 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
     -------
     Tmax : numpy.ndarray
         Shear strength of soils of each layer. Unit: Pa.
-    '''
+    """
     dyna_coeff = 1.2  # assume a strain rate of 0.01 sec^(-1), from Vardanega & Bolton (2013)
 
     phi = hlp.check_length_or_extend_to_array(phi, len(Vs), name='`phi`')
@@ -535,9 +620,9 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
 
     return Tmax
 
-#%%----------------------------------------------------------------------------
+
 def _calc_Gmax(Vs, rho):
-    '''
+    """
     Calculate initial stiffness of each soil layer.
 
     Parameters
@@ -551,13 +636,13 @@ def _calc_Gmax(Vs, rho):
     -------
     Gmax : numpy.ndarray
         1D array of initial stiffness. Unit: Pa
-    '''
+    """
     Gmax = rho * Vs**2
     return Gmax
 
-#%%----------------------------------------------------------------------------
+
 def _calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=None):
-    '''
+    """
     Calculate OCR (over-consolidation ratio) of each layer from the Vs profile.
 
     Parameters
@@ -575,16 +660,16 @@ def _calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=None):
     -------
     OCR : numpy.ndarray
         1D array of OCR value, for each soil layer. (Unitless.)
-    '''
+    """
     sigma_p0 = 0.106 * Vs**1.47  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated fromseismic piezocone tests"
     sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
     OCR = np.minimum(OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit)
     return OCR
 
-#%%----------------------------------------------------------------------------
+
 def _calc_vertical_stress(h, rho):
-    '''
+    """
     Calculate vertical overburden stress at the mid-point of each layer.
 
     Parameters
@@ -598,14 +683,16 @@ def _calc_vertical_stress(h, rho):
     -------
     stress : numpy.ndarray
         Vertical overburden stress at the mid-point of each layer. Unit: Pa.
-    '''
+    """
     g = 9.81  # unit: m/s/s
     n = len(h)
     stress = np.zeros_like(h)
 
     if np.mean(rho) < 1000:
-        print('Warning in __calc_vertical_stress(): It looks like the unit '
-              'of mass density is g/cm^3. The correct unit should be kg/m^3.')
+        print(
+            'Warning in __calc_vertical_stress(): It looks like the unit '
+            'of mass density is g/cm^3. The correct unit should be kg/m^3.'
+        )
 
     if h[-1] == 0:  # zero thickness, i.e., half space
         h[-1] = 1
@@ -616,9 +703,9 @@ def _calc_vertical_stress(h, rho):
 
     return stress
 
-#%%----------------------------------------------------------------------------
+
 def _calc_rho(h, Vs):
-    '''
+    """
     Calculate mass density of soils from Vs values, using the empirical formula
     by Mayne, Schneider & Martin (1999) and Burns & Mayne (1996).
 
@@ -643,7 +730,7 @@ def _calc_rho(h, Vs):
     2. Burns & Mayne (1996) "Small- and high-strain soil properties using the
        seismic piezocone." Transportation Research Record 1548, National
        Acad. Press, Washington DC, 81-88.
-    '''
+    """
     z = sr.thk2dep(h, midpoint=False)
     z[z == 0] = 0.0001  # avoid error of dividing by zero
     lb = 1.65  # lower bound of density: 1.65 g/cm^3
@@ -651,9 +738,9 @@ def _calc_rho(h, Vs):
     rho *= 1000  # unit: g/cm^3 --> kg/m^3
     return rho
 
-#%%----------------------------------------------------------------------------
+
 def _calc_PI(Vs):
-    '''
+    """
     Calculate PI (plasticity index) from Vs values.
 
     Parameters
@@ -666,7 +753,7 @@ def _calc_PI(Vs):
     -------
     PI : numpy.ndarray
         The plasticity index for each layer. Unit: %.
-    '''
+    """
     PI = np.zeros_like(Vs)
     for j in range(len(Vs)):
         if Vs[j] <= 200:
@@ -678,9 +765,9 @@ def _calc_PI(Vs):
 
     return PI
 
-#%%----------------------------------------------------------------------------
+
 def _calc_K0(OCR, phi=30.):
-    '''
+    """
     Calculate K0 (lateral earth pressure coefficient at rest) from OCR using
     the empirical formula by Mayne & Kulhawy (1982).
 
@@ -699,14 +786,15 @@ def _calc_K0(OCR, phi=30.):
     K0 : float or numpy.ndarray
         K0 value(s). If either ``OCR`` or ``phi`` is an array, ``K0`` will be
         an array of the same length.
-    '''
+    """
     K0 = (1 - np.sin(np.deg2rad(phi))) * OCR ** (np.sin(np.deg2rad(phi)))
     return K0
 
-#%%----------------------------------------------------------------------------
-def produce_Darendeli_curves(sigma_v0, PI=20., OCR=1., K0=0.5, phi=30.0,
-                             strain_in_pct=None):
-    '''
+
+def produce_Darendeli_curves(
+        sigma_v0, PI=20., OCR=1., K0=0.5, phi=30.0, strain_in_pct=None,
+):
+    """
     Produce G/Gmax and damping curves using empirical correlations by
     Darendeli (2001).
 
@@ -741,7 +829,7 @@ def produce_Darendeli_curves(sigma_v0, PI=20., OCR=1., K0=0.5, phi=30.0,
     gamma_r : numpy.ndarray
         Reference strain for each layer. It is a 1D numpy array, corresponding
         to each soil layer. Unit: 1.
-    '''
+    """
     hlp.assert_1D_numpy_array(sigma_v0)
     n_layer = len(sigma_v0)
 
@@ -806,9 +894,9 @@ def produce_Darendeli_curves(sigma_v0, PI=20., OCR=1., K0=0.5, phi=30.0,
     gamma_r /= 100.0
     return GGmax, xi, gamma_r
 
-#%%----------------------------------------------------------------------------
+
 def _calc_mean_confining_stress(sigma_v0, K0):
-    '''
+    """
     Calculate mean (of three directions) confining stress.
 
     Parameters
@@ -822,13 +910,13 @@ def _calc_mean_confining_stress(sigma_v0, K0):
     -------
     sigma_m0 : numpy.ndarray
         Mean effective confining stress (of three directions). Unit: Pa.
-    '''
+    """
     sigma_m0 = (2 * K0 + 1)/3.0 * sigma_v0
     return sigma_m0
 
-#%%----------------------------------------------------------------------------
+
 def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
-    '''
+    """
     Optimization process to find FKZ parameters.
 
     Parameters
@@ -862,7 +950,7 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
     Notes
     -----
     Based on optHybFKZ.m
-    '''
+    """
     T_MKZ = mkz.tau_MKZ(x, gamma_ref=x_ref, beta=beta, s=s, Gmax=Gmax)
     if mu <= 0.03:  # when mu is too small, there may be some numerical issues
         gamma_t_LB = 0.001  # therefore gamma_t lower bound is relaxed
@@ -885,15 +973,17 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
         gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
     else:  # cannot find a proper d value
         range_d = np.linspace(0.67, 1.39, 400)  # increase grid density to 400
-        area = __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB,
-                           gamma_t_UB, T_MKZ)
+        area = __calc_area(
+            range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ,
+        )
         if np.min(area) < np.inf:
             gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
         else:
             range_d = np.linspace(0.67, 1.39, 1000)  # increase grid density
             new_gamma_t_LB = 0.005  # further relax
-            area = __calc_area(range_d, x, Gmax, mu, tau_f, new_gamma_t_LB,
-                               gamma_t_UB, T_MKZ)
+            area = __calc_area(
+                range_d, x, Gmax, mu, tau_f, new_gamma_t_LB, gamma_t_UB, T_MKZ,
+            )
             if np.min(area) < np.inf:
                 gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
             else:
@@ -906,9 +996,9 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
     a = 100.0  # always use a fast transition
     return a, gamma_t, d
 
-#%%----------------------------------------------------------------------------
+
 def __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ):
-    '''
+    """
     Find the ``x_t`` (transition strain) that minimizes the "area" between
     the MKZ stress curve and the FKZ stress curve.
 
@@ -939,7 +1029,7 @@ def __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ):
     d : float
         The ``d`` value that minimizes the "area" between the MKZ stress curve
         and the FKZ stress curve. (No unit.)
-    '''
+    """
     j_ = np.argmin(area)
     d = range_d[j_]
     T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
@@ -948,9 +1038,9 @@ def __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ):
 
     return x_t, d
 
-#%%----------------------------------------------------------------------------
+
 def __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ):
-    '''
+    """
     Calculate the "area" between the MKZ stress curve and the FKZ stress curve.
     The MKZ stress curve is supplied as a parameter, and the FKZ stress curve
     is determined by ``x``, ``Gmax``, ``mu``, ``d``, ``tau_f``, and ``gamma_t``.
@@ -981,7 +1071,7 @@ def __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ):
         The "area" between the MKZ stress curve and the FKZ stress curve. It
         has the same shape as ``range_d``, because each element of ``area`` is
         the area corresponding to a ``d`` value within ``range_d``.
-    '''
+    """
     area = np.zeros_like(range_d)
     for j in range(len(range_d)):
         d = range_d[j]

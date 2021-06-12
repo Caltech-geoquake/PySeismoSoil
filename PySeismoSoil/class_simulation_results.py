@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import os
 import numpy as np
 import matplotlib as mpl
@@ -12,8 +10,9 @@ from .class_frequency_spectrum import Frequency_Spectrum
 from . import helper_generic as hlp
 from . import helper_site_response as sr
 
-class Simulation_Results():
-    '''
+
+class Simulation_Results:
+    """
     Site response simulation results: output ground motion, transfer function,
     acceleration/velocity/displacement time histories (of every layer).
 
@@ -57,15 +56,25 @@ class Simulation_Results():
     Attributes
     ----------
     Attributes same as inputs
-    '''
-    #%%------------------------------------------------------------------------
-    def __init__(self, input_accel, accel_on_surface, rediscretized_profile, *,
-                 max_a_v_d=None, max_strain_stress=None, trans_func=None,
-                 trans_func_smoothed=None, time_history_accel=None,
-                 time_history_veloc=None, time_history_displ=None,
-                 time_history_stress=None, time_history_strain=None,
-                 motion_name=None, output_dir=None):
-
+    """
+    def __init__(
+            self,
+            input_accel,
+            accel_on_surface,
+            rediscretized_profile,
+            *,
+            max_a_v_d=None,
+            max_strain_stress=None,
+            trans_func=None,
+            trans_func_smoothed=None,
+            time_history_accel=None,
+            time_history_veloc=None,
+            time_history_displ=None,
+            time_history_stress=None,
+            time_history_strain=None,
+            motion_name=None,
+            output_dir=None,
+    ):
         if not isinstance(input_accel, Ground_Motion):
             raise TypeError('`input_accel` needs to be of Ground_Motion type.')
         if not isinstance(accel_on_surface, Ground_Motion):
@@ -73,11 +82,13 @@ class Simulation_Results():
         if not isinstance(rediscretized_profile, Vs_Profile):
             raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
         if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
-            raise TypeError('`trans_func` needs to be either None or of '
-                            'Frequency_Spectrum type.')
+            raise TypeError(
+                '`trans_func` needs to be either None or of Frequency_Spectrum type.'
+            )
         if not isinstance(trans_func_smoothed, (Frequency_Spectrum, type(None))):
-            raise TypeError('`trans_func_smoothed` should be either None or '
-                            'of Frequency_Spectrum type.')
+            raise TypeError(
+                '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.'
+            )
 
         n_layer = rediscretized_profile.n_layer
         n_time_pts = accel_on_surface.npts
@@ -128,10 +139,14 @@ class Simulation_Results():
         self.motion_name = motion_name
         self.output_dir = output_dir
 
-    #%%------------------------------------------------------------------------
-    def plot(self, dpi=100, save_fig=False, amplif_func_ylog=True,
-             output_dir=None):
-        '''
+    def plot(
+            self,
+            dpi=100,
+            save_fig=False,
+            amplif_func_ylog=True,
+            output_dir=None,
+    ):
+        """
         Plots simulation results: output vs input motions, transfer functions
         and maximum acceleration, velocity, displacement, strain, and stress
         profiles.
@@ -155,7 +170,7 @@ class Simulation_Results():
             A list of three figure objects.
         axes : list
             A list of axes objects (or axes lists, if multiple subplots).
-        '''
+        """
         #-------- Plot output/input motions and transfer functions ------------
         accel_in = self.input_accel.accel
         accel_out = self.accel_on_surface.accel
@@ -251,9 +266,8 @@ class Simulation_Results():
 
         return figs, axes
 
-    #%%------------------------------------------------------------------------
     def to_txt(self, save_full_time_history=True, verbose=False, output_dir=None):
-        '''
+        """
         Save simulation results (output time history, transfer function, the
         profile of maximum acceleration/velocity/displacement/stress/train, etc.)
         as text files to the hard drive.
@@ -270,7 +284,7 @@ class Simulation_Results():
         output_dir : str
             The directory to save the files. This overrides the ``output_dir``
             parameter when constructing the this class.
-        '''
+        """
         if output_dir is None:
             output_dir = self.output_dir
 

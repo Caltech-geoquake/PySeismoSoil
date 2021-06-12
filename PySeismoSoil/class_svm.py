@@ -1,15 +1,12 @@
-# Author: Jian Shi
-
 import time
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
 from .class_Vs_profile import Vs_Profile
 from . import helper_site_response as sr
 
-class SVM():
-    '''
+class SVM:
+    """
     Class implementation for the Sediment Velocity Model (SVM).
 
     Original paper:
@@ -64,37 +61,46 @@ class SVM():
         chosen as 1,000 m/s, or ``None`` (if ``Vs_cap`` is False).
     has_bedrock_Vs : bool
         Whether the Vs profile has a bedrock Vs value.
-    '''
-    def __init__(self, target_Vs30, *, z1=None, Vs_cap=True, eta=0.90,
-                 show_fig=False, iterate=False, verbose=False):
-
+    """
+    def __init__(
+            self,
+            target_Vs30,
+            *,
+            z1=None,
+            Vs_cap=True,
+            eta=0.90,
+            show_fig=False,
+            iterate=False,
+            verbose=False,
+    ):
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
 
         if (target_Vs30 < 173.1) or (target_Vs30 > 1000):
-            print('***** Warning in initializing an SVM object: your Vs30 '
-                  '(%.2f m/s) is out of the range of applicability of the '
-                  'SVM (173.1 m/s to 1000 m/s); the result may not be '
-                  'as credible. *****')
+            print(
+                '***** Warning in initializing an SVM object: your Vs30 '
+                '(%.2f m/s) is out of the range of applicability of the '
+                'SVM (173.1 m/s to 1000 m/s); the result may not be '
+                'as credible. *****'
+            )
 
         if eta <= 0 or eta > 1:
             raise ValueError('`eta` must be between (0, 1].')
 
         thk_addl_layer = 2.5 - thk  # thickness of "additional" layer to be added on top
-        '''
-        Note 1: The first layer of Vs_analyt (before adding any new layers on
-                top) is Vs0. The final Vs profile should have a homogeneous Vs
-                layer for the top 2.5 m, thus we should add a new layer with
-                Vs = Vs0 whose thickness is "2.5 minus thk".
 
-        Note 2: For shallow profiles (i.e., z1 < 50 m), we still want at
-                least 50 layers, so we solve these following two equations:
-
-                   thk$ = 2.5 - thk  (note: thk$ is `thk_addl_layer`)
-                   thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
-
-                Then thk and thk$ can both be solved, hence we have:
-                    thk = (z1 - 2.5)/49.0
-        '''
+        # Note 1: The first layer of Vs_analyt (before adding any new layers on
+        #         top) is Vs0. The final Vs profile should have a homogeneous Vs
+        #         layer for the top 2.5 m, thus we should add a new layer with
+        #         Vs = Vs0 whose thickness is "2.5 minus thk".
+        #
+        # Note 2: For shallow profiles (i.e., z1 < 50 m), we still want at
+        #         least 50 layers, so we solve these following two equations:
+        #
+        #            thk$ = 2.5 - thk  (note: thk$ is `thk_addl_layer`)
+        #            thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
+        #
+        #         Then thk and thk$ can both be solved, hence we have:
+        #             thk = (z1 - 2.5)/49.0
 
         p1 = -2.1688e-04  # these values come from curve fitting
         p2 = 0.5182
@@ -212,13 +218,11 @@ class SVM():
             self.has_bedrock_Vs = False
             self.bedrock_Vs = None
 
-    #%%========================================================================
     def __repr__(self):
         return 'Vs30 = %.2g m/s, z1 = %.2g m' % (self.Vs30, self.z1)
 
-    #%%========================================================================
     def plot(self, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100, **kwargs):
-        '''
+        """
         Plot the base profile.
 
         Parameters
@@ -245,17 +249,28 @@ class SVM():
             The axes object being created or being passed into this function.
         h_line : matplotlib.lines.Line2D
             The line object.
-        '''
+        """
         title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
-        fig, ax, h_line = sr.plot_Vs_profile(self._base_profile, title=title,
-                                             fig=fig, ax=ax, figsize=figsize,
-                                             dpi=dpi, **kwargs)
+        fig, ax, h_line = sr.plot_Vs_profile(
+            self._base_profile,
+            title=title,
+            fig=fig,
+            ax=ax,
+            figsize=figsize,
+            dpi=dpi,
+            **kwargs,
+        )
         return fig, ax, h_line
 
-    #%%========================================================================
-    def get_discretized_profile(self, *, fixed_thk=None, Vs_increment=None,
-                                at_midpoint=True, show_fig=False):
-        '''
+    def get_discretized_profile(
+            self,
+            *,
+            fixed_thk=None,
+            Vs_increment=None,
+            at_midpoint=True,
+            show_fig=False,
+    ):
+        """
         Returns the discretized Vs profile (with user-specified layer
         thickness, or Vs increment).
 
@@ -276,22 +291,24 @@ class SVM():
         -------
         discr_prof : PySeismoSoil.class_Vs_profile.Vs_Profile
             Discretized Vs profile.
-        '''
+        """
         if fixed_thk is None and Vs_increment is None:
-            raise ValueError('You need to provide either `fixed_thk` or '
-                             '`Vs_increment`.')
+            msg = 'You need to provide either `fixed_thk` or `Vs_increment`.'
+            raise ValueError(msg)
         if fixed_thk is not None and Vs_increment is not None:
-            raise ValueError('Please only provide `fixed_thk` or '
-                             '`Vs_increment`; do not provide both.')
+            msg = 'Please only provide `fixed_thk` or `Vs_increment`; do not provide both.'
+            raise ValueError(msg)
         if fixed_thk is not None:
-            discr_prof = self.base_profile\
-                             .query_Vs_given_thk(fixed_thk, as_profile=True,
-                                                 at_midpoint=at_midpoint)
+            discr_prof = self.base_profile.query_Vs_given_thk(
+                fixed_thk, as_profile=True, at_midpoint=at_midpoint,
+            )
         else:  # Vs_increment is not None
             max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
-                raise ValueError('`Vs_increment` needs to < %.2g m/s (the '
-                                 'max Vs of the smooth profile)' % max_Vs)
+                raise ValueError(
+                    '`Vs_increment` needs to < %.2g m/s (the '
+                    'max Vs of the smooth profile)' % max_Vs
+                )
             n_layers = self._base_profile.shape[0]
             discr_Vs_previous_layer = self._base_profile[0, 1]
             layer_bottom_depth_array = [0]
@@ -304,15 +321,13 @@ class SVM():
                 if base_Vs_j_th_layer < discr_Vs_previous_layer + Vs_increment:
                     thk_tmp += thk
                 else:
-                    '''
-                    We need different treatments for two different cases:
-                    (1) `Vs_increment` exceeds the "natural" increment of the
-                        base profile --- accumulate "temporary layer" whose
-                        thickness is `thk_tmp`
-                    (2) `Vs_increment` is smaller than the "natural" increment
-                        of the base profile --- we need to use the natural
-                        increment as the Vs increment
-                    '''
+                    # We need different treatments for two different cases:
+                    # (1) `Vs_increment` exceeds the "natural" increment of the
+                    #     base profile --- accumulate "temporary layer" whose
+                    #     thickness is `thk_tmp`
+                    # (2) `Vs_increment` is smaller than the "natural" increment
+                    #     of the base profile --- we need to use the natural
+                    #     increment as the Vs increment
                     if thk_tmp != 0:  # the first case
                         discr_Vs_previous_layer += Vs_increment
                     else:  # the second case
@@ -324,9 +339,9 @@ class SVM():
 
             thk_array = sr.dep2thk(np.array(layer_bottom_depth_array),
                                    include_halfspace=False)
-            discr_prof = self.base_profile\
-                             .query_Vs_given_thk(thk_array, as_profile=True,
-                                                 at_midpoint=at_midpoint)
+            discr_prof = self.base_profile.query_Vs_given_thk(
+                thk_array, as_profile=True, at_midpoint=at_midpoint,
+            )
         # END "if fixed_thk is not None:"
 
         discr_prof = discr_prof.truncate(depth=self.z1, Vs=self.bedrock_Vs)
@@ -337,9 +352,8 @@ class SVM():
 
         return discr_prof
 
-    #%%========================================================================
     def _plot_additional_profile(self, addtl_profile, label):
-        '''
+        """
         Plot an additional Vs profile on top of the base Vs profile.
 
         Parameters
@@ -348,21 +362,27 @@ class SVM():
             Additional Vs profile.
         label : str
             Label of the additional profile, to be shown in the legend.
-        '''
+        """
         title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
         fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='Smooth')
-        sr.plot_Vs_profile(addtl_profile, fig=fig, ax=ax, c='orange',
-                           alpha=0.85, label=label)
+        sr.plot_Vs_profile(
+            addtl_profile, fig=fig, ax=ax, c='orange', alpha=0.85, label=label,
+        )
         ax.set_title(title)
         ax.legend(loc='best')
         ax.set_xlim(0, np.max(np.append(addtl_profile[:, 1], 1000)) * 1.1)
         return None
 
-    #%%========================================================================
-    def get_randomized_profile(self, seed=None, show_fig=False,
-                               use_Toros_layering=False, use_Toros_std=False,
-                               vs30_z1_compliance=False, verbose=True):
-        '''
+    def get_randomized_profile(
+            self,
+            seed=None,
+            show_fig=False,
+            use_Toros_layering=False,
+            use_Toros_std=False,
+            vs30_z1_compliance=False,
+            verbose=True,
+    ):
+        """
         Returns a randomized a 1D profile.
 
         Parameters
@@ -397,12 +417,16 @@ class SVM():
         -------
         Vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
             The randomzed Vs profile.
-        '''
+        """
         if not isinstance(seed, (type(None), int, float, np.number)):
             raise TypeError('`seed` needs to be a number, or `None`.')
 
-        options = dict(seed=seed, show_fig=show_fig, use_Toros_std=use_Toros_std,
-                       use_Toros_layering=use_Toros_layering,)
+        options = dict(
+            seed=seed,
+            show_fig=show_fig,
+            use_Toros_std=use_Toros_std,
+            use_Toros_layering=use_Toros_layering,
+        )
 
         if not vs30_z1_compliance:
             Vs_profile = self._helper_get_rand_profile(**options)
@@ -441,10 +465,14 @@ class SVM():
 
         return Vs_Profile(Vs_profile)
 
-    #%%========================================================================
-    def _helper_get_rand_profile(self, seed=None, show_fig=False,
-                                use_Toros_layering=False, use_Toros_std=False):
-        '''
+    def _helper_get_rand_profile(
+            self,
+            seed=None,
+            show_fig=False,
+            use_Toros_layering=False,
+            use_Toros_std=False,
+    ):
+        """
         Helper function to get randomized 1D profile.
 
         Parameters
@@ -466,7 +494,7 @@ class SVM():
         -------
         Vs_profile : np.ndarray
             The randomzed Vs profile.
-        '''
+        """
         if seed == None:
             cc = time.localtime(time.time())
             seed = cc[5] * 1e7
@@ -474,7 +502,7 @@ class SVM():
         seed = int(seed) # convert seed_value into int (for robustness)
         np.random.seed(int(seed))
 
-        '''--------------  Part 1. Soil Layering Randomization  -------------'''
+        # --------------  Part 1. Soil Layering Randomization  -------------
         z_top = [0]   # depth of layer top
         z_bot = []    # depth of layer bottom
         z_mid = []    # midpoint depth of soil layers
@@ -484,13 +512,11 @@ class SVM():
             if use_Toros_layering:
                 rate = 1.98 * (z_top[-1] + 10.86) ** (-0.89)  # Eq (2) of Toro (1995)
 
-                '''
-                The parameter for the Poisson process equals to 1/rate, because
-                Toro (1995) says the unit of `rate` is 1/m, and also as written
-                in page 40 of Harmon's UIUC PhD thesis (2017), "the expected
-                layer thickness at 1000 m is 239 m", which confirms that
-                lambda_ = 1 / rate.
-                '''
+                # The parameter for the Poisson process equals to 1/rate, because
+                # Toro (1995) says the unit of `rate` is 1/m, and also as written
+                # in page 40 of Harmon's UIUC PhD thesis (2017), "the expected
+                # layer thickness at 1000 m is 239 m", which confirms that
+                # lambda_ = 1 / rate.
                 lamda_ = 1 / rate
                 thk_rand = -1
                 while thk_rand <= 0:  # to ensure thickness is always positive
@@ -508,7 +534,7 @@ class SVM():
                         mean_thk, info, ier, msg \
                             = fsolve(func, z_top[-1] + 4.0, full_output=True)
 
-                z_mid_temp = z_top[-1] + mean_thk/2.0
+                z_mid_temp = z_top[-1] + mean_thk / 2.0
                 std_thk = 0.951 * z_mid_temp ** 0.628  # Eq (8) of Shi & Asimaki (2018)
                 thk_rand = np.random.normal(mean_thk, std_thk)  # randomized thk based on mean and std
 
@@ -518,15 +544,15 @@ class SVM():
                 thk.append(thk_rand)
             else:  # a single-element 1D numpy array
                 thk.append(thk_rand[0])
-            z_mid.append(z_top[-1] + thk_rand/2.0)
+            z_mid.append(z_top[-1] + thk_rand / 2.0)
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
 
         thk[-1] = self.z1 - np.sum(thk[:-1])  # adjust thickness of last layer so that sum(thk) = z1
         z_mid = sr.thk2dep(np.array(thk), midpoint=True)  # update z_mid because thk has changed (z_top and z_bot are not used below, so no need to update)
 
-        ''' ----------------   Part 2   ------------------------------------'''
-        ''' Calculate baseline Vs profile based on layering & smooth profile'''
+        # ----------------   Part 2   ------------------------------------
+        # Calculate baseline Vs profile based on layering & smooth profile
         baseline_Vs = np.zeros(len(thk))
         Vs_analyt = self._base_profile[:, 1]
         thk_array_analyt = self._base_profile[:, 0]
@@ -535,11 +561,11 @@ class SVM():
         for i in range(len(thk)):  # query Vs value where z = z_mid[j]
             # Note: _find_index_closest() is used here because it is more
             # appropriate for depth arrays with small layer thicknesses.
-            index_value, ____ = self._find_index_closest(z_array_analyt,z_mid[i])
+            index_value, ____ = self._find_index_closest(z_array_analyt, z_mid[i])
             baseline_Vs[i] = Vs_analyt[index_value]
 
-        ''' ---------------    Part 3    -----------------------------------'''
-        '''Generate random values for each layer based on the baseline profile'''
+        # ---------------    Part 3    -----------------------------------
+        # Generate random values for each layer based on the baseline profile
 
         ## ******** 3.1. Toro (1995) coefficients *********
         ## ******** These values come from Table 5 of Toro (1995) or Table 2.3
@@ -576,9 +602,9 @@ class SVM():
             b = 0.063
 
         ## ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth  ****
-        ''' (Note: "mu" and "sigma" here are NOT the mean value and standard
-            deviation of Vs, but rather the two parameters of the log-normal
-            distribution that Vs is assumed to follow.)'''
+        #     (Note: "mu" and "sigma" here are NOT the mean value and standard
+        #     deviation of Vs, but rather the two parameters of the log-normal
+        #     distribution that Vs is assumed to follow.)
         if not use_Toros_std:
             sigma_lognormal_Vs = -7.769e-10 * Vs_analyt ** 3 \
                                  + 1.597e-06 * Vs_analyt ** 2 \
@@ -587,12 +613,12 @@ class SVM():
             sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape) # page 8 of Toro (1995)
 
         ## ****** 3.3. Generate random Vs values based on Toro's equations  ******
-        Vs_hat = np.zeros([len(thk),1])  # randomly realized Vs values
-        Y = np.zeros([len(thk),1])  # this "Y" here is the "Z" in Toro (1995)
+        Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
+        Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
         np.random.seed([2 * seed]) # specify seed value to random number generator
 
-        for i in range(0,len(thk)):  # loop through layers
-            index_value, __ = SVM._find_index_closest(z_array_analyt,z_mid[i])
+        for i in range(0, len(thk)):  # loop through layers
+            index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
             sigma_ = sigma_lognormal_Vs[index_value]  # query sigma value where z = z_mid[j]
 
             if z_mid[i] > 200:
@@ -604,30 +630,29 @@ class SVM():
             rho_1L = (1 - rho_z) * rho_thk + rho_z
 
             if i == 0:  # for the first layer
-                Y[i] = np.random.normal(0,1,(1,1))  # generate a 1-by-nr_of_rand_profiles vector
+                Y[i] = np.random.normal(0, 1, (1, 1))  # generate a 1-by-nr_of_rand_profiles vector
             else:  # for other layers
                 Y[i] = rho_1L * Y[i-1] + \
-                       np.random.normal(0,1,(1,1)) * np.sqrt(1 - rho_1L**2)
+                       np.random.normal(0, 1, (1, 1)) * np.sqrt(1 - rho_1L**2)
 
             Vs_hat[i] = baseline_Vs[i] * np.exp(Y[i] * sigma_)
 
-        '''-------------  Part 4: Adjust Vs_profile  ----------------'''
-        ''' If the last layer of Vs_profile is less than 1000 m/s, add a
-            1000 m/s layer at the very bottom.  '''
-        Vs_profile = np.column_stack((thk,Vs_hat))
-        if Vs_profile[-1,1] < 1000:
-            Vs_profile = np.row_stack((Vs_profile,[0,1000]))
+        # -------------  Part 4: Adjust Vs_profile  ----------------
+        #     If the last layer of Vs_profile is less than 1000 m/s, add a
+        #     1000 m/s layer at the very bottom.  '''
+        Vs_profile = np.column_stack((thk, Vs_hat))
+        if Vs_profile[-1, 1] < 1000:
+            Vs_profile = np.row_stack((Vs_profile, [0, 1000]))
 
-        '''-------------  Part 5: Plot Vs profile (optional) ---------------'''
+        # -------------  Part 5: Plot Vs profile (optional) ---------------
         if show_fig is True:
             self._plot_additional_profile(Vs_profile, 'Stochastic')
 
         return Vs_profile
 
-    #%%========================================================================
     @staticmethod
     def _thk_depth_func(thk, z_top):
-        '''
+        """
         Given thk (thickness, in meter) and z_top (depth of layer top, in
         meter), returns "right hand side" minus "left hand side".
 
@@ -638,14 +663,13 @@ class SVM():
         Since z_mid = z_top + h/2.0,
 
                 thk = 1.125 * (z_top + h/2.0)^(0.620)
-        '''
+        """
         thk = np.array(thk)
         return 1.125 * (z_top + thk/2.0)**0.620 - thk
 
-    #%%========================================================================
     @staticmethod
     def _find_index_closest(array, value):
-        '''
+        """
         Find the index in `array` which contains the closest value to `value`.
         NaN values within `array` are obmitted implicitly.
 
@@ -663,8 +687,7 @@ class SVM():
             The index within ``array`` where the closest value is found.
         closest_value : float
             The closest value to ``value`` within ``array``.
-        '''
-
+        """
         array = np.array(array)
         if len(array) == 0:
             raise ValueError('The length of `array` needs to >= 0.')
