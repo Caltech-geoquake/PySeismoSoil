@@ -1,14 +1,10 @@
-# Author: Jian Shi
-
 import unittest
 
 from PySeismoSoil.class_svm import SVM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
+
 class Test_Class_SVM(unittest.TestCase):
-    '''
-    Unit test for SVM class
-    '''
     def test_init(self):
         Vs30 = 256
         z1 = 100
@@ -40,8 +36,7 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_get_discretized_profile__fixed_thk(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-        discr_profile = svm.get_discretized_profile(fixed_thk=10,
-                                                    show_fig=False)
+        discr_profile = svm.get_discretized_profile(fixed_thk=10, show_fig=False)
         self.assertTrue(isinstance(discr_profile, Vs_Profile))
         if svm.has_bedrock_Vs:  # bedrock Vs must match
             self.assertTrue(svm.bedrock_Vs == discr_profile.vs_profile[-1, 1])
@@ -49,8 +44,7 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_get_discretized_profile__valid_Vs_increment(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-        discr_profile = svm.get_discretized_profile(Vs_increment=100,
-                                                    show_fig=False)
+        discr_profile = svm.get_discretized_profile(Vs_increment=100, show_fig=False)
         self.assertTrue(isinstance(discr_profile, Vs_Profile))
         if svm.has_bedrock_Vs:  # bedrock Vs must match
             self.assertTrue(svm.bedrock_Vs == discr_profile.vs_profile[-1, 1])
@@ -82,7 +76,8 @@ class Test_Class_SVM(unittest.TestCase):
 
         # Use iteration to pick compliant randomized Vs profile
         random_profile = svm.get_randomized_profile(
-                show_fig=True, vs30_z1_compliance=True, verbose=True)
+            show_fig=True, vs30_z1_compliance=True, verbose=True,
+        )
 
     def test_index_closest(self):
         array = [0, 1, 2, 1.1, 0.4, -3.2]
@@ -110,7 +105,7 @@ class Test_Class_SVM(unittest.TestCase):
         svm.get_discretized_profile(Vs_increment=100, show_fig=True)
         svm.get_randomized_profile(show_fig=True)
 
+
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_SVM)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
-

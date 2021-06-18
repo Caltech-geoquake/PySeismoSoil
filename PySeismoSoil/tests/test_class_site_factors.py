@@ -1,15 +1,11 @@
-# Author: Jian Shi
-
 import unittest
 import numpy as np
 
 from PySeismoSoil.class_site_factors import Site_Factors as SF
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
 
+
 class Test_Class_Site_Factors(unittest.TestCase):
-    '''
-    Unit test for Site_Factors class
-    '''
     def test_range_check(self):
         self.assertEqual(SF._range_check(174, 10, 0.6), ['Vs30 out of range'])
         self.assertEqual(SF._range_check(951, 10, 0.6), ['Vs30 out of range'])
@@ -144,50 +140,62 @@ class Test_Class_Site_Factors(unittest.TestCase):
     def test_site_factors__out_of_bound_Vs30__lenient_case_1(self):
         sf1 = SF(170, 125, 0.3, lenient=True)
         sf2 = SF(175, 125, 0.3)
-        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
-                                    sf2.get_amplification().spectrum))
-        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
-                                    sf2.get_phase_shift().spectrum))
+        self.assertTrue(np.allclose(
+            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
+        ))
+        self.assertTrue(np.allclose(
+            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
+        ))
 
     def test_site_factors__out_of_bound_Vs30__lenient_case_2(self):
         sf1 = SF(980, 10, 0.3, lenient=True)
         sf2 = SF(950, 10, 0.3)
-        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
-                                    sf2.get_amplification().spectrum))
-        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
-                                    sf2.get_phase_shift().spectrum))
+        self.assertTrue(np.allclose(
+            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
+        ))
+        self.assertTrue(np.allclose(
+            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
+        ))
 
     def test_site_factors__out_of_bound_z1__lenient_case_1(self):
         sf1 = SF(275, 5, 0.3, lenient=True)
         sf2 = SF(275, 8, 0.3)
-        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
-                                    sf2.get_amplification().spectrum))
-        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
-                                    sf2.get_phase_shift().spectrum))
+        self.assertTrue(np.allclose(
+            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
+        ))
+        self.assertTrue(np.allclose(
+            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
+        ))
 
     def test_site_factors__out_of_bound_z1__lenient_case_2(self):
         sf1 = SF(275, 980, 0.3, lenient=True)
         sf2 = SF(275, 900, 0.3)
-        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
-                                    sf2.get_amplification().spectrum))
-        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
-                                    sf2.get_phase_shift().spectrum))
+        self.assertTrue(np.allclose(
+            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
+        ))
+        self.assertTrue(np.allclose(
+            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
+        ))
 
     def test_site_factors__out_of_bound_PGA__lenient_case_1(self):
         sf1 = SF(300, 120, 0.008, lenient=True)
         sf2 = SF(300, 120, 0.01)
-        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
-                                    sf2.get_amplification().spectrum))
-        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
-                                    sf2.get_phase_shift().spectrum))
+        self.assertTrue(np.allclose(
+            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
+        ))
+        self.assertTrue(np.allclose(
+            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
+        ))
 
     def test_site_factors__out_of_bound_PGA__lenient_case_2(self):
         sf1 = SF(300, 120, 1.75, lenient=True)
         sf2 = SF(300, 120, 1.5)
-        self.assertTrue(np.allclose(sf1.get_amplification().spectrum,
-                                    sf2.get_amplification().spectrum))
-        self.assertTrue(np.allclose(sf1.get_phase_shift().spectrum,
-                                    sf2.get_phase_shift().spectrum))
+        self.assertTrue(np.allclose(
+            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
+        ))
+        self.assertTrue(np.allclose(
+            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
+        ))
 
     def test_interp_plots(self):
         vs30, z1000, pga = 365, 247, 0.75
@@ -197,6 +205,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         sf.get_amplification(Fourier=True, show_interp_plots=True)
         sf.get_amplification(method='eq_hh', Fourier=True, show_interp_plots=True)
         sf.get_phase_shift(show_interp_plots=True)
+
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Site_Factors)

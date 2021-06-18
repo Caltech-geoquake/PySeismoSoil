@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import unittest
 import numpy as np
 
@@ -8,7 +6,10 @@ from PySeismoSoil.class_ground_motion import Ground_Motion
 
 import os
 from os.path import join as _join
+
+
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 
 class Test_Class_Site_Effect_Adjustment(unittest.TestCase):
     def test_init(self):
@@ -40,6 +41,7 @@ class Test_Class_Site_Effect_Adjustment(unittest.TestCase):
         motion_out1 = sea1.run()
         motion_out2 = sea2.run()
         self.assertTrue(np.allclose(motion_out1.accel, motion_out2.accel))
+
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Site_Effect_Adjustment)

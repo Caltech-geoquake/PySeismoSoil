@@ -1,5 +1,3 @@
-# Author: Jian Shi
-
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,21 +7,27 @@ import PySeismoSoil.helper_signal_processing as sig
 
 import os
 from os.path import join as _join
+
+
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
+
 class Test_Helper_Signal_Processing(unittest.TestCase):
-    '''
-    Unit test for helper functions in helper_signal_processing.py
-    '''
     def test_fourier_transform(self):
         accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
-        freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
-                      5.3333]
-        FS_bench = [60.0000 + 0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
-                    -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
-                    -7.5000 + 2.4369j,   -1.5000 + 0.1577j]
+        freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667, 5.3333]
+        FS_bench = [
+            60.0000 + 0.0000j,
+            -1.5000 + 7.0569j,
+            -1.5000 + 3.3691j,
+            -7.5000 +10.3229j,
+            -1.5000 + 1.3506j,
+            -1.5000 + 0.8660j,
+            -7.5000 + 2.4369j,
+            -1.5000 + 0.1577j,
+        ]
 
         self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0))
         self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001, rtol=0.0))
@@ -50,6 +54,7 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Signal value')
         plt.legend(loc='best')
+
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Signal_Processing)

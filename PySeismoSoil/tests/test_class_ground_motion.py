@@ -1,6 +1,3 @@
-# Author: Jian Shi
-
-import os
 import unittest
 import numpy as np
 import scipy as sp
@@ -12,12 +9,12 @@ from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 import os
 from os.path import join as _join
+
+
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
+
 class Test_Class_Ground_Motion(unittest.TestCase):
-    '''
-    Unit test for Ground_Motion class
-    '''
     def test_loading_data__two_columns_from_file(self):
         # Two columns from file
         gm = GM(_join(f_dir, 'sample_accel.txt'), unit='gal')
@@ -64,8 +61,10 @@ class Test_Class_Ground_Motion(unittest.TestCase):
     def test_differentiation(self):
         veloc = np.array([[.1, .2, .3, .4, .5, .6], [1, 3, 7, -1, -3, 5]]).T
         gm = GM(veloc, unit='m', motion_type='veloc')
-        accel_benchmark = np.array([[.1, .2, .3, .4, .5, .6],
-                                    [0, 20, 40, -80, -20, 80]]).T
+        accel_benchmark = np.array(
+            [[.1, .2, .3, .4, .5, .6],
+             [0, 20, 40, -80, -20, 80]]
+        ).T
         self.assertTrue(np.allclose(gm.accel, accel_benchmark))
 
     def test_integration__artificial_example(self):
@@ -120,11 +119,14 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         gm = GM(_join(f_dir, 'two_column_data_example.txt'), unit='m/s/s')
         freq, spec = gm.get_Fourier_spectrum(real_val=False).raw_data.T
 
-        freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667,
-                      5.3333]
-        FS_bench = [60.0000 + 0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
-                    -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
-                    -7.5000 + 2.4369j, -1.5000 + 0.1577j]
+        freq_bench = [
+            0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667, 5.3333,
+        ]
+        FS_bench = [
+            60.0000 + 0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
+            -7.5000 +10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
+            -7.5000 + 2.4369j, -1.5000 + 0.1577j,
+        ]
         self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0))
         self.assertTrue(np.allclose(spec, FS_bench, atol=0.0001, rtol=0.0))
 
@@ -160,10 +162,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         self.assertTrue(isinstance(output_motion, GM))
 
     def test_deconvolution(self):
-        '''
-        Test that `deconvolve()` and `amplify()` are reverse
-        operations to each other.
-        '''
+        # Assert `deconvolve()` & `amplify()` are reverse operations to each other.
         gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
         vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
 
@@ -230,14 +229,16 @@ class Test_Class_Ground_Motion(unittest.TestCase):
 
         # Assert that `amplify_by_tf()` and `amplify()` can generate
         # nearly identical results
-        self.assertTrue(self.nearly_identical(gm_with_tf_RO.accel,
-                                              gm_with_tf_RO_.accel))
-        self.assertTrue(self.nearly_identical(gm_with_tf_BH.accel,
-                                              gm_with_tf_BH_.accel))
+        self.assertTrue(
+            self.nearly_identical(gm_with_tf_RO.accel, gm_with_tf_RO_.accel)
+        )
+        self.assertTrue(
+            self.nearly_identical(gm_with_tf_BH.accel, gm_with_tf_BH_.accel)
+        )
 
     @staticmethod
     def nearly_identical(motion_1, motion_2, thres=0.99):
-        '''
+        """
         Assert that two ground motions are nearly identical, by checking the
         correlation coefficient between two time series.
 
@@ -255,7 +256,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         -------
         result : bool
             Whether the motions are nearly identical
-        '''
+        """
         if not np.allclose(motion_1[:, 0], motion_2[:, 0], rtol=0.001, atol=0.0):
             return False
 
@@ -264,6 +265,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
             return False
 
         return True
+
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Ground_Motion)
