@@ -32,7 +32,7 @@ jobs:
         python -m pip install -e .
     - name: Lint with flake8
       run: |
-        flake8 . --count --statistics --max-line-length=88 --max-complexity=10
+        flake8 ./PySeismoSoil --count --statistics --max-line-length=88 --max-complexity=10
     - name: Test with pytest
       run: |
         pytest
