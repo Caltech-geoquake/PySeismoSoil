@@ -423,7 +423,8 @@ def produce_HH_G_param(
         if Vs[j] <= 760:  # softer soil: use Vardanega & Bolton (2011) CGJ formula
             mu[j] = 1.0 / (0.000872 * Gmax[j]/Tmax[j] * OCR[j]**0.47 * p0[j]**0.28)  # noqa: E226
             if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
-                mu[j] = mu[j] * 10.0 ** (0.236 * 3)  # 0.236 is the standard error suggested in Vardanega & Bolton (2011)  # noqa: E501
+                # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
+                mu[j] = mu[j] * 10.0 ** (0.236 * 3)
             elif mu[j] <= 0.03:
                 mu[j] = mu[j] * 10.0 ** (0.236 * 2)
             elif mu[j] <= 0.04:
@@ -613,10 +614,16 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
             sigma_1 = np.max([sigma_v0[j], sigma_h0])  # largest principal stress
             sigma_3 = np.min([sigma_v0[j], sigma_h0])  # smallest principal stress
+
             # normal effective stress on the slip plane
-            sigma_n = (sigma_1 + sigma_3) / 2.0 \
-                - (sigma_1 - sigma_3) / 2.0 * np.sin(np.deg2rad(phi[j]))
+            sigma_n = (
+                (sigma_1 + sigma_3) / 2.0 -
+                (sigma_1 - sigma_3) / 2.0 * np.sin(np.deg2rad(phi[j]))
+            )
+
             Tmax[j] = dyna_coeff * sigma_n * np.tan(np.deg2rad(phi[j]))
+        # END
+    # END
 
     return Tmax
 
@@ -883,10 +890,14 @@ def produce_Darendeli_curves(
     xi = np.zeros_like(GGmax)
     for i in range(n_layer):
         GGmax[:, i] = 1. / (1 + (gamma / gamma_r[i])**a)  # G of i-th layer (Eq 9.2a)
-        D_masing_1 = (100. / np.pi) \
-            * (4 * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i])) \
-                / (gamma**2 / (gamma + gamma_r[i])) - 2)  # Unit: percent (page 226)
-        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # Unit: percent (page 226)  # noqa: E501
+        D_masing_1 = (  # unit: % (page 226)
+            (100. / np.pi) *
+            (
+                4 * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i])) /
+                (gamma**2 / (gamma + gamma_r[i])) - 2
+            )
+        )
+        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # unit: % (page 226)
         D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501
         xi[:, i] = b * GGmax[:, i]**0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
 
