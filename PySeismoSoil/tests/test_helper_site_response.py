@@ -85,7 +85,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(np.allclose(veloc, v_bench))
 
     def test_stratify(self):
-        prof1 = np.array([[3, 4, 5, 6, 0], [225, 225*2, 225*3, 225*2.4, 225*5]]).T
+        prof1 = np.array(
+            [[3, 4, 5, 6, 0], [225, 225 * 2, 225 * 3, 225 * 2.4, 225 * 5]]
+        ).T
         prof1_ = sr.stratify(prof1)
 
         prof1_benchmark = np.array(
@@ -208,8 +210,10 @@ class Test_Helper_Site_Response(unittest.TestCase):
         )
 
         # you can calculate the response by hand:
-        accel_out_bench = a * np.sin(time - b) + a * np.cos(2 * time + 1 - b) \
-                          + a * np.sin(4 * time + 2 - b)
+        accel_out_bench = (
+            a * np.sin(time - b) + a * np.cos(2 * time + 1 - b) +
+            a * np.sin(4 * time + 2 - b)
+        )
         motion_out_bench = np.column_stack((time, accel_out_bench))
 
         self.assertTrue(np.all(np.isreal(motion_out)))
@@ -239,7 +243,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([4, 6, 7])
         GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
-        self.assertTrue(np.allclose(GGmax, [1., 3./4, 7./3./4]))
+        self.assertTrue(np.allclose(GGmax, [1., 3. / 4, 7. / 3. / 4]))
 
     def test_calc_damping_from_stress_strain__case_1(self):
         # Case 1: Test linear stress strain: damping should be 0
@@ -271,7 +275,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         stress = np.array([1, 2, 2, 2])
         Gmax = stress[0] / strain[0]
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
-        self.assertTrue(np.allclose(damping, [0, 0, 2./3./np.pi, 1./np.pi]))
+        self.assertTrue(np.allclose(damping, [0, 0, 2. / 3. / np.pi, 1. / np.pi]))
 
     def test_calc_damping_from_stress_strain__case_3(self):
         # Case 3: An edge case -- the initial damping is, in theory, almost 0
@@ -285,7 +289,6 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     def test_fit_all_damping_curves__success(self):
         import PySeismoSoil.helper_hh_model as hh
-        import PySeismoSoil.helper_mkz_model as mkz
 
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]

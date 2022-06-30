@@ -23,7 +23,7 @@ class Site_Effect_Adjustment:
         function in `helper_site_response.py`).
     ampl_method : {'nl_hh', 'eq_hh'}
         Which site response simulation method was used to calculate the
-        amplification factors. 'nl_hh' uses the results from nonlinear site 
+        amplification factors. 'nl_hh' uses the results from nonlinear site
         response simulation, which is recommended.
 
     Attributes

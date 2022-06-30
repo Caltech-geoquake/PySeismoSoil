@@ -16,7 +16,7 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_HH_Calibration(unittest.TestCase):
     def test_init__success_without_curve(self):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        hh_c = HH_Calibration(vs_profile)
+        hh_c = HH_Calibration(vs_profile)  # noqa: F841
 
     def test_init__wrong_vs_profile_type(self):
         with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
@@ -25,7 +25,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
     def test_init__success_with_vs_profile_and_curve(self):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
-        hh_c = HH_Calibration(vs_profile, GGmax_curves=curves)
+        hh_c = HH_Calibration(vs_profile, GGmax_curves=curves)  # noqa: F841
 
     def test_init__incorrect_curves_type(self):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))

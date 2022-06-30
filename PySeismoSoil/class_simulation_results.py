@@ -171,7 +171,7 @@ class Simulation_Results:
         axes : list
             A list of axes objects (or axes lists, if multiple subplots).
         """
-        #-------- Plot output/input motions and transfer functions ------------
+        # -------- Plot output/input motions and transfer functions ------------
         accel_in = self.input_accel.accel
         accel_out = self.accel_on_surface.accel
         if self.trans_func is not None:
@@ -194,7 +194,7 @@ class Simulation_Results:
                                 amplif_func_ylog=amplif_func_ylog)
         axes1[0].set_ylabel('Accel. [m/s/s]')
 
-        #-------- Plot maximum accel/veloc/displ/strain/stress profiles -------
+        # -------- Plot maximum accel/veloc/displ/strain/stress profiles -------
         if self.max_a_v_d is not None and self.max_strain_stress is not None:
             max_layer_boundary_depth = np.max(self.max_a_v_d[:, 0])
 
@@ -209,7 +209,7 @@ class Simulation_Results:
             ax21.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
             ax22 = plt.subplot(152)
-            plt.plot(self.max_a_v_d[:, 2]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.plot(self.max_a_v_d[:, 2] * 100, self.max_a_v_d[:, 0], ls='-', marker='.')
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. veloc. [cm/s]')
             plt.grid(ls=':', lw=0.5)
@@ -217,7 +217,7 @@ class Simulation_Results:
             ax22.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
             ax23 = plt.subplot(153)
-            plt.plot(self.max_a_v_d[:, 3]*100, self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.plot(self.max_a_v_d[:, 3] * 100, self.max_a_v_d[:, 0], ls='-', marker='.')
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. displ. [cm]')
             plt.grid(ls=':', lw=0.5)
@@ -225,8 +225,10 @@ class Simulation_Results:
             ax23.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
             ax24 = plt.subplot(154)
-            plt.plot(self.max_strain_stress[:, 1]*100, self.max_strain_stress[:, 0],
-                     ls='-', marker='.')
+            plt.plot(
+                self.max_strain_stress[:, 1] * 100, self.max_strain_stress[:, 0],
+                ls='-', marker='.',
+            )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('$\gamma_{\max}$ [%]')
             plt.grid(ls=':', lw=0.5)
@@ -234,8 +236,10 @@ class Simulation_Results:
             ax24.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
 
             ax25 = plt.subplot(155)
-            plt.plot(self.max_strain_stress[:, 2]/1000., self.max_strain_stress[:, 0],
-                     ls='-', marker='.')
+            plt.plot(
+                self.max_strain_stress[:, 2] / 1000., self.max_strain_stress[:, 0],
+                ls='-', marker='.',
+            )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel(r'$\tau_{\max}$ [kPa]')
             plt.grid(ls=':', lw=0.5)
@@ -256,10 +260,12 @@ class Simulation_Results:
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            fn_fig1 = os.path.join(output_dir,
-                                   '%s_ground_motions.png' % self.motion_name)
-            fn_fig2 = os.path.join(self.output_dir,
-                                   '%s_max_profiles.png' % self.motion_name)
+            fn_fig1 = os.path.join(
+                output_dir, '%s_ground_motions.png' % self.motion_name,
+            )
+            fn_fig2 = os.path.join(
+                self.output_dir, '%s_max_profiles.png' % self.motion_name,
+            )
             fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')
             if fig2 is not None:
                 fig2.savefig(fn_fig2, dpi=dpi, bbox_inches='tight')

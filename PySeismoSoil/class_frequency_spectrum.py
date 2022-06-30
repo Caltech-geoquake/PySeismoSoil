@@ -162,9 +162,12 @@ class Frequency_Spectrum:
         ax.set_xlabel('Frequency [Hz]')
         ax.set_ylabel('Amplitude or phase')
         ax.grid(ls=':')
-        if logx: ax.set_xscale('log')
-        if logy: ax.set_yscale('log')
-        if self._file_name: ax.set_title(self._file_name)
+        if logx:
+            ax.set_xscale('log')
+        if logy:
+            ax.set_yscale('log')
+        if self._file_name:
+            ax.set_title(self._file_name)
 
         return fig, ax
 

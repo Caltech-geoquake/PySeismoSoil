@@ -18,7 +18,7 @@ class Test_Class_HH_Param(unittest.TestCase):
     def test_init__ensure_invalid_parameter_names_are_blocked(self):
         invalid_data = {'key': 1, 'lock': 2}
         with self.assertRaisesRegex(KeyError, 'Invalid keys exist in your input'):
-            hhp = HH_Param(invalid_data)
+            hhp = HH_Param(invalid_data)  # noqa: F841
 
     def test_init__ensure_querying_nonexistent_parameter_name_raises_KeyError(self):
         data = {
@@ -27,7 +27,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         }
         hhp = HH_Param(data)
         with self.assertRaisesRegex(KeyError, "'haha'"):
-            hhp['haha']
+            hhp['haha']  # noqa: F841
 
     def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01(self):
         # Actual HH_G parameter from profile 350_750_01

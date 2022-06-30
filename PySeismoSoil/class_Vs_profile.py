@@ -6,6 +6,7 @@ from . import helper_site_response as sr
 
 from .class_frequency_spectrum import Frequency_Spectrum
 
+
 class Vs_Profile:
     """
     Class implementation of a Vs profile
@@ -100,9 +101,9 @@ class Vs_Profile:
         if n_col == 2:
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if thk[-1] == 0:  # last layer is an "infinity" layer
-                material_number = np.append(np.arange(1, n_layer_tmp),[0])
+                material_number = np.append(np.arange(1, n_layer_tmp), [0])
             else:
-                material_number = np.arange(1, n_layer_tmp+1)
+                material_number = np.arange(1, n_layer_tmp + 1)
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
         elif n_col == 5:
             xi  = data_[:, 2]
@@ -169,7 +170,7 @@ class Vs_Profile:
         for j in range(n_layer_all):
             text += '{:^10}|'.format('%.2f' % self.vs_profile[j, 0])
             text += '{:^10}|'.format('%.1f' % self.vs_profile[j, 1])
-            text += '{:^13}|'.format('%.3f' % (self.vs_profile[j, 2]*100.0))
+            text += '{:^13}|'.format('%.3f' % (self.vs_profile[j, 2] * 100.0))
             text += '{:^18}|'.format('%.1f' % self.vs_profile[j, 3])
             text += '{:^14}'.format('%d' % self.vs_profile[j, 4])
             text += '\n'

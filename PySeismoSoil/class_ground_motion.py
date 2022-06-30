@@ -9,6 +9,7 @@ from . import helper_signal_processing as sig
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
+
 class Ground_Motion:
     """
     Class implementation of an earthquake ground motion.
@@ -114,7 +115,7 @@ class Ground_Motion:
 
         self.dt = float(dt)  # float; unit: sec
         self.npts = len(data_[:, 0])  # int; how many time points
-        self.time = np.linspace(0, self.dt*(self.npts-1), num=self.npts)
+        self.time = np.linspace(0, self.dt * (self.npts - 1), num=self.npts)
 
         if motion_type == 'accel':
             self.accel = data_  # numpy array, with length unit 'm'
@@ -235,7 +236,7 @@ class Ground_Motion:
         )
         return rs
 
-    def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5,6), dpi=100):
+    def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5, 6), dpi=100):
         """
         Plots acceleration, velocity, and displacement waveforms together.
 
@@ -382,13 +383,13 @@ class Ground_Motion:
         Ia_1col = np.zeros(n)
         a_sq = a ** 2.0
 
-        for i in range(1,n):
+        for i in range(1, n):
             Ia_1col[i] = Ia_1col[i - 1] + np.pi / (2 * g) * a_sq[i - 1] * dt
 
         Ia_peak = float(Ia_1col[-1])
-        Ia = np.column_stack((t,Ia_1col))
+        Ia = np.column_stack((t, Ia_1col))
         Ia_norm_1col = Ia_1col / Ia_peak  # normalized
-        Ia_norm = np.column_stack((t,Ia_norm_1col))
+        Ia_norm = np.column_stack((t, Ia_norm_1col))
 
         t_low, t_high = self.__arias_time_bounds(t, Ia_norm_1col, 0.05, 0.95)
         T5_95 = t_high - t_low
@@ -426,7 +427,7 @@ class Ground_Motion:
         scaled_motion : Ground_Motion
             The scaled motion
         """
-        if target_PGA_in_g != None:
+        if target_PGA_in_g is not None:
             factor = target_PGA_in_g / self.pga_in_g
         else:  # factor != None, and target_PGA_in_g is None
             pass
@@ -495,34 +496,36 @@ class Ground_Motion:
         n1 = int(t1 / self.dt)
         n2 = int(t2 / self.dt)
 
-        if n1 < 0: n1 = 0
-        if n2 > self.npts: n2 = self.npts
+        if n1 < 0:
+            n1 = 0
+        if n2 > self.npts:
+            n2 = self.npts
 
-        time_trunc = self.accel[:n2-n1, 0]
+        time_trunc = self.accel[:n2 - n1, 0]
         accel_trunc = self.accel[n1:n2, 1]
         truncated = np.column_stack((time_trunc, accel_trunc))
 
         if show_fig:
             ax = [None] * 3
-            fig = plt.figure(figsize=(5,6))
+            fig = plt.figure(figsize=(5, 6))
             fig.subplots_adjust(left=0.2)
 
-            ax[0] = fig.add_subplot(3,1,1)
-            ax[0].plot(self.time, self.accel[:,1], 'gray', lw=1.75, label='original')
-            ax[0].plot(self.time[n1:n2], truncated[:,1], 'm', lw=1., label='truncated')
+            ax[0] = fig.add_subplot(3, 1, 1)
+            ax[0].plot(self.time, self.accel[:, 1], 'gray', lw=1.75, label='original')
+            ax[0].plot(self.time[n1:n2], truncated[:, 1], 'm', lw=1., label='truncated')
             ax[0].grid(ls=':')
             ax[0].set_ylabel('Accel. [m/s/s]')
             ax[0].legend(loc='best')
 
-            ax[1] = fig.add_subplot(3,1,2)
-            ax[1].plot(self.time, self.veloc[:,1], 'gray', lw=1.75)
-            ax[1].plot(self.time[n1:n2], sr.num_int(truncated)[0][:,1], 'm', lw=1.)
+            ax[1] = fig.add_subplot(3, 1, 2)
+            ax[1].plot(self.time, self.veloc[:, 1], 'gray', lw=1.75)
+            ax[1].plot(self.time[n1:n2], sr.num_int(truncated)[0][:, 1], 'm', lw=1.)
             ax[1].grid(ls=':')
             ax[1].set_ylabel('Veloc. [m/s]')
 
-            ax[2] = fig.add_subplot(3,1,3)
-            ax[2].plot(self.time, self.displ[:,1], 'gray', lw=1.75)
-            ax[2].plot(self.time[n1:n2], sr.num_int(truncated)[1][:,1], 'm', lw=1.)
+            ax[2] = fig.add_subplot(3, 1, 3)
+            ax[2].plot(self.time, self.displ[:, 1], 'gray', lw=1.75)
+            ax[2].plot(self.time[n1:n2], sr.num_int(truncated)[1][:, 1], 'm', lw=1.)
             ax[2].grid(ls=':')
             ax[2].set_ylabel('Displ. [m]')
             ax[2].set_xlabel('Time [sec]')
@@ -882,8 +885,8 @@ class Ground_Motion:
         if unit == 'm/s/s':
             pass
         elif unit == 'g':
-            data[:,1] = data[:,1] / 9.81
+            data[:, 1] = data[:, 1] / 9.81
         elif unit in ['gal', 'cm/s/s']:
-            data[:,1] = data[:,1] * 100.0
+            data[:, 1] = data[:, 1] * 100.0
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)

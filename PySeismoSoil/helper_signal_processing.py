@@ -166,8 +166,8 @@ def _filter_kernel(
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
 
-    x = orig_signal[:,1]
-    time = orig_signal[:,0]
+    x = orig_signal[:, 1]
+    time = orig_signal[:, 0]
     dt = time[1] - time[0]
 
     sampling_rate = 1.0 / dt
@@ -223,7 +223,7 @@ def _filter_kernel(
 
         ax = plt.subplot(222)
         freq_orig, spec_orig = fourier_transform(orig_signal).T
-        plt.plot(freq_orig,spec_orig)
+        plt.plot(freq_orig, spec_orig)
         ylim = ax.get_ylim()
         if isinstance(cutoff_freq, (list, np.ndarray)) and len(cutoff_freq) >= 1:
             plt.plot([cutoff_freq[0]] * 2, ylim, c='orange')
@@ -239,7 +239,7 @@ def _filter_kernel(
 
         ax = plt.subplot(224)
         freq, spec = fourier_transform(np.column_stack((time, y))).T
-        plt.plot(freq,spec)
+        plt.plot(freq, spec)
         ylim = ax.get_ylim()
         if isinstance(cutoff_freq, (list, np.ndarray)) and len(cutoff_freq) >= 1:
             plt.plot([cutoff_freq[0]] * 2, ylim, c='orange')
@@ -248,7 +248,7 @@ def _filter_kernel(
             plt.plot([cutoff_freq] * 2, ylim, c='orange')
         plt.xscale('log')
         plt.xlim(0.01)
-        plt.ylim(0,np.max(spec[1:]))
+        plt.ylim(0, np.max(spec[1:]))
         plt.grid(ls=':')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Fourier amplitude')
@@ -284,11 +284,11 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     dt = time[1] - time[0]
     n0 = len(a)
 
-    #---------- Remove pre-event mean -----------------------------------------
-    pre_mean = (a[0] + a[1] + a[2] + a[3] + a[4])/5.0
+    # ---------- Remove pre-event mean -----------------------------------------
+    pre_mean = (a[0] + a[1] + a[2] + a[3] + a[4]) / 5.0
     a = a - pre_mean
 
-    #---------- Obtain first and last zero crossing ---------------------------
+    # ---------- Obtain first and last zero crossing ---------------------------
     cross_bound_left = 0
     cross_bound_right = len(a)
 
@@ -311,7 +311,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     else:
         glaf1 = -1
 
-    for j in range(len(a)-2, -1, -1):
+    for j in range(len(a) - 2, -1, -1):
         if a[j] >= 0:
             glaf2 = 1
         else:
@@ -321,22 +321,24 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
             cross_bound_right = j
             break
 
-    #---------- Pad zeros on both ends ----------------------------------------
+    # ---------- Pad zeros on both ends ----------------------------------------
     a_cut = a[cross_bound_left : cross_bound_right + 1]
 
     filter_order = 2
     t_zpad = 1.5 * filter_order / cutoff_freq  # time span of zeros
-    nr_zpad = int(np.max([1000, np.round(t_zpad/dt), cross_bound_left + 1])) # number of zeros added
+    nr_zpad = int(np.max(
+        [1000, np.round(t_zpad / dt), cross_bound_left + 1]
+    ))  # number of zeros added
 
     a_cut = np.append(np.zeros(nr_zpad), np.append(a_cut, np.zeros(nr_zpad)))
     t_cut = np.linspace(dt, len(a_cut) * dt, len(a_cut), endpoint=True)
 
-    #----------- Step 4: High-pass filter -------------------------------------
-    a_new = highpass(np.column_stack((t_cut, a_cut)), cutoff_freq)#, padlen=len(x)//10)
+    # ----------- Step 4: High-pass filter -------------------------------------
+    a_new = highpass(np.column_stack((t_cut, a_cut)), cutoff_freq)
     a_new = a_new[:, 1]
 
-    #----------- Shift a_new in time to match original signal -----------------
-    a_new = a_new[nr_zpad - cross_bound_left - 1 : ]
+    # ----------- Shift a_new in time to match original signal -----------------
+    a_new = a_new[nr_zpad - cross_bound_left - 1 :]
 
     if len(a_new) >= n0:
         a_new = a_new[:n0]
@@ -345,19 +347,19 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
 
     a_new = np.column_stack((time, a_new))
 
-    #---------- Remove trend (assumed straight light) in displacement ---------
+    # ---------- Remove trend (assumed straight light) in displacement ---------
     _, u_new = sr.num_int(a_new)
     u_new2 = _remove_linear_trend(u_new)
 
     v_new2 = sr.num_diff(u_new2)
     a_new2 = sr.num_diff(v_new2)
 
-    #----------- Show plots ---------------------------------------------------
+    # ----------- Show plots ---------------------------------------------------
     if show_fig:
         v, u = sr.num_int(orig_signal)
         v_, u_ = sr.num_int(a_new2)
 
-        plt.figure(figsize=(12,7))
+        plt.figure(figsize=(12, 7))
 
         ax = plt.subplot(331)
         ax.plot(time, a, c='b')
@@ -366,12 +368,12 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
         ax.grid(ls=':')
 
         ax = plt.subplot(334)
-        ax.plot(v[:,0], v[:,1], c='b')
+        ax.plot(v[:, 0], v[:, 1], c='b')
         ax.set_ylabel('Velocity')
         ax.grid(ls=':')
 
         ax = plt.subplot(337)
-        ax.plot(u[:,0], u[:,1], c='b')
+        ax.plot(u[:, 0], u[:, 1], c='b')
         ax.set_ylabel('Displacement')
         ax.grid(ls=':')
 
@@ -382,12 +384,12 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
         ax.grid(ls=':')
 
         ax = plt.subplot(335)
-        ax.plot(v_[:,0], v_[:,1], c='m')
+        ax.plot(v_[:, 0], v_[:, 1], c='m')
         ax.set_ylabel('Velocity')
         ax.grid(ls=':')
 
         ax = plt.subplot(338)
-        ax.plot(u_[:,0], u_[:,1], c='m')
+        ax.plot(u_[:, 0], u_[:, 1], c='m')
         ax.set_ylabel('Displacement')
         ax.grid(ls=':')
 
@@ -450,8 +452,8 @@ def fourier_transform(
 
     signal_ = signal_2_col
 
-    time_array = signal_[:,0]
-    x = signal_[:,1]
+    time_array = signal_[:, 0]
+    x = signal_[:, 1]
     N = len(time_array)
 
     dt = float(time_array[1] - time_array[0])
@@ -459,15 +461,15 @@ def fourier_transform(
     X = scipy.fftpack.fft(x)
 
     if not double_sided:
-        freq_array = np.arange(1, int(np.ceil(N/2.0)) + 1, 1)/(N*dt)
+        freq_array = np.arange(1, int(np.ceil(N / 2.0)) + 1, 1) / (N * dt)
         if real_val:  # absolute Fourier spectra
-            X = abs(X[0 : int(np.ceil(N/2.0))])
+            X = abs(X[0 : int(np.ceil(N / 2.0))])
             spectrum = X
         else:  # complex Fourier spectra
-            X = X[0 : int(np.ceil(N/2.0))]
+            X = X[0 : int(np.ceil(N / 2.0))]
             spectrum = X
     else:
-        freq_array = np.arange(1, N+1, 1)/(N*dt)
+        freq_array = np.arange(1, N + 1, 1) / (N * dt)
         if real_val:  # absolute Fourier spectra
             X = abs(X)
             spectrum = X
@@ -478,16 +480,16 @@ def fourier_transform(
         plt.figure(1)
 
         plt.subplot(211)
-        plt.plot(time_array,x)
+        plt.plot(time_array, x)
         plt.xlabel('Time [sec]')
         plt.ylabel('Acceleration')
         plt.grid(ls=':')
 
         plt.subplot(212)
-        plt.plot(freq_array,abs(spectrum))
+        plt.plot(freq_array, abs(spectrum))
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Amplitude')
-        plt.ylim(0,np.max(spectrum[1:]))
+        plt.ylim(0, np.max(spectrum[1:]))
         plt.xlim(0.01)
         plt.grid(ls=':')
         if double_sided is False:
@@ -520,14 +522,14 @@ def taper_Tukey(input_signal, width=0.05):
         raise TypeError('`input_signal` should be a numpy array.')
 
     if input_signal.ndim == 2:  # if input_signal has two columns
-        time_array = input_signal[:,0]
-        second_col = input_signal[:,1]
+        time_array = input_signal[:, 0]
+        second_col = input_signal[:, 1]
         l = len(time_array)
-        output_second_col = second_col * scipy.signal.tukey(l, width/2.0)
+        output_second_col = second_col * scipy.signal.tukey(l, width / 2.0)
         output = np.column_stack(time_array, output_second_col)
     elif input_signal.ndim == 1:
         l = len(input_signal)
-        output = input_signal * scipy.signal.tukey(l, width/2.0)
+        output = input_signal * scipy.signal.tukey(l, width / 2.0)
     else:
         raise TypeError(
             '`input_signal` should be either 1 or 2 dimensional. '
@@ -669,15 +671,17 @@ def log_smooth(
         raise ValueError("Input vector needs to be bigger than window size.")
     if win_len < 3:
         return signal
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError("'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'")
+    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError(
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'"
+        )
 
-    if lin_space and (fmin == None or fmax == None):
+    if lin_space and (fmin is None or fmax is None):
         raise ValueError(
             'If `lin_space` is `True`, `fmin` and `fmax` must be specified.'
         )
 
-    if n_pts == None:
+    if n_pts is None:
         n_pts = len(signal)
 
     if lin_space:
@@ -698,12 +702,12 @@ def log_smooth(
             raise ValueError('`beta2` should be within [0, 1].')
 
         y[0] = np.mean(x[:n])
-        for j in range(1,n):  # exponentially weighted average
-            y[j] = beta1 * y[j-1] + (1 - beta1) * x[j]
+        for j in range(1, n):  # exponentially weighted average
+            y[j] = beta1 * y[j - 1] + (1 - beta1) * x[j]
 
-        y[-1] = np.mean(x[len(y)-n:])
-        for j in range(len(y)-2, len(y)-n-1, -1):
-            y[j] = beta2 * y[j+1] + (1 - beta2) * x[j]
+        y[-1] = np.mean(x[len(y) - n:])
+        for j in range(len(y) - 2, len(y) - n - 1, -1):
+            y[j] = beta2 * y[j + 1] + (1 - beta2) * x[j]
 
     smoothed_signal = y
     return smoothed_signal
@@ -750,7 +754,8 @@ def lin_smooth(x, window_len=15, window='hanning'):
 
     Notes
     -----
-    - length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    - length(output) != length(input), to correct
+      this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
     - Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
     """
     if x.ndim != 1:
@@ -759,13 +764,15 @@ def lin_smooth(x, window_len=15, window='hanning'):
         raise ValueError("Input vector needs to be bigger than window size.")
     if window_len < 3:
         return x
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError("'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'")
+    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError(
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'"
+        )
 
     if window == 'flat':  # moving average
         w = np.ones(window_len, 'd')
     else:
-        w = eval('np.'+window+'(window_len)')
+        w = eval('np.' + window + '(window_len)')
 
-    y = np.convolve(w/w.sum(), x, mode='same')
+    y = np.convolve(w / w.sum(), x, mode='same')
     return y

@@ -142,7 +142,7 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
         damping_in_1 = sr.calc_damping_from_param(
-            self.data, strain_in_pct/100., self.func_stress,
+            self.data, strain_in_pct / 100., self.func_stress,
         )
         return damping_in_1 * 100
 

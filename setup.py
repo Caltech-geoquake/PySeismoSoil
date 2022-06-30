@@ -7,6 +7,7 @@ def load_requirements():
     # END
     return [_.strip() for _ in requirements]
 
+
 setup(
     name='PySeismoSoil',
     version='v0.4.1',

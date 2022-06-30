@@ -65,7 +65,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
 
     def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
         with self.assertRaisesRegex(AssertionError, ''):
-            mkz.deserialize_array_to_params(np.array([1, 2, 3, 4, 5])) # should be 4
+            mkz.deserialize_array_to_params(np.array([1, 2, 3, 4, 5]))  # should be 4
 
     def test_fit_MKZ(self):
         strain_in_1 = np.geomspace(1e-6, 0.1, num=50)  # unit: 1

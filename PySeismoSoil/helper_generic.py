@@ -152,7 +152,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
         raise TypeError('`data` must be a file name or a numpy array.')
 
     if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):
-        if delta == None:
+        if delta is None:
             raise ValueError(
                 '`delta` (such as dt or df) is needed for one-column `data`.'
             )
