@@ -632,9 +632,10 @@ class SVM:
             rho_200 = 1.00
             z_0 = 0
             b = 0.293
-        else:  # site classes B and A (these values are intended for class B
-               # only, but you can still produce a result for a class A profile.
-               # The result just won't make sense.)
+        else:
+            # Site classes B and A (These values are intended for class B
+            # only, but you can still produce a result for a class A profile.
+            # The result just won't make sense.)
             sigma_lnV = 0.36
             rho_0 = 0.95
             Delta = 3.4
