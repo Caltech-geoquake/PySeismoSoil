@@ -528,7 +528,7 @@ def produce_HH_G_param(
             plt.legend(loc='upper left')
             plt.title(
                 r'$V_S$ = %.1f m/s, $G_{\max}$ = %.3f MPa,'
-                r'\n$\\tau_{\mathrm{ff}}$ = %.3f kPa, '
+                r'\n$\tau_{\mathrm{ff}}$ = %.3f kPa, '
                 r'$\gamma_{\mathrm{ref}}$ = %.3f%%'
                 % (Vs[j], Gmax[j] / 1e6, Tmax[j] / 1e3, gamma_ref[j] * 100)
             )
