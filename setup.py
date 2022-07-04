@@ -4,6 +4,14 @@ from setuptools import setup
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
+
+def load_requirements():
+    with open(this_directory / Path('requirements.txt')) as fp:
+        requirements = fp.readlines()
+    # END
+    return [_.strip() for _ in requirements]
+
+
 setup(
     name='PySeismoSoil',
     version='v0.4.7',
@@ -23,12 +31,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
     ],
-    install_requires=[
-        'numpy>=1.11.0',
-        'matplotlib>=2.0.0',
-        'scipy>=1.1.0',
-        'numba>=0.38.0',
-    ],
+    install_requires=load_requirements(),
     python_requires='>=3.6',
     include_package_data=True,
 )
