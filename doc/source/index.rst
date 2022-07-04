@@ -6,7 +6,7 @@
 PySeismoSoil Documentation
 ==========================
 
-Hello, welcome to the documentation of PySeismoSoil.
+Hello. Welcome to the documentation of PySeismoSoil.
 
 PySeismoSoil is a Python library for performing 1D seismic site response analysis.
 
@@ -21,7 +21,7 @@ Please carefully read the license `here <https://github.com/jsh9/PySeismoSoil/bl
 Authors
 -------
 
-The authors of this library are the current and past members of the `Geoquake Research Group <http://asimaki.caltech.edu/>`_ of the California Institute of Technology: Jian Shi, Domniki Asimaki, and Wei Li.
+The authors of this library are the current and past members of the `Geoquake Research Group <http://asimaki.caltech.edu/>`_ of the `California Institute of Technology <https://www.caltech.edu/>`_: Jian Shi, Domniki Asimaki, and Wei Li.
 
 
 Knowledge base
@@ -72,8 +72,8 @@ API Documentation
    modules
 
 
-Source codes
-------------
+Source code
+-----------
 
 https://github.com/jsh9/PySeismoSoil
 

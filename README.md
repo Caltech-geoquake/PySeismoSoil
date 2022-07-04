@@ -12,7 +12,7 @@ Please carefully read the license [here](https://github.com/jsh9/PySeismoSoil/bl
 
 ## Authors
 
-The authors of this library are the current and past members of the [Geoquake Research Group](http://asimaki.caltech.edu/) of the California Institute of Technology: Jian Shi, Domniki Asimaki, and Wei Li.
+The authors of this library are the current and past members of the [Geoquake Research Group](http://asimaki.caltech.edu/) of the [California Institute of Technology](https://www.caltech.edu/): Jian Shi, Domniki Asimaki, and Wei Li.
 
 
 ## Installation
@@ -43,7 +43,7 @@ pip install git+https://github.com/jsh9/PySeismoSoil
 
 Stable version: https://pyseismosoil.readthedocs.io/en/stable/
 
-(Latest features: https://pyseismosoil.readthedocs.io/en/latest/)
+(With latest features: https://pyseismosoil.readthedocs.io/en/latest/)
 
 ## Examples
 
@@ -54,15 +54,15 @@ Go to the "examples" folder from the root directory. Those examples help you qui
 
 The models and algorithms used in this library mainly come from these research papers:
 
-1. J. Shi (2019) "Improving Site Response Analysis for Earthquake Ground Motion Modeling." Dissertation (Ph.D.), California Institute of Technology. doi:10.7907/X5NZ-DQ21. [[URL](http://resolver.caltech.edu/CaltechTHESIS:05302019-150220368)]
+1. J. Shi (2019) "Improving Site Response Analysis for Earthquake Ground Motion Modeling." _Dissertation (Ph.D.), California Institute of Technology_. doi:10.7907/X5NZ-DQ21. [[URL](http://resolver.caltech.edu/CaltechTHESIS:05302019-150220368)]
 
-2. J. Shi, D. Asimaki (2018) "A Generic Velocity Profile for Basin Sediments in California Conditioned on Vs30." Seismological Research Letters, 89 (4), 1397-1409. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20180523-153705346)]
+2. J. Shi, D. Asimaki (2018) "A Generic Velocity Profile for Basin Sediments in California Conditioned on Vs30." _Seismological Research Letters_, 89 (4), 1397-1409. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20180523-153705346)]
 
-3. J. Shi, D. Asimaki (2017) "From stiffness to strength: Formulation and validation of a hybrid hyperbolic nonlinear soil model for site-response analyses." Bulletin of the Seismological Society of America, 107 (3), 1336-1355. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20170404-150827374)]
+3. J. Shi, D. Asimaki (2017) "From stiffness to strength: Formulation and validation of a hybrid hyperbolic nonlinear soil model for site-response analyses." _Bulletin of the Seismological Society of America_, 107 (3), 1336-1355. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20170404-150827374)]
 
-4. W. Li, D. Assimaki (2010) "Site- and motion-dependent parametric uncertainty of site-response analyses in earthquake simulations." Bulletin of the Seismological Society of America 100 (3), 954-968. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20140904-160952252)]
+4. W. Li, D. Assimaki (2010) "Site- and motion-dependent parametric uncertainty of site-response analyses in earthquake simulations." _Bulletin of the Seismological Society of America_, 100 (3), 954-968. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20140904-160952252)]
 
-5. D. Asimaki, W. Li, J. Steidl, J. Schmedes (2008) "Quantifying nonlinearity susceptibility via site-response modeling uncertainty at three sites in the Los Angeles Basin." Bulletin of the Seismological Society of America 98 (5), 2364-2390. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20140828-163417572)]
+5. D. Asimaki, W. Li, J. Steidl, J. Schmedes (2008) "Quantifying nonlinearity susceptibility via site-response modeling uncertainty at three sites in the Los Angeles Basin." _Bulletin of the Seismological Society of America_, 98 (5), 2364-2390. [[URL](http://resolver.caltech.edu/CaltechAUTHORS:20140828-163417572)]
 
 
 ## Report issues
