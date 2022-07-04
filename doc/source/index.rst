@@ -29,13 +29,13 @@ Knowledge base
 
 The models and algorithms used in this library mainly come from these research papers:
 
-1. J. Shi, D. Asimaki (2018) "A Generic Velocity Profile for Basin Sediments in California Conditioned on Vs30." Seismological Research Letters, 89 (4), 1397-1409. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20180523-153705346>`_]
+1. J. Shi, D. Asimaki (2018) "A Generic Velocity Profile for Basin Sediments in California Conditioned on Vs30." *Seismological Research Letters*, 89 (4), 1397-1409. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20180523-153705346>`_]
 
-2. J. Shi, D. Asimaki (2017) "From stiffness to strength: Formulation and validation of a hybrid hyperbolic nonlinear soil model for site-response analyses." Bulletin of the Seismological Society of America, 107 (3), 1336-1355. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20170404-150827374>`_]
+2. J. Shi, D. Asimaki (2017) "From stiffness to strength: Formulation and validation of a hybrid hyperbolic nonlinear soil model for site-response analyses." *Bulletin of the Seismological Society of America*, 107 (3), 1336-1355. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20170404-150827374>`_]
 
-3. W. Li, D. Assimaki (2010) "Site- and motion-dependent parametric uncertainty of site-response analyses in earthquake simulations." Bulletin of the Seismological Society of America 100 (3), 954-968. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20140904-160952252>`_]
+3. W. Li, D. Assimaki (2010) "Site- and motion-dependent parametric uncertainty of site-response analyses in earthquake simulations." *Bulletin of the Seismological Society of America*, 100 (3), 954-968. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20140904-160952252>`_]
 
-4. D. Asimaki, W. Li, J. Steidl, J. Schmedes (2008) "Quantifying nonlinearity susceptibility via site-response modeling uncertainty at three sites in the Los Angeles Basin." Bulletin of the Seismological Society of America 98 (5), 2364-2390. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20140828-163417572>`_]
+4. D. Asimaki, W. Li, J. Steidl, J. Schmedes (2008) "Quantifying nonlinearity susceptibility via site-response modeling uncertainty at three sites in the Los Angeles Basin." *Bulletin of the Seismological Society of America*, 98 (5), 2364-2390. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20140828-163417572>`_]
 
 Installation
 ------------
