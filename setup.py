@@ -6,6 +6,8 @@ long_description = (this_directory / "README.md").read_text()
 
 
 def load_requirements():
+    # Reading dependencies from requirements.txt avoid readthedocs.org from
+    # installing non-stable dependencies (e.g., "release candidate" versions)
     with open(this_directory / Path('requirements.txt')) as fp:
         requirements = fp.readlines()
     # END
@@ -16,8 +18,8 @@ setup(
     name='PySeismoSoil',
     version='v0.4.7',
     description='PySeismoSoil',
-    long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description=long_description,  # will get passed to PyPI.org
+    long_description_content_type="text/markdown",  # otherwise the default is RST
     author='Jian Shi',
     license='BSD 3',
     url='https://github.com/jsh9/PySeismoSoil',
