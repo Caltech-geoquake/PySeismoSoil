@@ -10,7 +10,7 @@ def load_requirements():
 
 setup(
     name='PySeismoSoil',
-    version='v0.4.1',
+    version='v0.4.2',
     description='PySeismoSoil',
     author='Jian Shi',
     license='BSD 3',
