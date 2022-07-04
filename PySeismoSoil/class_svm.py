@@ -553,18 +553,28 @@ class SVM:
                 thk_rand = -1
                 while thk_rand <= 0:  # to ensure thickness is always positive
                     thk_rand = np.random.poisson(lamda_)  # draw random sample
+                # END
             else:
                 func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fsolve() properly converges
-                        mean_thk, info, ier, msg \
-                            = fsolve(func, z_top[-1] + 4.0, full_output=True)
+                        mean_thk, info, ier, msg = fsolve(
+                            func, z_top[-1] + 4.0, full_output=True,
+                        )
+                    # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fzero() properly converges
-                        mean_thk, info, ier, msg \
-                            = fsolve(func, z_top[-1] + 4.0, full_output=True)
+                        mean_thk, info, ier, msg = fsolve(
+                            func, z_top[-1] + 4.0, full_output=True,
+                        )
+                    # END
+                # END
+
+                # Take the 0th element because the return value is an array:
+                # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fsolve.html
+                mean_thk = mean_thk[0]
 
                 z_mid_temp = z_top[-1] + mean_thk / 2.0
                 std_thk = 0.951 * z_mid_temp ** 0.628  # Eq (8) of Shi & Asimaki (2018)

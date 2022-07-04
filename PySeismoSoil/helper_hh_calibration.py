@@ -366,17 +366,21 @@ def produce_HH_G_param(
 
     if verbose:
         print('========== Start optimizing for HH_G parameters ===========')
+    # END
 
     # ============= MKZ fit ===================================================
     if curves is None:  # user does not provide curves
         if verbose:
-            print('------ G/Gmax not provided; will generate MKZ curves using '
-                  'Darendeli (2001): ------')
+            print(
+                '------ G/Gmax not provided; will generate MKZ curves using '
+                'Darendeli (2001): ------'
+            )
+        # END
 
         strain_ = np.geomspace(1e-4, 10, 400)  # unit: percent
-        GGmax, _, gamma_ref = produce_Darendeli_curves(sigma_v0, PI, OCR=OCR,
-                                                       K0=K0, phi=phi,
-                                                       strain_in_pct=strain_)
+        GGmax, _, gamma_ref = produce_Darendeli_curves(
+            sigma_v0, PI, OCR=OCR, K0=K0, phi=phi, strain_in_pct=strain_,
+        )
         strain = np.tile(strain_, (n_layer, 1)).T  # strain matrix for all layers
         beta = np.ones(n_layer)
         s = 0.9190 * np.ones(n_layer)
@@ -405,6 +409,8 @@ def produce_HH_G_param(
                     f'Layer {j}: gamma_ref = {gamma_ref[j]:.3g}, '
                     f's = {s[j]:.3g}, beta = {beta[j]:.3g}'
                 )
+            # END
+        # END
 
     # ========== Stress-strain curve implied by G/Gmax ========================
     sigma = np.zeros_like(GGmax)
@@ -459,7 +465,7 @@ def produce_HH_G_param(
         if verbose:
             print(
                 f'{j + 1}/{n_layer}: mu = {mu[j]:.3f}, a = {a:.1f}, '
-                'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}'
+                f'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}'
             )
         T_FKZ = hh.tau_FKZ(
             strain_j / 100.0,
@@ -527,12 +533,15 @@ def produce_HH_G_param(
             plt.ylabel('Stress [kPa]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.legend(loc='upper left')
-            plt.title(
-                r'$V_S$ = %.1f m/s, $G_{\max}$ = %.3f MPa,'
-                r'\n$\tau_{\mathrm{ff}}$ = %.3f kPa, '
-                r'$\gamma_{\mathrm{ref}}$ = %.3f%%'
-                % (Vs[j], Gmax[j] / 1e6, Tmax[j] / 1e3, gamma_ref[j] * 100)
-            )
+
+            title_txt = '$V_S$ = {0:.1f} m/s, '.format(Vs[j])
+            title_txt += r'$G_{\max}$' + ' = {0:.3f} MPa,\n'.format(Gmax[j] / 1e6)
+            title_txt += r'$\tau_{\mathrm{ff}}$ = '
+            title_txt += '{0:.3f} kPa, '.format(Tmax[j] / 1e3)
+            title_txt += r'$\gamma_{\mathrm{ref}}$ = '
+            title_txt += '{0:.3f}%'.format(gamma_ref[j] * 100)
+
+            plt.title(title_txt)
 
             plt.subplot(212)
             if curves is None:
@@ -554,8 +563,8 @@ def produce_HH_G_param(
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
-                r"$\mu$ = %.3f, a = %.1f, $\gamma_{\mathrm{t}}$ = %.4f%%\n"
-                r"d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
+                "$\mu$ = %.3f, a = %.1f, $\gamma_{\mathrm{t}}$ = %.4f%%\n"
+                "d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
                 % (mu[j], a, gamma_t * 100, d, p0[j])
             )
 
@@ -564,12 +573,14 @@ def produce_HH_G_param(
             if save_fig:
                 if fig_output_dir is None:
                     raise ValueError('Please specify `fig_output_dir`.')
+                # END
                 fig.savefig(
                     os.path.join(
                         fig_output_dir,
                         'Stress_GGmax_of_Layer_#%d.png' % (j + 1),
                     )
                 )
+            # END
 
     return parameters
 
