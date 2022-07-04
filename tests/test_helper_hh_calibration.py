@@ -93,7 +93,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         K0 = np.array([0.4, 0.4, 0.4])
         OCR = np.array([2, 2, 2])
         GGmax, D, gamma_ref = hhc.produce_Darendeli_curves(
-            sigma_v0, PI=PI, OCR=OCR, K0=K0, strain_in_pct=strain*100,
+            sigma_v0, PI=PI, OCR=OCR, K0=K0, strain_in_pct=strain * 100,
         )
 
         GGmax_bench = np.array(
@@ -124,7 +124,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
                 PI=np.append(PI, PI),
                 OCR=OCR,
                 K0=K0,
-                strain_in_pct=strain*100,
+                strain_in_pct=strain * 100,
             )
 
     def test_optimization_kernel__case_1(self):
@@ -215,7 +215,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         ##         The user needs to do a visual inspection.
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_P001.txt'))
         curves = np.genfromtxt(_join(f_dir, 'curve_P001.txt'))
-        HH_G_param = hhc.hh_param_from_curves(
+        HH_G_param = hhc.hh_param_from_curves(  # noqa: F841
             vs_profile, curves, show_fig=True, verbose=False,
         )
 

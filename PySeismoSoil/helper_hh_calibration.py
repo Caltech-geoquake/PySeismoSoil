@@ -224,7 +224,7 @@ def hh_param_from_curves(
         mat = vs_profile[:-1, -1]
         rho = vs_profile[:-1, 3]
     else:  # only 2 columns
-        mat = np.arange(1, n_layer+1)
+        mat = np.arange(1, n_layer + 1)
         rho = _calc_rho(h, Vs)
 
     if Tmax is not None:
@@ -366,17 +366,21 @@ def produce_HH_G_param(
 
     if verbose:
         print('========== Start optimizing for HH_G parameters ===========')
+    # END
 
     # ============= MKZ fit ===================================================
     if curves is None:  # user does not provide curves
         if verbose:
-            print('------ G/Gmax not provided; will generate MKZ curves using '
-                  'Darendeli (2001): ------')
+            print(
+                '------ G/Gmax not provided; will generate MKZ curves using '
+                'Darendeli (2001): ------'
+            )
+        # END
 
         strain_ = np.geomspace(1e-4, 10, 400)  # unit: percent
-        GGmax, _, gamma_ref = produce_Darendeli_curves(sigma_v0, PI, OCR=OCR,
-                                                       K0=K0, phi=phi,
-                                                       strain_in_pct=strain_)
+        GGmax, _, gamma_ref = produce_Darendeli_curves(
+            sigma_v0, PI, OCR=OCR, K0=K0, phi=phi, strain_in_pct=strain_,
+        )
         strain = np.tile(strain_, (n_layer, 1)).T  # strain matrix for all layers
         beta = np.ones(n_layer)
         s = 0.9190 * np.ones(n_layer)
@@ -405,6 +409,8 @@ def produce_HH_G_param(
                     f'Layer {j}: gamma_ref = {gamma_ref[j]:.3g}, '
                     f's = {s[j]:.3g}, beta = {beta[j]:.3g}'
                 )
+            # END
+        # END
 
     # ========== Stress-strain curve implied by G/Gmax ========================
     sigma = np.zeros_like(GGmax)
@@ -421,9 +427,10 @@ def produce_HH_G_param(
     mu = np.zeros_like(OCR)
     for j in range(n_layer):
         if Vs[j] <= 760:  # softer soil: use Vardanega & Bolton (2011) CGJ formula
-            mu[j] = 1.0 / (0.000872 * Gmax[j]/Tmax[j] * OCR[j]**0.47 * p0[j]**0.28)
+            mu[j] = 1.0 / (0.000872 * Gmax[j]/Tmax[j] * OCR[j]**0.47 * p0[j]**0.28)  # noqa: E226
             if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
-                mu[j] = mu[j] * 10.0 ** (0.236 * 3)  # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
+                # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
+                mu[j] = mu[j] * 10.0 ** (0.236 * 3)
             elif mu[j] <= 0.03:
                 mu[j] = mu[j] * 10.0 ** (0.236 * 2)
             elif mu[j] <= 0.04:
@@ -458,7 +465,7 @@ def produce_HH_G_param(
         if verbose:
             print(
                 f'{j + 1}/{n_layer}: mu = {mu[j]:.3f}, a = {a:.1f}, '
-                'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}'
+                f'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}'
             )
         T_FKZ = hh.tau_FKZ(
             strain_j / 100.0,
@@ -499,21 +506,21 @@ def produce_HH_G_param(
             if curves is None:
                 plt.semilogx(
                     strain_j, sigma[:, j] / 1000.,
-                    c=muted_blue, lw=lw*2.5, label='MKZ',  # Darendeli's curve
+                    c=muted_blue, lw=lw * 2.5, label='MKZ',  # Darendeli's curve
                 )
                 plt.semilogx(
                     strain_j, T_FKZ / 1000.,
-                    c=muted_green, lw=lw*1.75, label='FKZ',
+                    c=muted_green, lw=lw * 1.75, label='FKZ',
                 )
             else:
                 plt.semilogx(
                     strain_j, sigma[:, j] / 1000.,
-                    c=muted_blue, marker='o', ls='-', lw=lw*2.5,
-                    label='Given $G/G_{\max}$',
+                    c=muted_blue, marker='o', ls='-', lw=lw * 2.5,
+                    label=r'Given $G/G_{\max}$',
                 )
                 plt.semilogx(
                     strain_j, T_FKZ / 1000.,
-                    c=muted_green, lw=lw*1.75, label='FKZ',
+                    c=muted_green, lw=lw * 1.75, label='FKZ',
                 )
             plt.grid(ls=':', lw=0.5)
             plt.plot(
@@ -526,30 +533,33 @@ def produce_HH_G_param(
             plt.ylabel('Stress [kPa]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.legend(loc='upper left')
-            plt.title(
-                '$V_S$ = %.1f m/s, $G_{\max}$ = %.3f MPa,'
-                '\n$\\tau_{\mathrm{ff}}$ = %.3f kPa, '
-                '$\gamma_{\mathrm{ref}}$ = %.3f%%'
-                % (Vs[j], Gmax[j]/1e6, Tmax[j]/1e3, gamma_ref[j]*100)
-            )
+
+            title_txt = '$V_S$ = {0:.1f} m/s, '.format(Vs[j])
+            title_txt += r'$G_{\max}$' + ' = {0:.3f} MPa,\n'.format(Gmax[j] / 1e6)
+            title_txt += r'$\tau_{\mathrm{ff}}$ = '
+            title_txt += '{0:.3f} kPa, '.format(Tmax[j] / 1e3)
+            title_txt += r'$\gamma_{\mathrm{ref}}$ = '
+            title_txt += '{0:.3f}%'.format(gamma_ref[j] * 100)
+
+            plt.title(title_txt)
 
             plt.subplot(212)
             if curves is None:
-                plt.semilogx(strain_j, GGmax[:, j], c=muted_blue, lw=lw*2.5)
+                plt.semilogx(strain_j, GGmax[:, j], c=muted_blue, lw=lw * 2.5)
             else:
                 plt.semilogx(
                     strain_j, GGmax[:, j],
-                    c=muted_blue, ls='-', marker='o', lw=lw*2.5,
+                    c=muted_blue, ls='-', marker='o', lw=lw * 2.5,
                 )
             plt.grid(ls=':', lw=0.5)
             plt.plot(
                 strain_j,
-                mu[j] / (1 + Gmax[j]/Tmax[j]*mu[j]*np.abs(strain_j/100.) ),
-                c=muted_green, lw=lw*1.75,
+                mu[j] / (1 + Gmax[j]/Tmax[j]*mu[j]*np.abs(strain_j/100.)),  # noqa: E226
+                c=muted_green, lw=lw * 1.75,
             )
             plt.plot(strain_j, GGmax_HH, c=muted_red, lw=lw)
             plt.plot([gamma_t * 100] * 2, plt.ylim(), ls='--', c='gray')
-            plt.ylabel('$G/G_{\max}$')
+            plt.ylabel(r'$G/G_{\max}$')
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
@@ -563,12 +573,14 @@ def produce_HH_G_param(
             if save_fig:
                 if fig_output_dir is None:
                     raise ValueError('Please specify `fig_output_dir`.')
+                # END
                 fig.savefig(
                     os.path.join(
                         fig_output_dir,
                         'Stress_GGmax_of_Layer_#%d.png' % (j + 1),
                     )
                 )
+            # END
 
     return parameters
 
@@ -613,10 +625,16 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
             sigma_1 = np.max([sigma_v0[j], sigma_h0])  # largest principal stress
             sigma_3 = np.min([sigma_v0[j], sigma_h0])  # smallest principal stress
+
             # normal effective stress on the slip plane
-            sigma_n = (sigma_1 + sigma_3)/2.0 \
-                      - (sigma_1 - sigma_3)/2.0 * np.sin(np.deg2rad(phi[j]))
+            sigma_n = (
+                (sigma_1 + sigma_3) / 2.0 -
+                (sigma_1 - sigma_3) / 2.0 * np.sin(np.deg2rad(phi[j]))
+            )
+
             Tmax[j] = dyna_coeff * sigma_n * np.tan(np.deg2rad(phi[j]))
+        # END
+    # END
 
     return Tmax
 
@@ -661,7 +679,7 @@ def _calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=None):
     OCR : numpy.ndarray
         1D array of OCR value, for each soil layer. (Unitless.)
     """
-    sigma_p0 = 0.106 * Vs**1.47  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated fromseismic piezocone tests"
+    sigma_p0 = 0.106 * Vs**1.47  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated fromseismic piezocone tests"  # noqa: E501,E226
     sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
     OCR = np.minimum(OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit)
@@ -697,9 +715,9 @@ def _calc_vertical_stress(h, rho):
     if h[-1] == 0:  # zero thickness, i.e., half space
         h[-1] = 1
 
-    stress[0] = rho[0] * g * h[0]/2  # divided by 2: middle of layer
+    stress[0] = rho[0] * g * h[0] / 2  # divided by 2: middle of layer
     for i in range(1, n):
-        stress[i] = stress[i-1] + rho[i-1] * g * h[i-1]/2 + rho[i] * g * h[i]/2
+        stress[i] = stress[i - 1] + rho[i - 1] * g * h[i - 1] / 2 + rho[i] * g * h[i] / 2
 
     return stress
 
@@ -866,9 +884,9 @@ def produce_Darendeli_curves(
     phi12 = -0.0057
     a = phi5
 
-    c1 = -1.1143*a**2 + 1.8618*a + 0.2523  # from Darendeli (2001), page 226
-    c2 = 0.0805*a**2 - 0.0710*a - 0.0095
-    c3 = -0.0005*a**2 + 0.0002*a + 0.0003
+    c1 = -1.1143 * a**2 + 1.8618 * a + 0.2523  # from Darendeli (2001), page 226
+    c2 = 0.0805 * a**2 - 0.0710 * a - 0.0095
+    c3 = -0.0005 * a**2 + 0.0002 * a + 0.0003
     b = phi11 + phi12 * np.log(N)  # Darendeli (2001) Eq 9.1d
 
     # Confinine stress
@@ -883,11 +901,15 @@ def produce_Darendeli_curves(
     xi = np.zeros_like(GGmax)
     for i in range(n_layer):
         GGmax[:, i] = 1. / (1 + (gamma / gamma_r[i])**a)  # G of i-th layer (Eq 9.2a)
-        D_masing_1 = (100. / np.pi) \
-            * (4 * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i])) \
-                / (gamma**2 / (gamma + gamma_r[i])) - 2)  # Unit: percent (page 226)
-        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # Unit: percent (page 226)
-        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)
+        D_masing_1 = (  # unit: % (page 226)
+            (100. / np.pi) *
+            (
+                4 * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i])) /
+                (gamma**2 / (gamma + gamma_r[i])) - 2
+            )
+        )
+        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # unit: % (page 226)
+        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501
         xi[:, i] = b * GGmax[:, i]**0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
 
     xi /= 100.0
@@ -911,7 +933,7 @@ def _calc_mean_confining_stress(sigma_v0, K0):
     sigma_m0 : numpy.ndarray
         Mean effective confining stress (of three directions). Unit: Pa.
     """
-    sigma_m0 = (2 * K0 + 1)/3.0 * sigma_v0
+    sigma_m0 = (2 * K0 + 1) / 3.0 * sigma_v0
     return sigma_m0
 
 
@@ -991,7 +1013,7 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
                 gamma_t = 1e-3 / 100.0  # further ralax to 0.001%
             # END IF
         # END IF
-    #END IF
+    # END IF
 
     a = 100.0  # always use a fast transition
     return a, gamma_t, d
@@ -1081,7 +1103,7 @@ def __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ):
         copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)  # "copt" = cross-over point
         gamma_t = x[copt]
         if (gamma_t >= range_gamma_t[0]) and (gamma_t <= range_gamma_t[-1]):
-            diff_T = np.abs(T_MKZ[:copt+1] - T_FKZ[:copt+1])
+            diff_T = np.abs(T_MKZ[:copt + 1] - T_FKZ[:copt + 1])
             area[j] = np.linalg.norm(diff_T) / (copt + 1.0)
         else:
             area[j] = np.inf

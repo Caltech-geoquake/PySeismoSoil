@@ -43,7 +43,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_MKZ = Gmax * gamma / ( 1 + beta * (np.abs(gamma) / gamma_ref)**s )
+    T_MKZ = Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
 
     return T_MKZ
 
@@ -331,14 +331,14 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
     gamma = np.zeros((length, n_ma))
     GGmax = np.zeros((length, n_ma))
     for k in range(n_ma):
-        gamma[:, k] = curve_data[:, k*4 + 0] / 100.0  # percent --> 1
-        GGmax[:, k] = curve_data[:, k*4 + 1]
+        gamma[:, k] = curve_data[:, k * 4 + 0] / 100.0  # percent --> 1
+        GGmax[:, k] = curve_data[:, k * 4 + 1]
 
     gamma_ = np.geomspace(1e-6, 0.1, num=nr)  # unit: 1
     GGmax_ = np.zeros((nr, n_ma))
     damping_ = np.zeros((nr, n_ma))
 
-    #-------------- Curve-fitting, layer by layer -----------------------------
+    # -------------- Curve-fitting, layer by layer -----------------------------
     def func(x, beta, gamma_ref, s):
         return 1.0 / (1 + beta * (x / gamma_ref)**s)
 
@@ -362,7 +362,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
 
     param = np.column_stack((ref_strain, np.zeros(n_ma), s_value, beta))
 
-    #------------ Calculate the fitted curve ----------------------------------
+    # ------------ Calculate the fitted curve ----------------------------------
     for k in range(n_ma):
         param_k = param[k, :]
         T_MKZ = tau_MKZ(
@@ -375,7 +375,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
         GGmax_k = sr.calc_GGmax_from_stress_strain(gamma_, T_MKZ, Gmax=1.0)
         GGmax_[:, k] = GGmax_k
 
-    #------------ Plotting ----------------------------------------------------
+    # ------------ Plotting ----------------------------------------------------
     if show_fig:
         ncol = 4
         nrow = int(np.ceil(n_ma / ncol))
@@ -403,7 +403,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
         # END FOR
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
 
-    #---------- Produce fitting curves ----------------------------------------
+    # ---------- Produce fitting curves ----------------------------------------
     for k in range(n_ma):
         fitted_curves[:, k * 4 + 0] = gamma_ * 100
         fitted_curves[:, k * 4 + 1] = GGmax_[:, k]

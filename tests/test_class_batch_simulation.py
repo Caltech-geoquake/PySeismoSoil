@@ -27,7 +27,8 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
             Batch_Simulation([])
 
     def test_init__case_3_wrong_type(self):
-        with self.assertRaisesRegex(TypeError, 'Elements of `list_of_simulations` should be of type'):
+        msg = 'Elements of `list_of_simulations` should be of type'
+        with self.assertRaisesRegex(TypeError, msg):
             Batch_Simulation([1, 2, 3])
 
     def test_init__case_4_inhomogeneous_element_type(self):

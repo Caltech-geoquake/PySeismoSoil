@@ -3,6 +3,8 @@ import scipy.fftpack
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+from numba import jit
+
 from . import helper_generic as hlp
 from . import helper_signal_processing as sig
 
@@ -141,7 +143,7 @@ def query_Vs_at_depth(vs_profile, depth):
     is_sorted : bool
         Whether ``depth`` is sorted (ascending).
     """
-    #------------- Check input type, input value, etc. ------------------------
+    # ------------- Check input type, input value, etc. ------------------------
     if isinstance(depth, (int, float, np.number)):
         is_scalar = True
         depth = np.array([depth])
@@ -165,7 +167,7 @@ def query_Vs_at_depth(vs_profile, depth):
     hlp.check_two_column_format(vs_profile, at_least_two_columns=True,
                                 name='`vs_profile`')
 
-    #------------------ Start querying ----------------------------------------
+    # ------------------ Start querying ----------------------------------------
     thk_ref = vs_profile[:, 0]
     vs_ref  = vs_profile[:, 1]
     dep_ref = thk2dep(thk_ref, midpoint=False)
@@ -261,10 +263,14 @@ def plot_motion(
         The axes objects of the three subplots.
     """
     if isinstance(accel, str):
-        if not title: title = accel
+        if not title:
+            title = accel
+        # END
         accel = np.loadtxt(accel)
     elif isinstance(accel, np.ndarray):
-        if title is None: title = 'Ground motion'
+        if title is None:
+            title = 'Ground motion'
+        # END
     else:
         raise TypeError('"accel" must be a str or a 2-columned numpy array.')
 
@@ -276,7 +282,7 @@ def plot_motion(
     PGA = np.max(np.abs(a))
     pga_index = np.argmax(np.abs(a))
 
-    v, u = num_int(np.column_stack((t,a)))
+    v, u = num_int(np.column_stack((t, a)))
 
     fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
     fig.subplots_adjust(left=0.2)
@@ -295,7 +301,7 @@ def plot_motion(
     ax1 = fig.add_subplot(311)
     ax1.plot(t, a, 'b', linewidth=lw)
     ax1.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
-    t_ = t[int(np.min((pga_index + np.round(np.size(t)/40.), np.size(t))))]
+    t_ = t[int(np.min((pga_index + np.round(np.size(t) / 40.), np.size(t))))]
     ax1.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
     ax1.grid(ls=':')
     ax1.set_xlim(np.min(t), np.max(t))
@@ -408,8 +414,8 @@ def find_f0(x):
     current_flag = 0  # 1 means d(ampl)/d(freq) > 0; -1 means < 0
     previous_flag = 1
 
-    for i in range(l-1):
-        incre = ampl[i+1] - ampl[i]
+    for i in range(l - 1):
+        incre = ampl[i + 1] - ampl[i]
         if incre > 0:
             current_flag = 1
         elif incre == 0:
@@ -422,8 +428,8 @@ def find_f0(x):
 
         previous_flag = current_flag
 
-    if i == l-2:  # if the loop above finishes without breaking
-        i = i+1
+    if i == l - 2:  # if the loop above finishes without breaking
+        i = i + 1
 
     f0 = freq[i]
 
@@ -487,11 +493,11 @@ def response_spectra(
 
     hlp.check_two_column_format(accel, name='`accel`')
 
-    t = accel[::subsample_interval,0]
-    a = accel[::subsample_interval,1]
+    t = accel[::subsample_interval, 0]
+    a = accel[::subsample_interval, 1]
 
-    t_shift = np.roll(t,1)
-    if not np.all((t-t_shift)[1:] - (t-t_shift)[1] < 1e-7):
+    t_shift = np.roll(t, 1)
+    if not np.all((t - t_shift)[1:] - (t - t_shift)[1] < 1e-7):
         raise ValueError('Time array within "accel" must be evenly spaced.')
 
     dt = float(t[1] - t[0])
@@ -500,7 +506,7 @@ def response_spectra(
     Tn = np.logspace(np.log10(T_min), np.log10(T_max), n_pts)
     wn = 2. * np.pi / Tn   # [rad/sec] Natural freq
     xi = damping     # damping ratio in decimal
-    wd = wn * np.sqrt(1. - xi**2.)  # damped freq.
+    wd = wn * np.sqrt(1. - xi ** 2.)  # damped freq.
 
     len_wd = len(wd)
     u_max = np.zeros(len_wd)
@@ -510,16 +516,16 @@ def response_spectra(
     PSA = np.zeros(len_wd)
 
     # A, B, C, and D in Table 5.2.1, page 169
-    A = np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt)+np.cos(wd*dt))
-    B = np.exp(-xi*wn*dt)*(1./wd*np.sin(wd*dt))
-    C = 1./wn**2.*(2.*xi/wn/dt + np.exp(-xi*wn*dt)*(((1.-2.*xi**2.)/wd/dt-xi/np.sqrt(1.-xi**2.))*np.sin(wd*dt) - (1+2.*xi/wn/dt)*np.cos(wd*dt)))
-    D = 1./wn**2.*(1 - 2.*xi/wn/dt + np.exp(-xi*wn*dt)*((2.*xi**2.-1)/wd/dt*np.sin(wd*dt)+2.*xi/wn/dt*np.cos(wd*dt)))
+    A = np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt)+np.cos(wd*dt))  # noqa: E226,E501
+    B = np.exp(-xi*wn*dt)*(1./wd*np.sin(wd*dt))  # noqa: E226,E501
+    C = 1./wn**2.*(2.*xi/wn/dt + np.exp(-xi*wn*dt)*(((1.-2.*xi**2.)/wd/dt-xi/np.sqrt(1.-xi**2.))*np.sin(wd*dt) - (1+2.*xi/wn/dt)*np.cos(wd*dt)))  # noqa: E226,E501
+    D = 1./wn**2.*(1 - 2.*xi/wn/dt + np.exp(-xi*wn*dt)*((2.*xi**2.-1)/wd/dt*np.sin(wd*dt)+2.*xi/wn/dt*np.cos(wd*dt)))  # noqa: E226,E501
 
     # A', B', C', and D' in Table 5.2.1, page 169
-    A_ = -np.exp(-xi*wn*dt)*(wn/np.sqrt(1.-xi**2.)*np.sin(wd*dt))
-    B_ = np.exp(-xi*wn*dt)*(np.cos(wd*dt) - xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt))
-    C_ = 1./wn**2.*(-1./dt + np.exp(-xi*wn*dt)*((wn/np.sqrt(1.-xi**2.)+xi/dt/np.sqrt(1.-xi**2.))*np.sin(wd*dt)+1./dt*np.cos(wd*dt)))
-    D_ = 1./wn**2./dt*(1 - np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt) + np.cos(wd*dt)))
+    A_ = -np.exp(-xi*wn*dt)*(wn/np.sqrt(1.-xi**2.)*np.sin(wd*dt))  # noqa: E226,E501
+    B_ = np.exp(-xi*wn*dt)*(np.cos(wd*dt) - xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt))  # noqa: E226,E501
+    C_ = 1./wn**2.*(-1./dt + np.exp(-xi*wn*dt)*((wn/np.sqrt(1.-xi**2.)+xi/dt/np.sqrt(1.-xi**2.))*np.sin(wd*dt)+1./dt*np.cos(wd*dt)))  # noqa: E226,E501
+    D_ = 1./wn**2./dt*(1 - np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt) + np.cos(wd*dt)))  # noqa: E226,E501
 
     if parallel:
         p = mp.Pool(n_cores)
@@ -559,7 +565,7 @@ def response_spectra(
     PSA = np.array(PSA)      # (Total) pseudo-spectral acceleration
     PSV = np.array(PSV)      # (Relative) pseudo-spectral velocity
 
-    fn = 1./Tn
+    fn = 1. / Tn
 
     if show_fig:
         plt.figure(figsize=(8, 4))
@@ -590,8 +596,6 @@ def response_spectra(
     return Tn, SA, PSA, SV, PSV, SD, fn
 
 
-from numba import jit
-
 @jit(nopython=True, nogil=True)
 def _time_stepping(para):
     """ Helper function for response_spectra() """
@@ -599,18 +603,18 @@ def _time_stepping(para):
 
     u_ = np.zeros(len_a)
     ud_ = np.zeros(len_a)
-    for j in range(len_a-1):
-        u_[j+1] = u_[j]*A[i] + ud_[j]*B[i] + (-1)*a[j]*C[i] + (-1)*a[j+1]*D[i]
-        ud_[j+1] = u_[j]*A_[i] + ud_[j]*B_[i] + (-1)*a[j]*C_[i] + (-1)*a[j+1]*D_[i]
+    for j in range(len_a - 1):
+        u_[j+1] = u_[j]*A[i] + ud_[j]*B[i] + (-1)*a[j]*C[i] + (-1)*a[j+1]*D[i]  # noqa: E226
+        ud_[j+1] = u_[j]*A_[i] + ud_[j]*B_[i] + (-1)*a[j]*C_[i] + (-1)*a[j+1]*D_[i]  # noqa: E226
 
-    udd_ = -(2.*wn[i]*xi*ud_+wn[i]**2.*u_+a)
+    udd_ = -(2. * wn[i] * xi * ud_ + wn[i] ** 2. * u_ + a)
     utdd_ = udd_ + a
 
     u_max = np.max(np.abs(u_))
     ud_max = np.max(np.abs(ud_))
     utdd_max = np.max(np.abs(utdd_))
-    PSV = u_max*wn[i]
-    PSA = PSV*wn[i]
+    PSV = u_max * wn[i]
+    PSA = PSV * wn[i]
 
     return utdd_max, ud_max, u_max, PSA, PSV
 
@@ -670,11 +674,10 @@ def get_xi_rho(Vs, formula_type=3):
             else:
                 xi[i] = 0.01
     elif formula_type == 2:
-        Vs_ = Vs/1000.0  # unit conversion: from m/s to km/s
-        Qs = 10.5 - 16*Vs_ + 153*Vs_**2. - 103*Vs_**3. + 34.7*Vs_**4. \
-             - 5.29*Vs_**5. + 0.31*Vs_**6.
-        Qs[np.where(Qs==0)] = 0.5  # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0
-        xi = 1.0 / (2.0*Qs)
+        Vs_ = Vs / 1000.0  # unit conversion: from m/s to km/s
+        Qs = 10.5 - 16*Vs_ + 153*Vs_**2. - 103*Vs_**3. + 34.7*Vs_**4. - 5.29*Vs_**5. + 0.31*Vs_**6.  # noqa: E501, E226
+        Qs[np.where(Qs == 0)] = 0.5  # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501, E226
+        xi = 1.0 / (2.0 * Qs)
     elif formula_type == 3:
         for i in range(nr):
             if Vs[i] <= 1000:
@@ -683,7 +686,7 @@ def get_xi_rho(Vs, formula_type=3):
                 Qs[i] = 0.14 * Vs[i]
             else:
                 Qs[i] = 0.16 * Vs[i]
-        xi = 1.0 / (2.0*Qs)
+        xi = 1.0 / (2.0 * Qs)
 
     for i in range(nr):
         if Vs[i] < 200:
@@ -749,11 +752,11 @@ def calc_VsZ(profile, Z, option_for_profile_shallower_than_Z=1, verbose=False):
                     f"Assume last Vs value goes down to {Z:.2f} m."
                 )
             cumul_sl = cumul_sl + sl[-1] * (Z - total_thickness)
-            VsZ = float(Z)/cumul_sl
+            VsZ = float(Z) / cumul_sl
         else:
-            VsZ = float(Z)/cumul_sl
+            VsZ = float(Z) / cumul_sl
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth
-        VsZ = np.min([total_thickness,Z])/float(cumul_sl)  # use actual depth
+        VsZ = np.min([total_thickness, Z]) / float(cumul_sl)  # use actual depth
 
     return VsZ
 
@@ -869,9 +872,10 @@ def plot_Vs_profile(
     ax.set_ylim(zmax, 0)  # reversed Y axis
     ax.set_xlabel('Shear-wave velocity [m/s]', fontsize=12)
     ax.set_ylabel('Depth [m]', fontsize=12)
-    ax.grid(color=[0.5]*3, ls=':', lw=.5)
+    ax.grid(color=[0.5] * 3, ls=':', lw=.5)
     ax.set_axisbelow(True)  # put grid line below data lines
-    if title: ax.set_title(title)
+    if title:
+        ax.set_title(title)
 
     if int(mpl.__version__[0]) <= 1:  # if matplotlib version is earlier than 2.0.0
         ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(nbins=7, integer=True))
@@ -963,10 +967,10 @@ def _gen_profile_plot_array(thk, vs, zmax):
 
     dep = thk2dep(thk)
 
-    for i in range(2*N):
-        x[i] = vs[i//2]  # results look like [0,0,1,1,2,2,3,3, ...]
-        if i+1 < 2*N:
-            y[i] = dep[(i+1)//2]  # results look like [0,1,1,2,2,3,3, ...]
+    for i in range(2 * N):
+        x[i] = vs[i // 2]  # results look like [0,0,1,1,2,2,3,3, ...]
+        if i + 1 < 2 * N:
+            y[i] = dep[(i + 1) // 2]  # results look like [0,1,1,2,2,3,3, ...]
         else:
             y[i] = zmax
 
@@ -993,19 +997,19 @@ def thk2dep(thk, midpoint=False):
     hlp.assert_1D_numpy_array(thk, name='`thk`')
 
     L = len(thk)
-    z_top = np.zeros(L) # create an array with same length as h
+    z_top = np.zeros(L)  # create an array with same length as h
     z_mid = np.zeros(L)
 
-    for i in range(1,L):  # the first element of 'z_top' remains zero
-        z_top[i] = z_top[i-1] + thk[i-1]  # the last element of 'thk' is not used at all
-        z_mid[i-1] = z_top[i-1] + thk[i-1]/2.0  # the last element of 'z_mid' is NaN
+    for i in range(1, L):  # the first element of 'z_top' remains zero
+        z_top[i] = z_top[i - 1] + thk[i - 1]  # the last element of 'thk' is not used at all
+        z_mid[i - 1] = z_top[i - 1] + thk[i - 1] / 2.0  # the last element of 'z_mid' is NaN
 
     if thk[-1] == 0:  # if the last layer thickness is unknown
         z_mid = z_mid[:-1]
     else:  # if known
-        z_mid[-1] = z_top[-1] + thk[-1]/2.0
+        z_mid[-1] = z_top[-1] + thk[-1] / 2.0
 
-    if midpoint == False:
+    if not midpoint:
         return z_top
     else:
         return z_mid
@@ -1038,8 +1042,8 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
 
     h = np.zeros(len(depth_array_starting_from_0))
 
-    for i in range(len(h)-1):
-        h[i] = depth_array_starting_from_0[i+1] - depth_array_starting_from_0[i]
+    for i in range(len(h) - 1):
+        h[i] = depth_array_starting_from_0[i + 1] - depth_array_starting_from_0[i]
 
     if include_halfspace:
         return h
@@ -1104,9 +1108,9 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     h_length = len(h)
 
     vs_star = np.multiply(Vs, np.sqrt(1 + 2 * 1j * xi))
-    alpha_star = np.zeros(h_length - 1, dtype = np.complex_)
-    for k in range(h_length-1):
-        alpha_star[k] = float(rho[k]) * vs_star[k] / (rho[k+1] * vs_star[k+1])
+    alpha_star = np.zeros(h_length - 1, dtype=np.complex_)
+    for k in range(h_length - 1):
+        alpha_star[k] = float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
 
     TF_size = int(np.floor_divide(fmax, freq_resolution))  # length of transfer function
     freq_array = np.linspace(freq_resolution, freq_resolution * TF_size, num=TF_size)
@@ -1114,12 +1118,12 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     TF_ro = np.ones(TF_size, dtype=np.complex_)
     TF_in = np.ones(TF_size, dtype=np.complex_)
     TF_bh = np.ones(TF_size, dtype=np.complex_)
-    j_index = np.arange(h_length-2, -1, -1)
+    j_index = np.arange(h_length - 2, -1, -1)
 
     for i, f in enumerate(freq_array):
         omega = 2 * np.pi * f
         k_star = np.divide(omega, vs_star)
-        D = np.zeros(2 * 2 * (h_length-1), dtype=np.complex_).reshape(2, 2, h_length-1)
+        D = np.zeros(2 * 2 * (h_length - 1), dtype=np.complex_).reshape(2, 2, h_length - 1)
         E = np.zeros(4, dtype=np.complex_).reshape(2, 2)
         E[0, 0] = 1
         E[1, 1] = 1
@@ -1129,9 +1133,9 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
             D[1, 0, j] = .5 * ((1 - alpha_star[j]) * np.exp(1j * k_star[j] * h[j]))
             D[1, 1, j] = .5 * ((1 + alpha_star[j]) * np.exp(-1j * k_star[j] * h[j]))
             E = np.dot(E, D[:, :, j])
-        TF_ro[i] = 1./(E[0, 0] + E[0, 1])
-        TF_in[i] = 2./(E[0, 0] + E[0, 1])
-        TF_bh[i] = 2./(E[0, 0] + E[1, 0] + E[0, 1] + E[1, 1])
+        TF_ro[i] = 1. / (E[0, 0] + E[0, 1])
+        TF_in[i] = 2. / (E[0, 0] + E[0, 1])
+        TF_bh[i] = 2. / (E[0, 0] + E[1, 0] + E[0, 1] + E[1, 1])
     AF_ro = np.absolute(TF_ro)
     AF_in = np.absolute(TF_in)
     AF_bh = np.absolute(TF_bh)
@@ -1143,7 +1147,7 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     if show_fig:
         xSize = 12
         ySize = 6
-        fig = plt.figure(figsize=(xSize,ySize),edgecolor='k',facecolor='w')
+        fig = plt.figure(figsize=(xSize, ySize), edgecolor='k', facecolor='w')
 
         x_limits = [0, fmax]
         x_limits_log = [1e-1, fmax]
@@ -1397,34 +1401,34 @@ def amplify_motion(
     #          ifft of the product of the two is real valued.
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    #-----------Create "double-sided" transfer function---------------
+    # -----------Create "double-sided" transfer function---------------
     if n % 2 == 1:
         tf_append = np.flipud(tf_ss[1:half_n])
         tf_append = np.conj(tf_append)
     else:
-        tf_append = np.flipud(tf_ss[1:half_n-1])
+        tf_append = np.flipud(tf_ss[1:half_n - 1])
         tf_append = np.conj(tf_append)
 
     tf_ds = np.append(tf_ss, tf_append)  # should have identical length as 'a'
 
-    #------------Fourier spectrum of the input motion-----------------
+    # ------------Fourier spectrum of the input motion-----------------
     if taper:
         a_tapered = sig.taper_Tukey(a)
     else:
         a_tapered = a
     A = scipy.fftpack.fft(a_tapered)
 
-    #------------Multiplication---------------------------------------
+    # ------------Multiplication---------------------------------------
     if not deconv:
         RESP = A * tf_ds
     else:
         RESP = A / tf_ds
 
-    #---------Inverse Fourier transform to get the response time history------
+    # ---------Inverse Fourier transform to get the response time history------
     resp = scipy.fftpack.ifft(RESP).real  # truncate imaginary part (very small)
     response = np.column_stack((t, resp))
 
-    #---------Plot comparisons-------------------
+    # ---------Plot comparisons-------------------
     if show_fig:
         accel_in = np.column_stack((t, a))
         accel_out = np.column_stack((t, resp))
@@ -1446,7 +1450,7 @@ def amplify_motion(
     else:
         return response, fig, ax
 
-#%%----------------------------------------------------------------------------
+
 def linear_site_resp(
         soil_profile,
         input_motion,
@@ -1513,7 +1517,7 @@ def linear_site_resp(
 
     df, fmax, _, _, _ = _get_freq_interval(input_motion)
 
-    #---------Get linear transfer function (complex valued)--------------
+    # ---------Get linear transfer function (complex valued)--------------
     factor = 1.05  # to ensure f_max of TF >= f_max inferred from `input_motion`
     fmax_ = fmax * factor
     df_ = df * factor  # to ensure consistent length of the output freq array
@@ -1595,7 +1599,7 @@ def _plot_site_amp(
         hlp.assert_1D_numpy_array(freq, name='`freq`')
     else:
         amplif_func_1col = None  # set all to `None` to avoid potential errors
-        amplif_func_1col_smoothed =None
+        amplif_func_1col_smoothed = None
         phase_func_1col = None
     if amplif_func_1col is not None:
         hlp.assert_1D_numpy_array(amplif_func_1col, name='`amplif_func_1col`')
@@ -1800,8 +1804,8 @@ def _get_freq_interval(input_motion):
     """
     hlp.check_two_column_format(input_motion, name='`input_motion`')
 
-    t = input_motion[:,0]
-    a = input_motion[:,1]
+    t = input_motion[:, 0]
+    a = input_motion[:, 1]
 
     if len(a) <= 1:
         raise ValueError(
@@ -1810,14 +1814,14 @@ def _get_freq_interval(input_motion):
         )
 
     dt = float(t[1] - t[0])  # sampling time interval
-    fs = 1.0/dt  # sampling freq
+    fs = 1.0 / dt  # sampling freq
     n = len(a)
-    df = fs/float(n)  # freq resolution
+    df = fs / float(n)  # freq resolution
 
     if n % 2 == 1:
-        half_n = int(np.ceil(n/2.0))
+        half_n = int(np.ceil(n / 2.0))
     else:
-        half_n = int(n/2.0 + 1)
+        half_n = int(n / 2.0 + 1)
 
     fmax = half_n * df
     f_array = np.linspace(df, fmax, num=half_n)
@@ -1875,13 +1879,13 @@ def robust_unwrap(signal, discont=3.141592653589793):
     n = len(signal)
     signal_ = signal.copy()
 
-    #-------1. Find anomalies (peaks and troughs that are too far apart)-------
+    # -------1. Find anomalies (peaks and troughs that are too far apart)-------
     trough = -1  # to store index of trough point
     peak = -1    # to store index of peak point
     drawer = []  # to keep pairs of (trough, peak) that are 1+ apart in location
     flag = 0
     for i in range(1, n):
-        if signal[i] <= signal[i-1]:  # trend is decreasing
+        if signal[i] <= signal[i - 1]:  # trend is decreasing
             if flag == 1:  # just starts to dip from a previous climb
                 flag = 0
                 if peak > trough + 1:  # only keep such anomalies
@@ -1891,7 +1895,7 @@ def robust_unwrap(signal, discont=3.141592653589793):
             peak = i
             flag = 1
 
-    #--------2. Move in-between points into (signal[trough], -3.1415927]-------
+    # --------2. Move in-between points into (signal[trough], -3.1415927]-------
     for pair in drawer:
         i1, i2 = pair
         length = i2 - i1 - 1
@@ -1964,9 +1968,9 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
     area[0] = 0.5 * (strain[0] * G_Gmax[0]) * strain[0]
     damping[0] = 2. / np.pi * (2. * area[0] / G_Gmax[0] / strain[0]**2 - 1)
     for i in range(1, n):
-        area[i] = area[i-1] + 0.5 * (
-                strain[i-1] * G_Gmax[i-1] + strain[i] * G_Gmax[i]
-        ) * (strain[i] - strain[i-1])
+        area[i] = area[i - 1] + 0.5 * (
+            strain[i - 1] * G_Gmax[i - 1] + strain[i] * G_Gmax[i]
+        ) * (strain[i] - strain[i - 1])
         damping[i] = 2. / np.pi * (2 * area[i] / G_Gmax[i] / strain[i]**2 - 1)
 
     damping = np.maximum(damping, 0.0)  # make sure all damping values are >= 0
@@ -2417,7 +2421,7 @@ def ga_optimization(
             try:
                 return [random.uniform(a, b) for a, b in zip(low, up)]
             except TypeError:
-                return [random.uniform(a, b) for a, b in zip([low]*size, [up]*size)]
+                return [random.uniform(a, b) for a, b in zip([low] * size, [up] * size)]
 
         LB = lower_bound
         UB = upper_bound
@@ -2438,7 +2442,7 @@ def ga_optimization(
         )
         toolbox.register(
             "mutate", deap.tools.mutPolynomialBounded,
-            low=LB, up=UB, eta=eta, indpb=1.0/n_param,
+            low=LB, up=UB, eta=eta, indpb=1.0 / n_param,
         )
         toolbox.register("select", deap.tools.selTournament, tournsize=10)
 

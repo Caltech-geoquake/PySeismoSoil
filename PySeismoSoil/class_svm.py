@@ -5,6 +5,7 @@ from scipy.optimize import fsolve
 from .class_Vs_profile import Vs_Profile
 from . import helper_site_response as sr
 
+
 class SVM:
     """
     Class implementation for the Sediment Velocity Model (SVM).
@@ -106,9 +107,9 @@ class SVM:
         p2 = 0.5182
         p3 = 69.452
 
-        #q1 = 8.4562e-09
-        #q2 = 2.9981
-        #q3 = 0.03073
+        # q1 = 8.4562e-09
+        # q2 = 2.9981
+        # q3 = 0.03073
 
         r1 = -59.67  # updated on 2018/1/2: improved curve fitting accuracy for k_
         r2 = -0.2722
@@ -123,83 +124,112 @@ class SVM:
             z1 = sr.calc_z1_from_Vs30(target_Vs30)
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
-            Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
-            vs_profile = np.array([[z1,Vs0_],[0.0, 1000.0]])  # just one layer
+            Vs0_ = p1 * target_Vs30 ** 2.0 + p2 * target_Vs30 + p3
+            vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])  # just one layer
         else:  # this is most of the cases...
             Vs30 = target_Vs30
             iteration_flag = True
 
             while iteration_flag is True:
                 # --------  Calculate analytical Vs profile from Vs30  ---------
-                Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
+                Vs0_ = p1 * Vs30 ** 2.0 + p2 * Vs30 + p3
 
-                k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
-                n_ = np.max([1.0, s1*np.exp(s2*Vs30) + s3*np.exp(s4*Vs30)])
+                k_ = np.exp(r1 * Vs30 ** r2 + r3)  # updated on 2018/1/2
+                n_ = np.max([1.0, s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30)])
 
-                z_array_analyt = np.arange(0.0, z1-thk_addl_layer, thk) # depth array
-                th_array_analyt = sr.dep2thk(z_array_analyt) # thickness array (for analytical Vs)
-                Vs_analyt = Vs0_ * (1. + k_ * z_array_analyt)**(1./n_)  # analytical Vs ( = Vs0*(1+k*z)^(1/n) )
+                z_array_analyt = np.arange(0.0, z1 - thk_addl_layer, thk)  # depth array
+                th_array_analyt = sr.dep2thk(z_array_analyt)  # thickness array (for analytical Vs)
+                Vs_analyt = Vs0_ * (1. + k_ * z_array_analyt)**(1. / n_)  # analytical Vs ( = Vs0*(1+k*z)^(1/n) )  # noqa: E501
 
-                array1 = np.array([thk_addl_layer,Vs_analyt[0]])  # the homogeneous layer with Vs = Vs0
-                array2 = np.column_stack((th_array_analyt,Vs_analyt))  # the other layers (i.e., Vs = Vs0*(1+k*z)^(1/n) )
-                temp_Vs_profile = np.row_stack((array1,array2))  # stack the homogeneous layer on top
+                # the homogeneous layer with Vs = Vs0:
+                array1 = np.array([thk_addl_layer, Vs_analyt[0]])
 
-                if iterate == False:
+                # the other layers (i.e., Vs = Vs0*(1+k*z)^(1/n) )
+                array2 = np.column_stack((th_array_analyt, Vs_analyt))
+
+                # stack the homogeneous layer on top
+                temp_Vs_profile = np.row_stack((array1, array2))
+
+                if iterate is False:
                     iteration_flag = False  # abort while loop after only one run
                 else:
                     # -------  Check if actual Vs30 matches target Vs30 -----------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)  # calculate "actual" Vs30
                     if verbose is True:  # print iteration progress
-                        print('  %.1f --> %.1f |' % (actual_Vs30,target_Vs30),end='')
+                        print('  %.1f --> %.1f |' % (actual_Vs30, target_Vs30), end='')
 
-                    if target_Vs30-10 <= actual_Vs30 <= target_Vs30+10: # within +/- 10 m/s of targer_Vs30
+                    if target_Vs30 - 10 <= actual_Vs30 <= target_Vs30 + 10:
                         iteration_flag = False  # end iteration
                         if verbose is True:
                             print('|')
                     else:
-                        Vs30_temp = Vs30 - (actual_Vs30 - target_Vs30)/5.0  # update the "trial Vs30" to offset the difference
-                        if (Vs30_temp < 130) or (Vs30_temp > 1000):  # if the "trial Vs30" is out of range
+                        # update the "trial Vs30" to offset the difference
+                        Vs30_temp = Vs30 - (actual_Vs30 - target_Vs30) / 5.0
+
+                        # if the "trial Vs30" is out of range
+                        if (Vs30_temp < 130) or (Vs30_temp > 1000):
                             iteration_flag = False  # end iteration
                             if verbose is True:
                                 print('')
                         else:
                             Vs30 = Vs30_temp  # use the "trial Vs30" as the new Vs30
-                    ## END OF ACTUAL_VS30 WITHIN [TARGET_VS30-10, TARGER_VS30+10] CHECK
+                    # END OF ACTUAL_VS30 WITHIN [TARGET_VS30-10, TARGER_VS30+10] CHECK
 
-            ## END OF WHILE LOOP (ITERATION UNTIL CONVERGENCE)
+            # END OF WHILE LOOP (ITERATION UNTIL CONVERGENCE)
 
-            array1 = np.array([thk_addl_layer,Vs_analyt[0]])  # the homogeneous layer with Vs = Vs0
-            array2 = np.column_stack((th_array_analyt,Vs_analyt))  # the other layers (i.e., Vs = Vs0*(1+k*z)^(1/n) )
-            temp_Vs_profile = np.row_stack((array1, array2))  # stack the homogeneous layer on top
+            # the homogeneous layer with Vs = Vs0
+            array1 = np.array([thk_addl_layer, Vs_analyt[0]])
+
+            # the other layers (i.e., Vs = Vs0*(1+k*z)^(1/n) )
+            array2 = np.column_stack((th_array_analyt, Vs_analyt))
+
+            # stack the homogeneous layer on top
+            temp_Vs_profile = np.row_stack((array1, array2))
 
             # ---------   Prepare output variables  ---------------
             if Vs_cap is not False:  # if we need to "cap" the Vs profile somehow
                 if Vs_cap is True:  # if Vs_cap value not specified (i.e., user inputs "True")
                     Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap
 
-                if np.where(Vs_analyt > Vs_cap)[0].size > 0:  # if Vs_analyt eventually exceeds Vs_cap
-                    index_Vs_cap = np.where(Vs_analyt > Vs_cap)[0][0]  # find the index from which Vs_analyt exceeds Vs_cap
+                # if Vs_analyt eventually exceeds Vs_cap
+                if np.where(Vs_analyt > Vs_cap)[0].size > 0:
+                    # find the index from which Vs_analyt exceeds Vs_cap
+                    index_Vs_cap = np.where(Vs_analyt > Vs_cap)[0][0]
                 else:
                     index_Vs_cap = np.nan  # use NaN to denote the alternative situation
 
-                end_index = len(Vs_analyt)  # total number of layers in the smooth profile (i.e., Vs_analyt)
+                # total number of layers in the smooth profile (i.e., Vs_analyt)
+                end_index = len(Vs_analyt)
 
                 if not np.isnan(index_Vs_cap):  # if index_Vs_cap is not NaN
-                    idx_eta_Vs_cap = np.where(Vs_analyt > Vs_cap*eta)[0][0]  # where Vs_analyt exceeds eta*Vs_cap
-                    for i in range(idx_eta_Vs_cap,end_index):  # change Vs value where Vs > eta*Vs_cap
-                        Vs_analyt[i] = Vs_cap * eta + Vs_cap * (1 - eta) / \
-                                       (end_index-idx_eta_Vs_cap) * (i-idx_eta_Vs_cap)
-                            # linearly distribute Vs increment from eta*Vs_cap to Vs_cap
+                    # where Vs_analyt exceeds eta*Vs_cap
+                    idx_eta_Vs_cap = np.where(Vs_analyt > Vs_cap * eta)[0][0]
 
-                array3 = np.append(th_array_analyt[:-1],0.0)  # thickness (including a 0-m "phantom" layer)
-                array4 = np.append(Vs_analyt[:-1],Vs_cap)  # Vs ("phantom" layer has Vs = Vs_cap)
-                array5 = np.column_stack((array3, array4))  # place thickness and Vs side by side
-                vs_profile = np.row_stack((array1, array5))  # stack additional layer on top
+                    # change Vs value where Vs > eta * Vs_cap
+                    for i in range(idx_eta_Vs_cap, end_index):
+                        # linearly distribute Vs increment from eta*Vs_cap to Vs_cap
+                        Vs_analyt[i] = (
+                            Vs_cap * eta + Vs_cap * (1 - eta) /
+                            (end_index - idx_eta_Vs_cap) * (i - idx_eta_Vs_cap)
+                        )
+                    # END
+
+                # thickness (including a 0-m "phantom" layer)
+                array3 = np.append(th_array_analyt[:-1], 0.0)
+
+                # Vs ("phantom" layer has Vs = Vs_cap)
+                array4 = np.append(Vs_analyt[:-1], Vs_cap)
+
+                # place thickness and Vs side by side
+                array5 = np.column_stack((array3, array4))
+
+                # stack additional layer on top
+                vs_profile = np.row_stack((array1, array5))
             else:   # if Vs profile is not to be capped
                 vs_profile = np.copy(temp_Vs_profile)
-            ## END OF VS_CAP TRUE/FALSE CHECKING
+            # END OF VS_CAP TRUE/FALSE CHECKING
 
-        ## END OF "IF Z1000 <= 2.5" CHECK
+        # END OF "IF Z1000 <= 2.5" CHECK
 
         # ----------  Show figure  -----------------
         if show_fig is True:
@@ -433,7 +463,8 @@ class SVM:
         else:
             iterate = True
             counter = 0
-            if verbose: print('Iterating for compliant Vs profile:')
+            if verbose:
+                print('Iterating for compliant Vs profile:')
             while iterate:
                 seed_ = None if seed is None else seed + counter
                 options.update(dict(seed=seed_, show_fig=False))
@@ -451,7 +482,8 @@ class SVM:
 
                 if condition_1 and condition_2 and condition_3:
                     iterate = False
-                    if verbose: print('')
+                    if verbose:
+                        print('')
                 else:
                     iterate = True
                     counter += 1
@@ -495,11 +527,11 @@ class SVM:
         Vs_profile : np.ndarray
             The randomzed Vs profile.
         """
-        if seed == None:
+        if seed is None:
             cc = time.localtime(time.time())
             seed = cc[5] * 1e7
 
-        seed = int(seed) # convert seed_value into int (for robustness)
+        seed = int(seed)  # convert seed_value into int (for robustness)
         np.random.seed(int(seed))
 
         # --------------  Part 1. Soil Layering Randomization  -------------
@@ -521,24 +553,38 @@ class SVM:
                 thk_rand = -1
                 while thk_rand <= 0:  # to ensure thickness is always positive
                     thk_rand = np.random.poisson(lamda_)  # draw random sample
+                # END
             else:
-                func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])
+                func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fsolve() properly converges
-                        mean_thk, info, ier, msg \
-                            = fsolve(func, z_top[-1] + 4.0, full_output=True)
+                        mean_thk, info, ier, msg = fsolve(
+                            func, z_top[-1] + 4.0, full_output=True,
+                        )
+                    # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fzero() properly converges
-                        mean_thk, info, ier, msg \
-                            = fsolve(func, z_top[-1] + 4.0, full_output=True)
+                        mean_thk, info, ier, msg = fsolve(
+                            func, z_top[-1] + 4.0, full_output=True,
+                        )
+                    # END
+                # END
+
+                # Take the 0th element because the return value is an array:
+                # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fsolve.html
+                mean_thk = mean_thk[0]
 
                 z_mid_temp = z_top[-1] + mean_thk / 2.0
                 std_thk = 0.951 * z_mid_temp ** 0.628  # Eq (8) of Shi & Asimaki (2018)
-                thk_rand = np.random.normal(mean_thk, std_thk)  # randomized thk based on mean and std
 
-            thk_rand = np.max([thk_rand, 2.0])  # make sure each layer is at least 2 meters thick; too thin layers are not realistic
+                # randomized thickness based on mean and std
+                thk_rand = np.random.normal(mean_thk, std_thk)
+            # END IF
+
+            # make sure each layer is at least 2 meters thick; too thin layers are not realistic
+            thk_rand = np.max([thk_rand, 2.0])
 
             if isinstance(thk_rand, (np.number, float, int)):
                 thk.append(thk_rand)
@@ -547,9 +593,14 @@ class SVM:
             z_mid.append(z_top[-1] + thk_rand / 2.0)
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
+        # END WHILE
 
-        thk[-1] = self.z1 - np.sum(thk[:-1])  # adjust thickness of last layer so that sum(thk) = z1
-        z_mid = sr.thk2dep(np.array(thk), midpoint=True)  # update z_mid because thk has changed (z_top and z_bot are not used below, so no need to update)
+        # adjust thickness of last layer so that sum(thk) = z1
+        thk[-1] = self.z1 - np.sum(thk[:-1])
+
+        # update z_mid because thk has changed
+        # (z_top and z_bot are not used below, so no need to update)
+        z_mid = sr.thk2dep(np.array(thk), midpoint=True)
 
         # ----------------   Part 2   ------------------------------------
         # Calculate baseline Vs profile based on layering & smooth profile
@@ -570,30 +621,31 @@ class SVM:
         ## ******** 3.1. Toro (1995) coefficients *********
         ## ******** These values come from Table 5 of Toro (1995) or Table 2.3
         ## ******** of Kamai, Abrahamson, Silva (2013) PEER report.
-        if self.Vs30 < 180: # site class E
+        if self.Vs30 < 180:  # site class E
             sigma_lnV = 0.37
             rho_0  = 0
             Delta = 5.0
             rho_200 = 0.50
             z_0 = 0
             b = 0.744
-        elif self.Vs30 < 360: # site class D
+        elif self.Vs30 < 360:  # site class D
             sigma_lnV = 0.31
             rho_0 = 0.99
             Delta = 3.9
             rho_200 = 0.98
             z_0 = 0
             b = 0.344
-        elif self.Vs30 < 760: # site class C
+        elif self.Vs30 < 760:  # site class C
             sigma_lnV = 0.27
             rho_0 = 0.97
             Delta = 3.8
             rho_200 = 1.00
             z_0 = 0
             b = 0.293
-        else: # site classes B and A (these values are intended for class B
-              # only, but you can still produce a result for a class A profile.
-              # The result just won't make sense.)
+        else:
+            # Site classes B and A (These values are intended for class B
+            # only, but you can still produce a result for a class A profile.
+            # The result just won't make sense.)
             sigma_lnV = 0.36
             rho_0 = 0.95
             Delta = 3.4
@@ -606,16 +658,19 @@ class SVM:
         #     deviation of Vs, but rather the two parameters of the log-normal
         #     distribution that Vs is assumed to follow.)
         if not use_Toros_std:
-            sigma_lognormal_Vs = -7.769e-10 * Vs_analyt ** 3 \
-                                 + 1.597e-06 * Vs_analyt ** 2 \
-                                 - 0.0008724 * Vs_analyt + 0.4233
+            sigma_lognormal_Vs = (
+                -7.769e-10 * Vs_analyt ** 3 +
+                1.597e-06 * Vs_analyt ** 2 -
+                0.0008724 * Vs_analyt +
+                0.4233
+            )
         else:
-            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape) # page 8 of Toro (1995)
+            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)  # page 8 of Toro (1995)
 
         ## ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
-        np.random.seed([2 * seed]) # specify seed value to random number generator
+        np.random.seed([2 * seed])  # specify seed value to random number generator
 
         for i in range(0, len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
@@ -632,8 +687,10 @@ class SVM:
             if i == 0:  # for the first layer
                 Y[i] = np.random.normal(0, 1, (1, 1))  # generate a 1-by-nr_of_rand_profiles vector
             else:  # for other layers
-                Y[i] = rho_1L * Y[i-1] + \
-                       np.random.normal(0, 1, (1, 1)) * np.sqrt(1 - rho_1L**2)
+                Y[i] = (
+                    rho_1L * Y[i - 1] +
+                    np.random.normal(0, 1, (1, 1)) * np.sqrt(1 - rho_1L ** 2)
+                )
 
             Vs_hat[i] = baseline_Vs[i] * np.exp(Y[i] * sigma_)
 
@@ -665,7 +722,7 @@ class SVM:
                 thk = 1.125 * (z_top + h/2.0)^(0.620)
         """
         thk = np.array(thk)
-        return 1.125 * (z_top + thk/2.0)**0.620 - thk
+        return 1.125 * (z_top + thk / 2.0) ** 0.620 - thk
 
     @staticmethod
     def _find_index_closest(array, value):
@@ -694,7 +751,7 @@ class SVM:
         if array.ndim > 1:
             raise ValueError('`array` must be a 1D numpy array.')
 
-        index = np.nanargmin(np.abs(array-value))
+        index = np.nanargmin(np.abs(array - value))
         closest_value = array[index]
 
         return index, closest_value

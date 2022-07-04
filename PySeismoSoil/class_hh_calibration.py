@@ -5,6 +5,7 @@ from .class_parameters import HH_Param_Multi_Layer
 from . import helper_generic as hlp
 from . import helper_hh_calibration as hhc
 
+
 class HH_Calibration:
     """
     Class implementation of the "HH calibration procedure" (HHC procedure). The
@@ -68,7 +69,8 @@ class HH_Calibration:
         self.GGmax_curves = GGmax_curves
         self.Tmax_profile = Tmax_profile
 
-    def fit(self, show_fig=False, save_fig=False, fig_output_dir=None,
+    def fit(
+            self, show_fig=False, save_fig=False, fig_output_dir=None,
             save_HH_G_file=False, HH_G_file_dir=None, profile_name=None,
             verbose=True,
     ):

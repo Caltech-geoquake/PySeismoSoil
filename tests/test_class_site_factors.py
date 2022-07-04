@@ -81,7 +81,7 @@ class Test_Class_Site_Factors(unittest.TestCase):
         import itertools
         from scipy.interpolate import RegularGridInterpolator
 
-        def f(x,y,z):
+        def f(x, y, z):
             return x + y + z
 
         x = [1, 2]

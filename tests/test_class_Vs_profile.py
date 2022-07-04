@@ -286,12 +286,12 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertAlmostEqual(prof.query_Vs_at_depth(1e9, as_profile=False), 1210.0)
 
         # (5) Test depth at layer interface -- input is an array
-        result = prof.query_Vs_at_depth(np.array([7,8,9]), as_profile=False)
+        result = prof.query_Vs_at_depth(np.array([7, 8, 9]), as_profile=False)
         is_all_close = np.allclose(result, [190, 280, 280])
         self.assertTrue(is_all_close)
 
         # (6) Test depth at ground sufrace and interface
-        result = prof.query_Vs_at_depth(np.array([0,1,2,3]), as_profile=False)
+        result = prof.query_Vs_at_depth(np.array([0, 1, 2, 3]), as_profile=False)
         is_all_close = np.allclose(result, [120, 120, 190, 190])
         self.assertTrue(is_all_close)
 

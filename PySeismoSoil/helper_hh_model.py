@@ -45,7 +45,7 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_FKZ = mu * Gmax * gamma**d / ( 1 + Gmax / Tmax * mu * np.abs(gamma)**d )
+    T_FKZ = mu * Gmax * gamma ** d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
 
     return T_FKZ
 
@@ -73,7 +73,7 @@ def transition_function(gamma, *, a, gamma_t):
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     assert(gamma_t > 0)
     w = 1 - 1. / (1 + np.power(10, -a * (
-            np.log10(np.abs(gamma)/gamma_t) - 4.039 * a**(-1.036)) ))
+        np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036))))
 
     return w
 

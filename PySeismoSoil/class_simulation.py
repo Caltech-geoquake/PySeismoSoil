@@ -107,7 +107,8 @@ class Linear_Simulation(Simulation):
     ----------
     Attributes same as the inputs
     """
-    def run(self, every_layer=True, deconv=False, show_fig=False,
+    def run(
+            self, every_layer=True, deconv=False, show_fig=False,
             save_fig=False, motion_name=None, save_txt=False,
             save_full_time_history=False, output_dir=None, verbose=True,
     ):
@@ -168,7 +169,7 @@ class Linear_Simulation(Simulation):
                 Vs_Profile(new_profile, density_unit='g/cm^3'),
                 max_a_v_d=max_avd,
                 max_strain_stress=max_gt,
-                trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+                trans_func=Frequency_Spectrum(tf, df=freq_array[1] - freq_array[0]),
                 time_history_accel=out_a,
                 time_history_veloc=out_v,
                 time_history_displ=out_d,
@@ -239,7 +240,8 @@ class Equiv_Linear_Simulation(Simulation):
             soil_profile, GGmax_and_damping_curves=GGmax_and_damping_curves,
         )
 
-    def run(self, verbose=True, show_fig=False, save_fig=False,
+    def run(
+            self, verbose=True, show_fig=False, save_fig=False,
             motion_name=None, save_txt=False, save_full_time_history=False,
             output_dir=None,
     ):
@@ -293,7 +295,7 @@ class Equiv_Linear_Simulation(Simulation):
             Vs_Profile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
-            trans_func=Frequency_Spectrum(tf, df=freq_array[1]-freq_array[0]),
+            trans_func=Frequency_Spectrum(tf, df=freq_array[1] - freq_array[0]),
             time_history_accel=out_a,
             time_history_veloc=out_v,
             time_history_displ=out_d,
@@ -351,7 +353,8 @@ class Nonlinear_Simulation(Simulation):
         )
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
-    def run(self, sim_dir=None, motion_name=None, save_txt=False,
+    def run(
+            self, sim_dir=None, motion_name=None, save_txt=False,
             save_full_time_history=True, show_fig=False, save_fig=False,
             remove_sim_dir=False, verbose=True,
     ):
@@ -434,7 +437,7 @@ class Nonlinear_Simulation(Simulation):
             [1.32629E+01, -1.33696E-01, 2.14647E-01],
         ])
 
-        #--------- Re-discretize Vs profile -----------------------------------
+        # --------- Re-discretize Vs profile -----------------------------------
         new_profile = sr.stratify(self.soil_profile.vs_profile)
         new_profile[:, 3] /= 1000.0  # convert to g/cm3 to pass to NLHH
 
@@ -448,12 +451,12 @@ class Nonlinear_Simulation(Simulation):
         t = input_accel[:, 0]
         nt_out = len(t)
 
-        #--------- Create a dummy "curves" for Fortran ------------------------
+        # --------- Create a dummy "curves" for Fortran ------------------------
         mgc, mdc = self.G_param.construct_curves(strain_in_pct=strain_in_pct)
         mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
         curves = mgdc.get_curve_matrix()
 
-        #--------- Prepare tabk.dat file --------------------------------------
+        # --------- Prepare tabk.dat file --------------------------------------
         if hlp.detect_OS() == 'Windows':
             exec_ext = 'exe'
         elif hlp.detect_OS() == 'Darwin':
@@ -468,21 +471,21 @@ class Nonlinear_Simulation(Simulation):
         shutil.copy(os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir)
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
-        #-------- Prepare control.dat file ------------------------------------
+        # -------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
             fp.write(
                 '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f' \
                 % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs)
             )
 
-        #-------- Write data to files for the Fortran kernel to read ----------
+        # -------- Write data to files for the Fortran kernel to read ----------
         np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
         np.savetxt(os.path.join(sim_dir, 'incident.dat'), input_accel)
         np.savetxt(os.path.join(sim_dir, 'curve.dat'), curves)
         np.savetxt(os.path.join(sim_dir, 'HH_G.dat'), self.G_param.serialize_to_2D_array())
         np.savetxt(os.path.join(sim_dir, 'HH_x.dat'), self.xi_param.serialize_to_2D_array())
 
-        #------- Execute Fortran kernel ---------------------------------------
+        # ------- Execute Fortran kernel ---------------------------------------
         cwd = os.getcwd()
         os.chdir(sim_dir)
         if hlp.detect_OS() == 'Windows':
@@ -507,7 +510,7 @@ class Nonlinear_Simulation(Simulation):
         if verbose:
             print('Simulation finished. Now post processing.')
 
-        #------------ Post-process files --------------------------------------
+        # ------------ Post-process files --------------------------------------
         layer_boundary_depth = np.genfromtxt('node_depth.dat').T
         layer_midpoint_depth = np.genfromtxt('layer_depth.dat').T
         out_a = np.genfromtxt('out_a.dat')
@@ -549,7 +552,7 @@ class Nonlinear_Simulation(Simulation):
         )
         os.chdir(cwd)
 
-        #------------ Create sim_results object and plot and/or save ----------
+        # ------------ Create sim_results object and plot and/or save ----------
         sim_results = Simulation_Results(
             self.input_motion,
             Ground_Motion(accel_surface_2col, unit='m'),
