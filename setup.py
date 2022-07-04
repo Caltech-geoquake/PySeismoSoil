@@ -1,10 +1,15 @@
+from pathlib import Path
 from setuptools import setup
 
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='PySeismoSoil',
-    version='v0.4.6',
+    version='v0.4.7',
     description='PySeismoSoil',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author='Jian Shi',
     license='BSD 3',
     url='https://github.com/jsh9/PySeismoSoil',
