@@ -1,16 +1,9 @@
 from setuptools import setup
 
 
-def load_requirements():
-    with open('requirements.txt') as fp:
-        requirements = fp.readlines()
-    # END
-    return [_.strip() for _ in requirements]
-
-
 setup(
     name='PySeismoSoil',
-    version='v0.4.2',
+    version='v0.4.3',
     description='PySeismoSoil',
     author='Jian Shi',
     license='BSD 3',
@@ -19,11 +12,18 @@ setup(
     classifiers=[
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
-    install_requires=load_requirements(),
+    install_requires=[
+        'numpy>=1.11.0',
+        'matplotlib>=2.0.0',
+        'scipy>=1.1.0',
+        'numba>=0.38.0',
+    ],
     python_requires='>=3.6',
     include_package_data=True,
 )
