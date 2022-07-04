@@ -18,6 +18,7 @@ Copyright |copy| 2019, California Institute of Technology, based on research sup
 
 Please carefully read the license `here <https://github.com/jsh9/PySeismoSoil/blob/master/LICENSE>`_ for the terms and conditions of using this library.
 
+
 Authors
 -------
 
@@ -37,6 +38,7 @@ The models and algorithms used in this library mainly come from these research p
 
 4. D. Asimaki, W. Li, J. Steidl, J. Schmedes (2008) "Quantifying nonlinearity susceptibility via site-response modeling uncertainty at three sites in the Los Angeles Basin." *Bulletin of the Seismological Society of America*, 98 (5), 2364-2390. [`URL <http://resolver.caltech.edu/CaltechAUTHORS:20140828-163417572>`_]
 
+
 Installation
 ------------
 
@@ -44,7 +46,7 @@ Install most recent stable version:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/jsh9/PySeismoSoil@v0.4.7
+    pip install PySeismoSoil
 
 Or, install with latest changes (may contain features ahead of the stable version):
 
@@ -53,14 +55,10 @@ Or, install with latest changes (may contain features ahead of the stable versio
     pip install git+https://github.com/jsh9/PySeismoSoil
 
 
-Dependencies
-------------
+Current version
+---------------
 
-* Python: 3.6+
-* matplotlib: 2.0.0+
-* numpy: 1.11.0+
-* scipy: 1.1.0+
-* numba: 0.38.0+
+* v0.4.7
 
 
 API Documentation
@@ -78,7 +76,6 @@ Source code
 https://github.com/jsh9/PySeismoSoil
 
 To report bugs and submit suggestions, please use the `"Issues" section <https://github.com/jsh9/PySeismoSoil/issues>`_ of the GitHub repository.
-
 
 
 Indices and tables
