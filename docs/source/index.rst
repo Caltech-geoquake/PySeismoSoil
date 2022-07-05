@@ -62,7 +62,7 @@ Full API documentation
    modules
 
 
-GitHub Homepage
+GitHub homepage
 ---------------
 
 https://github.com/jsh9/PySeismoSoil
