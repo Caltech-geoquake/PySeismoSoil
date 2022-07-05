@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-PySeismoSoil Documentation (2)
-==============================
+PySeismoSoil Documentation
+==========================
 
 PySeismoSoil is a Python library for performing 1D seismic site response analysis.
 
@@ -53,14 +53,8 @@ Or, install with latest changes (may contain features ahead of the stable versio
     pip install git+https://github.com/jsh9/PySeismoSoil
 
 
-Current version
----------------
-
-* v0.4.7
-
-
-API Documentation
------------------
+Full API documentation
+----------------------
 .. toctree::
    :maxdepth: 2
 
@@ -74,6 +68,12 @@ Source code
 https://github.com/jsh9/PySeismoSoil
 
 To report bugs and submit suggestions, please use the `"Issues" section <https://github.com/jsh9/PySeismoSoil/issues>`_ of the GitHub repository.
+
+
+Current version
+---------------
+
+* v0.4.7
 
 
 Indices and tables

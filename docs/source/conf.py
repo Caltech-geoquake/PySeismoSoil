@@ -76,3 +76,20 @@ root_doc = 'index'
 
 
 numpydoc_show_class_members = False
+automodsumm_inherited_members = True
+
+
+from sphinx_automodapi import automodsumm
+from sphinx_automodapi.utils import find_mod_objs
+
+def find_mod_objs_patched(*args, **kwargs):
+    return find_mod_objs(args[0], onlylocals=True)
+
+# Excludes imported members (a stopgap solution in automodapi)
+# https://github.com/astropy/sphinx-automodapi/issues/119
+def patch_automodapi(app):
+    """Monkey-patch the automodapi extension to exclude imported members"""
+    automodsumm.find_mod_objs = find_mod_objs_patched
+
+def setup(app):
+    app.connect("builder-inited", patch_automodapi)
