@@ -1,4 +1,4 @@
-Sphinx>=5.0.2
-sphinx-automodapi>=0.14.1
-furo>=2022.6.21
-graphviz>=0.20
+Sphinx==5.0.2
+sphinx-automodapi==0.14.1
+furo==2022.6.21
+graphviz==0.20
