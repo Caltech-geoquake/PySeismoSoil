@@ -71,8 +71,8 @@ html_static_path = ['_static']
 # https://stackoverflow.com/a/37210251
 autodoc_member_order = 'bysource'
 
-# Specify master document: index.rst
-master_doc = 'index'
+# Specify root document: index.rst
+root_doc = 'index'
 
 
 numpydoc_show_class_members = False

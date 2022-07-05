@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-PySeismoSoil Documentation
-==========================
+PySeismoSoil Documentation (2)
+==============================
 
 PySeismoSoil is a Python library for performing 1D seismic site response analysis.
 
