@@ -34,7 +34,6 @@ setup(
         'Programming Language :: Python :: 3.10',
     ],
     install_requires=load_requirements('requirements.txt'),
-    extras_require={'dev': load_requirements('requirements.dev')},
     python_requires='>=3.6',
     include_package_data=True,
 )
