@@ -7,13 +7,9 @@ In general, contributors should make code changes on a branch, and then [create 
 ## 2. Install the library for development
 
 - It is strongly recommended that contributors work on code changes in an isolated Python environment
-- Use `pip install -e .[dev]` to install this library locally, so that any local code changes are reflected immediately in your current Python environment
-    + Explanation of `.[dev]`:
-        - `.` means to run the `setup.py` script in the root folder (`.`)
-        - `[dev]` means to also install the extra dependencies that are only needed for developers (see `requirements.dev` for what they are)
-            + Note: if you are using zsh (Z shell), such as on macOS, you need to except the square brackets: `pip install -e .\[dev\]`
+- Use `pip install -e .` to install this library locally, so that any local code changes are reflected immediately in your current Python environment
 
-## 3. Before pushing code to GitHub
+## 3. Running local tests and linting
 
 Make sure to run the following checks on your local computer, before pushing any code to GitHub:
 - Code style: run `./run_linting.sh`
@@ -23,4 +19,12 @@ Make sure to run the following checks on your local computer, before pushing any
 
 (Even if you forget to run the checking above on your local computer, unit tests and code styles are checked on every push at GitHub.)
 
-## 4.
+## 4. Update the documentations
+
+If you would like to make changes to the documentations of this library, you need to install the dependencies for building documentations with the following command (from the root directory):
+
+```
+pip install -r docs/requirements.txt
+```
+
+To build the documentation HTML pages locally, navigate to the `docs` folder, and run `make clean html`.  To view the generated HTML documentation, open the file `docs/build/html/index.html` in the browser.
