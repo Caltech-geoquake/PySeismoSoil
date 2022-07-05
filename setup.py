@@ -5,10 +5,10 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 
-def load_requirements():
+def load_requirements(req_filename):
     # Reading dependencies from requirements.txt avoid readthedocs.org from
     # installing non-stable dependencies (e.g., "release candidate" versions)
-    with open(this_directory / Path('requirements.txt')) as fp:
+    with open(this_directory / Path(req_filename)) as fp:
         requirements = fp.readlines()
     # END
     return [_.strip() for _ in requirements]
@@ -33,7 +33,8 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
     ],
-    install_requires=load_requirements(),
+    install_requires=load_requirements('requirements.txt'),
+    extras_require={'dev': load_requirements('requirements.dev')},
     python_requires='>=3.6',
     include_package_data=True,
 )

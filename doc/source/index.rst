@@ -6,8 +6,6 @@
 PySeismoSoil Documentation
 ==========================
 
-Hello. Welcome to the documentation of PySeismoSoil.
-
 PySeismoSoil is a Python library for performing 1D seismic site response analysis.
 
 
