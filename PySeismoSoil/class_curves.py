@@ -1138,8 +1138,10 @@ class Multiple_GGmax_Curves(Multiple_Curves):
             self, damping_filler_value=1.0, save_to_file=False, full_file_name=None,
     ):
         """
-        Based on the G/Gmax data defined in objects of this class, produce a
-        full "curve matrix" in the following format:
+        Produce a full "curve matrix" based on the G/Gmax data defined in
+        objects of this class.
+
+        The full "curve matrix" will be in the following format:
             +------------+--------+------------+-------------+-------------+--------+-----+
             | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
             +============+========+============+=============+=============+========+=====+
@@ -1326,6 +1328,9 @@ class Multiple_GGmax_Damping_Curves:
             return hlp.merge_curve_matrices(mgc_matrix, mdc_matrix)
 
     def plot(self):
+        """
+        Plot the G/Gmax and damping curves.
+        """
         mgc, mdc = self.get_MGC_MDC_objects()
         mgc.plot(ylabel='$G/G_{\max}$')
         mdc.plot(ylabel='Damping [%]')
