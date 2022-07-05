@@ -16,7 +16,7 @@ def load_requirements(req_filename):
 
 setup(
     name='PySeismoSoil',
-    version='v0.4.7',
+    version='v0.4.8',
     description='PySeismoSoil',
     long_description=long_description,  # will get passed to PyPI.org
     long_description_content_type="text/markdown",  # otherwise the default is RST
