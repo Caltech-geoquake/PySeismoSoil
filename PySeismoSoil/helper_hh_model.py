@@ -24,8 +24,8 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
         + mu    = shape parameter
         + Tmax  = shear strength of soil
 
-    Parmeters
-    ---------
+    Parameters
+    ----------
     gamma : numpy.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.

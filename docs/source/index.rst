@@ -62,8 +62,8 @@ Full API documentation
    modules
 
 
-Source code
------------
+GitHub Homepage
+---------------
 
 https://github.com/jsh9/PySeismoSoil
 
@@ -81,7 +81,6 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
 
 .. |copy|   unicode:: U+000A9 .. COPYRIGHT SIGN

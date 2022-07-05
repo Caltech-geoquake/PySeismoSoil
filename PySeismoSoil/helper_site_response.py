@@ -1508,10 +1508,7 @@ def linear_site_resp(
     you happen to want incident motions, choose "elastic", and then
     manually divide the result by 2.
 
-    Misc
-    ----
-    Original version in MATLAB: June, 2013.
-    Re-written into Python in 4/5/2018.
+    (Original version in MATLAB: June, 2013. Translated into Python on 4/5/2018.)
     """
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
@@ -1834,7 +1831,7 @@ def _get_freq_interval(input_motion):
 
 def robust_unwrap(signal, discont=3.141592653589793):
     """
-    Robustly unwrap a phase signal.
+    Unwrap a phase signal in a robust way.
 
     Sometimes, due to numerical discreteness, the "jump" in the signal does not
     happen immediately between two adjacent signal points, but rather over

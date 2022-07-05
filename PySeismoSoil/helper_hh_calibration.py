@@ -29,6 +29,9 @@ Hierarchy of subroutines::
                       |--- __find_x_t_and_d()
                                  |--- helper_hh_model.tau_FKZ()
                                  |--- helper_generic.find_closest_index()
+
+Note: functions whose names have leading underscores are not user-facing, so
+they are not shown in the documentation page.
 """
 
 import os
