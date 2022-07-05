@@ -52,14 +52,13 @@ def linear(vs_profile, input_motion, boundary='elastic'):
     Linear site response simulation.
 
     ``helper_site_response.linear_site_resp()`` also performs linear site
-    response calculation. The difference between this function and
-    ``helper_site_response.linear_site_resp()`` is that this function can
-    produce the time histories of acceleration, velocity, displacement,
-    stress, and strain of every layer, while ``linear_site_resp()``
+    response calculation. The difference between this function and the other is:
+    this function can produce the time histories of acceleration, velocity,
+    displacement, stress, and strain of every layer, while the other function
     only produces the ground motion time histories on the ground surface.
 
-    If the user only wants the ground surface motion, then ``linear_site_resp()``
-    is faster.
+    If the user only wants the ground surface motion, then the other
+    function (``linear_site_resp()``) is faster.
 
     Parameters
     ----------
@@ -76,7 +75,10 @@ def linear(vs_profile, input_motion, boundary='elastic'):
 
     input_motion : numpy.ndarray
         Input acceleration on rock outcrop (unit: m/s/s). It should have two
-        columns (time and acceleration).
+        columns (time and acceleration). It should be the "rock outrcop" motion
+        if ``boundary`` is set to ``"elastic"``, and it should be the recorded
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
+        if ``boundary`` is set to ``"rigid"``.
     boundary : {'elastic', 'rigid'}
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
@@ -189,7 +191,10 @@ def equiv_linear(
 
     input_motion : numpy.ndarray
         Input acceleration on rock outcrop (unit: m/s/s). It should have two
-        columns (time and acceleration).
+        columns (time and acceleration). It should be the "rock outrcop" motion
+        if ``boundary`` is set to ``"elastic"``, and it should be the recorded
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
+        if ``boundary`` is set to ``"rigid"``.
     curve_matrix : numpy.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
@@ -484,6 +489,10 @@ def _lin_resp_every_layer(
         Boundary condition.
     ACCEL_IN : numpy.ndarray
         An array of Fourier spectra (complex values) of the input acceleration.
+        It should be the "rock outrcop" motion if ``boundary`` is set to
+        ``"elastic"``, and it should be the recorded motion at the bottom of
+        the Vs profile (i.e., the "borehole" motion) if ``boundary`` is set to
+        ``"rigid"``.
     R_gamma : float
         A dimensionless ratio to determine the "effective shear strain" from
         the maximum shear strain in the strain time history. Do not change the

@@ -570,8 +570,9 @@ def extract_from_curve_format(curves, ensure_non_negative=True):
 
 def extract_from_param_format(params):
     """
-    Extract soil constitutive model parameters from a 2D numpy array, which
-    follows the following format:
+    Extract soil constitutive model parameters from a 2D numpy array.
+
+    The 2D numpy array should follow the following format:
         +----------------+-----------------+-----------------+-----+
         |  param_layer_1 |  param_layer_2  |  param_layer_3  | ... |
         +================+=================+=================+=====+

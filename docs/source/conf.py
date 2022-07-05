@@ -23,7 +23,7 @@ copyright = '2019, California Institute of Technology'
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.4.7'
+release = 'v0.4.8'
 
 
 # -- General configuration ---------------------------------------------------
@@ -42,6 +42,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
+    'sphinx_automodapi.automodapi',
+    'sphinx_automodapi.smart_resolver',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,7 +60,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -69,5 +71,25 @@ html_static_path = ['_static']
 # https://stackoverflow.com/a/37210251
 autodoc_member_order = 'bysource'
 
-# Specify master document: index.rst
-master_doc = 'index'
+# Specify root document: index.rst
+root_doc = 'index'
+
+
+numpydoc_show_class_members = False
+automodsumm_inherited_members = True
+
+
+# ------- A fix to sphinx-automodapi to exclude imported members ---------------
+# Thanks to https://github.com/astropy/sphinx-automodapi/issues/119
+from sphinx_automodapi import automodsumm
+from sphinx_automodapi.utils import find_mod_objs
+
+def find_mod_objs_patched(*args, **kwargs):
+    return find_mod_objs(args[0], onlylocals=True)
+
+def patch_automodapi(app):
+    """Monkey-patch the automodapi extension to exclude imported members"""
+    automodsumm.find_mod_objs = find_mod_objs_patched
+
+def setup(app):
+    app.connect("builder-inited", patch_automodapi)

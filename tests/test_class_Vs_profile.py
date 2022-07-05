@@ -155,11 +155,11 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
 
-        self.assertTrue(prof_1._thk[-1] == 0)
-        self.assertTrue(prof_2._thk[-1] == 0)
-        self.assertTrue(prof_1._thk[-2] != 0)
-        self.assertTrue(prof_2._thk[-2] != 0)  # assert only one "halfspace"
-        self.assertEqual(prof_1.n_layer, 12)
+        self.assertEqual(0, prof_1._thk[-1])
+        self.assertEqual(0, prof_2._thk[-1])
+        self.assertNotEqual(0, prof_1._thk[-2])
+        self.assertNotEqual(0, prof_2._thk[-2])  # assert only one "halfspace"
+        self.assertEqual(12, prof_1.n_layer)
         self.assertEqual(prof_1.n_layer, prof_2.n_layer)
 
     def test_add_halfspace__case_1__no_half_space(self):
@@ -167,11 +167,11 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof_1 = Vs_Profile(data, add_halfspace=False)
         prof_2 = Vs_Profile(data, add_halfspace=True)
 
-        self.assertTrue(prof_1._thk[-1] != 0)
-        self.assertTrue(prof_2._thk[-1] == 0)
-        self.assertTrue(prof_1._thk[-2] != 0)
-        self.assertTrue(prof_2._thk[-2] != 0)  # assert only one "halfspace"
-        self.assertEqual(prof_1.n_layer, 15)
+        self.assertNotEqual(0, prof_1._thk[-1])
+        self.assertEqual(0, prof_2._thk[-1])
+        self.assertNotEqual(0, prof_2._thk[-2])  # assert only one "halfspace"
+        self.assertNotEqual(0, prof_1._thk[-2])
+        self.assertEqual(15, prof_1.n_layer)
         self.assertEqual(prof_1.n_layer, prof_2.n_layer)
 
     def test_vs30(self):

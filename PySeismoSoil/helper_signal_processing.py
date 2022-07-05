@@ -9,7 +9,7 @@ from . import helper_site_response as sr
 
 def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
     """
-    IIR low pass filter. Zero phase distortion.
+    IIR low pass filter with zero phase distortion.
 
     Parameters
     ----------
@@ -42,7 +42,7 @@ def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=Non
 
 def highpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
     """
-    IIR high pass filter. Zero phase distortion.
+    IIR high pass filter with zero phase distortion.
 
     Parameters
     ----------
@@ -75,7 +75,7 @@ def highpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
 
 def bandpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
     """
-    IIR band pass filter. Zero phase distortion.
+    IIR band pass filter with zero phase distortion.
 
     Parameters
     ----------
@@ -108,7 +108,7 @@ def bandpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
 
 def bandstop(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
     """
-    IIR band stop filter. Zero phase distorsion.
+    IIR band stop filter with zero phase distorsion.
 
     Parameters
     ----------
@@ -260,7 +260,7 @@ def _filter_kernel(
 
 def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     """
-    Baseline correction of a time-domain signal using high pass filter.
+    Baseline correction of a time-domain signal using high pass filtering.
 
     Parameters
     ----------

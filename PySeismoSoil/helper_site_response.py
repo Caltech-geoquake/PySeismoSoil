@@ -1475,7 +1475,10 @@ def linear_site_resp(
         (Damping unit: 1)
     input_motion : numpy.array or str
         Input motion in the time domain (with two columns). If it is a string,
-        it means the file name that contains the data.
+        it means the file name that contains the data. It should be the
+        "rock outrcop" motion if ``boundary`` is set to ``"elastic"``, and it
+        should be the recorded motion at the bottom of the Vs profile (i.e.,
+        the "borehole" motion) if ``boundary`` is set to ``"rigid"``.
     boundary : {'elastic', 'rigid'}
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -1505,10 +1508,7 @@ def linear_site_resp(
     you happen to want incident motions, choose "elastic", and then
     manually divide the result by 2.
 
-    Misc
-    ----
-    Original version in MATLAB: June, 2013.
-    Re-written into Python in 4/5/2018.
+    (Original version in MATLAB: June, 2013. Translated into Python on 4/5/2018.)
     """
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
@@ -1831,7 +1831,7 @@ def _get_freq_interval(input_motion):
 
 def robust_unwrap(signal, discont=3.141592653589793):
     """
-    Robustly unwrap a phase signal.
+    Unwrap a phase signal in a robust way.
 
     Sometimes, due to numerical discreteness, the "jump" in the signal does not
     happen immediately between two adjacent signal points, but rather over

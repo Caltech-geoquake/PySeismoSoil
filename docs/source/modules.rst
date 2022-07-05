@@ -1,7 +1,7 @@
 Helper modules
 ==============
 
-PySeismoSoil has some helper modules with helper function, which are used by the utilities classes. The users can potentially use the helper functions directly, if they understands the code structures of PySeismoSoil really well.
+PySeismoSoil has some helper modules with helper function, which are used by the utilities classes. The users can potentially use the helper functions directly if they understands the code structures of PySeismoSoil really well.
 
 Here are the documentations of the helper modules:
 

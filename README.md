@@ -75,4 +75,4 @@ To cite this library, please include this DOI in your publication: [![DOI](https
 
 ## How to contribute to this library
 
-Please read the [contributing instructions](./CONTRIBUTING.md) to get started.
+Please read the [contributing instructions](https://github.com/jsh9/PySeismoSoil/blob/master/CONTRIBUTING.md) to get started.

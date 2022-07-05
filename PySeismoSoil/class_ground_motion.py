@@ -785,8 +785,8 @@ class Ground_Motion:
         """
         Zero-phase-shift high-pass filtering.
 
-        Pameters
-        --------
+        Parameters
+        ----------
         cutoff_freq : float
             Cut-off frequency (unit: Hz).
         filter_order : int
@@ -811,8 +811,8 @@ class Ground_Motion:
         """
         Zero-phase-shift band-pass filtering.
 
-        Pameters
-        --------
+        Parameters
+        ----------
         cutoff_freq : [float, float]
             Cut-off frequencies (in Hz), from low to high.
         filter_order : int
@@ -837,8 +837,8 @@ class Ground_Motion:
         """
         Zero-phase-shift band-stop filtering.
 
-        Pameters
-        --------
+        Parameters
+        ----------
         cutoff_freq : [float, float]
             Cut-off frequencies (in Hz), from low to high.
         filter_order : int

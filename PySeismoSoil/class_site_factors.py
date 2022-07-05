@@ -86,8 +86,8 @@ class Site_Factors:
         """
         Get site amplification factors.
 
-        Parmeters
-        ---------
+        Parameters
+        ----------
         method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' uses the results from nonlinear site
@@ -130,8 +130,8 @@ class Site_Factors:
         """
         Get site amplification factors
 
-        Parmeters
-        ---------
+        Parameters
+        ----------
         method : {'eq_hh'}
             Which site response simulation method was used to calculate the
             amplification factors. Currently, only 'eq_hh' is valid.
@@ -160,8 +160,8 @@ class Site_Factors:
         """
         Get both amplification and phase-shift factors
 
-        Parmeters
-        ---------
+        Parameters
+        ----------
         method : {'nl_hh', 'eq_hh'}
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.

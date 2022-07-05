@@ -16,15 +16,15 @@ class Test_Class_SVM(unittest.TestCase):
         Vs30 = 256
         z1 = 10
         svm = SVM(Vs30, z1=z1, Vs_cap=True)
-        self.assertEqual(svm.base_profile.vs_profile[-1, 0], 0)
-        self.assertEqual(svm.base_profile.vs_profile[-1, 1], 1000)
+        self.assertEqual(0, svm.base_profile.vs_profile[-1, 0])
+        self.assertEqual(1000, svm.base_profile.vs_profile[-1, 1])
 
     def test_Vs_cap_is_user_defined(self):
         Vs30 = 256
         z1 = 10
         svm = SVM(Vs30, z1=z1, Vs_cap=1234.5)
-        self.assertEqual(svm.base_profile.vs_profile[-1, 0], 0)
-        self.assertEqual(svm.base_profile.vs_profile[-1, 1], 1234.5)
+        self.assertEqual(0, svm.base_profile.vs_profile[-1, 0])
+        self.assertEqual(1234.5, svm.base_profile.vs_profile[-1, 1])
 
     def test_Vs_cap_is_False(self):
         pass  # this case is hard to test; skipped for now
@@ -39,16 +39,16 @@ class Test_Class_SVM(unittest.TestCase):
         discr_profile = svm.get_discretized_profile(fixed_thk=10, show_fig=False)
         self.assertTrue(isinstance(discr_profile, Vs_Profile))
         if svm.has_bedrock_Vs:  # bedrock Vs must match
-            self.assertTrue(svm.bedrock_Vs == discr_profile.vs_profile[-1, 1])
-            self.assertTrue(discr_profile.vs_profile[-1, 0] == 0)
+            self.assertEqual(svm.bedrock_Vs, discr_profile.vs_profile[-1, 1])
+            self.assertEqual(0, discr_profile.vs_profile[-1, 0])
 
     def test_get_discretized_profile__valid_Vs_increment(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         discr_profile = svm.get_discretized_profile(Vs_increment=100, show_fig=False)
         self.assertTrue(isinstance(discr_profile, Vs_Profile))
         if svm.has_bedrock_Vs:  # bedrock Vs must match
-            self.assertTrue(svm.bedrock_Vs == discr_profile.vs_profile[-1, 1])
-            self.assertTrue(discr_profile.vs_profile[-1, 0] == 0)
+            self.assertEqual(svm.bedrock_Vs, discr_profile.vs_profile[-1, 1])
+            self.assertEqual(0, discr_profile.vs_profile[-1, 0])
 
     def test_get_discretized_profile__invalid_Vs_increment(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
@@ -71,8 +71,8 @@ class Test_Class_SVM(unittest.TestCase):
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
         if svm.has_bedrock_Vs:  # bedrock Vs must match
-            self.assertTrue(svm.bedrock_Vs == random_profile.vs_profile[-1, 1])
-            self.assertTrue(random_profile.vs_profile[-1, 0] == 0)
+            self.assertEqual(svm.bedrock_Vs, random_profile.vs_profile[-1, 1])
+            self.assertEqual(0, random_profile.vs_profile[-1, 0])
 
         # Use iteration to pick compliant randomized Vs profile
         random_profile = svm.get_randomized_profile(
@@ -82,16 +82,16 @@ class Test_Class_SVM(unittest.TestCase):
     def test_index_closest(self):
         array = [0, 1, 2, 1.1, 0.4, -3.2]
         i, val = SVM._find_index_closest(array, 2.1)
-        self.assertEqual((i, val), (2, 2))
+        self.assertEqual((2, 2), (i, val))
 
         i, val = SVM._find_index_closest(array, -9)
-        self.assertEqual((i, val), (5, -3.2))
+        self.assertEqual((5, -3.2), (i, val))
 
         i, val = SVM._find_index_closest(array, -0.5)
-        self.assertEqual((i, val), (0, 0))
+        self.assertEqual((0, 0), (i, val))
 
         i, val = SVM._find_index_closest([1], 10000)
-        self.assertEqual((i, val), (0, 1))
+        self.assertEqual((0, 1), (i, val))
 
         with self.assertRaisesRegex(ValueError, 'length of `array` needs to'):
             SVM._find_index_closest([], 2)

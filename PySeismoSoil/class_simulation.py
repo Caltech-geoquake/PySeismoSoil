@@ -28,17 +28,20 @@ class Simulation:
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion.
+        Input ground motion. It should be the "rock outrcop" motion if
+        ``boundary`` is set to ``"elastic"``, and it should be the recorded
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
+        if ``boundary`` is set to ``"rigid"``.
     boundary : {'elastic', 'rigid'}
-        Boundary condition. 'Elastic' means that the input motion is the
-        "rock outcrop" motion, and 'rigid' means that the input motion is
-        the recorded motion at the bottom of the Vs profile.
+        Boundary condition. "Elastic" means that the boundary allows waves to
+        propagate through. "Rigid" means that all downgoing waves are reflected
+        back to the soil medium.
     G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         Parameters that describe the G/Gmax curves.
     xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         Parameters that describe the damping curves.
     GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
-        G/Gmax and damping curves.
+        G/Gmax and damping curves of every soil layer.
 
     Attributes
     ----------
@@ -97,11 +100,14 @@ class Linear_Simulation(Simulation):
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion.
+        Input ground motion. It should be the "rock outrcop" motion if
+        ``boundary`` is set to ``"elastic"``, and it should be the recorded
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
+        if ``boundary`` is set to ``"rigid"``.
     boundary : {'elastic', 'rigid'}
-        Boundary condition. 'Elastic' means that the input motion is the
-        "rock outcrop" motion, and 'rigid' means that the input motion is
-        the recorded motion at the bottom of the Vs profile.
+        Boundary condition. "Elastic" means that the boundary allows waves to
+        propagate through. "Rigid" means that all downgoing waves are reflected
+        back to the soil medium.
 
     Attributes
     ----------
@@ -216,13 +222,16 @@ class Equiv_Linear_Simulation(Simulation):
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion.
+        Input ground motion. It should be the "rock outrcop" motion if
+        ``boundary`` is set to ``"elastic"``, and it should be the recorded
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
+        if ``boundary`` is set to ``"rigid"``.
     GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
-        G/Gmax and damping curves of every layer.
+        G/Gmax and damping curves of every soil layer.
     boundary : {'elastic', 'rigid'}
-        Boundary condition. 'Elastic' means that the input motion is the
-        "rock outcrop" motion, and 'rigid' means that the input motion is
-        the recorded motion at the bottom of the Vs profile.
+        Boundary condition. "Elastic" means that the boundary allows waves to
+        propagate through. "Rigid" means that all downgoing waves are reflected
+        back to the soil medium.
     """
     def __init__(
             self, soil_profile, input_motion, GGmax_and_damping_curves,
@@ -325,15 +334,18 @@ class Nonlinear_Simulation(Simulation):
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
     input_motion : class_ground_motion.Ground_Motion
-        Input ground motion.
+        Input ground motion. It should be the "rock outrcop" motion if
+        ``boundary`` is set to ``"elastic"``, and it should be the recorded
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
+        if ``boundary`` is set to ``"rigid"``.
     G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         Parameters that describe the G/Gmax curves.
     xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         Parameters that describe the damping curves.
     boundary : {'elastic', 'rigid'}
-        Boundary condition. 'Elastic' means that the input motion is the
-        "rock outcrop" motion, and 'rigid' means that the input motion is
-        the recorded motion at the bottom of the Vs profile.
+        Boundary condition. "Elastic" means that the boundary allows waves to
+        propagate through. "Rigid" means that all downgoing waves are reflected
+        back to the soil medium.
 
     Attributes
     ----------
