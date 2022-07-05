@@ -1,4 +1,5 @@
 include LICENSE
+include requirements.txt
 recursive-include PySeismoSoil/data/amplification *
 recursive-include PySeismoSoil/data/phase *
 recursive-include PySeismoSoil/exec_files *
