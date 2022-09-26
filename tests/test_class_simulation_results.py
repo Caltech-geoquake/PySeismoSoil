@@ -3,7 +3,7 @@ import numpy as np
 
 from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_simulation_results import SimulationResults
 
 import PySeismoSoil.helper_site_response as sr
 
@@ -32,7 +32,7 @@ class Test_Class_Simulation_Results(unittest.TestCase):
             (depth_midpoint, depth_midpoint * 1, depth_midpoint * 2)
         )
         tf_RO, _, _ = vs_profile.get_transfer_function()
-        sim_results = Simulation_Results(
+        sim_results = SimulationResults(
             accel_in,
             accel_out,
             vs_profile,
@@ -43,7 +43,7 @@ class Test_Class_Simulation_Results(unittest.TestCase):
         sim_results.plot(save_fig=False)
 
         # Test that it can produce a plot without max profiles and trans. func.
-        sim_results_ = Simulation_Results(accel_in, accel_out, vs_profile)
+        sim_results_ = SimulationResults(accel_in, accel_out, vs_profile)
         sim_results_.plot(save_fig=False)
 
 

@@ -15,7 +15,7 @@ from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_parameters import MultiLayerParam
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
-from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_simulation_results import SimulationResults
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 
@@ -156,7 +156,7 @@ class LinearSimulation(Simulation):
 
         Returns
         -------
-        sim_results : Simulation_Results
+        sim_results : SimulationResults
             An object that contains all the simulation results.
         """
         if verbose:
@@ -173,7 +173,7 @@ class LinearSimulation(Simulation):
                 out_d, out_gamma, out_tau, max_avd, max_gt,
             ) = results
 
-            sim_results = Simulation_Results(
+            sim_results = SimulationResults(
                 self.input_motion,
                 GroundMotion(accel_on_surface, unit='m'),
                 Vs_Profile(new_profile, density_unit='g/cm^3'),
@@ -200,7 +200,7 @@ class LinearSimulation(Simulation):
                 deconv=deconv,
             )
             trans_func = FrequencySpectrum(tf[1], df=tf[0][1] - tf[0][0])
-            sim_results = Simulation_Results(
+            sim_results = SimulationResults(
                 self.input_motion,
                 GroundMotion(response, unit='m'),
                 self.soil_profile,
@@ -286,7 +286,7 @@ class EquivLinearSimulation(Simulation):
 
         Returns
         -------
-        sim_results : Simulation_Results
+        sim_results : SimulationResults
             An object that contains all the simulation results.
         """
         vs_profile = self.soil_profile.vs_profile
@@ -303,7 +303,7 @@ class EquivLinearSimulation(Simulation):
             out_d, out_gamma, out_tau, max_avd, max_gt,
         ) = results
 
-        sim_results = Simulation_Results(
+        sim_results = SimulationResults(
             self.input_motion,
             GroundMotion(accel_on_surface, unit='m'),
             Vs_Profile(new_profile, density_unit='g/cm^3'),
@@ -408,7 +408,7 @@ class NonlinearSimulation(Simulation):
 
         Returns
         -------
-        sim_results : Simulation_Results
+        sim_results : SimulationResults
             An object that contains all the simulation results.
 
         Raises
@@ -585,7 +585,7 @@ class NonlinearSimulation(Simulation):
         os.chdir(cwd)
 
         # ------------ Create sim_results object and plot and/or save ----------
-        sim_results = Simulation_Results(
+        sim_results = SimulationResults(
             self.input_motion,
             GroundMotion(accel_surface_2col, unit='m'),
             Vs_Profile(new_profile, density_unit='g/cm^3'),
