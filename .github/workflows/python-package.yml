@@ -32,7 +32,10 @@ jobs:
         python -m pip install -e .
     - name: Lint with flake8
       run: |
-        flake8 ./PySeismoSoil/class_batch_simulation.py
+        flake8 ./PySeismoSoil/class_*.py
+    - name: Lint with flake8 (another pass, focusing on WPS317)
+      run: |
+        flake8 --select WPS317 ./PySeismoSoil/class_*.py
     - name: Test with pytest
       run: |
         pytest
