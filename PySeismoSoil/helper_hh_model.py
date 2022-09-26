@@ -1,8 +1,8 @@
 import numpy as np
 
-from . import helper_generic as hlp
-from . import helper_mkz_model as mkz
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_mkz_model as mkz
+from PySeismoSoil import helper_site_response as sr
 
 
 def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
@@ -52,8 +52,8 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
 
 def transition_function(gamma, *, a, gamma_t):
     """
-    The transition function of the HH model, as defined in Equation (7) of Shi
-    & Asimaki (2017).
+    Calculate the transition function of the HH model, which is defined in \
+    Equation (7) of Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -138,8 +138,7 @@ def fit_HH_x_single_layer(
         n_cores=None,
 ):
     """
-    Perform HH_x curve fitting for one damping curve using the genetic
-    algorithm.
+    Perform HH_x curve fitting for one damping curve using the genetic algorithm.
 
     Parameters
     ----------
@@ -174,15 +173,18 @@ def fit_HH_x_single_layer(
     verbose : bool
         Whether to display information (statistics of the loss in each
         generation) on the console.
-    supress_warnings : bool
+    suppress_warnings : bool
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
     parallel : bool
         Whether to use multiple processors in the calculation. All CPU cores
         will be used if set to ``True``.
+    n_cores : int
+        Number of CPU cores used in the calculation.  If ``None`` (default value),
+        all cores will be used.
 
-    Return
-    ------
+    Returns
+    -------
     best_param : dict
         The best parameters found in the optimization.
     """
@@ -303,6 +305,7 @@ def serialize_params_to_array(param):
     """
     Convert the HH parameters from a dictionary to an array, according to this
     order:
+
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters
@@ -329,7 +332,8 @@ def deserialize_array_to_params(array):
     """
     Reconstruct a HH model parameter dictionary from an array of values.
 
-    The users needs to ensure the order of values in ``array`` are in this order:
+    The users need to ensure the order of values in ``array`` are in this order:
+
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters
@@ -346,15 +350,16 @@ def deserialize_array_to_params(array):
     hlp.assert_1D_numpy_array(array)
     assert(len(array) == 9)
 
-    param = dict()
-    param['gamma_t'] = array[0]
-    param['a'] = array[1]
-    param['gamma_ref'] = array[2]
-    param['beta'] = array[3]
-    param['s'] = array[4]
-    param['Gmax'] = array[5]
-    param['mu'] = array[6]
-    param['Tmax'] = array[7]
-    param['d'] = array[8]
+    param = {
+        'gamma_t': array[0],
+        'a': array[1],
+        'gamma_ref': array[2],
+        'beta': array[3],
+        's': array[4],
+        'Gmax': array[5],
+        'mu': array[6],
+        'Tmax': array[7],
+        'd': array[8],
+    }
 
     return param
