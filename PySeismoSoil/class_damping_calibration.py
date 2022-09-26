@@ -1,9 +1,9 @@
 import numpy as np
 
-from . import helper_hh_calibration as hhc
+from PySeismoSoil import helper_hh_calibration as hhc
 
-from .class_Vs_profile import Vs_Profile
-from .class_curves import DampingCurve, MultipleDampingCurves
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_curves import DampingCurve, MultipleDampingCurves
 
 
 STRAIN_RANGE_PCT = np.logspace(-3, 1)

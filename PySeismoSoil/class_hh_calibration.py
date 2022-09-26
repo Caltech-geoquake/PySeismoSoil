@@ -1,12 +1,12 @@
-from .class_Vs_profile import Vs_Profile
-from .class_curves import MultipleGGmaxCurves
-from .class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_curves import MultipleGGmaxCurves
+from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 
-from . import helper_generic as hlp
-from . import helper_hh_calibration as hhc
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_hh_calibration as hhc
 
 
-class HH_Calibration:
+class HHCalibration:
     """
     Class implementation of the "HH calibration procedure" (HHC procedure). The
     HHC procedure generates parameters of each soil layer for the HH model.
@@ -43,6 +43,7 @@ class HH_Calibration:
     Tmax_profile : numpy.ndarray or ``None``
         Same as the input parameter.
     """
+
     def __init__(self, vs_profile, *, GGmax_curves=None, Tmax_profile=None):
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
@@ -50,20 +51,20 @@ class HH_Calibration:
             if not isinstance(GGmax_curves, MultipleGGmaxCurves):
                 raise TypeError(
                     'If `GGmax_curves` is not `None`, it must be '
-                    'of type MultipleGGmaxCurves.'
+                    + 'of type MultipleGGmaxCurves.',
                 )
             if GGmax_curves.n_layer != vs_profile.n_layer:
                 raise ValueError(
                     'The number of layers implied in `GGmax_curves` '
-                    'and `vs_profile` must be the same.'
+                    + 'and `vs_profile` must be the same.',
                 )
         if Tmax_profile is not None:
             hlp.assert_1D_numpy_array(Tmax_profile, '`Tmax_profile`')
             if len(Tmax_profile) != vs_profile.n_layer:
                 raise ValueError(
                     'The length of `Tmax_profile` needs to '
-                    'equal to the number of layers (not including '
-                    'the rock half space) in `vs_profile`.'
+                    + 'equal to the number of layers (not including '
+                    + 'the rock half space) in `vs_profile`.',
                 )
         self.vs_profile = vs_profile
         self.GGmax_curves = GGmax_curves
@@ -107,7 +108,7 @@ class HH_Calibration:
             The HH parameters of each layer.
         """
         vs_profile = self.vs_profile.vs_profile
-        options = dict(
+        options = dict(  # noqa: C408
             Tmax=self.Tmax_profile, show_fig=show_fig,
             save_fig=save_fig, fig_output_dir=fig_output_dir,
             save_HH_G_file=save_HH_G_file, HH_G_file_dir=HH_G_file_dir,
