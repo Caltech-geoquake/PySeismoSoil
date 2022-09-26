@@ -2,14 +2,14 @@ import os
 import itertools
 import multiprocessing as mp
 
-from .class_simulation import (
+from PySeismoSoil.class_simulation import (
     Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
 )
 
-from . import helper_generic as hlp
+from PySeismoSoil import helper_generic as hlp
 
 
-class Batch_Simulation:
+class BatchSimulation:
     """
     Run site response simulations in batch.
 
@@ -29,13 +29,12 @@ class Batch_Simulation:
     sim_type : {``Linear_Simulation``, ``Equiv_Linear_Simulation``, ``Nonlinear_Simulation``}
         The object type of the site response simulations.
     """
+
     def __init__(self, list_of_simulations):
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
         if len(list_of_simulations) == 0:
-            raise ValueError(
-                '`list_of_simulations` should have at least one element.'
-            )
+            raise ValueError('`list_of_simulations` should have at least one element.')
         sim_0 = list_of_simulations[0]
         if not isinstance(
             sim_0,
@@ -43,12 +42,12 @@ class Batch_Simulation:
         ):
             raise TypeError(
                 'Elements of `list_of_simulations` should be of '
-                'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
-                'or `Nonlinear_Simulation`.'
+                + 'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
+                + 'or `Nonlinear_Simulation`.',
             )
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
-                'All the elements of `list_of_simulations` should be of the same type.'
+                'All the elements of `list_of_simulations` should be of the same type.',
             )
         n_simulations = len(list_of_simulations)
 
@@ -56,7 +55,7 @@ class Batch_Simulation:
         self.n_simulations = n_simulations
         self.sim_type = type(sim_0)
 
-    def run(self, parallel=False, n_cores=1, base_output_dir=None, options={}):
+    def run(self, parallel=False, n_cores=1, base_output_dir=None, options=None):
         """
         Run simulations in batch.
 
@@ -64,13 +63,13 @@ class Batch_Simulation:
         ----------
         parallel : bool
             Whether to use multiple CPU cores to run simulations.
-        n_core : int or ``None``
+        n_cores : int or ``None``
             Number of CPU cores to be used. If ``None``, all CPU cores will be
             used.
         base_output_dir : str
             The parent directory for saving the output files/figures of the
             current batch.
-        options : dict
+        options : Optional[Dict] (default = None)
             Options to be passed to the ``run()`` methods of the relevant
             simulation classes (linear, equivalent linear, or nonlinear). Check
             out the API documentation of the ``run()`` methods here:
@@ -81,12 +80,13 @@ class Batch_Simulation:
         sim_results : list<Simulation_Result>
             Simulation results corresponding to each simulation object.
         """
-        N = self.n_simulations
-        n_digits = len(str(N))
+        n_digits = len(str(self.n_simulations))
 
         if base_output_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
+            base_output_dir = os.path.join('./', f'batch_sim_{current_time}')
+
+        options = {} if options is None else options
 
         other_params = [n_digits, base_output_dir, options]
 
@@ -102,7 +102,7 @@ class Batch_Simulation:
             p = mp.Pool(n_cores)
             sim_results = p.map(
                 self._run_single_sim,
-                itertools.product(range(N), [other_params]),
+                itertools.product(range(self.n_simulations), [other_params]),
             )
             if options.get('verbose', True):
                 print('done.')
@@ -119,15 +119,18 @@ class Batch_Simulation:
 
     def _run_single_sim(self, all_params):
         """
-        Helper function to run a single simulation.
+        Run a single simulation.
 
         Parameters
         ----------
         all_params : list
             All the parameters needed for running the simulation. It should
-            have the following structure:
+            have the following structure::
+
                 i, n_digits, base_output_dir, options
-            where:
+
+            where
+
                 - ``i`` is the index of the current simulation in the batch.
                 - ``n_digits`` is the number of digits of the length of the
                   batch. (For example, if there are 125 simulations, then

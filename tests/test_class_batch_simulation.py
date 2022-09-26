@@ -8,7 +8,7 @@ from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_simulation import (
     Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
 )
-from PySeismoSoil.class_batch_simulation import Batch_Simulation
+from PySeismoSoil.class_batch_simulation import BatchSimulation
 
 import os
 from os.path import join as _join
@@ -20,16 +20,16 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_Batch_Simulation(unittest.TestCase):
     def test_init__case_1_not_a_list(self):
         with self.assertRaisesRegex(TypeError, '`list_of_simulations` should be a list.'):
-            Batch_Simulation(1.4)
+            BatchSimulation(1.4)
 
     def test_init__case_2_a_list_of_0_length(self):
         with self.assertRaisesRegex(ValueError, 'should have at least one element'):
-            Batch_Simulation([])
+            BatchSimulation([])
 
     def test_init__case_3_wrong_type(self):
         msg = 'Elements of `list_of_simulations` should be of type'
         with self.assertRaisesRegex(TypeError, msg):
-            Batch_Simulation([1, 2, 3])
+            BatchSimulation([1, 2, 3])
 
     def test_init__case_4_inhomogeneous_element_type(self):
         with self.assertRaisesRegex(TypeError, 'should be of the same type'):
@@ -38,7 +38,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
             mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
             lin_sim = Linear_Simulation(prof, gm)
             equiv_sim = Equiv_Linear_Simulation(prof, gm, mgdc)
-            Batch_Simulation([lin_sim, equiv_sim])
+            BatchSimulation([lin_sim, equiv_sim])
 
     def test_linear(self):
         gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
@@ -49,7 +49,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim_2 = Linear_Simulation(prof_2, gm, boundary='elastic')
         sim_list = [sim_1, sim_2]
 
-        batch_sim = Batch_Simulation(sim_list)
+        batch_sim = BatchSimulation(sim_list)
         options = dict(show_fig=False, save_txt=False, verbose=True)
         non_par_results = batch_sim.run(parallel=False, n_cores=2, options=options)
         par_results = batch_sim.run(parallel=True, options=options)
@@ -71,7 +71,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim_2 = Equiv_Linear_Simulation(prof_2, gm, mgdc_2, boundary='elastic')
         sim_list = [sim_2]
 
-        batch_sim = Batch_Simulation(sim_list)
+        batch_sim = BatchSimulation(sim_list)
         options = dict(show_fig=False, save_txt=False, verbose=True)
         non_par_results = batch_sim.run(parallel=False, options=options)
         par_results = batch_sim.run(parallel=True, n_cores=2, options=options)
@@ -92,7 +92,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         hh_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
         sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
 
-        batch_sim = Batch_Simulation([sim])
+        batch_sim = BatchSimulation([sim])
         options = dict(show_fig=False, save_txt=False, remove_sim_dir=True)
 
         non_par_results = batch_sim.run(parallel=False, options=options)
