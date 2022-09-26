@@ -96,25 +96,25 @@ class SimulationResults:
 
         if time_history_accel is not None:
             hlp.assert_2D_numpy_array(time_history_accel, '`time_history_accel`')
-            assert(time_history_accel.shape == (n_time_pts, n_layer + 1))
+            assert time_history_accel.shape == (n_time_pts, n_layer + 1)
         if time_history_veloc is not None:
             hlp.assert_2D_numpy_array(time_history_veloc, '`time_history_veloc`')
-            assert(time_history_veloc.shape == (n_time_pts, n_layer + 1))
+            assert time_history_veloc.shape == (n_time_pts, n_layer + 1)
         if time_history_displ is not None:
             hlp.assert_2D_numpy_array(time_history_displ, '`time_history_displ`')
-            assert(time_history_displ.shape == (n_time_pts, n_layer + 1))
+            assert time_history_displ.shape == (n_time_pts, n_layer + 1)
         if time_history_stress is not None:
             hlp.assert_2D_numpy_array(time_history_stress, '`time_history_stress`')
-            assert(time_history_stress.shape == (n_time_pts, n_layer))
+            assert time_history_stress.shape == (n_time_pts, n_layer)
         if time_history_strain is not None:
             hlp.assert_2D_numpy_array(time_history_strain, '`time_history_strain`')
-            assert(time_history_strain.shape == (n_time_pts, n_layer))
+            assert time_history_strain.shape == (n_time_pts, n_layer)
 
         if max_a_v_d is not None and max_strain_stress is not None:
             hlp.assert_2D_numpy_array(max_a_v_d, '`max_a_v_d`')
             hlp.assert_2D_numpy_array(max_strain_stress, '`max_strain_stress`')
-            assert(max_a_v_d.shape == (n_layer + 1, 4))
-            assert(max_strain_stress.shape == (n_layer, 3))
+            assert max_a_v_d.shape == (n_layer + 1, 4)
+            assert max_strain_stress.shape == (n_layer, 3)
         else:  # only when both are not `None` do we consider using them
             max_a_v_d = None
             max_strain_stress = None
