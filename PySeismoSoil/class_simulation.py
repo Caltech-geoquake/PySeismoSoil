@@ -49,8 +49,14 @@ class Simulation:
     """
 
     def __init__(
-            self, soil_profile, input_motion, *, boundary='elastic',
-            G_param=None, xi_param=None, GGmax_and_damping_curves=None,
+            self,
+            soil_profile,
+            input_motion,
+            *,
+            boundary='elastic',
+            G_param=None,
+            xi_param=None,
+            GGmax_and_damping_curves=None,
     ):
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
@@ -116,9 +122,16 @@ class LinearSimulation(Simulation):
     """
 
     def run(
-            self, every_layer=True, deconv=False, show_fig=False,
-            save_fig=False, motion_name=None, save_txt=False,
-            save_full_time_history=False, output_dir=None, verbose=True,
+            self,
+            every_layer=True,
+            deconv=False,
+            show_fig=False,
+            save_fig=False,
+            motion_name=None,
+            save_txt=False,
+            save_full_time_history=False,
+            output_dir=None,
+            verbose=True,
     ):
         """
         Run linear simulation.
@@ -169,8 +182,17 @@ class LinearSimulation(Simulation):
                 boundary=self.boundary,
             )
             (
-                new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
-                out_d, out_gamma, out_tau, max_avd, max_gt,
+                new_profile,
+                freq_array,
+                tf,
+                accel_on_surface,
+                out_a,
+                out_v,
+                out_d,
+                out_gamma,
+                out_tau,
+                max_avd,
+                max_gt,
             ) = results
 
             sim_results = SimulationResults(
@@ -239,7 +261,10 @@ class EquivLinearSimulation(Simulation):
     """
 
     def __init__(
-            self, soil_profile, input_motion, GGmax_and_damping_curves,
+            self,
+            soil_profile,
+            input_motion,
+            GGmax_and_damping_curves,
             boundary='elastic',
     ):
         if GGmax_and_damping_curves is None:
@@ -255,8 +280,13 @@ class EquivLinearSimulation(Simulation):
         )
 
     def run(
-            self, verbose=True, show_fig=False, save_fig=False,
-            motion_name=None, save_txt=False, save_full_time_history=False,
+            self,
+            verbose=True,
+            show_fig=False,
+            save_fig=False,
+            motion_name=None,
+            save_txt=False,
+            save_full_time_history=False,
             output_dir=None,
     ):
         """
@@ -294,13 +324,25 @@ class EquivLinearSimulation(Simulation):
         curve = self.GGmax_and_damping_curves.get_curve_matrix()
 
         results = sim.equiv_linear(
-            vs_profile, input_accel, curve,
-            boundary=self.boundary, verbose=verbose,
+            vs_profile,
+            input_accel,
+            curve,
+            boundary=self.boundary,
+            verbose=verbose,
         )
 
         (
-            new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
-            out_d, out_gamma, out_tau, max_avd, max_gt,
+            new_profile,
+            freq_array,
+            tf,
+            accel_on_surface,
+            out_a,
+            out_v,
+            out_d,
+            out_gamma,
+            out_tau,
+            max_avd,
+            max_gt,
         ) = results
 
         sim_results = SimulationResults(
@@ -358,7 +400,12 @@ class NonlinearSimulation(Simulation):
     """
 
     def __init__(
-            self, soil_profile, input_motion, *, G_param, xi_param,
+            self,
+            soil_profile,
+            input_motion,
+            *,
+            G_param,
+            xi_param,
             boundary='elastic',
     ):
         if G_param is None:
@@ -366,15 +413,24 @@ class NonlinearSimulation(Simulation):
         if xi_param is None:
             raise TypeError('`xi_param` cannot be None.')
         super(NonlinearSimulation, self).__init__(
-            soil_profile, input_motion,
-            G_param=G_param, xi_param=xi_param, boundary=boundary,
+            soil_profile,
+            input_motion,
+            G_param=G_param,
+            xi_param=xi_param,
+            boundary=boundary,
         )
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
     def run(
-            self, sim_dir=None, motion_name=None, save_txt=False,
-            save_full_time_history=True, show_fig=False, save_fig=False,
-            remove_sim_dir=False, verbose=True,
+            self,
+            sim_dir=None,
+            motion_name=None,
+            save_txt=False,
+            save_full_time_history=True,
+            show_fig=False,
+            save_fig=False,
+            remove_sim_dir=False,
+            verbose=True,
     ):
         """
         Run nonlinear simulation.
@@ -579,8 +635,10 @@ class NonlinearSimulation(Simulation):
             self.input_motion.accel, accel_surface_2col, amplitude_only=False,
         )
         tf_smoothed = sig.calc_transfer_function(
-            self.input_motion.accel, accel_surface_2col,
-            amplitude_only=True, smooth_signal=True,
+            self.input_motion.accel,
+            accel_surface_2col,
+            amplitude_only=True,
+            smooth_signal=True,
         )
         os.chdir(cwd)
 
