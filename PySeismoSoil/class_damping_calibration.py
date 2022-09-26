@@ -6,18 +6,22 @@ from .class_Vs_profile import Vs_Profile
 from .class_curves import DampingCurve, MultipleDampingCurves
 
 
-class Damping_Calibration:
+STRAIN_RANGE_PCT = np.logspace(-3, 1)
+
+
+class DampingCalibration:
     """
     A class to generate damping curves (and associated soil model parameters)
     from a given Vs profile.
     """
+
     def __init__(self, vs_profile):
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
         self.vs_profile = vs_profile
 
     def get_damping_curves(
-            self, strain_in_pct=np.logspace(-3, 1),
+            self, strain_in_pct=STRAIN_RANGE_PCT,
             use_Darendeli_Dmin=False, show_fig=False,
     ):
         """
@@ -86,7 +90,7 @@ class Damping_Calibration:
 
         Parameters
         ----------
-        kwargs :
+        **kwargs : Dict
             Keyword arguments to be passed to this method:
                 PySeismoSoil.class_curves.MultipleDampingCurves.get_all_HH_x_params().
             Check its documentation for details:
@@ -110,7 +114,7 @@ class Damping_Calibration:
 
         Parameters
         ----------
-        kwargs :
+        **kwargs :  Dict
             Keyword arguments to be passed to this method:
                 PySeismoSoil.class_curves.MultipleDampingCurves.get_all_H4_x_params().
             Check its documentation for details:
