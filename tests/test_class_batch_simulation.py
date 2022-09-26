@@ -6,7 +6,7 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 from PySeismoSoil.class_parameters import MultiLayerParamHH
 from PySeismoSoil.class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+    LinearSimulation, EquivLinearSimulation, NonlinearSimulation,
 )
 from PySeismoSoil.class_batch_simulation import BatchSimulation
 
@@ -36,8 +36,8 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
             gm = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
             prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
             mgdc = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
-            lin_sim = Linear_Simulation(prof, gm)
-            equiv_sim = Equiv_Linear_Simulation(prof, gm, mgdc)
+            lin_sim = LinearSimulation(prof, gm)
+            equiv_sim = EquivLinearSimulation(prof, gm, mgdc)
             BatchSimulation([lin_sim, equiv_sim])
 
     def test_linear(self):
@@ -45,8 +45,8 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         prof_1 = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
 
-        sim_1 = Linear_Simulation(prof_1, gm, boundary='elastic')
-        sim_2 = Linear_Simulation(prof_2, gm, boundary='elastic')
+        sim_1 = LinearSimulation(prof_1, gm, boundary='elastic')
+        sim_2 = LinearSimulation(prof_2, gm, boundary='elastic')
         sim_list = [sim_1, sim_2]
 
         batch_sim = BatchSimulation(sim_list)
@@ -68,7 +68,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
         mgdc_2 = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_P001.txt'))
 
-        sim_2 = Equiv_Linear_Simulation(prof_2, gm, mgdc_2, boundary='elastic')
+        sim_2 = EquivLinearSimulation(prof_2, gm, mgdc_2, boundary='elastic')
         sim_list = [sim_2]
 
         batch_sim = BatchSimulation(sim_list)
@@ -90,7 +90,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         hh_g = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
         hh_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
-        sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
+        sim = NonlinearSimulation(prof, gm, G_param=hh_g, xi_param=hh_x)
 
         batch_sim = BatchSimulation([sim])
         options = dict(show_fig=False, save_txt=False, remove_sim_dir=True)

@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from PySeismoSoil.class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+    LinearSimulation, EquivLinearSimulation, NonlinearSimulation,
 )
 from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
@@ -22,7 +22,7 @@ class Test_Class_Simulation(unittest.TestCase):
     def test_linear(self):
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m')
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        ls = Linear_Simulation(soil_profile, input_motion)
+        ls = LinearSimulation(soil_profile, input_motion)
         sim_result = ls.run(every_layer=True, show_fig=True)
         output = sim_result.accel_on_surface
 
@@ -41,8 +41,8 @@ class Test_Class_Simulation(unittest.TestCase):
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         curves = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
-        equiv_lin_sim = Equiv_Linear_Simulation(soil_profile, input_motion,
-                                                curves, boundary='elastic')
+        equiv_lin_sim = EquivLinearSimulation(soil_profile, input_motion,
+                                              curves, boundary='elastic')
         output = equiv_lin_sim.run(show_fig=True)
         max_v = output.max_a_v_d[:, 2]
         max_v_benchmark = [
@@ -70,7 +70,7 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
 
         # this should succeed
-        Nonlinear_Simulation(
+        NonlinearSimulation(
             soil_profile,
             input_motion,
             G_param=HH_G,
@@ -84,11 +84,11 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_G_ = MultiLayerParamHH(HH_G_data[:-1])  # exclude one layer
         HH_x_ = MultiLayerParamHH(HH_x_data[:-1])  # exclude one layer
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
-            Nonlinear_Simulation(
+            NonlinearSimulation(
                 soil_profile, input_motion, G_param=HH_G_, xi_param=HH_x,
             )
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
-            Nonlinear_Simulation(
+            NonlinearSimulation(
                 soil_profile, input_motion, G_param=HH_G, xi_param=HH_x_,
             )
 

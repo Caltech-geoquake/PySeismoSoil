@@ -3,7 +3,7 @@ import itertools
 import multiprocessing as mp
 
 from PySeismoSoil.class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+    LinearSimulation, EquivLinearSimulation, NonlinearSimulation,
 )
 
 from PySeismoSoil import helper_generic as hlp
@@ -17,8 +17,8 @@ class BatchSimulation:
     ----------
     list_of_simulations : list
         A list of simulation objects. Valid simulation objects include objects
-        from these classes: ``Linear_Simulation``, ``Equiv_Linear_Simulation``,
-        and ``Nonlinear_Simulation``.
+        from these classes: ``LinearSimulation``, ``EquivLinearSimulation``,
+        and ``NonlinearSimulation``.
 
     Returns
     -------
@@ -26,7 +26,7 @@ class BatchSimulation:
         Same as the input parameter `list_of_simulations`.
     n_simulations : int
         Number of simulations in the list.
-    sim_type : {``Linear_Simulation``, ``Equiv_Linear_Simulation``, ``Nonlinear_Simulation``}
+    sim_type : {``LinearSimulation``, ``EquivLinearSimulation``, ``NonlinearSimulation``}
         The object type of the site response simulations.
     """
 
@@ -38,12 +38,12 @@ class BatchSimulation:
         sim_0 = list_of_simulations[0]
         if not isinstance(
             sim_0,
-            (Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation),
+            (LinearSimulation, EquivLinearSimulation, NonlinearSimulation),
         ):
             raise TypeError(
                 'Elements of `list_of_simulations` should be of '
-                + 'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
-                + 'or `Nonlinear_Simulation`.',
+                + 'type `LinearSimulation`, `EquivLinearSimulation`, '
+                + 'or `NonlinearSimulation`.',
             )
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
@@ -146,7 +146,7 @@ class BatchSimulation:
         i, other_params = all_params  # unpack
         n_digits, base_output_dir, options = other_params  # unpack
         output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
-        if self.sim_type == Nonlinear_Simulation:
+        if self.sim_type == NonlinearSimulation:
             options.update({'sim_dir': output_dir})
         else:  # linear or equivalent linear
             options.update({'output_dir': output_dir})

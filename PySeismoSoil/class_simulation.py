@@ -2,21 +2,21 @@ import os
 import glob
 import stat
 import shutil
-import subprocess
+import subprocess  # noqa: S404
 import numpy as np
 import pkg_resources
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
-from . import helper_simulations as sim
-from . import helper_signal_processing as sig
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil import helper_simulations as sim
+from PySeismoSoil import helper_signal_processing as sig
 
-from .class_ground_motion import GroundMotion
-from .class_Vs_profile import Vs_Profile
-from .class_parameters import MultiLayerParam
-from .class_curves import MultipleGGmaxDampingCurves
-from .class_simulation_results import Simulation_Results
-from .class_frequency_spectrum import FrequencySpectrum
+from PySeismoSoil.class_ground_motion import GroundMotion
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_parameters import MultiLayerParam
+from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
+from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 
 class Simulation:
@@ -47,6 +47,7 @@ class Simulation:
     ----------
     Attributes same as the inputs
     """
+
     def __init__(
             self, soil_profile, input_motion, *, boundary='elastic',
             G_param=None, xi_param=None, GGmax_and_damping_curves=None,
@@ -64,14 +65,14 @@ class Simulation:
         if G_param is not None and not isinstance(G_param, MultiLayerParam):
             raise TypeError(
                 '`G_param` must be of a subclass of '
-                '`MultiLayerParam`, e.g., `MultiLayerParamHH` '
-                'or `MultiLayerParamMKZ`.'
+                + '`MultiLayerParam`, e.g., `MultiLayerParamHH` '
+                + 'or `MultiLayerParamMKZ`.',
             )
         if xi_param is not None and not isinstance(xi_param, MultiLayerParam):
             raise TypeError(
                 '`xi_param` must be of a subclass of '
-                '`MultiLayerParam`, e.g., `MultiLayerParamHH` '
-                'or `MultiLayerParamMKZ`.'
+                + '`MultiLayerParam`, e.g., `MultiLayerParamHH` '
+                + 'or `MultiLayerParamMKZ`.',
             )
 
         if (
@@ -80,7 +81,7 @@ class Simulation:
         ):
             raise TypeError(
                 '`GGmax_and_damping_curves` must be a '
-                '`MultipleGGmaxCurves` object.'
+                + '`MultipleGGmaxCurves` object.',
             )
 
         self.input_motion = input_motion
@@ -91,7 +92,7 @@ class Simulation:
         self.GGmax_and_damping_curves = GGmax_and_damping_curves
 
 
-class Linear_Simulation(Simulation):
+class LinearSimulation(Simulation):
     """
     Linear site response simulation.
 
@@ -113,12 +114,15 @@ class Linear_Simulation(Simulation):
     ----------
     Attributes same as the inputs
     """
+
     def run(
             self, every_layer=True, deconv=False, show_fig=False,
             save_fig=False, motion_name=None, save_txt=False,
             save_full_time_history=False, output_dir=None, verbose=True,
     ):
         """
+        Run linear simulation.
+
         Parameters
         ----------
         every_layer : bool
@@ -213,7 +217,7 @@ class Linear_Simulation(Simulation):
         return sim_results
 
 
-class Equiv_Linear_Simulation(Simulation):
+class EquivLinearSimulation(Simulation):
     """
     Equivalent linear site response simulation.
 
@@ -233,13 +237,14 @@ class Equiv_Linear_Simulation(Simulation):
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
     """
+
     def __init__(
             self, soil_profile, input_motion, GGmax_and_damping_curves,
             boundary='elastic',
     ):
         if GGmax_and_damping_curves is None:
             raise TypeError('`GGmax_and_damping_curves` cannot be None.')
-        super(Equiv_Linear_Simulation, self).__init__(
+        super(EquivLinearSimulation, self).__init__(
             soil_profile,
             input_motion,
             GGmax_and_damping_curves=GGmax_and_damping_curves,
@@ -325,7 +330,7 @@ class Equiv_Linear_Simulation(Simulation):
         return sim_results
 
 
-class Nonlinear_Simulation(Simulation):
+class NonlinearSimulation(Simulation):
     """
     Nonlinear site response simulation.
 
@@ -351,6 +356,7 @@ class Nonlinear_Simulation(Simulation):
     ----------
     Attributes same as the inputs
     """
+
     def __init__(
             self, soil_profile, input_motion, *, G_param, xi_param,
             boundary='elastic',
@@ -359,7 +365,7 @@ class Nonlinear_Simulation(Simulation):
             raise TypeError('`G_param` cannot be None.')
         if xi_param is None:
             raise TypeError('`xi_param` cannot be None.')
-        super(Nonlinear_Simulation, self).__init__(
+        super(NonlinearSimulation, self).__init__(
             soil_profile, input_motion,
             G_param=G_param, xi_param=xi_param, boundary=boundary,
         )
@@ -371,7 +377,7 @@ class Nonlinear_Simulation(Simulation):
             remove_sim_dir=False, verbose=True,
     ):
         """
-        Start nonlinear simulation.
+        Run nonlinear simulation.
 
         Parameters
         ----------
@@ -404,6 +410,11 @@ class Nonlinear_Simulation(Simulation):
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
+
+        Raises
+        ------
+        ValueError
+            When operating system is not Windows, nor macOS, nor Linux.
         """
         if verbose:
             print('Nonlinear simulation running...')
@@ -426,7 +437,10 @@ class Nonlinear_Simulation(Simulation):
         if os.path.exists(sim_dir):
             sim_dir += '_'
         os.makedirs(sim_dir)
-        os.chmod(sim_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+        os.chmod(
+            sim_dir,
+            stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
+        )
 
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
@@ -486,36 +500,42 @@ class Nonlinear_Simulation(Simulation):
         # -------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
             fp.write(
-                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f' \
-                % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs)
+                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
+                % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs),
             )
 
         # -------- Write data to files for the Fortran kernel to read ----------
         np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
         np.savetxt(os.path.join(sim_dir, 'incident.dat'), input_accel)
         np.savetxt(os.path.join(sim_dir, 'curve.dat'), curves)
-        np.savetxt(os.path.join(sim_dir, 'HH_G.dat'), self.G_param.serialize_to_2D_array())
-        np.savetxt(os.path.join(sim_dir, 'HH_x.dat'), self.xi_param.serialize_to_2D_array())
+        np.savetxt(
+            os.path.join(sim_dir, 'HH_G.dat'),
+            self.G_param.serialize_to_2D_array(),
+        )
+        np.savetxt(
+            os.path.join(sim_dir, 'HH_x.dat'),
+            self.xi_param.serialize_to_2D_array(),
+        )
 
         # ------- Execute Fortran kernel ---------------------------------------
         cwd = os.getcwd()
         os.chdir(sim_dir)
         if hlp.detect_OS() == 'Windows':
-            subprocess.run('NLHH.exe')
+            subprocess.run('NLHH.exe')  # noqa: S603, S607
         elif hlp.detect_OS() == 'Darwin':
             current_status = os.stat('NLHH.mac').st_mode
             os.chmod(
                 'NLHH.mac',
                 current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
             )
-            subprocess.run('./NLHH.mac', stdout=True)
+            subprocess.run('./NLHH.mac', stdout=True)  # noqa: S603
         elif hlp.detect_OS() == 'Linux':
             current_status = os.stat('NLHH.unix').st_mode
             os.chmod(
                 'NLHH.unix',
                 current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
             )
-            subprocess.run('./NLHH.unix', stdout=True)
+            subprocess.run('./NLHH.unix', stdout=True)  # noqa: S603
         else:
             raise ValueError('Unknown operating system.')
 
