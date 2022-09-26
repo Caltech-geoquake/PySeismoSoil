@@ -57,8 +57,15 @@ class Curve:
     """
 
     def __init__(
-            self, data, *, strain_unit='%', interpolate=False,
-            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            self,
+            data,
+            *,
+            strain_unit='%',
+            interpolate=False,
+            min_strain=0.0001,
+            max_strain=10.,
+            n_pts=50,
+            log_scale=True,
             check_values=True,
     ):
 
@@ -66,7 +73,11 @@ class Curve:
 
         if interpolate:
             strain, values = hlp.interpolate(
-                min_strain, max_strain, n_pts, data[:, 0], data[:, 1],
+                min_strain,
+                max_strain,
+                n_pts,
+                data[:, 0],
+                data[:, 1],
                 log_scale=log_scale,
             )
         else:
@@ -86,8 +97,15 @@ class Curve:
         return '%s object:\n%s' % (self.__class__, str(self.raw_data))
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel=None,
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -185,8 +203,15 @@ class GGmaxCurve(Curve):
     """
 
     def __init__(
-            self, data, *, strain_unit='%', interpolate=False,
-            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            self,
+            data,
+            *,
+            strain_unit='%',
+            interpolate=False,
+            min_strain=0.0001,
+            max_strain=10.,
+            n_pts=50,
+            log_scale=True,
             check_values=True,
     ):
 
@@ -254,9 +279,17 @@ class DampingCurve(Curve):
     """
 
     def __init__(
-            self, data, *, strain_unit='%', damping_unit='%',
-            interpolate=False, min_strain=0.0001, max_strain=10.,
-            n_pts=50, log_scale=True, check_values=True,
+            self,
+            data,
+            *,
+            strain_unit='%',
+            damping_unit='%',
+            interpolate=False,
+            min_strain=0.0001,
+            max_strain=10.,
+            n_pts=50,
+            log_scale=True,
+            check_values=True,
     ):
         super(DampingCurve, self).__init__(
             data,
@@ -280,9 +313,17 @@ class DampingCurve(Curve):
             raise ValueError('The provided damping values must be between [0, 100].')
 
     def get_HH_x_param(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False, parallel=False,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
             n_cores=None,
     ):
         """
@@ -335,7 +376,7 @@ class DampingCurve(Curve):
         HH_x_param : PySeismoSoil.class_parameters.ParamHH
             The best parameters found in the optimization.
         """
-        from .class_parameters import ParamHH
+        from PySeismoSoil.class_parameters import ParamHH
 
         HH_x_param = hh.fit_HH_x_single_layer(
             self.raw_data,
@@ -356,9 +397,17 @@ class DampingCurve(Curve):
         return self.HH_x_param
 
     def get_H4_x_param(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False, parallel=False,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
             n_cores=None,
     ):
         """
@@ -411,7 +460,7 @@ class DampingCurve(Curve):
         H4_x_param : PySeismoSoil.class_parameters.ParamMKZ
             The best parameters found in the optimization.
         """
-        from .class_parameters import ParamMKZ
+        from PySeismoSoil.class_parameters import ParamMKZ
 
         H4_x_param = mkz.fit_H4_x_single_layer(
             self.raw_data,
@@ -473,8 +522,15 @@ class StressCurve(Curve):
     """
 
     def __init__(
-            self, data, *, strain_unit='1', stress_unit='kPa',
-            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            self,
+            data,
+            *,
+            strain_unit='1',
+            stress_unit='kPa',
+            min_strain=0.0001,
+            max_strain=10.,
+            n_pts=50,
+            log_scale=True,
             check_values=True,
     ):
         super(StressCurve, self).__init__(
@@ -595,8 +651,15 @@ class MultipleCurves:
         self.n_layer += 1
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel=None,
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -636,8 +699,13 @@ class MultipleCurves:
         ax = plt.axes()
         for curve in self.curves:
             curve.plot(
-                plot_interpolated=plot_interpolated, fig=fig, ax=ax,
-                figsize=figsize, dpi=dpi, title=title, xlabel=xlabel,
+                plot_interpolated=plot_interpolated,
+                fig=fig,
+                ax=ax,
+                figsize=figsize,
+                dpi=dpi,
+                title=title,
+                xlabel=xlabel,
                 ylabel=ylabel,
             )
 
@@ -697,8 +765,15 @@ class MultipleDampingCurves(MultipleCurves):
         )
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel='Damping [%]', figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel='Damping [%]',
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -807,12 +882,24 @@ class MultipleDampingCurves(MultipleCurves):
         return curve_matrix
 
     def get_all_HH_x_params(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False,
-            parallel=False, n_cores=None,
-            save_txt=False, txt_filename=None, sep=None,
-            save_fig=False, fig_filename=None, dpi=100,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
+            n_cores=None,
+            save_txt=False,
+            txt_filename=None,
+            sep=None,
+            save_fig=False,
+            fig_filename=None,
+            dpi=100,
     ):
         """
         Obtain the HH_x parameters from the damping curve data (for all the
@@ -875,7 +962,7 @@ class MultipleDampingCurves(MultipleCurves):
         HH_x_param : PySeismoSoil.class_parameters.MultiLayerParamHH
             The best parameters for each soil layer found in the optimization.
         """
-        from .class_parameters import MultiLayerParamHH
+        from PySeismoSoil.class_parameters import MultiLayerParamHH
 
         if save_fig and fig_filename is None:
             fig_filename = self._produce_output_file_name('HH', 'png')
@@ -914,12 +1001,24 @@ class MultipleDampingCurves(MultipleCurves):
         return MultiLayerParamHH(params)
 
     def get_all_H4_x_params(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False,
-            parallel=False, n_cores=None,
-            save_txt=False, txt_filename=None, sep=None,
-            save_fig=False, fig_filename=None, dpi=100,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
+            n_cores=None,
+            save_txt=False,
+            txt_filename=None,
+            sep=None,
+            save_fig=False,
+            fig_filename=None,
+            dpi=100,
     ):
         """
         Obtain the H4_x parameters from the damping curve data (for all the
@@ -982,7 +1081,7 @@ class MultipleDampingCurves(MultipleCurves):
         H4_x_param : PySeismoSoil.class_parameters.H4_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
-        from .class_parameters import MultiLayerParamMKZ
+        from PySeismoSoil.class_parameters import MultiLayerParamMKZ
 
         if save_fig and fig_filename is None:
             fig_filename = self._produce_output_file_name('H4', 'png')
@@ -1108,8 +1207,15 @@ class MultipleGGmaxCurves(MultipleCurves):
         )
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel='G/Gmax', figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel='G/Gmax',
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -1146,9 +1252,15 @@ class MultipleGGmaxCurves(MultipleCurves):
             The axes object being created or being passed into this function.
         """
         fig, ax = super(MultipleGGmaxCurves, self).plot(
-            plot_interpolated=plot_interpolated, fig=fig,
-            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
-            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib,
+            plot_interpolated=plot_interpolated,
+            fig=fig,
+            ax=ax,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            figsize=figsize,
+            dpi=dpi,
+            **kwargs_to_matplotlib,
         )
 
         return fig, ax

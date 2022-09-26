@@ -79,8 +79,16 @@ class FrequencySpectrum:
     """
 
     def __init__(
-            self, data, *, df=None, interpolate=False, fmin=0.1, fmax=30,
-            n_pts=1000, log_scale=True, sep='\t',
+            self,
+            data,
+            *,
+            df=None,
+            interpolate=False,
+            fmin=0.1,
+            fmax=30,
+            n_pts=1000,
+            log_scale=True,
+            sep='\t',
     ):
         data_, df = hlp.read_two_column_stuff(data, df, sep)
         if isinstance(data, str):  # is a file name
@@ -97,8 +105,12 @@ class FrequencySpectrum:
             spect = data_[:, 1]
         else:
             freq, spect = hlp.interpolate(
-                fmin, fmax, n_pts, np.real_if_close(data_[:, 0]),
-                data_[:, 1], log_scale=log_scale,
+                fmin,
+                fmax,
+                n_pts,
+                np.real_if_close(data_[:, 0]),
+                data_[:, 1],
+                log_scale=log_scale,
             )
         self.raw_df = df
         self.raw_data = data_
@@ -122,8 +134,15 @@ class FrequencySpectrum:
         return text
 
     def plot(
-            self, fig=None, ax=None, figsize=None, dpi=100,
-            logx=True, logy=False, plot_abs=False, **kwargs_plot,
+            self,
+            fig=None,
+            ax=None,
+            figsize=None,
+            dpi=100,
+            logx=True,
+            logy=False,
+            plot_abs=False,
+            **kwargs_plot,
     ):
         """
         Plot the shape of the interpolated spectrum.
@@ -203,8 +222,12 @@ class FrequencySpectrum:
             The axes object being created or being passed into this function.
         """
         sm = sig.log_smooth(
-            self.spectrum, win_len=win_len, fmin=self.fmin,
-            fmax=self.fmax, lin_space=not log_scale, **kwargs,
+            self.spectrum,
+            win_len=win_len,
+            fmin=self.fmin,
+            fmax=self.fmax,
+            lin_space=not log_scale,
+            **kwargs,
         )
         if show_fig:
             fig = plt.figure()

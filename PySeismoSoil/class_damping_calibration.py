@@ -22,7 +22,8 @@ class DampingCalibration:
 
     def get_damping_curves(
             self, strain_in_pct=STRAIN_RANGE_PCT,
-            use_Darendeli_Dmin=False, show_fig=False,
+            use_Darendeli_Dmin=False,
+            show_fig=False,
     ):
         """
         Calculate damping curves using empirical formulas by Darendeli (2001).
@@ -72,8 +73,10 @@ class DampingCalibration:
                 xi_j += self.vs_profile.vs_profile[j, 2]
             dc = DampingCurve(
                 np.column_stack((strain_in_pct, xi_j)),
-                strain_unit='%', damping_unit='1',
-                interpolate=False, check_values=True,
+                strain_unit='%',
+                damping_unit='1',
+                interpolate=False,
+                check_values=True,
             )
             curve_list.append(dc)
         mdc = MultipleDampingCurves(curve_list)

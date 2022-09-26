@@ -71,8 +71,13 @@ class HHCalibration:
         self.Tmax_profile = Tmax_profile
 
     def fit(
-            self, show_fig=False, save_fig=False, fig_output_dir=None,
-            save_HH_G_file=False, HH_G_file_dir=None, profile_name=None,
+            self,
+            show_fig=False,
+            save_fig=False,
+            fig_output_dir=None,
+            save_HH_G_file=False,
+            HH_G_file_dir=None,
+            profile_name=None,
             verbose=True,
     ):
         """

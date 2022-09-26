@@ -82,7 +82,13 @@ class GroundMotion:
     """
 
     def __init__(
-            self, data, *, unit, motion_type='accel', dt=None, sep='\t',
+            self,
+            data,
+            *,
+            unit,
+            motion_type='accel',
+            dt=None,
+            sep='\t',
             **kwargs_to_genfromtxt,
     ):
         if isinstance(data, str):  # a file name
@@ -190,8 +196,15 @@ class GroundMotion:
         return fs
 
     def get_response_spectra(
-            self, T_min=0.01, T_max=10, n_pts=60, damping=0.05, show_fig=True,
-            parallel=False, n_cores=None, subsample_interval=1,
+            self,
+            T_min=0.01,
+            T_max=10,
+            n_pts=60,
+            damping=0.05,
+            show_fig=True,
+            parallel=False,
+            n_cores=None,
+            subsample_interval=1,
     ):
         """
         Get elastic response spectra of the ground motion, using the "exact"
@@ -229,9 +242,14 @@ class GroundMotion:
             and frequencies, respectively. Units: SI.
         """
         rs = sr.response_spectra(
-            self.accel, damping=damping, T_min=T_min,
-            T_max=T_max, n_pts=n_pts, show_fig=show_fig,
-            parallel=parallel, n_cores=n_cores,
+            self.accel,
+            damping=damping,
+            T_min=T_min,
+            T_max=T_max,
+            n_pts=n_pts,
+            show_fig=show_fig,
+            parallel=parallel,
+            n_cores=n_cores,
             subsample_interval=subsample_interval,
         )
         return rs
@@ -277,8 +295,13 @@ class GroundMotion:
             raise ValueError("`show_as_unit` can only be 'm', 'cm', or 'g'.")
 
         fig, ax = sr.plot_motion(
-            accel_, unit=show_as_unit, title=title,
-            fig=fig, ax=ax, figsize=figsize, dpi=dpi,
+            accel_,
+            unit=show_as_unit,
+            title=title,
+            fig=fig,
+            ax=ax,
+            figsize=figsize,
+            dpi=dpi,
         )
         return fig, ax
 
@@ -537,8 +560,14 @@ class GroundMotion:
         return GroundMotion(truncated, unit='m'), fig, ax, (n1, n2)
 
     def amplify_by_tf(
-            self, transfer_function, taper=False, extrap_tf=True,
-            deconv=False, show_fig=False, dpi=100, return_fig_obj=False,
+            self,
+            transfer_function,
+            taper=False,
+            extrap_tf=True,
+            deconv=False,
+            show_fig=False,
+            dpi=100,
+            return_fig_obj=False,
     ):
         """
         Amplify (or de-amplify) ground motions in the frequency domain. The
@@ -646,8 +675,12 @@ class GroundMotion:
         return output_motion
 
     def compare(
-            self, another_ground_motion, this_ground_motion_as_input=True,
-            smooth=True, input_accel_label='Input', output_accel_label='Output',
+            self,
+            another_ground_motion,
+            this_ground_motion_as_input=True,
+            smooth=True,
+            input_accel_label='Input',
+            output_accel_label='Output',
     ):
         """
         Compare with another ground motion: plot comparison figures showing
@@ -776,8 +809,11 @@ class GroundMotion:
             Filtered signal.
         """
         accel_ = sig.lowpass(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return GroundMotion(accel_, unit='m')
 
@@ -802,8 +838,11 @@ class GroundMotion:
             Filtered signal.
         """
         accel_ = sig.highpass(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return GroundMotion(accel_, unit='m')
 
@@ -828,8 +867,11 @@ class GroundMotion:
             Filtered signal
         """
         accel_ = sig.bandpass(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return GroundMotion(accel_, unit='m')
 
@@ -855,8 +897,11 @@ class GroundMotion:
             Filtered signal
         """
         accel_ = sig.bandstop(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return GroundMotion(accel_, unit='m')
 

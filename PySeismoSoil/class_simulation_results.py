@@ -351,7 +351,7 @@ class SimulationResults:
             np.savetxt(
                 fn_TF_smoothed,
                 self.trans_func_smoothed.amplitude_2col,
-                **fmt_dict
+                **fmt_dict,
             )
 
         if verbose:
