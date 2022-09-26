@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
 
 def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
@@ -242,10 +242,11 @@ def deserialize_array_to_params(array, from_files=False):
     """
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
-    The users needs to ensure the order of values in ``array`` are in this order:
+    The users need to ensure the order of values in ``array`` are in this order:
         gamma_ref, s, beta, Gmax (if ``from_files`` is ``False``)
     or:
         gamma_ref, b, s, beta (if ``from_files`` is ``True``)
+
     (b is always 0, for historical reasons)
 
     Parameters
@@ -268,17 +269,19 @@ def deserialize_array_to_params(array, from_files=False):
     assert(len(array) == 4)
 
     if from_files:
-        param = dict()
-        param['gamma_ref'] = array[0]
-        param['s'] = array[2]
-        param['beta'] = array[3]
-        param['Gmax'] = 1.0  # "H4_G_SITE_NAME.txt" files don't have Gmax info
+        param = {
+            'gamma_ref': array[0],
+            's': array[2],
+            'beta': array[3],
+            'Gmax': 1.0,  # "H4_G_SITE_NAME.txt" files don't have Gmax info
+        }
     else:
-        param = dict()
-        param['gamma_ref'] = array[0]
-        param['s'] = array[1]
-        param['beta'] = array[2]
-        param['Gmax'] = array[3]
+        param = {
+            'gamma_ref': array[0],
+            's': array[1],
+            'beta': array[2],
+            'Gmax': array[3],
+        }
 
     return param
 
@@ -391,14 +394,14 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
                 alpha=0.8,
                 label='Data points',
             )
-            plt.semilogx(gamma_ * 100, GGmax_[:, k], lw=1.5, label='Curve fit',)
+            plt.semilogx(gamma_ * 100, GGmax_[:, k], lw=1.5, label='Curve fit')
             plt.xlabel('Shear strain [%]')
             plt.ylabel('G/Gmax')
             plt.legend(loc='lower left')
             plt.grid(ls=':', lw=0.5)
             plt.title(
-                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g' \
-                % (ref_strain[k], s_value[k], beta[k])
+                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g'
+                % (ref_strain[k], s_value[k], beta[k]),
             )
         # END FOR
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
