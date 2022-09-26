@@ -21,7 +21,8 @@ class DampingCalibration:
         self.vs_profile = vs_profile
 
     def get_damping_curves(
-            self, strain_in_pct=STRAIN_RANGE_PCT,
+            self,
+            strain_in_pct=STRAIN_RANGE_PCT,
             use_Darendeli_Dmin=False,
             show_fig=False,
     ):
