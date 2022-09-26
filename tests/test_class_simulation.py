@@ -6,7 +6,7 @@ from PySeismoSoil.class_simulation import (
 )
 from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_parameters import MultiLayerParamHH
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 
 from test_class_ground_motion import Test_Class_Ground_Motion
@@ -66,8 +66,8 @@ class Test_Class_Simulation(unittest.TestCase):
     def test_nonlinear_init(self):
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m')
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        HH_G = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
-        HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
+        HH_G = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
+        HH_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
 
         # this should succeed
         Nonlinear_Simulation(
@@ -81,8 +81,8 @@ class Test_Class_Simulation(unittest.TestCase):
         # this should fail with ValueError
         HH_G_data = HH_G.param_list
         HH_x_data = HH_x.param_list
-        HH_G_ = HH_Param_Multi_Layer(HH_G_data[:-1])  # exclude one layer
-        HH_x_ = HH_Param_Multi_Layer(HH_x_data[:-1])  # exclude one layer
+        HH_G_ = MultiLayerParamHH(HH_G_data[:-1])  # exclude one layer
+        HH_x_ = MultiLayerParamHH(HH_x_data[:-1])  # exclude one layer
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
             Nonlinear_Simulation(
                 soil_profile, input_motion, G_param=HH_G_, xi_param=HH_x,

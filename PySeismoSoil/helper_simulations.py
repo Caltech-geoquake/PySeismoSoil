@@ -23,9 +23,9 @@ def check_layer_count(
         Vs profile.
     GGmax_and_damping_curves : class_curves.MultipleGGmaxDampingCurves
         G/Gmax and damping curves.
-    G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    G_param : class_parameters.MultiLayerParamHH or MultiLayerParamMKZ
         HH or MKZ parameters for G/Gmax curves.
-    xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    xi_param : class_parameters.MultiLayerParamHH or MultiLayerParamMKZ
         HH or MKZ parameters for damping curves.
     """
     max_mat_num = np.max(vs_profile._material_number)

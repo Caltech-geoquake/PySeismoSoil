@@ -13,7 +13,7 @@ from . import helper_signal_processing as sig
 
 from .class_ground_motion import GroundMotion
 from .class_Vs_profile import Vs_Profile
-from .class_parameters import Param_Multi_Layer
+from .class_parameters import MultiLayerParam
 from .class_curves import MultipleGGmaxDampingCurves
 from .class_simulation_results import Simulation_Results
 from .class_frequency_spectrum import FrequencySpectrum
@@ -36,9 +36,9 @@ class Simulation:
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
-    G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    G_param : class_parameters.MultiLayerParamHH or MultiLayerParamMKZ
         Parameters that describe the G/Gmax curves.
-    xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    xi_param : class_parameters.MultiLayerParamHH or MultiLayerParamMKZ
         Parameters that describe the damping curves.
     GGmax_and_damping_curves : class_curves.MultipleGGmaxDampingCurves
         G/Gmax and damping curves of every soil layer.
@@ -61,17 +61,17 @@ class Simulation:
 
         if type(G_param) != type(xi_param):
             raise TypeError('`G_param` and `xi_param` must be of the same type.')
-        if G_param is not None and not isinstance(G_param, Param_Multi_Layer):
+        if G_param is not None and not isinstance(G_param, MultiLayerParam):
             raise TypeError(
                 '`G_param` must be of a subclass of '
-                '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
-                'or `MKZ_Param_Multi_Layer`.'
+                '`MultiLayerParam`, e.g., `MultiLayerParamHH` '
+                'or `MultiLayerParamMKZ`.'
             )
-        if xi_param is not None and not isinstance(xi_param, Param_Multi_Layer):
+        if xi_param is not None and not isinstance(xi_param, MultiLayerParam):
             raise TypeError(
                 '`xi_param` must be of a subclass of '
-                '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
-                'or `MKZ_Param_Multi_Layer`.'
+                '`MultiLayerParam`, e.g., `MultiLayerParamHH` '
+                'or `MultiLayerParamMKZ`.'
             )
 
         if (
@@ -338,9 +338,9 @@ class Nonlinear_Simulation(Simulation):
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    G_param : class_parameters.MultiLayerParamHH or MultiLayerParamMKZ
         Parameters that describe the G/Gmax curves.
-    xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    xi_param : class_parameters.MultiLayerParamHH or MultiLayerParamMKZ
         Parameters that describe the damping curves.
     boundary : {'elastic', 'rigid'}
         Boundary condition. "Elastic" means that the boundary allows waves to

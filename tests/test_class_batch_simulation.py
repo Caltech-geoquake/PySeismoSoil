@@ -4,7 +4,7 @@ import numpy as np
 from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_parameters import MultiLayerParamHH
 from PySeismoSoil.class_simulation import (
     Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
 )
@@ -88,8 +88,8 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         accel_downsample = accel_data[::50]  # for faster testing speed
         gm = GroundMotion(accel_downsample, unit='gal')
         prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        hh_g = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
-        hh_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
+        hh_g = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
+        hh_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
         sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
 
         batch_sim = BatchSimulation([sim])

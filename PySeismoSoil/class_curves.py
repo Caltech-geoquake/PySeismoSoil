@@ -332,10 +332,10 @@ class DampingCurve(Curve):
 
         Return
         ------
-        HH_x_param : PySeismoSoil.class_parameters.HH_Param
+        HH_x_param : PySeismoSoil.class_parameters.ParamHH
             The best parameters found in the optimization.
         """
-        from .class_parameters import HH_Param
+        from .class_parameters import ParamHH
 
         HH_x_param = hh.fit_HH_x_single_layer(
             self.raw_data,
@@ -352,7 +352,7 @@ class DampingCurve(Curve):
             n_cores=n_cores,
         )
 
-        self.HH_x_param = HH_Param(HH_x_param)
+        self.HH_x_param = ParamHH(HH_x_param)
         return self.HH_x_param
 
     def get_H4_x_param(
@@ -408,10 +408,10 @@ class DampingCurve(Curve):
 
         Return
         ------
-        H4_x_param : PySeismoSoil.class_parameters.MKZ_Param
+        H4_x_param : PySeismoSoil.class_parameters.ParamMKZ
             The best parameters found in the optimization.
         """
-        from .class_parameters import MKZ_Param
+        from .class_parameters import ParamMKZ
 
         H4_x_param = mkz.fit_H4_x_single_layer(
             self.raw_data,
@@ -428,7 +428,7 @@ class DampingCurve(Curve):
             n_cores=n_cores,
         )
 
-        self.H4_x_param = MKZ_Param(H4_x_param)
+        self.H4_x_param = ParamMKZ(H4_x_param)
         return self.H4_x_param
 
 
@@ -872,10 +872,10 @@ class MultipleDampingCurves(MultipleCurves):
 
         Return
         ------
-        HH_x_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
+        HH_x_param : PySeismoSoil.class_parameters.MultiLayerParamHH
             The best parameters for each soil layer found in the optimization.
         """
-        from .class_parameters import HH_Param_Multi_Layer
+        from .class_parameters import MultiLayerParamHH
 
         if save_fig and fig_filename is None:
             fig_filename = self._produce_output_file_name('HH', 'png')
@@ -911,7 +911,7 @@ class MultipleDampingCurves(MultipleCurves):
             func_serialize=hh.serialize_params_to_array,
         )
 
-        return HH_Param_Multi_Layer(params)
+        return MultiLayerParamHH(params)
 
     def get_all_H4_x_params(
             self, use_scipy=True, pop_size=800, n_gen=100,
@@ -982,7 +982,7 @@ class MultipleDampingCurves(MultipleCurves):
         H4_x_param : PySeismoSoil.class_parameters.H4_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
-        from .class_parameters import MKZ_Param_Multi_Layer
+        from .class_parameters import MultiLayerParamMKZ
 
         if save_fig and fig_filename is None:
             fig_filename = self._produce_output_file_name('H4', 'png')
@@ -1018,7 +1018,7 @@ class MultipleDampingCurves(MultipleCurves):
             func_serialize=mkz.serialize_params_to_array,
         )
 
-        return MKZ_Param_Multi_Layer(params)
+        return MultiLayerParamMKZ(params)
 
     def _produce_output_file_name(self, prefix, extension):
         """

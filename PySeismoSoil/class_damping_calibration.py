@@ -98,7 +98,7 @@ class DampingCalibration:
 
         Returns
         -------
-        HH_x_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
+        HH_x_param : PySeismoSoil.class_parameters.MultiLayerParamHH
             The best parameters for each soil layer found in the optimization.
         """
         mdc = self.get_damping_curves(

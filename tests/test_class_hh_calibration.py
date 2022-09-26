@@ -4,7 +4,7 @@ import numpy as np
 from PySeismoSoil.class_hh_calibration import HHCalibration
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import MultipleGGmaxCurves
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_parameters import MultiLayerParamHH
 
 import os
 from os.path import join as _join
@@ -70,7 +70,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         hh_c = HHCalibration(vs_profile)
         HH_G_param = hh_c.fit(verbose=False)
-        HH_G_param_benchmark = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
+        HH_G_param_benchmark = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
         self.assertTrue(np.allclose(
             HH_G_param.serialize_to_2D_array(),
             HH_G_param_benchmark.serialize_to_2D_array(),
@@ -94,7 +94,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
              [26501, 64856.6, 148805, 804855, 1.10785e+06],
              [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]]
         )
-        HH_G_param_benchmark = HH_Param_Multi_Layer(HH_G_benchmark_data)
+        HH_G_param_benchmark = MultiLayerParamHH(HH_G_benchmark_data)
         self.assertTrue(np.allclose(
             HH_G_param.serialize_to_2D_array(),
             HH_G_param_benchmark.serialize_to_2D_array(),

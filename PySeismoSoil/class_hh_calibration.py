@@ -1,6 +1,6 @@
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import MultipleGGmaxCurves
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_parameters import MultiLayerParamHH
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_calibration as hhc
@@ -104,7 +104,7 @@ class HHCalibration:
 
         Returns
         -------
-        HH_G_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
+        HH_G_param : PySeismoSoil.class_parameters.MultiLayerParamHH
             The HH parameters of each layer.
         """
         vs_profile = self.vs_profile.vs_profile
@@ -120,5 +120,5 @@ class HHCalibration:
             curves = self.GGmax_curves.get_curve_matrix()
             HH_G_param_ = hhc.hh_param_from_curves(vs_profile, curves, **options)
 
-        HH_G_param = HH_Param_Multi_Layer(HH_G_param_)
+        HH_G_param = MultiLayerParamHH(HH_G_param_)
         return HH_G_param

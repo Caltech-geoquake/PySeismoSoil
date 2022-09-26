@@ -2,4 +2,4 @@ pip install flake8 wemake-python-styleguide flake8-mutable flake8-length flake8-
 echo ""
 echo "******************************"
 echo ""
-flake8 ./PySeismoSoil/class_hh_calibration.py
+flake8 ./PySeismoSoil/class_parameters.py
