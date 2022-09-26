@@ -21,7 +21,7 @@ def check_layer_count(
     ----------
     vs_profile : class_Vs_profile.Vs_Profile
         Vs profile.
-    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+    GGmax_and_damping_curves : class_curves.MultipleGGmaxDampingCurves
         G/Gmax and damping curves.
     G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         HH or MKZ parameters for G/Gmax curves.

@@ -1,5 +1,5 @@
 from .class_Vs_profile import Vs_Profile
-from .class_curves import Multiple_GGmax_Curves
+from .class_curves import MultipleGGmaxCurves
 from .class_parameters import HH_Param_Multi_Layer
 
 from . import helper_generic as hlp
@@ -24,7 +24,7 @@ class HH_Calibration:
     ----------
     vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
         The Vs profile of interest.
-    GGmax_curves : PySeismoSoil.class_curves.Multiple_GGmax_Curves or ``None``
+    GGmax_curves : PySeismoSoil.class_curves.MultipleGGmaxCurves or ``None``
         The G/Gmax curves of each layer. If ``None``, HH parameters will be
         determined from the Vs profile alone. If the user supplies this
         parameter, it will be used to calibrate the MKZ model, which eventually
@@ -38,7 +38,7 @@ class HH_Calibration:
     ----------
     vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
         Same as the input parameter.
-    GGmax_curves : PySeismoSoil.class_curves.Multiple_GGmax_Curves or ``None``
+    GGmax_curves : PySeismoSoil.class_curves.MultipleGGmaxCurves or ``None``
         Same as the input parameter.
     Tmax_profile : numpy.ndarray or ``None``
         Same as the input parameter.
@@ -47,10 +47,10 @@ class HH_Calibration:
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
         if GGmax_curves is not None:
-            if not isinstance(GGmax_curves, Multiple_GGmax_Curves):
+            if not isinstance(GGmax_curves, MultipleGGmaxCurves):
                 raise TypeError(
                     'If `GGmax_curves` is not `None`, it must be '
-                    'of type Multiple_GGmax_Curves.'
+                    'of type MultipleGGmaxCurves.'
                 )
             if GGmax_curves.n_layer != vs_profile.n_layer:
                 raise ValueError(

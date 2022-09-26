@@ -14,7 +14,7 @@ from . import helper_signal_processing as sig
 from .class_ground_motion import Ground_Motion
 from .class_Vs_profile import Vs_Profile
 from .class_parameters import Param_Multi_Layer
-from .class_curves import Multiple_GGmax_Damping_Curves
+from .class_curves import MultipleGGmaxDampingCurves
 from .class_simulation_results import Simulation_Results
 from .class_frequency_spectrum import Frequency_Spectrum
 
@@ -40,7 +40,7 @@ class Simulation:
         Parameters that describe the G/Gmax curves.
     xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
         Parameters that describe the damping curves.
-    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+    GGmax_and_damping_curves : class_curves.MultipleGGmaxDampingCurves
         G/Gmax and damping curves of every soil layer.
 
     Attributes
@@ -76,11 +76,11 @@ class Simulation:
 
         if (
             GGmax_and_damping_curves is not None and
-            not isinstance(GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves)
+            not isinstance(GGmax_and_damping_curves, MultipleGGmaxDampingCurves)
         ):
             raise TypeError(
                 '`GGmax_and_damping_curves` must be a '
-                '`Multiple_GGmax_Curves` object.'
+                '`MultipleGGmaxCurves` object.'
             )
 
         self.input_motion = input_motion
@@ -226,7 +226,7 @@ class Equiv_Linear_Simulation(Simulation):
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+    GGmax_and_damping_curves : class_curves.MultipleGGmaxDampingCurves
         G/Gmax and damping curves of every soil layer.
     boundary : {'elastic', 'rigid'}
         Boundary condition. "Elastic" means that the boundary allows waves to
@@ -465,7 +465,7 @@ class Nonlinear_Simulation(Simulation):
 
         # --------- Create a dummy "curves" for Fortran ------------------------
         mgc, mdc = self.G_param.construct_curves(strain_in_pct=strain_in_pct)
-        mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
+        mgdc = MultipleGGmaxDampingCurves(mgc_and_mdc=(mgc, mdc))
         curves = mgdc.get_curve_matrix()
 
         # --------- Prepare tabk.dat file --------------------------------------

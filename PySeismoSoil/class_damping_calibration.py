@@ -3,7 +3,7 @@ import numpy as np
 from . import helper_hh_calibration as hhc
 
 from .class_Vs_profile import Vs_Profile
-from .class_curves import Damping_Curve, Multiple_Damping_Curves
+from .class_curves import DampingCurve, MultipleDampingCurves
 
 
 class Damping_Calibration:
@@ -38,7 +38,7 @@ class Damping_Calibration:
 
         Returns
         -------
-        mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
+        mdc : PySeismoSoil.class_curves.MultipleDampingCurves
             Damping curves for all the soil layers (i.e., not including the
             rock halfspace at the bottom).
         """
@@ -66,13 +66,13 @@ class Damping_Calibration:
             if not use_Darendeli_Dmin:
                 xi_j -= xi_j[0]
                 xi_j += self.vs_profile.vs_profile[j, 2]
-            dc = Damping_Curve(
+            dc = DampingCurve(
                 np.column_stack((strain_in_pct, xi_j)),
                 strain_unit='%', damping_unit='1',
                 interpolate=False, check_values=True,
             )
             curve_list.append(dc)
-        mdc = Multiple_Damping_Curves(curve_list)
+        mdc = MultipleDampingCurves(curve_list)
 
         if show_fig:
             mdc.plot()
@@ -88,7 +88,7 @@ class Damping_Calibration:
         ----------
         kwargs :
             Keyword arguments to be passed to this method:
-                PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params().
+                PySeismoSoil.class_curves.MultipleDampingCurves.get_all_HH_x_params().
             Check its documentation for details:
                 https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_curves.html#PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params
 
@@ -112,7 +112,7 @@ class Damping_Calibration:
         ----------
         kwargs :
             Keyword arguments to be passed to this method:
-                PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params().
+                PySeismoSoil.class_curves.MultipleDampingCurves.get_all_H4_x_params().
             Check its documentation for details:
                 https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_curves.html#PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params
 

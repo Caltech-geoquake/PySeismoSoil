@@ -7,7 +7,7 @@ from PySeismoSoil.class_simulation import (
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
-from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 
 from test_class_ground_motion import Test_Class_Ground_Motion
 
@@ -40,7 +40,7 @@ class Test_Class_Simulation(unittest.TestCase):
     def test_equiv_linear(self):
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
-        curves = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
+        curves = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
         equiv_lin_sim = Equiv_Linear_Simulation(soil_profile, input_motion,
                                                 curves, boundary='elastic')
         output = equiv_lin_sim.run(show_fig=True)

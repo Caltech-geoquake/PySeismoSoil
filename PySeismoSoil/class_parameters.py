@@ -7,7 +7,7 @@ from . import helper_hh_model as hh
 from . import helper_mkz_model as mkz
 from . import helper_site_response as sr
 
-from .class_curves import Multiple_GGmax_Damping_Curves
+from .class_curves import MultipleGGmaxDampingCurves
 
 
 class Parameter(collections.UserDict):
@@ -338,9 +338,9 @@ class Param_Multi_Layer():
 
         Returns
         -------
-        mgc : PySeismoSoil.class_curves.Multiple_GGmax_Curves
+        mgc : PySeismoSoil.class_curves.MultipleGGmaxCurves
             G/Gmax curves for each soil layer.
-        mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
+        mdc : PySeismoSoil.class_curves.MultipleDampingCurves
             Damping curves for each soil layer.
         """
         strain_in_pct = np.logspace(-2, 1)
@@ -357,7 +357,7 @@ class Param_Multi_Layer():
                     (curves, strain_in_pct, GGmax, strain_in_pct, damping)
                 )
 
-        mgdc = Multiple_GGmax_Damping_Curves(data=curves)
+        mgdc = MultipleGGmaxDampingCurves(data=curves)
         mgc, mdc = mgdc.get_MGC_MDC_objects()
         return mgc, mdc
 

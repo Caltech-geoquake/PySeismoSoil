@@ -6,7 +6,7 @@ import PySeismoSoil.helper_site_response as sr
 
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
-from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 
 import os
 from os.path import join as _join
@@ -25,7 +25,7 @@ class Test_Helper_Simulations(unittest.TestCase):
 
         # Case 1(b): normal case, with curves
         curves_data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
-        mgdc = Multiple_GGmax_Damping_Curves(data=curves_data)
+        mgdc = MultipleGGmaxDampingCurves(data=curves_data)
         sim.check_layer_count(vs_profile, GGmax_and_damping_curves=mgdc)
 
         # Case 2(a): abnormal case, with parameters
@@ -36,7 +36,7 @@ class Test_Helper_Simulations(unittest.TestCase):
         # Case 2(b): abnormal case, with curves
         curves_data_ = curves_data[:, :-4]
         with self.assertRaisesRegex(ValueError, 'Not enough sets of curves'):
-            mgdc_ = Multiple_GGmax_Damping_Curves(data=curves_data_)
+            mgdc_ = MultipleGGmaxDampingCurves(data=curves_data_)
             sim.check_layer_count(vs_profile, GGmax_and_damping_curves=mgdc_)
 
     def test_linear__elastic_boundary(self):

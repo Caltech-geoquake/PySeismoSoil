@@ -3,7 +3,7 @@ import numpy as np
 
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_simulation import (
     Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
@@ -35,7 +35,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'should be of the same type'):
             gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
             prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-            mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
+            mgdc = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
             lin_sim = Linear_Simulation(prof, gm)
             equiv_sim = Equiv_Linear_Simulation(prof, gm, mgdc)
             BatchSimulation([lin_sim, equiv_sim])
@@ -66,7 +66,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         # Make a very weak motion to speed up equivalent linear calculation
         gm = gm_raw.scale_motion(target_PGA_in_g=0.001)
         prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
-        mgdc_2 = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_P001.txt'))
+        mgdc_2 = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_P001.txt'))
 
         sim_2 = Equiv_Linear_Simulation(prof_2, gm, mgdc_2, boundary='elastic')
         sim_list = [sim_2]
