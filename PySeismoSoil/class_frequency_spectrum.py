@@ -7,7 +7,7 @@ from . import helper_site_response as sr
 from . import helper_signal_processing as sig
 
 
-class Frequency_Spectrum:
+class FrequencySpectrum:
     """
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
@@ -77,6 +77,7 @@ class Frequency_Spectrum:
     iscomplex : bool
         Is ``spectrum`` complex or already real?
     """
+
     def __init__(
             self, data, *, df=None, interpolate=False, fmin=0.1, fmax=30,
             n_pts=1000, log_scale=True, sep='\t',
@@ -114,8 +115,10 @@ class Frequency_Spectrum:
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
     def __repr__(self):
-        text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' \
-               % (self.raw_df, self.n_pts, self.fmin, self.fmax)
+        text = (
+            f'df = {self.raw_df:.2f} Hz, n_pts = {self.n_pts:d}, '
+            + f'f_min = {self.fmin:.2f} Hz, f_max = {self.fmax:.2f} Hz'
+        )
         return text
 
     def plot(
@@ -240,7 +243,7 @@ class Frequency_Spectrum:
 
         Returns
         -------
-        unwrapped : Frequency_Spectrum
+        unwrapped : FrequencySpectrum
             A frequency spectrum with unwrapped phase component.
         """
         if robust:
@@ -249,5 +252,5 @@ class Frequency_Spectrum:
             unwrapped_phase = np.unwrap(self.phase)
 
         data_1col = self.amplitude * np.exp(1j * unwrapped_phase)
-        unwrapped = Frequency_Spectrum(data_1col, df=self.raw_df, interpolate=False)
+        unwrapped = FrequencySpectrum(data_1col, df=self.raw_df, interpolate=False)
         return unwrapped

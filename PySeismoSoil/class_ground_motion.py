@@ -6,7 +6,7 @@ from . import helper_generic as hlp
 from . import helper_site_response as sr
 from . import helper_signal_processing as sig
 
-from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
@@ -180,7 +180,7 @@ class Ground_Motion:
 
         Return
         ------
-        fs : PySeismoSoil.class_frequency_spectrym.Frequency_Spectrum
+        fs : PySeismoSoil.class_frequency_spectrym.FrequencySpectrum
             A frequency spectrum object.
         """
         x = sig.fourier_transform(
@@ -550,7 +550,7 @@ class Ground_Motion:
 
         Parameters
         ----------
-        transfer_function : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        transfer_function : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             The transfer function to apply to the ground motion. It only needs
             to be "single-sided" (see notes below).
         taper : bool
@@ -591,7 +591,7 @@ class Ground_Motion:
         if not isinstance(transfer_function, FS):
             raise TypeError(
                 '`transfer_function` needs to be of type '
-                '`Frequency_Spectrum` (or its subclass).'
+                '`FrequencySpectrum` (or its subclass).'
             )
         freq = transfer_function.freq
         tf_1col = transfer_function.spectrum

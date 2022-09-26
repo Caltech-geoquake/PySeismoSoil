@@ -4,7 +4,7 @@ import numpy as np
 from . import helper_generic as hlp
 from . import helper_site_response as sr
 
-from .class_frequency_spectrum import Frequency_Spectrum
+from .class_frequency_spectrum import FrequencySpectrum
 
 
 class Vs_Profile:
@@ -243,11 +243,11 @@ class Vs_Profile:
 
         Returns
         -------
-        af_RO : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        af_RO : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Amplification function between soil surface and rock outcrop.
-        af_BH : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        af_BH : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Amplification function between soil surface and borehole.
-        af_IN : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        af_IN : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Amplification function between soil surface and incident motion.
         """
         freq, af_ro, _, f0_ro, af_in, _, af_bh, _, f0_bh = sr.linear_tf(
@@ -256,9 +256,9 @@ class Vs_Profile:
             fmax=fmax,
             freq_resolution=freq_resolution,
         )
-        af_RO = Frequency_Spectrum(np.column_stack((freq, af_ro)))
-        af_BH = Frequency_Spectrum(np.column_stack((freq, af_bh)))
-        af_IN = Frequency_Spectrum(np.column_stack((freq, af_in)))
+        af_RO = FrequencySpectrum(np.column_stack((freq, af_ro)))
+        af_BH = FrequencySpectrum(np.column_stack((freq, af_bh)))
+        af_IN = FrequencySpectrum(np.column_stack((freq, af_in)))
         return af_RO, af_BH, af_IN
 
     def get_transfer_function(
@@ -281,11 +281,11 @@ class Vs_Profile:
 
         Returns
         -------
-        tf_RO : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        tf_RO : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Transfer function between soil surface and rock outcrop.
-        tf_BH : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        tf_BH : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Transfer function between soil surface and borehole.
-        tf_IN : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        tf_IN : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Transfer function between soil surface and incident motion.
         """
         freq, _, tf_ro, f0_ro, _, tf_in, _, tf_bh, f0_bh = sr.linear_tf(
@@ -295,9 +295,9 @@ class Vs_Profile:
             freq_resolution=freq_resolution,
         )
 
-        tf_RO = Frequency_Spectrum(np.column_stack((freq, tf_ro)))
-        tf_BH = Frequency_Spectrum(np.column_stack((freq, tf_bh)))
-        tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))
+        tf_RO = FrequencySpectrum(np.column_stack((freq, tf_ro)))
+        tf_BH = FrequencySpectrum(np.column_stack((freq, tf_bh)))
+        tf_IN = FrequencySpectrum(np.column_stack((freq, tf_in)))
         return tf_RO, tf_BH, tf_IN
 
     def get_f0_RO(self):

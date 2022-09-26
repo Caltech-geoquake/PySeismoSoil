@@ -4,7 +4,7 @@ import numpy as np
 import pkg_resources
 from scipy.interpolate import griddata
 
-from .class_frequency_spectrum import Frequency_Spectrum
+from .class_frequency_spectrum import FrequencySpectrum
 
 
 class Site_Factors:
@@ -101,7 +101,7 @@ class Site_Factors:
 
         Returns
         -------
-        amplif : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        amplif : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Amplification factors as a function of frequency.
             (Note: Even if ``Fourier`` is set to ``False``, i.e., the user is
             querying response spectral amplification, the returned result
@@ -124,7 +124,7 @@ class Site_Factors:
         else:  # response spectra
             freq = 1.0 / period_or_freq
             result = np.column_stack((freq, amplif))[::-1, :]  # so that freq increases
-        return Frequency_Spectrum(result)
+        return FrequencySpectrum(result)
 
     def get_phase_shift(self, method='eq_hh', show_interp_plots=False):
         """
@@ -141,7 +141,7 @@ class Site_Factors:
 
         Returns
         -------
-        phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        phase : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Phase shift as a function of frequency.
         """
         if method not in {'eq_hh'}:
@@ -154,7 +154,7 @@ class Site_Factors:
             Fourier=True,
             show_interp_plots=show_interp_plots,
         )
-        return Frequency_Spectrum(np.column_stack((freq, phase_shift)))
+        return FrequencySpectrum(np.column_stack((freq, phase_shift)))
 
     def get_both_amplf_and_phase(self, method='nl_hh', show_interp_plots=False):
         """
@@ -171,7 +171,7 @@ class Site_Factors:
 
         Returns
         -------
-        amplif, phase : PySeismoSoil.class_frequency_spectrum.Frequency_Spectrum
+        amplif, phase : PySeismoSoil.class_frequency_spectrum.FrequencySpectrum
             Amplification and phase-shift as functions of frequency.
         """
         amplif = self.get_amplification(

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from PySeismoSoil.class_ground_motion import Ground_Motion as GM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 import os
 from os.path import join as _join
@@ -212,7 +212,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         ratio_benchmark = 2.76
         freq = np.arange(0.01, 50, step=0.01)
         tf = ratio_benchmark * np.ones_like(freq)
-        transfer_function = Frequency_Spectrum(np.column_stack((freq, tf)))
+        transfer_function = FrequencySpectrum(np.column_stack((freq, tf)))
         new_gm = gm.amplify_by_tf(transfer_function, show_fig=False)
         ratio = new_gm.accel[:, 1] / gm.accel[:, 1]
         self.assertTrue(np.allclose(ratio, ratio_benchmark))

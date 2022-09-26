@@ -16,7 +16,7 @@ from .class_Vs_profile import Vs_Profile
 from .class_parameters import Param_Multi_Layer
 from .class_curves import MultipleGGmaxDampingCurves
 from .class_simulation_results import Simulation_Results
-from .class_frequency_spectrum import Frequency_Spectrum
+from .class_frequency_spectrum import FrequencySpectrum
 
 
 class Simulation:
@@ -175,7 +175,7 @@ class Linear_Simulation(Simulation):
                 Vs_Profile(new_profile, density_unit='g/cm^3'),
                 max_a_v_d=max_avd,
                 max_strain_stress=max_gt,
-                trans_func=Frequency_Spectrum(tf, df=freq_array[1] - freq_array[0]),
+                trans_func=FrequencySpectrum(tf, df=freq_array[1] - freq_array[0]),
                 time_history_accel=out_a,
                 time_history_veloc=out_v,
                 time_history_displ=out_d,
@@ -195,7 +195,7 @@ class Linear_Simulation(Simulation):
                 show_fig=show_fig,
                 deconv=deconv,
             )
-            trans_func = Frequency_Spectrum(tf[1], df=tf[0][1] - tf[0][0])
+            trans_func = FrequencySpectrum(tf[1], df=tf[0][1] - tf[0][0])
             sim_results = Simulation_Results(
                 self.input_motion,
                 Ground_Motion(response, unit='m'),
@@ -304,7 +304,7 @@ class Equiv_Linear_Simulation(Simulation):
             Vs_Profile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
-            trans_func=Frequency_Spectrum(tf, df=freq_array[1] - freq_array[0]),
+            trans_func=FrequencySpectrum(tf, df=freq_array[1] - freq_array[0]),
             time_history_accel=out_a,
             time_history_veloc=out_v,
             time_history_displ=out_d,
@@ -571,8 +571,8 @@ class Nonlinear_Simulation(Simulation):
             Vs_Profile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
-            trans_func=Frequency_Spectrum(tf_unsmoothed),
-            trans_func_smoothed=Frequency_Spectrum(tf_smoothed),
+            trans_func=FrequencySpectrum(tf_unsmoothed),
+            trans_func_smoothed=FrequencySpectrum(tf_smoothed),
             time_history_accel=out_a,
             time_history_veloc=out_v,
             time_history_displ=out_d,

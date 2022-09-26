@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from .class_ground_motion import Ground_Motion
 from .class_Vs_profile import Vs_Profile
-from .class_frequency_spectrum import Frequency_Spectrum
+from .class_frequency_spectrum import FrequencySpectrum
 
 from . import helper_generic as hlp
 from . import helper_site_response as sr
@@ -30,7 +30,7 @@ class Simulation_Results:
         at all layer boundaries.
     max_strain_stress : numpy.ndarray
         Maximum strain and stress (during ground shaking) at layer midpoints.
-    trans_func : Frequency_Spectrum
+    trans_func : FrequencySpectrum
         Transfer function (between the output and input motions). It can
         be complex-valued or real-valued (i.e., amplitudes only).
     trans_func_smoothed : Frequency_Spectrum or ``None``
@@ -81,13 +81,13 @@ class Simulation_Results:
             raise TypeError('`accel_on_surface` needs to be of Ground_Motion type.')
         if not isinstance(rediscretized_profile, Vs_Profile):
             raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
-        if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
+        if not isinstance(trans_func, (FrequencySpectrum, type(None))):
             raise TypeError(
-                '`trans_func` needs to be either None or of Frequency_Spectrum type.'
+                '`trans_func` needs to be either None or of FrequencySpectrum type.'
             )
-        if not isinstance(trans_func_smoothed, (Frequency_Spectrum, type(None))):
+        if not isinstance(trans_func_smoothed, (FrequencySpectrum, type(None))):
             raise TypeError(
-                '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.'
+                '`trans_func_smoothed` should be either None or of FrequencySpectrum type.'
             )
 
         n_layer = rediscretized_profile.n_layer
