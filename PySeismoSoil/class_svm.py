@@ -2,8 +2,8 @@ import time
 import numpy as np
 from scipy.optimize import fsolve
 
-from .class_Vs_profile import Vs_Profile
-from . import helper_site_response as sr
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil import helper_site_response as sr
 
 
 class SVM:
@@ -63,6 +63,7 @@ class SVM:
     has_bedrock_Vs : bool
         Whether the Vs profile has a bedrock Vs value.
     """
+
     def __init__(
             self,
             target_Vs30,
@@ -81,7 +82,7 @@ class SVM:
                 '***** Warning in initializing an SVM object: your Vs30 '
                 '(%.2f m/s) is out of the range of applicability of the '
                 'SVM (173.1 m/s to 1000 m/s); the result may not be '
-                'as credible. *****'
+                'as credible. *****',
             )
 
         if eta <= 0 or eta > 1:
@@ -101,15 +102,15 @@ class SVM:
         #            thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
         #
         #         Then thk and thk$ can both be solved, hence we have:
-        #             thk = (z1 - 2.5)/49.0
+        #             thk = (z1 - 2.5)/49.0           # noqa: E800
 
         p1 = -2.1688e-04  # these values come from curve fitting
         p2 = 0.5182
         p3 = 69.452
 
-        # q1 = 8.4562e-09
-        # q2 = 2.9981
-        # q3 = 0.03073
+        # q1 = 8.4562e-09  # noqa: E800
+        # q2 = 2.9981      # noqa: E800
+        # q3 = 0.03073     # noqa: E800
 
         r1 = -59.67  # updated on 2018/1/2: improved curve fitting accuracy for k_
         r2 = -0.2722
@@ -301,7 +302,7 @@ class SVM:
             show_fig=False,
     ):
         """
-        Returns the discretized Vs profile (with user-specified layer
+        Return the discretized Vs profile (with user-specified layer
         thickness, or Vs increment).
 
         Parameters
@@ -337,7 +338,7 @@ class SVM:
             if Vs_increment >= max_Vs:
                 raise ValueError(
                     '`Vs_increment` needs to < %.2g m/s (the '
-                    'max Vs of the smooth profile)' % max_Vs
+                    'max Vs of the smooth profile)' % max_Vs,
                 )
             n_layers = self._base_profile.shape[0]
             discr_Vs_previous_layer = self._base_profile[0, 1]
@@ -367,8 +368,10 @@ class SVM:
                     layer_bottom_depth_array.append(current_depth)
             # END "for j in range(n_layers):"
 
-            thk_array = sr.dep2thk(np.array(layer_bottom_depth_array),
-                                   include_halfspace=False)
+            thk_array = sr.dep2thk(
+                np.array(layer_bottom_depth_array),
+                include_halfspace=False,
+            )
             discr_prof = self.base_profile.query_Vs_given_thk(
                 thk_array, as_profile=True, at_midpoint=at_midpoint,
             )
@@ -413,7 +416,7 @@ class SVM:
             verbose=True,
     ):
         """
-        Returns a randomized a 1D profile.
+        Return a randomized a 1D profile.
 
         Parameters
         ----------
@@ -432,6 +435,7 @@ class SVM:
             Whether or not to ensure that the resultant Vs30 and z1 of the
             randomized profile are compliant with the user-specified Vs30 and z1
             values. The criteria for "compliance" are:
+
                 1. The absolute difference between the randomized and target
                    Vs30 is < 25 m/s;
                 2. The relative difference (between the randomized profile and
@@ -451,12 +455,12 @@ class SVM:
         if not isinstance(seed, (type(None), int, float, np.number)):
             raise TypeError('`seed` needs to be a number, or `None`.')
 
-        options = dict(
-            seed=seed,
-            show_fig=show_fig,
-            use_Toros_std=use_Toros_std,
-            use_Toros_layering=use_Toros_layering,
-        )
+        options = {
+            'seed': seed,
+            'show_fig': show_fig,
+            'use_Toros_std': use_Toros_std,
+            'use_Toros_layering': use_Toros_layering,
+        }
 
         if not vs30_z1_compliance:
             Vs_profile = self._helper_get_rand_profile(**options)
@@ -467,9 +471,11 @@ class SVM:
                 print('Iterating for compliant Vs profile:')
             while iterate:
                 seed_ = None if seed is None else seed + counter
-                options.update(dict(seed=seed_, show_fig=False))
+                options.update({'seed': seed_, 'show_fig': False})
                 Vs_profile = self._helper_get_rand_profile(**options)
-                rand_Vs30 = sr.calc_Vs30(Vs_profile, option_for_profile_shallower_than_30m=1)
+                rand_Vs30 = sr.calc_Vs30(
+                    Vs_profile, option_for_profile_shallower_than_30m=1,
+                )
                 rand_Vs_last = Vs_profile[-1, 1]
                 rand_z1 = sr.calc_z1(Vs_profile)
                 base_Vs30 = self.Vs30
@@ -505,7 +511,7 @@ class SVM:
             use_Toros_std=False,
     ):
         """
-        Helper function to get randomized 1D profile.
+        Get randomized 1D profile.
 
         Parameters
         ----------
@@ -525,7 +531,7 @@ class SVM:
         Returns
         -------
         Vs_profile : np.ndarray
-            The randomzed Vs profile.
+            The randomized Vs profile.
         """
         if seed is None:
             cc = time.localtime(time.time())
