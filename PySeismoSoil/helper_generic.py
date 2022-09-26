@@ -72,7 +72,7 @@ def find_closest_index(array, value):
 
 def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     """
-    Processes figure and axes objects. If ``fig`` and ``ax`` are None, creates
+    Process figure and axes objects. If ``fig`` and ``ax`` are None, creates
     new figure and new axes according to ``figsize``, ``dpi``, and ``ax_proj``.
     Otherwise, uses the passed-in ``fig`` and/or ``ax``.
 
@@ -99,7 +99,6 @@ def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     ax : matplotlib.axes._subplots.AxesSubplot
         The axes object being created or being passed into this function.
     """
-
     if fig is None:  # if a figure handle is not provided, create new figure
         fig = pl.figure(figsize=figsize, dpi=dpi)
     else:   # if provided, plot to the specified figure
@@ -115,7 +114,7 @@ def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
 
 def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     """
-    Internal helper function. Processes "data" into a two-columned "data_".
+    Process ``data`` into a two-columned ``data_``. (Internal helper function.)
 
     data : str or numpy.ndarray
         If str: the full file name on the hard drive containing the data.
@@ -123,13 +122,13 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
 
         The data can have one column (which contains the motion/spectrum) or two
         columns (1st column: time/freq; 2nd column: motion/spectrum). If only
-        one column is supplied, another input parameter "d_" must also be
+        one column is supplied, another input parameter ``d_`` must also be
         supplied.
     delta : float
-        The time or frequency interval. If data is a file name, this parameter
-        is ignored.
+        The time or frequency interval. If ``data`` is a file name, this
+        parameter is ignored.
     sep : str
-        The file delimiter. If data is not a file name, this parameter is
+        The file delimiter. If ``data`` is not a file name, this parameter is
         ignored.
     **kwargs_to_genfromtxt :
         Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
@@ -143,7 +142,6 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     delta : float
         The "delta value", such as dt or df.
     """
-
     if isinstance(data, str):  # "data" is a file name
         data_ = np.genfromtxt(data, delimiter=sep, **kwargs_to_genfromtxt)
     elif isinstance(data, np.ndarray):
@@ -154,7 +152,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):
         if delta is None:
             raise ValueError(
-                '`delta` (such as dt or df) is needed for one-column `data`.'
+                '`delta` (such as dt or df) is needed for one-column `data`.',
             )
         else:
             n = len(data_)
@@ -167,7 +165,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     elif data_.shape[1] != 2:
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
-            'array, or a one-column array with a `delta` value.'
+            + 'array, or a one-column array with a `delta` value.',
         )
     else:
         raise TypeError('"data" must be a file name or a numpy array.')
@@ -207,7 +205,7 @@ def assert_array_length(something, length, name='`something`'):
     assert_1D_numpy_array(something, name=name)
     if len(something) != length:
         raise ValueError(
-            '%s must have length %d, but not %d.' % (name, length, len(something))
+            '%s must have length %d, but not %d.' % (name, length, len(something)),
         )
 
 
@@ -314,9 +312,9 @@ def check_two_column_format(
 
     check_status = check_numbers_valid(something)
     if check_status == -1:
-        raise ValueError("%s should only contain numeric elements." % name)
+        raise ValueError('%s should only contain numeric elements.' % name)
     if check_status == -2:
-        raise ValueError("%s should contain no NaN values." % name)
+        raise ValueError('%s should contain no NaN values.' % name)
     if ensure_non_negative and check_status == -3:
         raise ValueError('%s should have all non-negative values.' % name)
 
@@ -334,23 +332,25 @@ def check_Vs_profile_format(data):
         Any Python object.
     """
     if not isinstance(data, np.ndarray):
-        raise TypeError("`data` should be a numpy array.")
+        raise TypeError('`data` should be a numpy array.')
 
     check_status = check_numbers_valid(data)
     if check_status == -1:
-        raise ValueError("`data` should only contain numeric elements.")
+        raise ValueError('`data` should only contain numeric elements.')
     if check_status == -2:
-        raise ValueError("`data` should contain no NaN values.")
+        raise ValueError('`data` should contain no NaN values.')
     if data.ndim != 2:
-        raise ValueError("`data` should be a 2D numpy array.")
+        raise ValueError('`data` should be a 2D numpy array.')
     if data.shape[1] not in [2, 5]:
-        raise ValueError("`data` should have either 2 or 5 columns.")
+        raise ValueError('`data` should have either 2 or 5 columns.')
 
     thk = data[:, 0]
     Vs  = data[:, 1]
     if np.any(thk[:-1] <= 0):
-        raise ValueError('The thickness column should be all positive, except '
-                         'for the last layer.')
+        raise ValueError(
+            'The thickness column should be all positive, except '
+            + 'for the last layer.',
+        )
     if np.any(thk[-1] < 0):
         raise ValueError('The last layer thickness should be non-negative.')
     if np.any(Vs <= 0):
@@ -367,11 +367,11 @@ def check_Vs_profile_format(data):
         if np.any(mat[:-1] <= 0):
             raise ValueError(
                 'The "material number" column should be all '
-                'positive, except for the last error.'
+                + 'positive, except for the last error.',
             )
         if np.any(mat[-1] < 0):
             raise ValueError(
-                'The material number of the last layer should be non-negative.'
+                'The material number of the last layer should be non-negative.',
             )
 
     return None
@@ -400,8 +400,8 @@ def is_int(number):
 
 def check_numbers_valid(array):
     """
-    Generic helper function to check the contents in ``array`` is valid (i.e.,
-    are numbers, are not infinite, are positive)
+    Check the contents in ``array`` is valid (i.e., are numbers, are not
+    infinite, are positive).  Generic helper function.
 
     Parameters
     ----------
@@ -543,7 +543,7 @@ def extract_from_curve_format(curves, ensure_non_negative=True):
         if curves.shape[1] % 4 != 0:
             raise ValueError(
                 'If `curves` is a numpy array, its number of '
-                'columns needs to be a multiple of 4.'
+                + 'columns needs to be a multiple of 4.',
             )
         n_layer = curves.shape[1] // 4
 
