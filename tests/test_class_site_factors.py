@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from PySeismoSoil.class_site_factors import Site_Factors as SF
+from PySeismoSoil.class_site_factors import SiteFactors as SF
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS
 
 

@@ -3,7 +3,7 @@ import numpy as np
 from PySeismoSoil import helper_site_response as sr
 
 from PySeismoSoil.class_ground_motion import GroundMotion
-from PySeismoSoil.class_site_factors import Site_Factors
+from PySeismoSoil.class_site_factors import SiteFactors
 
 
 class SiteEffectAdjustment:
@@ -61,7 +61,7 @@ class SiteEffectAdjustment:
             z1_in_m = sr.calc_z1_from_Vs30(Vs30_in_meter_per_sec)
         PGA_in_g = input_motion.pga_in_g
 
-        site_factor = Site_Factors(
+        site_factor = SiteFactors(
             Vs30_in_meter_per_sec, z1_in_m, PGA_in_g, lenient=lenient,
         )
 

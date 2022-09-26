@@ -4,10 +4,10 @@ import numpy as np
 import pkg_resources
 from scipy.interpolate import griddata
 
-from .class_frequency_spectrum import FrequencySpectrum
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 
-class Site_Factors:
+class SiteFactors:
     """
     Class implementation of site response factors proposed by Shi, Asimaki, and
     Graves (2019).
@@ -30,7 +30,8 @@ class Site_Factors:
     ----------
     Attributes same as the inputs
     """
-    Vs30_array = [
+
+    Vs30_array = [  # noqa: WPS317
         175, 200, 250, 300, 350, 400, 450, 500, 550, 600,
         650, 700, 750, 800, 850, 900, 950,
     ]
@@ -40,7 +41,8 @@ class Site_Factors:
     def __init__(
             self,
             Vs30_in_meter_per_sec,
-            z1_in_m, PGA_in_g,
+            z1_in_m,
+            PGA_in_g,
             lenient=False,
     ):
         self.dir_amplif = pkg_resources.resource_filename(
@@ -49,7 +51,7 @@ class Site_Factors:
         self.dir_phase = pkg_resources.resource_filename(
             'PySeismoSoil', 'data/phase/',
         )
-        status = Site_Factors._range_check(
+        status = SiteFactors._range_check(
             Vs30_in_meter_per_sec, z1_in_m, PGA_in_g,
         )
         if 'Vs30 out of range' in status:
@@ -192,7 +194,7 @@ class Site_Factors:
             show_interp_plots=False,
     ):
         """
-        Helper function: get amplification or phase results.
+        Get amplification or phase results.
 
         Parameters
         ----------
@@ -226,10 +228,10 @@ class Site_Factors:
         points = []  # to hold reference (Vs30, z1, PGA) points
         y_list = []  # to hold values at these reference points
         for Vs30_i, z1_i, PGA_i in combinations:
-            Vs30_grid = Site_Factors.Vs30_array[Vs30_i]
-            z1_grid = Site_Factors.z1_array[z1_i]
-            PGA_grid = Site_Factors.PGA_array[PGA_i]
-            x, y = Site_Factors._query(
+            Vs30_grid = SiteFactors.Vs30_array[Vs30_i]
+            z1_grid = SiteFactors.z1_array[z1_i]
+            PGA_grid = SiteFactors.PGA_array[PGA_i]
+            x, y = SiteFactors._query(
                 amplif_or_phase,
                 Vs30_grid,
                 z1_grid,
@@ -241,7 +243,7 @@ class Site_Factors:
             points.append((Vs30_grid, z1_grid, PGA_grid))
             y_list.append(y)
 
-        y_interp = Site_Factors._interpolate(points, y_list, (Vs30, z1, PGA))
+        y_interp = SiteFactors._interpolate(points, y_list, (Vs30, z1, PGA))
 
         if Fourier:
             index_trunc = 139  # truncate at frequency = 20 Hz
@@ -251,8 +253,9 @@ class Site_Factors:
                 y_list[ii] = y_list[ii][:index_trunc + 1]
 
         if show_interp_plots:
-            Site_Factors._plot_interp(
-                points, (Vs30, z1, PGA), x, y_list, y_interp, Fourier=Fourier,
+            query_point = (Vs30, z1, PGA)
+            SiteFactors._plot_interp(
+                points, query_point, x, y_list, y_interp, Fourier=Fourier,
             )
 
         return x, y_interp
@@ -301,12 +304,12 @@ class Site_Factors:
             Amplificatino or phase shift corresponding to each period (or
             frequency).
         """
-        if Vs30 not in Site_Factors.Vs30_array:
-            raise ValueError('`Vs30` should be in %s.' % Site_Factors.Vs30_array)
-        if z1 not in Site_Factors.z1_array:
-            raise ValueError('`z1` should be in %s.' % Site_Factors.z1_array)
-        if PGA not in Site_Factors.PGA_array:
-            raise ValueError('`PGA` should be in %s.' % Site_Factors.PGA_array)
+        if Vs30 not in SiteFactors.Vs30_array:
+            raise ValueError('`Vs30` should be in %s.' % SiteFactors.Vs30_array)
+        if z1 not in SiteFactors.z1_array:
+            raise ValueError('`z1` should be in %s.' % SiteFactors.z1_array)
+        if PGA not in SiteFactors.PGA_array:
+            raise ValueError('`PGA` should be in %s.' % SiteFactors.PGA_array)
 
         if method not in ['nl_hh', 'eq_kz', 'eq_hh']:
             raise ValueError("`method` must be within {'nl_hh', 'eq_kz', 'eq_hh'}")
@@ -324,7 +327,7 @@ class Site_Factors:
 
         y = np.genfromtxt(os.path.join(data_dir, y_filename), delimiter=',')
         x = np.genfromtxt(os.path.join(data_dir, x_filename), delimiter=',')
-        PGA_index = np.argwhere(np.array(Site_Factors.PGA_array) == PGA)[0][0]
+        PGA_index = np.argwhere(np.array(SiteFactors.PGA_array) == PGA)[0][0]
         y_values_at_given_PGA = y[PGA_index, :]
 
         return x, y_values_at_given_PGA
@@ -336,8 +339,9 @@ class Site_Factors:
 
         Returns all possible combinations of Vs30, z1, and PGA values.
         """
-        Vs30_loc, z1_loc, PGA_loc \
-            = Site_Factors._find_neighbors(self.Vs30, self.z1, self.PGA)
+        Vs30_loc, z1_loc, PGA_loc = SiteFactors._find_neighbors(
+            self.Vs30, self.z1, self.PGA,
+        )
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
         assert(len(list(combinations)) == 8)
@@ -353,9 +357,9 @@ class Site_Factors:
 
         The three inputs need to already within the correct range.
         """
-        Vs30_loc = Site_Factors._search_sorted(Vs30_in_mps, Site_Factors.Vs30_array)
-        z1_loc = Site_Factors._search_sorted(z1_in_m, Site_Factors.z1_array)
-        PGA_loc = Site_Factors._search_sorted(PGA_in_g, Site_Factors.PGA_array)
+        Vs30_loc = SiteFactors._search_sorted(Vs30_in_mps, SiteFactors.Vs30_array)
+        z1_loc = SiteFactors._search_sorted(z1_in_m, SiteFactors.z1_array)
+        PGA_loc = SiteFactors._search_sorted(PGA_in_g, SiteFactors.PGA_array)
 
         return Vs30_loc, z1_loc, PGA_loc
 
@@ -377,8 +381,8 @@ class Site_Factors:
         if value < array[0] or value > array[-1]:
             raise ValueError(
                 'You have encountered an internal bug. Please '
-                'copy the whole error message, and contact '
-                'the author of this library for help.'
+                + 'copy the whole error message, and contact '
+                + 'the author of this library for help.',
             )
         if value == array[0]:
             return [0, 1]
