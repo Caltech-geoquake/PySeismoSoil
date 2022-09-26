@@ -64,7 +64,7 @@ class DampingCalibration:
         _, xi, _ = hhc.produce_Darendeli_curves(
             sigma_v0, PI, OCR=OCR, K0=None, phi=phi, strain_in_pct=strain_in_pct,
         )
-        assert(xi.shape[1] == n_layer)
+        assert xi.shape[1] == n_layer
 
         curve_list = []
         for j in range(n_layer):
