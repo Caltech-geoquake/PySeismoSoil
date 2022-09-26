@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from .class_ground_motion import Ground_Motion
+from .class_ground_motion import GroundMotion
 from .class_Vs_profile import Vs_Profile
 from .class_frequency_spectrum import FrequencySpectrum
 
@@ -18,9 +18,9 @@ class Simulation_Results:
 
     Parameters
     ----------
-    input_accel : Ground_Motion
+    input_accel : GroundMotion
         Input ground motion.
-    accel_on_surface : Ground_Motion
+    accel_on_surface : GroundMotion
         Output ground motion.
     rediscretized_profile : Vs_Profile
         Vs profile (the re-discretized version that ensures proper
@@ -75,10 +75,10 @@ class Simulation_Results:
             motion_name=None,
             output_dir=None,
     ):
-        if not isinstance(input_accel, Ground_Motion):
-            raise TypeError('`input_accel` needs to be of Ground_Motion type.')
-        if not isinstance(accel_on_surface, Ground_Motion):
-            raise TypeError('`accel_on_surface` needs to be of Ground_Motion type.')
+        if not isinstance(input_accel, GroundMotion):
+            raise TypeError('`input_accel` needs to be of GroundMotion type.')
+        if not isinstance(accel_on_surface, GroundMotion):
+            raise TypeError('`accel_on_surface` needs to be of GroundMotion type.')
         if not isinstance(rediscretized_profile, Vs_Profile):
             raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
         if not isinstance(trans_func, (FrequencySpectrum, type(None))):

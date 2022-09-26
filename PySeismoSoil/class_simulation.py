@@ -11,7 +11,7 @@ from . import helper_site_response as sr
 from . import helper_simulations as sim
 from . import helper_signal_processing as sig
 
-from .class_ground_motion import Ground_Motion
+from .class_ground_motion import GroundMotion
 from .class_Vs_profile import Vs_Profile
 from .class_parameters import Param_Multi_Layer
 from .class_curves import MultipleGGmaxDampingCurves
@@ -27,7 +27,7 @@ class Simulation:
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
+    input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
@@ -53,8 +53,8 @@ class Simulation:
     ):
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
-        if not isinstance(input_motion, Ground_Motion):
-            raise TypeError('`input_motion` must be of class `Ground_Motion`.')
+        if not isinstance(input_motion, GroundMotion):
+            raise TypeError('`input_motion` must be of class `GroundMotion`.')
 
         if boundary not in ['elastic', 'rigid']:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
@@ -99,7 +99,7 @@ class Linear_Simulation(Simulation):
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
+    input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
@@ -171,7 +171,7 @@ class Linear_Simulation(Simulation):
 
             sim_results = Simulation_Results(
                 self.input_motion,
-                Ground_Motion(accel_on_surface, unit='m'),
+                GroundMotion(accel_on_surface, unit='m'),
                 Vs_Profile(new_profile, density_unit='g/cm^3'),
                 max_a_v_d=max_avd,
                 max_strain_stress=max_gt,
@@ -198,7 +198,7 @@ class Linear_Simulation(Simulation):
             trans_func = FrequencySpectrum(tf[1], df=tf[0][1] - tf[0][0])
             sim_results = Simulation_Results(
                 self.input_motion,
-                Ground_Motion(response, unit='m'),
+                GroundMotion(response, unit='m'),
                 self.soil_profile,
                 trans_func=trans_func,
             )
@@ -221,7 +221,7 @@ class Equiv_Linear_Simulation(Simulation):
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
+    input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
@@ -300,7 +300,7 @@ class Equiv_Linear_Simulation(Simulation):
 
         sim_results = Simulation_Results(
             self.input_motion,
-            Ground_Motion(accel_on_surface, unit='m'),
+            GroundMotion(accel_on_surface, unit='m'),
             Vs_Profile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
@@ -333,7 +333,7 @@ class Nonlinear_Simulation(Simulation):
     ----------
     soil_profile : class_Vs_profile.Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
+    input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
@@ -567,7 +567,7 @@ class Nonlinear_Simulation(Simulation):
         # ------------ Create sim_results object and plot and/or save ----------
         sim_results = Simulation_Results(
             self.input_motion,
-            Ground_Motion(accel_surface_2col, unit='m'),
+            GroundMotion(accel_surface_2col, unit='m'),
             Vs_Profile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,

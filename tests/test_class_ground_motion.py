@@ -3,7 +3,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 
-from PySeismoSoil.class_ground_motion import Ground_Motion as GM
+from PySeismoSoil.class_ground_motion import GroundMotion as GM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 

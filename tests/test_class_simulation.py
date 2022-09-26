@@ -4,7 +4,7 @@ import numpy as np
 from PySeismoSoil.class_simulation import (
     Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
 )
-from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
@@ -20,7 +20,7 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 class Test_Class_Simulation(unittest.TestCase):
     def test_linear(self):
-        input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='m')
+        input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m')
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         ls = Linear_Simulation(soil_profile, input_motion)
         sim_result = ls.run(every_layer=True, show_fig=True)
@@ -39,7 +39,7 @@ class Test_Class_Simulation(unittest.TestCase):
 
     def test_equiv_linear(self):
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+        input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         curves = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
         equiv_lin_sim = Equiv_Linear_Simulation(soil_profile, input_motion,
                                                 curves, boundary='elastic')
@@ -64,7 +64,7 @@ class Test_Class_Simulation(unittest.TestCase):
         self.assertTrue(np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0))
 
     def test_nonlinear_init(self):
-        input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='m')
+        input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m')
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         HH_G = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
         HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))

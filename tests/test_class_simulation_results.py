@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_simulation_results import Simulation_Results
 
@@ -17,10 +17,10 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_Simulation_Results(unittest.TestCase):
     def test_plot(self):
         # Test that the desired data are correctly imported to the object
-        accel_in = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='m/s/s')
+        accel_in = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m/s/s')
         accel_tmp = accel_in.accel.copy()
         accel_tmp[:, 1] *= 5.0
-        accel_out = Ground_Motion(accel_tmp, unit='m/s/s')
+        accel_out = GroundMotion(accel_tmp, unit='m/s/s')
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         thk = vs_profile._thk
         depth_bound = sr.thk2dep(thk, midpoint=False)

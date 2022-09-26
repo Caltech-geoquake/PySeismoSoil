@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_ground_motion import GroundMotion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
@@ -33,7 +33,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
 
     def test_init__case_4_inhomogeneous_element_type(self):
         with self.assertRaisesRegex(TypeError, 'should be of the same type'):
-            gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+            gm = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
             prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
             mgdc = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
             lin_sim = Linear_Simulation(prof, gm)
@@ -41,7 +41,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
             BatchSimulation([lin_sim, equiv_sim])
 
     def test_linear(self):
-        gm = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+        gm = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         prof_1 = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
 
@@ -62,7 +62,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         ))
 
     def test_equiv_linear(self):
-        gm_raw = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+        gm_raw = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         # Make a very weak motion to speed up equivalent linear calculation
         gm = gm_raw.scale_motion(target_PGA_in_g=0.001)
         prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
@@ -86,7 +86,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
     def test_nonlinear(self):
         accel_data = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
         accel_downsample = accel_data[::50]  # for faster testing speed
-        gm = Ground_Motion(accel_downsample, unit='gal')
+        gm = GroundMotion(accel_downsample, unit='gal')
         prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         hh_g = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
         hh_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))

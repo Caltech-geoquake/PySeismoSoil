@@ -1,7 +1,7 @@
 Utility classes
 ===============
 
-PySeismoSoil defines several classes to represent different entities involved in site response analysis, such as the ``Ground_Motion`` and ``Vs_Profile`` classes.
+PySeismoSoil defines several classes to represent different entities involved in site response analysis, such as the ``GroundMotion`` and ``Vs_Profile`` classes.
 
 Here are the documentations of all the classes:
 

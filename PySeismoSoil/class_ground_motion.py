@@ -6,11 +6,11 @@ from . import helper_generic as hlp
 from . import helper_site_response as sr
 from . import helper_signal_processing as sig
 
-from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
-class Ground_Motion:
+class GroundMotion:
     """
     Class implementation of an earthquake ground motion.
 
@@ -80,6 +80,7 @@ class Ground_Motion:
     _path_name, _file_name : str
         Names of the directory and file of the input data, if a file name.
     """
+
     def __init__(
             self, data, *, unit, motion_type='accel', dt=None, sep='\t',
             **kwargs_to_genfromtxt,
@@ -97,7 +98,7 @@ class Ground_Motion:
                 raise ValueError("Please use '/s/s' instead of 's^2' in `unit`.")
             else:
                 raise ValueError(
-                    "Invalid `unit` name. Valid names are: %s" % valid_unit_name
+                    'Invalid `unit` name. Valid names are: {valid_unit_name}',
                 )
 
         if motion_type not in ['accel', 'veloc', 'displ']:
@@ -105,7 +106,7 @@ class Ground_Motion:
 
         if (unit == 'g' or unit == 'gal') and motion_type != 'accel':
             raise ValueError(
-                "If unit is 'g' or 'gal', then `motion_type` must be 'accel'."
+                "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
             )
 
         if unit in ['cm', 'cm/s', 'cm/s/s', 'gal']:
@@ -146,18 +147,17 @@ class Ground_Motion:
         self.rms_accel, self.rms_veloc, self.rms_displ = self.__calc_RMS()
 
     def __repr__(self):
-        """
-        Basic information of a ground motion.
-        """
-        text = 'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'\
-               % (self.npts, self.dt, self.pga_in_g, self.pga_in_gal,
-                  self.pgv_in_cm_s, self.pgd_in_cm, self.T5_95)
+        """Summarize the basic information of a ground motion."""
+        text = (
+            f'n_pts={self.npts:d}, dt={self.dt:.4g}s, '
+            + f'PGA={self.pga_in_g:.3g}g={self.pga_in_gal:.3g}gal, '
+            + f'PGV={self.pgv_in_cm_s:.3g}cm/s, '
+            + f'PGD={self.pgd_in_cm:.3g}cm, T5_95={self.T5_95:.3g}s'
+        )
         return text
 
     def summary(self):
-        """
-        Show a brief summary of the ground motion.
-        """
+        """Show a brief summary of the ground motion."""
         print(self)
         self.plot()
 
@@ -186,7 +186,7 @@ class Ground_Motion:
         x = sig.fourier_transform(
             self.accel, real_val=real_val, double_sided=double_sided, show_fig=show_fig,
         )
-        fs = FS(x)
+        fs = FrequencySpectrum(x)
         return fs
 
     def get_response_spectra(
@@ -238,7 +238,7 @@ class Ground_Motion:
 
     def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5, 6), dpi=100):
         """
-        Plots acceleration, velocity, and displacement waveforms together.
+        Plot acceleration, velocity, and displacement waveforms together.
 
         Parameters
         ----------
@@ -424,7 +424,7 @@ class Ground_Motion:
 
         Returns
         -------
-        scaled_motion : Ground_Motion
+        scaled_motion : GroundMotion
             The scaled motion
         """
         if target_PGA_in_g is not None:
@@ -435,9 +435,9 @@ class Ground_Motion:
         time = self.accel[:, 0]
         acc = self.accel[:, 1]
         acc_scaled = acc * factor
-        return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
+        return GroundMotion(np.column_stack((time, acc_scaled)), unit='m')
 
-    def truncate(self, limit, arias=True, extend=[0, 0], show_fig=False):
+    def truncate(self, limit, arias=True, extend=(0, 0), show_fig=False):
         """
         Truncate ground motion, removing data points in the head and/or tail.
 
@@ -449,7 +449,7 @@ class Ground_Motion:
         arias : bool
             If ``True``, ``limit`` means the normalized Arias intensity.
             Otherwise, ``limit`` means the actual time.
-        extend : tuple or list of two floats
+        extend : tuple (default = (0, 0))
             How many seconds to extend before and after the original truncated
             time limits. For example, if extend is [5, 5] sec, and the original
             time limits are [3, 50] sec, then the actual time limits are
@@ -459,7 +459,7 @@ class Ground_Motion:
 
         Returns
         -------
-        truncated_accel : Ground_Motion
+        truncated_accel : GroundMotion
             Truncated ground motion.
         fig : matplotlib.figure.Figure
             The figure object being created or being passed into this function.
@@ -473,8 +473,8 @@ class Ground_Motion:
             raise TypeError('"limit" must be a list/tuple of  two elements.')
         if len(limit) != 2:
             raise ValueError('Length of "limit" must be 2.')
-        if not isinstance(extend, (tuple, list)):
-            raise TypeError('"extend" must be a list/tuple of  two elements.')
+        if not isinstance(extend, tuple):
+            raise TypeError('"extend" must be a tuple of  two elements.')
         if len(extend) != 2:
             raise ValueError('Length of "extend" must be 2.')
 
@@ -534,7 +534,7 @@ class Ground_Motion:
         else:
             fig, ax = None, None
 
-        return Ground_Motion(truncated, unit='m'), fig, ax, (n1, n2)
+        return GroundMotion(truncated, unit='m'), fig, ax, (n1, n2)
 
     def amplify_by_tf(
             self, transfer_function, taper=False, extrap_tf=True,
@@ -572,7 +572,7 @@ class Ground_Motion:
 
         Returns
         -------
-        output_motion : Ground_Motion
+        output_motion : GroundMotion
             The resultant ground motion in time domain
         fig : matplotlib.figure.Figure, *optional*
             The figure object being created or being passed into this function.
@@ -588,10 +588,10 @@ class Ground_Motion:
             frequency, i.e., at least 0-50 Hz, and anything above 50 Hz will
             not affect the input motion at all.
         """
-        if not isinstance(transfer_function, FS):
+        if not isinstance(transfer_function, FrequencySpectrum):
             raise TypeError(
                 '`transfer_function` needs to be of type '
-                '`FrequencySpectrum` (or its subclass).'
+                + '`FrequencySpectrum` (or its subclass).',
             )
         freq = transfer_function.freq
         tf_1col = transfer_function.spectrum
@@ -608,10 +608,10 @@ class Ground_Motion:
         )
         if return_fig_obj:
             output_accel, fig, ax = result
-            return Ground_Motion(output_accel, unit='m'), fig, ax
+            return GroundMotion(output_accel, unit='m'), fig, ax
         else:
             output_accel = result
-            return Ground_Motion(output_accel, unit='m')
+            return GroundMotion(output_accel, unit='m')
 
     def amplify(self, soil_profile, boundary='elastic', show_fig=False):
         """
@@ -630,7 +630,7 @@ class Ground_Motion:
 
         Returns
         -------
-        output_motion : Ground_Motion
+        output_motion : GroundMotion
             The amplified ground motion.
         """
         if not isinstance(soil_profile, Vs_Profile):
@@ -642,7 +642,7 @@ class Ground_Motion:
             vs_profile, surface_motion, deconv=False,
             boundary=boundary, show_fig=show_fig,
         )[0]
-        output_motion = Ground_Motion(response, unit='m')
+        output_motion = GroundMotion(response, unit='m')
         return output_motion
 
     def compare(
@@ -655,7 +655,7 @@ class Ground_Motion:
 
         Parameters
         ----------
-        another_ground_motion : Ground_Motion
+        another_ground_motion : GroundMotion
             Another ground motion object.
         this_ground_motion_as_input : bool
             If ``True``, this ground motion is treated as the input ground
@@ -675,8 +675,8 @@ class Ground_Motion:
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object created in this function.
         """
-        if not isinstance(another_ground_motion, Ground_Motion):
-            raise TypeError('`another_ground_motion` must be a `Ground_Motion`.')
+        if not isinstance(another_ground_motion, GroundMotion):
+            raise TypeError('`another_ground_motion` must be a `GroundMotion`.')
         # END IF
 
         if this_ground_motion_as_input:
@@ -719,7 +719,7 @@ class Ground_Motion:
 
         Returns
         -------
-        deconv_motion : Ground_Motion
+        deconv_motion : GroundMotion
             The deconvolved motion on the rock outcrop or in a borehole.
         """
         if not isinstance(soil_profile, Vs_Profile):
@@ -731,7 +731,7 @@ class Ground_Motion:
             vs_profile, surface_motion, deconv=True,
             boundary=boundary, show_fig=show_fig,
         )[0]
-        deconv_motion = Ground_Motion(response, unit='m')
+        deconv_motion = GroundMotion(response, unit='m')
         return deconv_motion
 
     def baseline_correct(self, cutoff_freq=0.20, show_fig=False):
@@ -749,11 +749,11 @@ class Ground_Motion:
 
         Returns
         -------
-        corrected : Ground_Motion
+        corrected : GroundMotion
             The baseline-corrected ground motion, with SI units.
         """
         accel_ = sig.baseline(self.accel, show_fig=show_fig, cutoff_freq=cutoff_freq)
-        return Ground_Motion(accel_, unit='m')
+        return GroundMotion(accel_, unit='m')
 
     def lowpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         """
@@ -772,14 +772,14 @@ class Ground_Motion:
 
         Returns
         -------
-        filtered : Ground_Motion
+        filtered : GroundMotion
             Filtered signal.
         """
         accel_ = sig.lowpass(
             self.accel, cutoff_freq, show_fig=show_fig,
             filter_order=filter_order, padlen=padlen,
         )
-        return Ground_Motion(accel_, unit='m')
+        return GroundMotion(accel_, unit='m')
 
     def highpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         """
@@ -798,14 +798,14 @@ class Ground_Motion:
 
         Returns
         -------
-        filtered : Ground_Motion
+        filtered : GroundMotion
             Filtered signal.
         """
         accel_ = sig.highpass(
             self.accel, cutoff_freq, show_fig=show_fig,
             filter_order=filter_order, padlen=padlen,
         )
-        return Ground_Motion(accel_, unit='m')
+        return GroundMotion(accel_, unit='m')
 
     def bandpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         """
@@ -824,14 +824,14 @@ class Ground_Motion:
 
         Returns
         -------
-        filtered : Ground_Motion
+        filtered : GroundMotion
             Filtered signal
         """
         accel_ = sig.bandpass(
             self.accel, cutoff_freq, show_fig=show_fig,
             filter_order=filter_order, padlen=padlen,
         )
-        return Ground_Motion(accel_, unit='m')
+        return GroundMotion(accel_, unit='m')
 
     def bandstop(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
         """
@@ -851,20 +851,20 @@ class Ground_Motion:
 
         Returns
         -------
-        filtered : Ground_Motion
+        filtered : GroundMotion
             Filtered signal
         """
         accel_ = sig.bandstop(
             self.accel, cutoff_freq, show_fig=show_fig,
             filter_order=filter_order, padlen=padlen,
         )
-        return Ground_Motion(accel_, unit='m')
+        return GroundMotion(accel_, unit='m')
 
     def save_accel(
             self, fname, sep='\t', t_prec='%.5g', motion_prec='%.5g', unit='m/s/s',
     ):
         """
-        Saves the acceleration as a text file.
+        Save the acceleration as a text file.
 
         Parameters
         ----------

@@ -2,7 +2,7 @@ import numpy as np
 
 from . import helper_site_response as sr
 
-from .class_ground_motion import Ground_Motion
+from .class_ground_motion import GroundMotion
 from .class_site_factors import Site_Factors
 
 
@@ -13,7 +13,7 @@ class Site_Effect_Adjustment:
 
     Parameters
     ----------
-    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+    input_motion : PySeismoSoil.class_ground_motion.GroundMotion
         Input ground motion.
     Vs30_in_meter_per_sec : float
         Vs30 values in SI unit.
@@ -28,7 +28,7 @@ class Site_Effect_Adjustment:
 
     Attributes
     ----------
-    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+    input_motion : PySeismoSoil.class_ground_motion.GroundMotion
         Input ground motion.
     Vs30 : float
         Vs30 of the site. (Unit: m/s)
@@ -45,8 +45,8 @@ class Site_Effect_Adjustment:
             ampl_method='nl_hh',
             lenient=False,
     ):
-        if not isinstance(input_motion, Ground_Motion):
-            raise TypeError('`input_motion` must be of class `Ground_Motion`.')
+        if not isinstance(input_motion, GroundMotion):
+            raise TypeError('`input_motion` must be of class `GroundMotion`.')
         if not isinstance(Vs30_in_meter_per_sec, (int, float, np.number)):
             msg = '`Vs30_in_meter_per_sec` must be int, float, or numpy.number.'
             raise TypeError(msg)
@@ -88,7 +88,7 @@ class Site_Effect_Adjustment:
 
         Returns
         -------
-        output_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+        output_motion : PySeismoSoil.class_ground_motion.GroundMotion
             Output ground motion with site effects included.
         fig : matplotlib.figure.Figure, optional
             The figure object.
@@ -145,7 +145,7 @@ class Site_Effect_Adjustment:
         else:
             accel_out = result
 
-        output_motion = Ground_Motion(accel_out, unit='m')
+        output_motion = GroundMotion(accel_out, unit='m')
         if return_fig_obj:
             if not show_fig:
                 fig, ax = None, None
