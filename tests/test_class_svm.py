@@ -1,7 +1,7 @@
 import unittest
 
 from PySeismoSoil.class_svm import SVM
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 
 
 class Test_Class_SVM(unittest.TestCase):
@@ -32,12 +32,12 @@ class Test_Class_SVM(unittest.TestCase):
     def test_base_profile(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         base_profile = svm.base_profile
-        self.assertTrue(isinstance(base_profile, Vs_Profile))
+        self.assertTrue(isinstance(base_profile, VsProfile))
 
     def test_get_discretized_profile__fixed_thk(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         discr_profile = svm.get_discretized_profile(fixed_thk=10, show_fig=False)
-        self.assertTrue(isinstance(discr_profile, Vs_Profile))
+        self.assertTrue(isinstance(discr_profile, VsProfile))
         if svm.has_bedrock_Vs:  # bedrock Vs must match
             self.assertEqual(svm.bedrock_Vs, discr_profile.vs_profile[-1, 1])
             self.assertEqual(0, discr_profile.vs_profile[-1, 0])
@@ -45,7 +45,7 @@ class Test_Class_SVM(unittest.TestCase):
     def test_get_discretized_profile__valid_Vs_increment(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         discr_profile = svm.get_discretized_profile(Vs_increment=100, show_fig=False)
-        self.assertTrue(isinstance(discr_profile, Vs_Profile))
+        self.assertTrue(isinstance(discr_profile, VsProfile))
         if svm.has_bedrock_Vs:  # bedrock Vs must match
             self.assertEqual(svm.bedrock_Vs, discr_profile.vs_profile[-1, 1])
             self.assertEqual(0, discr_profile.vs_profile[-1, 0])
@@ -68,7 +68,7 @@ class Test_Class_SVM(unittest.TestCase):
     def test_get_randomized_profile(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
         random_profile = svm.get_randomized_profile(show_fig=False)
-        self.assertTrue(isinstance(random_profile, Vs_Profile))
+        self.assertTrue(isinstance(random_profile, VsProfile))
 
         if svm.has_bedrock_Vs:  # bedrock Vs must match
             self.assertEqual(svm.bedrock_Vs, random_profile.vs_profile[-1, 1])

@@ -2,7 +2,7 @@ import time
 import numpy as np
 from scipy.optimize import fsolve
 
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil import helper_site_response as sr
 
 
@@ -55,7 +55,7 @@ class SVM:
         The target Vs30 value, in m/s.
     z1 : float
         The basin depth, in meters.
-    base_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+    base_profile : PySeismoSoil.class_Vs_profile.VsProfile
         The base Vs profile associated with the given ``Vs30`` and ``z1``.
     bedrock_Vs : float
         Bedrock Vs, either user-specified (via ``Vs_cap``), or automatically
@@ -241,7 +241,7 @@ class SVM:
         self.Vs30 = target_Vs30
         self.z1 = z1
         self._base_profile = vs_profile  # for use within class methods
-        self.base_profile = Vs_Profile(vs_profile)  # for external users
+        self.base_profile = VsProfile(vs_profile)  # for external users
         if Vs_cap is not False:
             self.bedrock_Vs = Vs_cap  # Vs_cap is already a number, not `True`
             self.has_bedrock_Vs = True
@@ -320,7 +320,7 @@ class SVM:
 
         Returns
         -------
-        discr_prof : PySeismoSoil.class_Vs_profile.Vs_Profile
+        discr_prof : PySeismoSoil.class_Vs_profile.VsProfile
             Discretized Vs profile.
         """
         if fixed_thk is None and Vs_increment is None:
@@ -449,7 +449,7 @@ class SVM:
 
         Returns
         -------
-        Vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+        Vs_profile : PySeismoSoil.class_Vs_profile.VsProfile
             The randomzed Vs profile.
         """
         if not isinstance(seed, (type(None), int, float, np.number)):
@@ -501,7 +501,7 @@ class SVM:
                 self._plot_additional_profile(Vs_profile, 'Stochastic')
         # END IF
 
-        return Vs_Profile(Vs_profile)
+        return VsProfile(Vs_profile)
 
     def _helper_get_rand_profile(
             self,

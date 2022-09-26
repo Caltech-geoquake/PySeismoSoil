@@ -7,7 +7,7 @@ from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil import helper_signal_processing as sig
 
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 
 
 class GroundMotion:
@@ -620,7 +620,7 @@ class GroundMotion:
 
         Parameters
         ----------
-        soil_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+        soil_profile : PySeismoSoil.class_Vs_profile.VsProfile
             The soil profile through which to deconvolve the gound motion.
         boundary : {'elastic', 'rigid'}
             The type of boundary of the bottom of the soil profile.
@@ -633,8 +633,8 @@ class GroundMotion:
         output_motion : GroundMotion
             The amplified ground motion.
         """
-        if not isinstance(soil_profile, Vs_Profile):
-            raise TypeError('`soil_profile` must be of type `Vs_Profile`.')
+        if not isinstance(soil_profile, VsProfile):
+            raise TypeError('`soil_profile` must be of type `VsProfile`.')
 
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI
@@ -709,7 +709,7 @@ class GroundMotion:
 
         Parameters
         ----------
-        soil_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+        soil_profile : PySeismoSoil.class_Vs_profile.VsProfile
             The soil profile through which to deconvolve the gound motion.
         boundary : {'elastic', 'rigid'}
             The type of boundary of the bottom of the soil profile.
@@ -722,8 +722,8 @@ class GroundMotion:
         deconv_motion : GroundMotion
             The deconvolved motion on the rock outcrop or in a borehole.
         """
-        if not isinstance(soil_profile, Vs_Profile):
-            raise TypeError('`soil_profile` must be of type `Vs_Profile`.')
+        if not isinstance(soil_profile, VsProfile):
+            raise TypeError('`soil_profile` must be of type `VsProfile`.')
 
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_damping_calibration import DampingCalibration
 
 import os
@@ -14,15 +14,15 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_Damping_Calibration(unittest.TestCase):
     def test_init__case_1_incorrect_input_type(self):
         vs_profile_array = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
-        with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
+        with self.assertRaisesRegex(TypeError, 'must be of type VsProfile'):
             DampingCalibration(vs_profile_array)
 
     def test_init__case_2_correct_input_type(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         DampingCalibration(vs_profile)
 
     def test_get_damping_curves__check_n_layers_correct(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         d_cal = DampingCalibration(vs_profile)
         strain_in_pct = np.logspace(-2, 1, num=23)
         mdc = d_cal.get_damping_curves(
@@ -31,7 +31,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
         self.assertEqual(mdc.n_layer, vs_profile.n_layer)
 
     def test_get_damping_curves__check_two_things(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         d_cal = DampingCalibration(vs_profile)
         strain_in_pct = np.logspace(-2, 1, num=23)
         mdc = d_cal.get_damping_curves(
@@ -48,7 +48,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
             self.assertGreaterEqual(xi[-1], 1.0)  # last element of each damping curve
 
     def test_get_damping_curves__check_use_Darendeli_Dmin_correct(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         d_cal = DampingCalibration(vs_profile)
         strain_in_pct = np.logspace(-2, 1, num=23)
         mdc = d_cal.get_damping_curves(
@@ -71,7 +71,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
 
     def test_get_HH_x_param(self):
         # Only test that `get_HH_x_param()` can run without bugs:
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         d_cal = DampingCalibration(vs_profile)
         d_cal.get_HH_x_param(
             pop_size=1, n_gen=1, save_txt=False, use_scipy=True, show_fig=True,
@@ -79,7 +79,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
 
     def test_get_H4_x_param(self):
         # Only test that `get_H4_x_param()` can run without bugs:
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         d_cal = DampingCalibration(vs_profile)
         d_cal.get_H4_x_param(
             pop_size=1, n_gen=1, save_txt=False, use_scipy=True, show_fig=True,

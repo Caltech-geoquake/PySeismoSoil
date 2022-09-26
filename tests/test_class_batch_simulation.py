@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from PySeismoSoil.class_ground_motion import GroundMotion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 from PySeismoSoil.class_parameters import MultiLayerParamHH
 from PySeismoSoil.class_simulation import (
@@ -34,7 +34,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
     def test_init__case_4_inhomogeneous_element_type(self):
         with self.assertRaisesRegex(TypeError, 'should be of the same type'):
             gm = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
-            prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+            prof = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
             mgdc = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
             lin_sim = LinearSimulation(prof, gm)
             equiv_sim = EquivLinearSimulation(prof, gm, mgdc)
@@ -42,8 +42,8 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
 
     def test_linear(self):
         gm = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
-        prof_1 = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
+        prof_1 = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
+        prof_2 = VsProfile(_join(f_dir, 'profile_P001.txt'))
 
         sim_1 = LinearSimulation(prof_1, gm, boundary='elastic')
         sim_2 = LinearSimulation(prof_2, gm, boundary='elastic')
@@ -65,7 +65,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         gm_raw = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         # Make a very weak motion to speed up equivalent linear calculation
         gm = gm_raw.scale_motion(target_PGA_in_g=0.001)
-        prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
+        prof_2 = VsProfile(_join(f_dir, 'profile_P001.txt'))
         mgdc_2 = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_P001.txt'))
 
         sim_2 = EquivLinearSimulation(prof_2, gm, mgdc_2, boundary='elastic')
@@ -87,7 +87,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         accel_data = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
         accel_downsample = accel_data[::50]  # for faster testing speed
         gm = GroundMotion(accel_downsample, unit='gal')
-        prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        prof = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         hh_g = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
         hh_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
         sim = NonlinearSimulation(prof, gm, G_param=hh_g, xi_param=hh_x)

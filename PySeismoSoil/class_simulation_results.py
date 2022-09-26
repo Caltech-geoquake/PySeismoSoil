@@ -4,7 +4,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from PySeismoSoil.class_ground_motion import GroundMotion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 from PySeismoSoil import helper_generic as hlp
@@ -22,7 +22,7 @@ class SimulationResults:
         Input ground motion.
     accel_on_surface : GroundMotion
         Output ground motion.
-    rediscretized_profile : Vs_Profile
+    rediscretized_profile : VsProfile
         Vs profile (the re-discretized version that ensures proper
         representation of wave shapes).
     max_a_v_d : numpy.ndarray
@@ -80,8 +80,8 @@ class SimulationResults:
             raise TypeError('`input_accel` needs to be of GroundMotion type.')
         if not isinstance(accel_on_surface, GroundMotion):
             raise TypeError('`accel_on_surface` needs to be of GroundMotion type.')
-        if not isinstance(rediscretized_profile, Vs_Profile):
-            raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
+        if not isinstance(rediscretized_profile, VsProfile):
+            raise TypeError('`rediscretized_profile` needs to be of VsProfile type.')
         if not isinstance(trans_func, (FrequencySpectrum, type(None))):
             raise TypeError(
                 '`trans_func` needs to be either None or of FrequencySpectrum type.',

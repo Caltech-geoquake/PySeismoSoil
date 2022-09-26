@@ -12,7 +12,7 @@ from PySeismoSoil import helper_simulations as sim
 from PySeismoSoil import helper_signal_processing as sig
 
 from PySeismoSoil.class_ground_motion import GroundMotion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_parameters import MultiLayerParam
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 from PySeismoSoil.class_simulation_results import SimulationResults
@@ -25,7 +25,7 @@ class Simulation:
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : class_Vs_profile.VsProfile
         Soil profile.
     input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
@@ -58,8 +58,8 @@ class Simulation:
             xi_param=None,
             GGmax_and_damping_curves=None,
     ):
-        if not isinstance(soil_profile, Vs_Profile):
-            raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
+        if not isinstance(soil_profile, VsProfile):
+            raise TypeError('`soil_profile` must be of class `VsProfile`.')
         if not isinstance(input_motion, GroundMotion):
             raise TypeError('`input_motion` must be of class `GroundMotion`.')
 
@@ -104,7 +104,7 @@ class LinearSimulation(Simulation):
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : class_Vs_profile.VsProfile
         Soil profile.
     input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
@@ -198,7 +198,7 @@ class LinearSimulation(Simulation):
             sim_results = SimulationResults(
                 self.input_motion,
                 GroundMotion(accel_on_surface, unit='m'),
-                Vs_Profile(new_profile, density_unit='g/cm^3'),
+                VsProfile(new_profile, density_unit='g/cm^3'),
                 max_a_v_d=max_avd,
                 max_strain_stress=max_gt,
                 trans_func=FrequencySpectrum(tf, df=freq_array[1] - freq_array[0]),
@@ -245,7 +245,7 @@ class EquivLinearSimulation(Simulation):
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : class_Vs_profile.VsProfile
         Soil profile.
     input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
@@ -348,7 +348,7 @@ class EquivLinearSimulation(Simulation):
         sim_results = SimulationResults(
             self.input_motion,
             GroundMotion(accel_on_surface, unit='m'),
-            Vs_Profile(new_profile, density_unit='g/cm^3'),
+            VsProfile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
             trans_func=FrequencySpectrum(tf, df=freq_array[1] - freq_array[0]),
@@ -378,7 +378,7 @@ class NonlinearSimulation(Simulation):
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : class_Vs_profile.VsProfile
         Soil profile.
     input_motion : class_ground_motion.GroundMotion
         Input ground motion. It should be the "rock outrcop" motion if
@@ -646,7 +646,7 @@ class NonlinearSimulation(Simulation):
         sim_results = SimulationResults(
             self.input_motion,
             GroundMotion(accel_surface_2col, unit='m'),
-            Vs_Profile(new_profile, density_unit='g/cm^3'),
+            VsProfile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
             trans_func=FrequencySpectrum(tf_unsmoothed),

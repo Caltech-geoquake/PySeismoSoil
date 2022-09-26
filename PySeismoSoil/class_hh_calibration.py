@@ -1,4 +1,4 @@
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_curves import MultipleGGmaxCurves
 from PySeismoSoil.class_parameters import MultiLayerParamHH
 
@@ -22,7 +22,7 @@ class HHCalibration:
 
     Parameters
     ----------
-    vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+    vs_profile : PySeismoSoil.class_Vs_profile.VsProfile
         The Vs profile of interest.
     GGmax_curves : PySeismoSoil.class_curves.MultipleGGmaxCurves or ``None``
         The G/Gmax curves of each layer. If ``None``, HH parameters will be
@@ -36,7 +36,7 @@ class HHCalibration:
 
     Attributes
     ----------
-    vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+    vs_profile : PySeismoSoil.class_Vs_profile.VsProfile
         Same as the input parameter.
     GGmax_curves : PySeismoSoil.class_curves.MultipleGGmaxCurves or ``None``
         Same as the input parameter.
@@ -45,8 +45,8 @@ class HHCalibration:
     """
 
     def __init__(self, vs_profile, *, GGmax_curves=None, Tmax_profile=None):
-        if not isinstance(vs_profile, Vs_Profile):
-            raise TypeError('`vs_profile` must be of type Vs_Profile.')
+        if not isinstance(vs_profile, VsProfile):
+            raise TypeError('`vs_profile` must be of type VsProfile.')
         if GGmax_curves is not None:
             if not isinstance(GGmax_curves, MultipleGGmaxCurves):
                 raise TypeError(

@@ -4,7 +4,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 
 from PySeismoSoil.class_ground_motion import GroundMotion as GM
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 import os
@@ -157,14 +157,14 @@ class Test_Class_Ground_Motion(unittest.TestCase):
 
     def test_amplify_via_profile(self):
         gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
-        vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_prof = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         output_motion = gm.amplify(vs_prof, boundary='elastic')
         self.assertTrue(isinstance(output_motion, GM))
 
     def test_deconvolution(self):
         # Assert `deconvolve()` & `amplify()` are reverse operations to each other.
         gm = GM(_join(f_dir, 'sample_accel.txt'), unit='m')
-        vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_prof = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
 
         for boundary in ['elastic', 'rigid']:
             deconv_motion = gm.deconvolve(vs_prof, boundary=boundary)
@@ -219,7 +219,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
 
     def test_amplify_by_tf__case_2_a_transfer_function_from_a_Vs_profile(self):
         gm = GM(_join(f_dir, 'sample_accel.txt'), unit='gal')
-        vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_prof = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         tf_RO, tf_BH, _ = vs_prof.get_transfer_function()
         gm_with_tf_RO = gm.amplify_by_tf(tf_RO)
         gm_with_tf_BH = gm.amplify_by_tf(tf_BH)

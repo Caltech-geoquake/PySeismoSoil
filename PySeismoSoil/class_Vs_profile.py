@@ -1,13 +1,13 @@
 import os
 import numpy as np
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
-from .class_frequency_spectrum import FrequencySpectrum
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
 
-class Vs_Profile:
+class VsProfile:
     """
     Class implementation of a Vs profile
 
@@ -67,6 +67,7 @@ class Vs_Profile:
     n_layer : int
         Number of soil layers (not including the half space).
     """
+
     def __init__(
             self,
             data,
@@ -110,19 +111,19 @@ class Vs_Profile:
             rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
                 print(
-                    'Warning in initializing Vs_Profile: min(density) is '
-                    'lower than 1,000 kg/m^3. Possible error.'
+                    'Warning in initializing VsProfile: min(density) is '
+                    + 'lower than 1,000 kg/m^3. Possible error.',
                 )
             elif density_unit in ['g/cm^3', 'g/cm3'] and min(rho) <= 1.0:
                 print(
-                    'Warning in initializing Vs_Profile: min(density) is '
-                    'lower than 1.0 g/cm^3. Possible error.'
+                    'Warning in initializing VsProfile: min(density) is '
+                    + 'lower than 1.0 g/cm^3. Possible error.',
                 )
 
             if damping_unit == '1' and max(xi) > 1:
                 print(
-                    'Warning in initializing Vs_Profile: max(damping) '
-                    'larger than 100%. Possible error.'
+                    'Warning in initializing VsProfile: max(damping) '
+                    + 'larger than 100%. Possible error.',
                 )
 
             if density_unit in ['g/cm^3', 'g/cm3']:
@@ -135,7 +136,7 @@ class Vs_Profile:
         else:
             raise ValueError(
                 'The dimension of the input data is wrong. It '
-                'should have two or five columns.'
+                + 'should have two or five columns.',
             )
 
         if add_halfspace and thk[-1] != 0:
@@ -159,9 +160,7 @@ class Vs_Profile:
         self.n_layer = len(vs) - 1 if thk[-1] == 0 else len(vs)
 
     def __repr__(self):
-        """
-        Defines a presentation of the basic info of a Vs profile.
-        """
+        """Define a presentation of the basic info of a Vs profile."""
         text = '\n----------+----------+-------------+------------------+--------------\n'
         text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] | Material No. \n'
         text += '----------+----------+-------------+------------------+--------------\n'
@@ -324,7 +323,7 @@ class Vs_Profile:
 
     def get_depth_array(self):
         """
-        Returns the depth array.
+        Return the depth array.
 
         Returns
         -------
@@ -348,7 +347,7 @@ class Vs_Profile:
 
         Returns
         -------
-        truncated : Vs_Profile
+        truncated : VsProfile
             The truncated Vs profile.
         """
         if depth is None or depth <= 0:
@@ -382,7 +381,7 @@ class Vs_Profile:
         if profile_[-2, -1] == 0:  # last "material number" before appending is 0
             profile_[-2, -1] = np.max(profile_[:, -1]) + 1  # require add'l material
 
-        return Vs_Profile(profile_)
+        return VsProfile(profile_)
 
     def query_Vs_at_depth(self, depth, as_profile=False, show_fig=False):
         """
@@ -400,23 +399,24 @@ class Vs_Profile:
 
         Returns
         -------
-        vs_array : float, numpy.ndarray, or Vs_Profile
+        vs_array : float, numpy.ndarray, or VsProfile
             Vs values corresponding to the given depths. Its type depends on
             the type of ``depth``.
         """
-        vs_queried, is_scalar, has_duplicate_values, is_sorted \
-            = sr.query_Vs_at_depth(self.vs_profile, depth)
+        vs_queried, is_scalar, has_duplicate_values, is_sorted = sr.query_Vs_at_depth(
+            self.vs_profile, depth,
+        )
 
         if as_profile:
             if not is_sorted:
                 raise ValueError(
                     'If `as_profile` is set to True, the given '
-                    '`depth` needs to be monotonically increasing.'
+                    + '`depth` needs to be monotonically increasing.',
                 )
             if has_duplicate_values:
                 raise ValueError(
                     'If `as_profile` is set to True, the given '
-                    '`depth` should not contain duplicate values.'
+                    + '`depth` should not contain duplicate values.',
                 )
 
         if as_profile:
@@ -432,7 +432,7 @@ class Vs_Profile:
                 sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
 
             # A halfspace is already implicitly added by sr.depth2thk()
-            return Vs_Profile(vs_, add_halfspace=False)
+            return VsProfile(vs_, add_halfspace=False)
         else:
             if show_fig:
                 self._plot_queried_Vs(vs_queried, depth)
@@ -476,7 +476,7 @@ class Vs_Profile:
 
         Return
         ------
-        vs_array : numpy.ndarray or Vs_Profile
+        vs_array : numpy.ndarray or VsProfile
             Vs values corresponding to the given depths. Its type depends on
             ``as_profile``.
         """
@@ -496,11 +496,11 @@ class Vs_Profile:
             if show_fig:
                 fig, ax, _ = self.plot()
                 sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
-            return Vs_Profile(vs_, add_halfspace=add_halfspace)
+            return VsProfile(vs_, add_halfspace=add_halfspace)
 
     def _plot_queried_Vs(self, vs_queried, depth, dpi=100):
         """
-        Helper subroutine that plots queried Vs values on top of the Vs profile.
+        Plot queried Vs values on top of the Vs profile.
 
         Parameters
         ----------
@@ -576,9 +576,7 @@ class Vs_Profile:
         return tmp
 
     def summary(self):
-        """
-        Display the Vs profile on the console and plot Vs profile.
-        """
+        """Display the Vs profile on the console and plot Vs profile."""
         print(self)
         self.plot()
 
@@ -586,7 +584,7 @@ class Vs_Profile:
             self,
             fname,
             sep='\t',
-            precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d'],
+            precision=('%.2f', '%.2f', '%.4g', '%.5g', '%d'),
     ):
         """
         Write Vs profile to a text file.
@@ -597,8 +595,8 @@ class Vs_Profile:
             File name (including path).
         sep : str
             Delimiter for the output file.
-        precision : list<str>
-            A list of precision specifiers, each for the five columns of the
+        precision : tuple<str>
+            A tuple of precision specifiers, each for the five columns of the
             Vs profile.
         """
         if not isinstance(precision, list):

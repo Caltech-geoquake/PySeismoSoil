@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from PySeismoSoil.class_ground_motion import GroundMotion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_simulation_results import SimulationResults
 
 import PySeismoSoil.helper_site_response as sr
@@ -21,7 +21,7 @@ class Test_Class_Simulation_Results(unittest.TestCase):
         accel_tmp = accel_in.accel.copy()
         accel_tmp[:, 1] *= 5.0
         accel_out = GroundMotion(accel_tmp, unit='m/s/s')
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         thk = vs_profile._thk
         depth_bound = sr.thk2dep(thk, midpoint=False)
         depth_midpoint = sr.thk2dep(thk, midpoint=True)

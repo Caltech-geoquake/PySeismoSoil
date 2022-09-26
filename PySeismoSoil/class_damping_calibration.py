@@ -2,7 +2,7 @@ import numpy as np
 
 from PySeismoSoil import helper_hh_calibration as hhc
 
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_curves import DampingCurve, MultipleDampingCurves
 
 
@@ -16,8 +16,8 @@ class DampingCalibration:
     """
 
     def __init__(self, vs_profile):
-        if not isinstance(vs_profile, Vs_Profile):
-            raise TypeError('`vs_profile` must be of type Vs_Profile.')
+        if not isinstance(vs_profile, VsProfile):
+            raise TypeError('`vs_profile` must be of type VsProfile.')
         self.vs_profile = vs_profile
 
     def get_damping_curves(

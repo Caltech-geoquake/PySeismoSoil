@@ -4,7 +4,7 @@ import numpy as np
 import PySeismoSoil.helper_simulations as sim
 import PySeismoSoil.helper_site_response as sr
 
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_parameters import MultiLayerParamHH
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 
@@ -18,7 +18,7 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Helper_Simulations(unittest.TestCase):
     def test_check_layer_count(self):
         # Case 1(a): normal case, with parameters
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        vs_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         HH_G = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
         HH_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
         sim.check_layer_count(vs_profile, G_param=HH_G, xi_param=HH_x)

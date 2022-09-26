@@ -5,7 +5,7 @@ from PySeismoSoil.class_simulation import (
     LinearSimulation, EquivLinearSimulation, NonlinearSimulation,
 )
 from PySeismoSoil.class_ground_motion import GroundMotion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_parameters import MultiLayerParamHH
 from PySeismoSoil.class_curves import MultipleGGmaxDampingCurves
 
@@ -21,7 +21,7 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_Simulation(unittest.TestCase):
     def test_linear(self):
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m')
-        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        soil_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         ls = LinearSimulation(soil_profile, input_motion)
         sim_result = ls.run(every_layer=True, show_fig=True)
         output = sim_result.accel_on_surface
@@ -38,7 +38,7 @@ class Test_Class_Simulation(unittest.TestCase):
         self.assertTrue(nearly_identical(output.accel, output_.accel, thres=0.99))
 
     def test_equiv_linear(self):
-        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        soil_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         curves = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
         equiv_lin_sim = EquivLinearSimulation(soil_profile, input_motion,
@@ -65,7 +65,7 @@ class Test_Class_Simulation(unittest.TestCase):
 
     def test_nonlinear_init(self):
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='m')
-        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+        soil_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         HH_G = MultiLayerParamHH(_join(f_dir, 'HH_G_FKSH14.txt'))
         HH_x = MultiLayerParamHH(_join(f_dir, 'HH_X_FKSH14.txt'))
 
