@@ -2,4 +2,6 @@ pip install flake8 wemake-python-styleguide flake8-commas flake8-mutable flake8-
 echo ""
 echo "******************************"
 echo ""
-flake8 ./PySeismoSoil/class_simulation.py
+flake8 ./PySeismoSoil/class_site_effect_adjustment.py
+echo "----------------------"
+flake8 --select WPS317 ./PySeismoSoil/class_site_effect_adjustment.py
