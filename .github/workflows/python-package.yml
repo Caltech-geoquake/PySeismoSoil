@@ -28,7 +28,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install pytest
-        python -m pip install flake8 wemake-python-styleguide==0.16.1 flake8-mutable flake8-length flake8-absolute-import flake8-newspaper-style
+        python -m pip install flake8 wemake-python-styleguide==0.16.1 flake8-mutable flake8-length flake8-absolute-import
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         python -m pip install -e .
     - name: Lint with flake8
