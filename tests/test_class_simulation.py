@@ -41,11 +41,12 @@ class Test_Class_Simulation(unittest.TestCase):
         soil_profile = VsProfile(_join(f_dir, 'profile_FKSH14.txt'))
         input_motion = GroundMotion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         curves = MultipleGGmaxDampingCurves(data=_join(f_dir, 'curve_FKSH14.txt'))
-        equiv_lin_sim = EquivLinearSimulation(soil_profile, input_motion,
-                                              curves, boundary='elastic')
+        equiv_lin_sim = EquivLinearSimulation(
+            soil_profile, input_motion, curves, boundary='elastic',
+        )
         output = equiv_lin_sim.run(show_fig=True)
         max_v = output.max_a_v_d[:, 2]
-        max_v_benchmark = [
+        max_v_benchmark = [  # noqa: WPS317
             0.404085, 0.403931, 0.402998, 0.399842, 0.390005,
             0.389336, 0.388176, 0.386563, 0.384449, 0.381578,
             0.377044, 0.371955, 0.366454, 0.36505, 0.363536,

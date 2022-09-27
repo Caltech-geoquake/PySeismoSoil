@@ -210,7 +210,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
              [13.5, 3.59881564870728],
              [14, 3.31112261403936],
              [14.5, 2.61283127927210],
-             [15, 2.69868407060282]]
+             [15, 2.69868407060282]],
         )
         self.assertTrue(np.allclose(
             af_RO.spectrum_2col, af_benchmark, atol=1e-9, rtol=0.0,
@@ -244,7 +244,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof = VsProfile(data)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(
-            [[5, 4, 3, 2, 16, 0], [200, 500, 700, 1000, 1200, 2000]]
+            [[5, 4, 3, 2, 16, 0], [200, 500, 700, 1000, 1200, 2000]],
         ).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
@@ -254,7 +254,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof = VsProfile(data_)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(
-            [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1500, 2000]]
+            [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1500, 2000]],
         ).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
@@ -264,7 +264,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof = VsProfile(data_)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(
-            [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1200, 2000]]
+            [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1200, 2000]],
         ).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
@@ -412,22 +412,30 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
         # (6a) Test returning VsProfile object: multiple layers, top of layers
         result = prof.query_Vs_given_thk(
-            3, n_layers=5, as_profile=True,
-            at_midpoint=False, add_halfspace=True, show_fig=True,
+            3,
+            n_layers=5,
+            as_profile=True,
+            at_midpoint=False,
+            add_halfspace=True,
+            show_fig=True,
         )
         benchmark = VsProfile(
-            np.array([[3, 3, 3, 3, 3, 0], [10, 40, 70, 100, 120, 120]]).T
+            np.array([[3, 3, 3, 3, 3, 0], [10, 40, 70, 100, 120, 120]]).T,
         )
         compare = np.allclose(result.vs_profile, benchmark.vs_profile)
         self.assertTrue(compare)
 
         # (6b) Test returning VsProfile object: multiple layers, mid of layers
         result = prof.query_Vs_given_thk(
-            3, n_layers=5, as_profile=True,
-            at_midpoint=True, add_halfspace=True, show_fig=True,
+            3,
+            n_layers=5,
+            as_profile=True,
+            at_midpoint=True,
+            add_halfspace=True,
+            show_fig=True,
         )
         benchmark = VsProfile(
-            np.array([[3, 3, 3, 3, 3, 0], [20, 50, 80, 110, 120, 120]]).T
+            np.array([[3, 3, 3, 3, 3, 0], [20, 50, 80, 110, 120, 120]]).T,
         )
         compare = np.allclose(result.vs_profile, benchmark.vs_profile)
         self.assertTrue(compare)

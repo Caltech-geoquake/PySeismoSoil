@@ -32,7 +32,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
              [1.2000, 4.2000],
              [1.3000, 4.7000],
              [1.4000, 5.3000],
-             [1.5000, 6.0000]]
+             [1.5000, 6.0000]],
         )
         u_bench = np.array(
             [[0.1000, 0.0100],
@@ -49,7 +49,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
              [1.2000, 2.4000],
              [1.3000, 2.8700],
              [1.4000, 3.4000],
-             [1.5000, 4.0000]]
+             [1.5000, 4.0000]],
         )
 
         self.assertTrue(np.allclose(v, v_bench))
@@ -66,7 +66,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
              [0.7000, 2.0000],
              [0.8000, 2.4000],
              [0.9000, 2.9000],
-             [1.0000, 3.5000]]
+             [1.0000, 3.5000]],
         )
         v_bench[0, 1] = 0  # because the "initial offset" info is lost in num_diff
         displac = np.array(
@@ -79,20 +79,20 @@ class Test_Helper_Site_Response(unittest.TestCase):
              [0.7000, 0.7200],
              [0.8000, 0.9600],
              [0.9000, 1.2500],
-             [1.0000, 1.6000]]
+             [1.0000, 1.6000]],
         )
         veloc = sr.num_diff(displac)
         self.assertTrue(np.allclose(veloc, v_bench))
 
     def test_stratify(self):
         prof1 = np.array(
-            [[3, 4, 5, 6, 0], [225, 225 * 2, 225 * 3, 225 * 2.4, 225 * 5]]
+            [[3, 4, 5, 6, 0], [225, 225 * 2, 225 * 3, 225 * 2.4, 225 * 5]],
         ).T
         prof1_ = sr.stratify(prof1)
 
         prof1_benchmark = np.array(
             [[1, 1, 1, 2, 2, 2.5, 2.5, 2, 2, 2, 0],
-             [225, 225, 225, 450, 450, 675, 675, 540, 540, 540, 1125]]
+             [225, 225, 225, 450, 450, 675, 675, 540, 540, 540, 1125]],
         ).T
 
         self.assertTrue(np.allclose(prof1_, prof1_benchmark))
@@ -109,7 +109,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         Tn_bench = np.logspace(np.log10(T_min), np.log10(T_max), n_pts)
         SA_bench = np.array(
-            [7.0000, 7.0000, 7.0000, 7.0000, 7.0001, 7.0002,
+            [7.0000, 7.0000, 7.0000, 7.0000, 7.0001, 7.0002,  # noqa: WPS317
              6.9995, 7.0007, 7.0024, 6.9941, 7.0176, 6.9908,
              6.9930, 6.9615, 7.0031, 7.1326, 6.9622, 7.0992,
              6.5499, 7.3710, 7.3458, 6.8662, 8.3708, 8.5229,
@@ -117,7 +117,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
              8.1594, 6.9023, 7.1242, 6.5462, 6.3940, 6.3472,
              6.7302, 7.0554, 7.2901, 7.6946, 7.6408, 7.1073,
              6.3034, 5.3997, 4.5102, 3.6991, 2.9946, 2.4023,
-             1.9156, 1.5218]
+             1.9156, 1.5218],
         )
 
         self.assertTrue(np.allclose(Tn, Tn_bench))
@@ -188,8 +188,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         dep_top = np.array([0, 6, 11, 15, 18, 20])
 
         self.assertTrue(np.allclose(sr.dep2thk(dep_top), thk))
-        self.assertTrue(np.allclose(sr.dep2thk(dep_top, include_halfspace=False),
-                                    thk[:-1]))
+        self.assertTrue(np.allclose(
+            sr.dep2thk(dep_top, include_halfspace=False), thk[:-1],
+        ))
         self.assertTrue(np.allclose(sr.thk2dep(thk, midpoint=True), dep_mid))
         self.assertTrue(np.allclose(sr.thk2dep(thk), dep_top))
 
@@ -205,8 +206,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         amp = a * np.ones_like(freq)  # all frequencies are amplified a times
         phase = -b * np.ones_like(freq)  # all frequencies are delayed by b rad
 
+        transf_func = (freq, (amp, phase))
         motion_out = sr.amplify_motion(
-            input_motion, (freq, (amp, phase)), show_fig=True, taper=False,
+            input_motion, transf_func, show_fig=True, taper=False,
         )
 
         # you can calculate the response by hand:
@@ -280,7 +282,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
     def test_calc_damping_from_stress_strain__case_3(self):
         # Case 3: An edge case -- the initial damping is, in theory, almost 0
         strain_in_1 = np.array(
-            [0.0001, 0.00011514, 0.000132571, 0.000152642, 0.000175751]
+            [0.0001, 0.00011514, 0.000132571, 0.000152642, 0.000175751],
         )
         stress = np.array([274768, 304917, 336106, 369023, 403429])
         Gmax = 3102980000.0
@@ -310,8 +312,13 @@ class Test_Helper_Site_Response(unittest.TestCase):
         curve = data[:, 2:4]
         with self.assertRaisesRegex(ValueError, 'provide a function to serialize'):
             sr.fit_all_damping_curves(
-                [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
-                n_gen=1, save_txt=True, func_serialize=None,
+                [curve],
+                hh.fit_HH_x_single_layer,
+                hh.tau_HH,
+                pop_size=1,
+                n_gen=1,
+                save_txt=True,
+                func_serialize=None,
             )
 
     def test_fit_all_damping_curves__exception_with_incorrect_func_serialize(self):
@@ -322,8 +329,13 @@ class Test_Helper_Site_Response(unittest.TestCase):
         curve = data[:, 2:4]
         with self.assertRaisesRegex(AssertionError, ''):
             sr.fit_all_damping_curves(
-                [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
-                n_gen=1, save_txt=True, txt_filename='1.txt',  # no effect anyways
+                [curve],
+                hh.fit_HH_x_single_layer,
+                hh.tau_HH,
+                pop_size=1,
+                n_gen=1,
+                save_txt=True,
+                txt_filename='1.txt',  # no effect anyway
                 func_serialize=mkz.serialize_params_to_array,
             )
 

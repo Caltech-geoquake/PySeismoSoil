@@ -98,13 +98,13 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
 
         GGmax_bench = np.array(
             [[0.1223930, 0.1482878, 0.165438],  # from MATLAB
-             [0.0165279, 0.0205492, 0.023331]]
+             [0.0165279, 0.0205492, 0.023331]],
         )
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-5, rtol=0.0))
 
         D_bench = np.array(
             [[0.2041934, 0.1906769, 0.1827475],
-             [0.2305960, 0.2260726, 0.2236005]]
+             [0.2305960, 0.2260726, 0.2236005]],
         )
         self.assertTrue(np.allclose(D, D_bench, atol=1e-5, rtol=0.0))
 
@@ -181,8 +181,9 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
 
     def test_hh_param_from_profile(self):
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
-        HH_G_param = hhc.hh_param_from_profile(vs_profile, show_fig=False,
-                                               verbose=False)
+        HH_G_param = hhc.hh_param_from_profile(
+            vs_profile, show_fig=False, verbose=False,
+        )
         HH_G_benchmark = np.genfromtxt(_join(f_dir, 'HH_G_FKSH14.txt'))  # calculated by MATLAB
         # use low tolerance because the whole process is highly reproducible
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
@@ -203,7 +204,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
              [2.11104e+07, 6.859e+07, 1.4896e+08, 2.25441e+09, 3.28398e+09],
              [0.233357, 0.199149, 0.253784, 1, 1],
              [26501, 64856.6, 148805, 804855, 1.10785e+06],
-             [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]]
+             [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]],
         )
         # use higher tolerance because MKZ curve fitting has room for small errors
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0))

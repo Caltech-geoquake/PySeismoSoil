@@ -9,7 +9,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         self.strain = np.logspace(-2, 1, num=12)
         self.atol = 1e-4
-        self.param = {
+        self.param = {  # noqa: WPS317
             'gamma_t': 0.1, 'a': 0.2, 'gamma_ref': 0.3, 'beta': 0.4,
             's': 0.5, 'Gmax': 0.6, 'mu': 0.7, 'Tmax': 0.8, 'd': 0.9,
         }
@@ -20,7 +20,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
         T = hh.tau_FKZ(self.strain, Gmax=4, mu=3, d=2, Tmax=1)
         self.assertTrue(np.allclose(
             T,
-            [
+            [  # noqa: WPS317
                 0.0012, 0.0042, 0.0146, 0.0494, 0.1543, 0.3904, 0.6922,
                 0.8876, 0.9652, 0.9898, 0.9971, 0.9992,
             ],
@@ -32,7 +32,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
         w = hh.transition_function(self.strain, a=3, gamma_t=0.05)
         self.assertTrue(np.allclose(
             w,
-            [
+            [  # noqa: WPS317
                 1.0000, 1.0000, 1.0000, 0.9997, 0.9980,
                 0.9872, 0.9216, 0.6411, 0.2136, 0.0396,
                 0.0062, 0.0010,
@@ -42,13 +42,13 @@ class Test_Helper_HH_Model(unittest.TestCase):
         ))
 
     def test_tau_HH(self):
-        T = hh.tau_HH(
+        T = hh.tau_HH(  # noqa: WPS317
             self.strain, gamma_t=1, a=2, gamma_ref=3, beta=4, s=5,
             Gmax=6, mu=7, Tmax=8, d=9,
         )
         self.assertTrue(np.allclose(
             T,
-            [
+            [  # noqa: WPS317
                 0.0600, 0.1124, 0.2107, 0.3948, 0.7397,
                 1.3861, 2.5966, 4.8387, 8.0452, 4.1873,
                 0.4678, 0.1269,
@@ -61,7 +61,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
         xi = sr.calc_damping_from_param(self.param, self.strain, hh.tau_HH)
         self.assertTrue(np.allclose(
             xi,
-            [
+            [  # noqa: WPS317
                 0.0000, 0.0085, 0.0139, 0.0192, 0.0256,
                 0.0334, 0.0430, 0.0544, 0.0675, 0.0820,
                 0.0973, 0.1128,
@@ -92,7 +92,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
                     'mu': 1,
                     'Tmax': 1,
                     'd___': 1,  # should be "d"
-                }
+                },
             )
 
     def test_deserialize_array_to_params__success(self):

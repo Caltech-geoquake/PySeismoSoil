@@ -19,7 +19,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         # note: benchmark results come from comparable functions in MATLAB
         self.assertTrue(np.allclose(
             T,
-            [
+            [  # noqa: WPS317
                 0.0400, 0.0750, 0.1404, 0.2630, 0.4913,
                 0.9018, 1.4898, 1.5694, 0.7578, 0.2413,
                 0.0700, 0.0200,
@@ -32,7 +32,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         xi = sr.calc_damping_from_param(self.param, self.strain, mkz.tau_MKZ)
         self.assertTrue(np.allclose(
             xi,
-            [
+            [  # noqa: WPS317
                 0, 0.0072, 0.0101, 0.0119, 0.0133,
                 0.0147, 0.0163, 0.0178, 0.0195, 0.0213,
                 0.0232, 0.0251,
@@ -52,7 +52,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
     def test_serialize_params_to_array__only_one_key_name_is_wrong(self):
         with self.assertRaisesRegex(KeyError, ''):
             mkz.serialize_params_to_array(
-                {'gamma_ref': 1, 's': 1, 'beta': 1, 'Gmax__': 1}  # should be "Gmax"
+                {'gamma_ref': 1, 's': 1, 'beta': 1, 'Gmax__': 1},  # should be "Gmax"
             )
 
     def test_deserialize_array_to_params__success(self):
@@ -71,16 +71,16 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         strain_in_1 = np.geomspace(1e-6, 0.1, num=50)  # unit: 1
         strain_in_pct = strain_in_1 * 100
 
-        param_1 = dict(gamma_ref=0.0035, beta=0.85, s=1.0, Gmax=1e6)
+        param_1 = {'gamma_ref': 0.0035, 'beta': 0.85, 's': 1.0, 'Gmax': 1e6}
         T_MKZ_1 = mkz.tau_MKZ(strain_in_1, **param_1)
         GGmax_1 = sr.calc_GGmax_from_stress_strain(strain_in_1, T_MKZ_1)
 
-        param_2 = dict(gamma_ref=0.02, beta=1.4, s=0.7, Gmax=2e7)
+        param_2 = {'gamma_ref': 0.02, 'beta': 1.4, 's': 0.7, 'Gmax': 2e7}
         T_MKZ_2 = mkz.tau_MKZ(strain_in_1, **param_2)
         GGmax_2 = sr.calc_GGmax_from_stress_strain(strain_in_1, T_MKZ_2)
 
         damping = np.ones_like(strain_in_pct)  # dummy values
-        curve_data = np.column_stack((
+        curve_data = np.column_stack((  # noqa: WPS317
             strain_in_pct, GGmax_1, strain_in_pct, damping,
             strain_in_pct, GGmax_2, strain_in_pct, damping,
         ))

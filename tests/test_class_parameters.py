@@ -21,7 +21,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             hhp = ParamHH(invalid_data)  # noqa: F841
 
     def test_init__ensure_querying_nonexistent_parameter_name_raises_KeyError(self):
-        data = {
+        data = {  # noqa: WPS317
             'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
             'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9,
         }
@@ -31,13 +31,13 @@ class Test_Class_HH_Param(unittest.TestCase):
 
     def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01(self):
         # Actual HH_G parameter from profile 350_750_01
-        params = np.array(
-            [0.000116861, 100, 0.000314814, 1, 0.919, 9.04E+07,
-             0.0718012, 59528, 0.731508]
-        )
+        params = np.array([  # noqa: WPS317
+            0.000116861, 100, 0.000314814, 1, 0.919, 9.04E+07,
+            0.0718012, 59528, 0.731508,
+        ])
         HH_G = ParamHH(hh.deserialize_array_to_params(params))
         GGmax = HH_G.get_GGmax(strain_in_pct=np.logspace(-4, 1, num=50))
-        GGmax_bench = [
+        GGmax_bench = [  # noqa: WPS317
             0.994964, 0.993758, 0.992265, 0.990419, 0.988137,
             0.985319, 0.981846, 0.977568, 0.972312, 0.965866,
             0.957985, 0.948382, 0.936729, 0.922659, 0.905775,
@@ -55,7 +55,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         params = np.array([0.00028511, 0, 0.919, 1.7522])
         H4_G = ParamMKZ(mkz.deserialize_array_to_params(params, from_files=True))
         GGmax = H4_G.get_GGmax(strain_in_pct=np.geomspace(0.0001, 6, num=50))
-        GGmax_bench = [
+        GGmax_bench = [  # noqa: WPS317
             0.99038, 0.9882, 0.98553, 0.98228, 0.9783, 0.97346,
             0.96758, 0.96044, 0.95182, 0.94142, 0.92895, 0.91406,
             0.89641, 0.87562, 0.85135, 0.82331, 0.79127, 0.75514,
@@ -69,13 +69,13 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
     def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01(self):
-        params = np.array(
-            [0.014766, 1.00583, 0.0410009, 21.951, 0.620032,
-             6.44725, 151.838, 13.0971, 1]
-        )
+        params = np.array([  # noqa: WPS317
+            0.014766, 1.00583, 0.0410009, 21.951, 0.620032,
+            6.44725, 151.838, 13.0971, 1,
+        ])
         HH_x = ParamHH(hh.deserialize_array_to_params(params))
         damping = HH_x.get_damping(strain_in_pct=np.logspace(-4, 1, num=50))
-        damping_bench = [
+        damping_bench = [  # noqa: WPS317
             1.6815, 1.70007, 1.72351, 1.75306, 1.79029, 1.83716,
             1.89609, 1.97005, 2.06272, 2.17854, 2.32286, 2.50202,
             2.72343, 2.99551, 3.32759, 3.72957, 4.21139, 4.78223,
@@ -93,7 +93,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         params = np.array([0.00062111, 0, 0.60001, 1.797])
         H4_x = ParamMKZ(mkz.deserialize_array_to_params(params, from_files=True))
         damping = H4_x.get_damping(strain_in_pct=np.geomspace(0.0001, 6, num=50))
-        damping_bench = [
+        damping_bench = [  # noqa: WPS317
             2.3463, 2.3679, 2.3949, 2.4286, 2.4705, 2.5227,
             2.5876, 2.6682, 2.768, 2.8913, 3.0433, 3.2299,
             3.4578, 3.7348, 4.0692, 4.4697, 4.9449, 5.5026,
@@ -107,7 +107,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertTrue(np.allclose(damping, damping_bench, atol=7.0, rtol=0.0))
 
     def test_plot_curves(self):
-        data = {
+        data = {  # noqa: WPS317
             'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
             'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9,
         }
@@ -154,8 +154,10 @@ class Test_Class_HH_Param(unittest.TestCase):
         )
         self.assertTrue(np.allclose(
             hh.serialize_params_to_array(HH_x_1),
-            [0.027916, 1.01507, 0.0851825, 23.468,
-             0.638322, 5.84163, 183.507, 29.7071, 1],
+            [  # noqa: WPS317
+                0.027916, 1.01507, 0.0851825, 23.468, 0.638322,
+                5.84163, 183.507, 29.7071, 1,
+            ],
         ))
 
     def test_mkz_param_multi_layer__can_initiate_an_object_from_a_file(self):
@@ -228,9 +230,9 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertEqual(curves.shape[1], H4_x.n_layer * 4)
 
     def test_param_serialize__from_HH_x_parameters(self):
-        HH_x = ParamHH({
+        HH_x = ParamHH({  # noqa: WPS317
             'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4,
-            's': 5, 'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9}
+            's': 5, 'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9},
         )
         HH_x_array = HH_x.serialize()
         self.assertTrue(np.allclose(HH_x_array, [1, 2, 3, 4, 5, 6, 7, 8, 9]))

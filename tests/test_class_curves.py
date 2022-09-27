@@ -18,7 +18,7 @@ class Test_Class_Curves(unittest.TestCase):
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = Curve(data[:, 2:4])
         damping_data = curve.raw_data[:, 1]
-        damping_bench = [
+        damping_bench = [  # noqa: WPS317
             1.6683, 1.8386, 2.4095, 3.8574, 7.4976,
             12.686, 18.102, 21.005, 21.783, 21.052,
         ]
@@ -38,8 +38,9 @@ class Test_Class_Curves(unittest.TestCase):
         curve = DampingCurve(data[:, 2:4])
 
         try:
-            hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
-                                       use_scipy=False)
+            hhx = curve.get_HH_x_param(
+                pop_size=1, n_gen=1, show_fig=True, use_scipy=False,
+            )
             self.assertEqual(len(hhx), 9)
             self.assertEqual(
                 hhx.keys(),
@@ -48,8 +49,9 @@ class Test_Class_Curves(unittest.TestCase):
         except ImportError:  # DEAP library may not be installed
             pass
 
-        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
-                                   use_scipy=True)
+        hhx = curve.get_HH_x_param(
+            pop_size=1, n_gen=1, show_fig=True, use_scipy=True,
+        )
         self.assertEqual(len(hhx), 9)
         self.assertEqual(
             hhx.keys(),
@@ -92,7 +94,7 @@ class Test_Class_Curves(unittest.TestCase):
 
         # Test __getitem__
         strain_bench = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
-        damping_bench = [
+        damping_bench = [  # noqa: WPS317
             1.6683, 1.8386, 2.4095, 3.8574, 7.4976,
             12.686, 18.102, 21.005, 21.783, 21.052,
         ]

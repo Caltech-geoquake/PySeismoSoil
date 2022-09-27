@@ -92,7 +92,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
              [2.11104e+07, 6.859e+07, 1.4896e+08, 2.25441e+09, 3.28398e+09],
              [0.233357, 0.199149, 0.253784, 1, 1],
              [26501, 64856.6, 148805, 804855, 1.10785e+06],
-             [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]]
+             [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]],
         )
         HH_G_param_benchmark = MultiLayerParamHH(HH_G_benchmark_data)
         self.assertTrue(np.allclose(

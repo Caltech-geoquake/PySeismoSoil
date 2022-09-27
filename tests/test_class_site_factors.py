@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 
-from PySeismoSoil.class_site_factors import SiteFactors as SF
-from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS
+from PySeismoSoil.class_site_factors import SiteFactors as SF  # noqa: N817
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS  # noqa: N817
 
 
 class Test_Class_Site_Factors(unittest.TestCase):

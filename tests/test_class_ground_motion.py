@@ -3,7 +3,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 
-from PySeismoSoil.class_ground_motion import GroundMotion as GM
+from PySeismoSoil.class_ground_motion import GroundMotion as GM  # noqa: N817
 from PySeismoSoil.class_Vs_profile import VsProfile
 from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum
 
@@ -63,13 +63,13 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         gm = GM(veloc, unit='m', motion_type='veloc')
         accel_benchmark = np.array(
             [[.1, .2, .3, .4, .5, .6],
-             [0, 20, 40, -80, -20, 80]]
+             [0, 20, 40, -80, -20, 80]],
         ).T
         self.assertTrue(np.allclose(gm.accel, accel_benchmark))
 
     def test_integration__artificial_example(self):
         gm = GM(_join(f_dir, 'two_column_data_example.txt'), unit='m/s/s')
-        v_bench = np.array([[0.1000, 0.1000],  # from MATLAB
+        v_bench = np.array([[0.1000, 0.1000],  # from MATLAB  # noqa: WPS317
                             [0.2000, 0.3000],
                             [0.3000, 0.6000],
                             [0.4000, 1.0000],
@@ -84,7 +84,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
                             [1.3000, 4.7000],
                             [1.4000, 5.3000],
                             [1.5000, 6.0000]])
-        u_bench = np.array([[0.1000, 0.0100],  # from MATLAB
+        u_bench = np.array([[0.1000, 0.0100],  # from MATLAB  # noqa: WPS317
                             [0.2000, 0.0400],
                             [0.3000, 0.1000],
                             [0.4000, 0.2000],
@@ -122,7 +122,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         freq_bench = [
             0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667, 5.3333,
         ]
-        FS_bench = [
+        FS_bench = [  # noqa: WPS317
             60.0000 +  0.0000j, -1.5000 + 7.0569j, -1.5000 + 3.3691j,
             -7.5000 + 10.3229j, -1.5000 + 1.3506j, -1.5000 + 0.8660j,
             -7.5000 +  2.4369j, -1.5000 + 0.1577j,
@@ -230,10 +230,10 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         # Assert that `amplify_by_tf()` and `amplify()` can generate
         # nearly identical results
         self.assertTrue(
-            self.nearly_identical(gm_with_tf_RO.accel, gm_with_tf_RO_.accel)
+            self.nearly_identical(gm_with_tf_RO.accel, gm_with_tf_RO_.accel),
         )
         self.assertTrue(
-            self.nearly_identical(gm_with_tf_BH.accel, gm_with_tf_BH_.accel)
+            self.nearly_identical(gm_with_tf_BH.accel, gm_with_tf_BH_.accel),
         )
 
     @staticmethod

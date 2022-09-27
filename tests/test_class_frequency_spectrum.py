@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 import PySeismoSoil.helper_generic as hlp
-from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS
+from PySeismoSoil.class_frequency_spectrum import FrequencySpectrum as FS  # noqa: N817
 
 import os
 from os.path import join as _join

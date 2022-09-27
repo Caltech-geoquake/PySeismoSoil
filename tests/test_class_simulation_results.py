@@ -26,10 +26,10 @@ class Test_Class_Simulation_Results(unittest.TestCase):
         depth_bound = sr.thk2dep(thk, midpoint=False)
         depth_midpoint = sr.thk2dep(thk, midpoint=True)
         max_a_v_d = np.column_stack(
-            (depth_bound, depth_bound * 1, depth_bound * 2, depth_bound * 3)
+            (depth_bound, depth_bound * 1, depth_bound * 2, depth_bound * 3),
         )
         max_gamma_tau = np.column_stack(
-            (depth_midpoint, depth_midpoint * 1, depth_midpoint * 2)
+            (depth_midpoint, depth_midpoint * 1, depth_midpoint * 2),
         )
         tf_RO, _, _ = vs_profile.get_transfer_function()
         sim_results = SimulationResults(
