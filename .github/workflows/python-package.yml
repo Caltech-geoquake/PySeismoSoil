@@ -34,7 +34,7 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8 --config=setup.cfg PySeismoSoil/
-        flake8 --config=setup.cfg tests/
+        flake8 --config=setup.cfg --ignore=D101,D102,N801 tests/
     - name: Lint with flake8 (another pass, focusing on WPS317)
       run: |
         flake8 --config=setup.cfg --select WPS317 PySeismoSoil/
