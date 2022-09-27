@@ -52,7 +52,7 @@ class Curve:
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    values : numpy.array
+    values : numpy.ndarray
         The interpolated values; same shape as ``strain``
     """
 
@@ -194,11 +194,11 @@ class GGmaxCurve(Curve):
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in.
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    GGmax : numpy.array
+    GGmax : numpy.ndarray
         The interpolated G/Gmax values; same shape as ``strain``.
     """
 
@@ -269,11 +269,11 @@ class DampingCurve(Curve):
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in.
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    damping : numpy.array
+    damping : numpy.ndarray
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
     """
@@ -512,11 +512,11 @@ class StressCurve(Curve):
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    stress : numpy.array
+    stress : numpy.ndarray
         The interpolated damping values; same shape as ``strain``. The unit is
         always 'kPa'.
     """
@@ -631,7 +631,7 @@ class MultipleCurves:
         del self.curves[i]
         self.n_layer -= 1
 
-    def append(self, item):
+    def append(self, item) -> None:
         """
         Append another curve item to this object.
 
@@ -644,6 +644,11 @@ class MultipleCurves:
         Returns
         -------
         None
+
+        Raises
+        ------
+        TypeError
+            When ``item`` is not of ``element_class`` type
         """
         if not isinstance(item, self.element_class):
             raise TypeError('The new `item` must be of type %s.' % self.element_class)
@@ -1134,6 +1139,11 @@ class MultipleDampingCurves(MultipleCurves):
         -------
         new_file_name : str
             The new file name based on the input "curve" file name.
+
+        Raises
+        ------
+        ValueError
+            When ``_filename`` is ``None``.
         """
         if self._filename is None:
             raise ValueError(
