@@ -1619,10 +1619,7 @@ def _plot_site_amp(
     assert np.allclose(t_in, t_out, atol=1e-4)
     time = t_in
 
-    fig, _ = hlp._process_fig_ax_objects(fig,
-                                         ax=None,
-                                         figsize=figsize,
-                                         dpi=dpi)
+    fig, _ = hlp._process_fig_ax_objects(fig, ax=None, figsize=figsize, dpi=dpi)
     ax = []
 
     blue = '#3182bd'
