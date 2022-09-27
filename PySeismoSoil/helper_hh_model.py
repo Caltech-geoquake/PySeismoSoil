@@ -333,7 +333,6 @@ def deserialize_array_to_params(array):
     Reconstruct a HH model parameter dictionary from an array of values.
 
     The users need to ensure the order of values in ``array`` are in this order:
-
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters

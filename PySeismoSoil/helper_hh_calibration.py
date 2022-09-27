@@ -101,7 +101,6 @@ def hh_param_from_profile(
         The HH parameters of each layer. It's a 2D array of shape
         ``(9, n_layer)``. For each layer (i.e., column), the values are in
         this order:
-
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
     """
     phi = 30.  # friction angle (choose 30 degrees, because there is no better info)
@@ -176,7 +175,6 @@ def hh_param_from_curves(
     vs_profile : numpy.ndarray
         Shear-wave velocity profile, as a 2D numpy array. It should have the
         following columns:
-
             +---------------+----------+---------+---------+-----------------+
             | Thickness (m) | Vs (m/s) | Damping | Density | Material Number |
             +===============+==========+=========+=========+=================+
@@ -186,7 +184,6 @@ def hh_param_from_curves(
     curves : numpy.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-
             +------------+--------+------------+-------------+-------------+--------+-----+
             | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
             +============+========+============+=============+=============+========+=====+
@@ -225,7 +222,6 @@ def hh_param_from_curves(
         The HH parameters of each layer. It's a 2D array of shape
         ``(9, n_layer)``. For each layer (i.e., column), the values are in
         this order:
-
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
     """
     phi = 30.0
@@ -333,7 +329,6 @@ def produce_HH_G_param(
     curves : numpy.ndarray or ``None``
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-
             +------------+--------+------------+-------------+-------------+--------+-----+
             | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
             +============+========+============+=============+=============+========+=====+
@@ -372,7 +367,6 @@ def produce_HH_G_param(
         The HH parameters of each layer. It's a 2D array of shape
         ``(9, n_layer)``. For each layer (i.e., column), the values are in
         this order:
-
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Notes

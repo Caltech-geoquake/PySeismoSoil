@@ -126,11 +126,8 @@ class BatchSimulation:
         all_params : list
             All the parameters needed for running the simulation. It should
             have the following structure::
-
                 i, n_digits, base_output_dir, options
-
             where
-
                 - ``i`` is the index of the current simulation in the batch.
                 - ``n_digits`` is the number of digits of the length of the
                   batch. (For example, if there are 125 simulations, then

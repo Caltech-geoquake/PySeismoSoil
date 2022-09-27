@@ -435,7 +435,6 @@ class SVM:
             Whether to ensure that the resultant Vs30 and z1 of the
             randomized profile are compliant with the user-specified Vs30 and z1
             values. The criteria for "compliance" are:
-
                 1. The absolute difference between the randomized and target
                    Vs30 is < 25 m/s;
                 2. The relative difference (between the randomized profile and
@@ -450,7 +449,7 @@ class SVM:
         Returns
         -------
         Vs_profile : PySeismoSoil.class_Vs_profile.VsProfile
-            The randomzed Vs profile.
+            The randomized Vs profile.
         """
         if not isinstance(seed, (type(None), int, float, np.number)):
             raise TypeError('`seed` needs to be a number, or `None`.')
