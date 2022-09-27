@@ -258,7 +258,7 @@ class ParamMKZ(Parameter):
     def __init__(self, param_dict):
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
         super(ParamMKZ, self).__init__(
-            param_dict, func_stress=mkz.tau_MKZ, allowable_keys=allowable_keys
+            param_dict, func_stress=mkz.tau_MKZ, allowable_keys=allowable_keys,
         )
 
     def serialize(self):
