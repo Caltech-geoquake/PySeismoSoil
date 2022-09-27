@@ -71,7 +71,7 @@ def transition_function(gamma, *, a, gamma_t):
         The transition function, ranging from 0 to 1. Same shape as ``x``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    assert(gamma_t > 0)
+    assert gamma_t > 0
     w = 1 - 1. / (1 + np.power(10, -a * (
         np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036))))
 
@@ -319,7 +319,7 @@ def serialize_params_to_array(param):
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
-    assert(len(param) == 9)
+    assert len(param) == 9
     order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
     param_array = []
     for key in order:
@@ -348,7 +348,7 @@ def deserialize_array_to_params(array):
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert(len(array) == 9)
+    assert len(array) == 9
 
     param = {
         'gamma_t': array[0],
