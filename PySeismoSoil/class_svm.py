@@ -39,13 +39,13 @@ class SVM:
         ``Vs_cap``. Do not change this parameter, unless you know what you
         are doing.
     show_fig : bool
-        Whether or not to plot the generated Vs profile.
+        Whether to plot the generated Vs profile.
     iterate : bool
-        Whether or not to iteratively adjust the input Vs30 so that the actual
+        Whether to iteratively adjust the input Vs30 so that the actual
         Vs30 (calculated from the resultant Vs profile) falls within 10 m/s
         of the ``target_Vs30``. (There is usually no need to do this.)
     verbose : bool
-        Whether or not to print iteration progress (trial Vs30 value and
+        Whether to print iteration progress (trial Vs30 value and
         calculated Vs30 value) on the terminal. It has no effects if ``iterate``
         is ``False``.
 
@@ -424,15 +424,15 @@ class SVM:
             The seed value for setting the random state. It not set, this
             method automatically uses the current time to generate a seed.
         show_fig : bool
-            Whether or not to show the figure of smooth and randomized profiles.
+            Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
-            Whether or not to use the layering relation in Toro (1995) instead
+            Whether to use the layering relation in Toro (1995) instead
             of Eq (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
-            Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
+            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
             in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
         vs30_z1_compliance : bool
-            Whether or not to ensure that the resultant Vs30 and z1 of the
+            Whether to ensure that the resultant Vs30 and z1 of the
             randomized profile are compliant with the user-specified Vs30 and z1
             values. The criteria for "compliance" are:
 
@@ -443,7 +443,7 @@ class SVM:
                 3. The relative difference of the randomized and target z1 is
                    < 20%.
         verbose : bool
-            Whether or not to show the progress of iteratively searching for
+            Whether to show the progress of iteratively searching for
             compliant randomized Vs profile. Only effective if
             ``vs30_z1_compliance`` is ``True``.
 
@@ -520,12 +520,12 @@ class SVM:
             method automatically uses the current time to generate a seed.
             Not effective if ``vs30_z1_compliance`` is set to ``True``.
         show_fig : bool
-            Whether or not to show the figure of smooth and randomized profiles.
+            Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
-            Whether or not to use the layering relation in Toro (1995) instead
+            Whether to use the layering relation in Toro (1995) instead
             of Eq (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
-            Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
+            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
             in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
 
         Returns

@@ -75,16 +75,16 @@ def hh_param_from_profile(
         Shear strength of each layer of soil. If ``None``, it will be
         calculated using a combination of Ladd (1991) and Mohr-Coulomb criteria.
     show_fig : bool
-        Whether or not to show figures G/Gmax and stress-strain curves of MKZ,
+        Whether to show figures G/Gmax and stress-strain curves of MKZ,
         FKZ, and HH for each layer.
     save_fig : bool
-        Whether or not to save the figures to the hard drive. Only effective
+        Whether to save the figures to the hard drive. Only effective
         if ``show_fig`` is set to ``True``.
     fig_output_dir : str
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     save_HH_G_file : bool
-        Whether or not to save the HH parameters to the hard drive (as a
+        Whether to save the HH parameters to the hard drive (as a
         "HH_G" file).
     HH_G_file_dir : str
         The output directory for the "HH_G" file. Only effective if
@@ -93,7 +93,7 @@ def hh_param_from_profile(
         The name of the Vs profile, such as "CE.12345". If ``None``, a string
         of current date and time will be used as the profile name.
     verbose : bool
-        Whether or not to print progresses on the console.
+        Whether to print progresses on the console.
 
     Returns
     -------
@@ -199,16 +199,16 @@ def hh_param_from_curves(
         Shear strength of each layer of soil. If ``None``, it will be
         calculated using a combination of Ladd (1991) and Mohr-Coulomb criteria.
     show_fig : bool
-        Whether or not to show figures G/Gmax and stress-strain curves of MKZ,
+        Whether to show figures G/Gmax and stress-strain curves of MKZ,
         FKZ, and HH for each layer.
     save_fig : bool
-        Whether or not to save the figures to the hard drive. Only effective
+        Whether to save the figures to the hard drive. Only effective
         if ``show_fig`` is set to ``True``.
     fig_output_dir : str
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     save_HH_G_file : bool
-        Whether or not to save the HH parameters to the hard drive (as a
+        Whether to save the HH parameters to the hard drive (as a
         "HH_G" file).
     HH_G_file_dir : str
         The output directory for the "HH_G" file. Only effective if
@@ -217,7 +217,7 @@ def hh_param_from_curves(
         The name of the Vs profile, such as "CE.12345". If ``None``, a string
         of current date and time will be used as the profile name.
     verbose : bool
-        Whether or not to print progresses on the console.
+        Whether to print progresses on the console.
 
     Returns
     -------
@@ -355,16 +355,16 @@ def produce_HH_G_param(
         an array, it must have shape ``(n_layer, )``. If a single value, it
         means that all layers share this same value.
     show_fig : bool
-        Whether or not to show figures G/Gmax and stress-strain curves of MKZ,
+        Whether to show figures G/Gmax and stress-strain curves of MKZ,
         FKZ, and HH for each layer.
     save_fig : bool
-        Whether or not to save the figures to the hard drive. Only effective
+        Whether to save the figures to the hard drive. Only effective
         if ``show_fig`` is set to ``True``.
     fig_output_dir : str
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     verbose : bool
-        Whether or not to print progresses on the console.
+        Whether to print progresses on the console.
 
     Returns
     -------

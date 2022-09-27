@@ -290,7 +290,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     orig_signal : numpy.ndarray
         Original signal. Must have two columns.
     show_fig : bool
-        Whether or not to show figures comparing before and after.
+        Whether to show figures comparing before and after.
     cutoff_freq : float
         The frequency (unit: Hz) for high passing. Energies below this
         frequency are filtered out.
@@ -674,7 +674,7 @@ def log_smooth(
     window : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}
         The name of the window.
     lin_space : bool
-        Whether or not the points of the signal is uniformly spaced linearly.
+        Whether the points of the signal is uniformly spaced linearly.
         If ``False``, the signal is treated as uniformaly spaced logarithmically.
     fmin, fmax : float
         Minimum and maximum frequencies (in Hz) that the signal is spaced within.
@@ -683,7 +683,7 @@ def log_smooth(
         The number of points of the logarithmically interpolated the signal.
         Only effective when ``lin_space`` is ``True``.
     fix_ends : bool
-        Whether or not to fix the two ends of the smoothed signal, so that
+        Whether to fix the two ends of the smoothed signal, so that
         the "boundary effect" from convolution can be corrected. If ``True``,
         the first and last n points will be adjusted using the exponentially
         weighted averaging method. (n is half of ``win_len``.)

@@ -478,7 +478,7 @@ class GroundMotion:
             time limits are [3, 50] sec, then the actual time limits are
             [0, 55] sec. (3 - 5 = -2 smaller than 0, so truncated at 0.)
         show_fig : bool
-            Whether or not to show the waveforms before and after truncation.
+            Whether to show the waveforms before and after truncation.
 
         Returns
         -------
@@ -591,13 +591,13 @@ class GroundMotion:
             If ``False``, a regular amplification is performed; otherwise, the
             transfer function is "deducted" from the input motion ("deconvolution").
         show_fig : bool
-            Whether or not to show an illustration of how the calculation is
+            Whether to show an illustration of how the calculation is
             carried out.
         dpi : int
             Desired DPI for the figures; only effective when ``show_fig`` is
             ``True``.
         return_fig_obj : bool
-            Whether or not to return figure and axis objects to the caller.
+            Whether to return figure and axis objects to the caller.
 
         Returns
         -------
@@ -654,7 +654,7 @@ class GroundMotion:
         boundary : {'elastic', 'rigid'}
             The type of boundary of the bottom of the soil profile.
         show_fig : bool
-            Whether or not to show a figure that illustrates the deconvolution
+            Whether to show a figure that illustrates the deconvolution
             process.
 
         Returns
@@ -697,7 +697,7 @@ class GroundMotion:
             If ``True``, this ground motion is treated as the input ground
             motion. Otherwise, the other ground motion is treated as the input.
         smooth : bool
-            In the comparison plot, whether or not to also show the smoothed
+            In the comparison plot, whether to also show the smoothed
             amplification factor.
         input_accel_label : str
             The text label for the input acceleration in the figure legend.
@@ -750,7 +750,7 @@ class GroundMotion:
         boundary : {'elastic', 'rigid'}
             The type of boundary of the bottom of the soil profile.
         show_fig : bool
-            Whether or not to show a figure that illustrates the deconvolution
+            Whether to show a figure that illustrates the deconvolution
             process.
 
         Returns
@@ -784,7 +784,7 @@ class GroundMotion:
             The frequency (unit: Hz) for high passing. Energies below this
             frequency are filtered out.
         show_fig : bool
-            Whether or not to show figures comparing before and after.
+            Whether to show figures comparing before and after.
 
         Returns
         -------

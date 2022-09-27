@@ -850,7 +850,7 @@ class MultipleDampingCurves(MultipleCurves):
         GGmax_filler_value : float
             A dummy value to fill all the G/Gmax curves.
         save_to_file : bool
-            Whether or not to save the "curve matrix" as a text file.
+            Whether to save the "curve matrix" as a text file.
         full_file_name : str or ``None``
             Full file name to save to the hard drive. It can be ``None`` if
             ``save_to_file`` is set to ``False``.
@@ -1297,7 +1297,7 @@ class MultipleGGmaxCurves(MultipleCurves):
         damping_filler_value : float
             A dummy value to fill all the damping curves.
         save_to_file : bool
-            Whether or not to save the "curve matrix" as a text file.
+            Whether to save the "curve matrix" as a text file.
         full_file_name : str or ``None``
             Full file name to save to the hard drive. It can be ``None`` if
             ``save_to_file`` is set to ``False``.

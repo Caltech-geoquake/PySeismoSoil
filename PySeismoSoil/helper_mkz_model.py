@@ -304,7 +304,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
         The damping information is neglected in this function, so users can
         supply some dummy values.
     show_fig : bool
-        Whether or not to show curve-fitting results.
+        Whether to show curve-fitting results.
     verbose : bool
         Whether to show messages about the calculation progress on the console.
 

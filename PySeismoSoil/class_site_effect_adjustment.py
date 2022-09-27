@@ -80,7 +80,7 @@ class SiteEffectAdjustment:
         Parameters
         ----------
         show_fig : bool
-            Whether or not to show a figure demonstrating how the adjustment
+            Whether to show a figure demonstrating how the adjustment
             works.
         return_fig_obj : bool
             Whether to return the figure and axes objects.
