@@ -2,6 +2,6 @@ pip install flake8 wemake-python-styleguide flake8-commas flake8-mutable flake8-
 echo ""
 echo "******************************"
 echo ""
-flake8 ./PySeismoSoil/helper_site_response.py
+flake8 ./PySeismoSoil/*.py
 echo "----------------------"
-flake8 --select WPS317 ./PySeismoSoil/helper_site_response.py
+flake8 --select WPS317 ./PySeismoSoil/*.py
