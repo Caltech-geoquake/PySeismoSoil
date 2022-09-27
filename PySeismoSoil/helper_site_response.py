@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 from numba import jit
 
-from . import helper_generic as hlp
-from . import helper_signal_processing as sig
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_signal_processing as sig
 
 
 def calc_z1_from_Vs30(Vs30_in_meter_per_sec):
@@ -164,8 +164,9 @@ def query_Vs_at_depth(vs_profile, depth):
     if np.any(depth < 0):
         raise ValueError('Please provide non-negative `depth` values.')
 
-    hlp.check_two_column_format(vs_profile, at_least_two_columns=True,
-                                name='`vs_profile`')
+    hlp.check_two_column_format(
+        vs_profile, at_least_two_columns=True, name='`vs_profile`',
+    )
 
     # ------------------ Start querying ----------------------------------------
     thk_ref = vs_profile[:, 0]
@@ -328,7 +329,7 @@ def plot_motion(
 
 def num_int(accel):
     """
-    Performs numerical integration on acceleration to get velocity and
+    Perform numerical integration on acceleration to get velocity and
     displacement.
 
     Parameters
@@ -518,14 +519,14 @@ def response_spectra(
     # A, B, C, and D in Table 5.2.1, page 169
     A = np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt)+np.cos(wd*dt))  # noqa: E226,E501
     B = np.exp(-xi*wn*dt)*(1./wd*np.sin(wd*dt))  # noqa: E226,E501
-    C = 1./wn**2.*(2.*xi/wn/dt + np.exp(-xi*wn*dt)*(((1.-2.*xi**2.)/wd/dt-xi/np.sqrt(1.-xi**2.))*np.sin(wd*dt) - (1+2.*xi/wn/dt)*np.cos(wd*dt)))  # noqa: E226,E501
-    D = 1./wn**2.*(1 - 2.*xi/wn/dt + np.exp(-xi*wn*dt)*((2.*xi**2.-1)/wd/dt*np.sin(wd*dt)+2.*xi/wn/dt*np.cos(wd*dt)))  # noqa: E226,E501
+    C = 1./wn**2.*(2.*xi/wn/dt + np.exp(-xi*wn*dt)*(((1.-2.*xi**2.)/wd/dt-xi/np.sqrt(1.-xi**2.))*np.sin(wd*dt) - (1+2.*xi/wn/dt)*np.cos(wd*dt)))  # noqa: E226,E501,LN001
+    D = 1./wn**2.*(1 - 2.*xi/wn/dt + np.exp(-xi*wn*dt)*((2.*xi**2.-1)/wd/dt*np.sin(wd*dt)+2.*xi/wn/dt*np.cos(wd*dt)))  # noqa: E226,E501,LN001
 
     # A', B', C', and D' in Table 5.2.1, page 169
     A_ = -np.exp(-xi*wn*dt)*(wn/np.sqrt(1.-xi**2.)*np.sin(wd*dt))  # noqa: E226,E501
     B_ = np.exp(-xi*wn*dt)*(np.cos(wd*dt) - xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt))  # noqa: E226,E501
-    C_ = 1./wn**2.*(-1./dt + np.exp(-xi*wn*dt)*((wn/np.sqrt(1.-xi**2.)+xi/dt/np.sqrt(1.-xi**2.))*np.sin(wd*dt)+1./dt*np.cos(wd*dt)))  # noqa: E226,E501
-    D_ = 1./wn**2./dt*(1 - np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt) + np.cos(wd*dt)))  # noqa: E226,E501
+    C_ = 1./wn**2.*(-1./dt + np.exp(-xi*wn*dt)*((wn/np.sqrt(1.-xi**2.)+xi/dt/np.sqrt(1.-xi**2.))*np.sin(wd*dt)+1./dt*np.cos(wd*dt)))  # noqa: E226,E501,LN001
+    D_ = 1./wn**2./dt*(1 - np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt) + np.cos(wd*dt)))  # noqa: E226,E501,LN001
 
     if parallel:
         p = mp.Pool(n_cores)
@@ -546,15 +547,15 @@ def response_spectra(
                 [wd],
                 [xi],
                 [a],
-            )
+            ),
         )
     else:
         result = []
         for i in range(len_wd):
             result.append(
                 _time_stepping(
-                    (i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a)
-                )
+                    (i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a),
+                ),
             )
 
     utdd_max, ud_max, u_max, PSA, PSV = zip(*result)  # transpose list of tuples
@@ -598,7 +599,10 @@ def response_spectra(
 
 @jit(nopython=True, nogil=True)
 def _time_stepping(para):
-    """ Helper function for response_spectra() """
+    """
+    Step forward in time to calculate the displacement at the next time
+    step. Helper function for response_spectra().
+    """
     i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a = para
 
     u_ = np.zeros(len_a)
@@ -675,8 +679,8 @@ def get_xi_rho(Vs, formula_type=3):
                 xi[i] = 0.01
     elif formula_type == 2:
         Vs_ = Vs / 1000.0  # unit conversion: from m/s to km/s
-        Qs = 10.5 - 16*Vs_ + 153*Vs_**2. - 103*Vs_**3. + 34.7*Vs_**4. - 5.29*Vs_**5. + 0.31*Vs_**6.  # noqa: E501, E226
-        Qs[np.where(Qs == 0)] = 0.5  # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501, E226
+        Qs = 10.5 - 16*Vs_ + 153*Vs_**2. - 103*Vs_**3. + 34.7*Vs_**4. - 5.29*Vs_**5. + 0.31*Vs_**6.  # noqa: E501, E226, LN001
+        Qs[np.where(Qs == 0)] = 0.5  # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501, E226, LN001
         xi = 1.0 / (2.0 * Qs)
     elif formula_type == 3:
         for i in range(nr):
@@ -749,7 +753,7 @@ def calc_VsZ(profile, Z, option_for_profile_shallower_than_Z=1, verbose=False):
             if verbose is True:
                 print(
                     f"The input profile doesn't reach Z = {Z:.2f} m.\n"
-                    f"Assume last Vs value goes down to {Z:.2f} m."
+                    + f'Assume last Vs value goes down to {Z:.2f} m.',
                 )
             cumul_sl = cumul_sl + sl[-1] * (Z - total_thickness)
             VsZ = float(Z) / cumul_sl
@@ -940,7 +944,7 @@ def calc_z1(vs_profile):
 
 def _gen_profile_plot_array(thk, vs, zmax):
     """
-    Generates (x, y) for plotting, from Vs profile information.
+    Generate (x, y) for plotting, from Vs profile information.
 
     Parameters
     ----------
@@ -1123,7 +1127,7 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
     for i, f in enumerate(freq_array):
         omega = 2 * np.pi * f
         k_star = np.divide(omega, vs_star)
-        D = np.zeros(2 * 2 * (h_length - 1), dtype=np.complex_).reshape(2, 2, h_length - 1)
+        D = np.zeros(2 * 2 * (h_length - 1), dtype=np.complex_).reshape(2, 2, h_length - 1)  # noqa: LN001
         E = np.zeros(4, dtype=np.complex_).reshape(2, 2)
         E[0, 0] = 1
         E[1, 1] = 1
@@ -1350,8 +1354,8 @@ def amplify_motion(
     else:
         raise TypeError(
             'The last element of `transfer_function_single_sided` '
-            'needs to be either a tuple of (amplitude, phase), or '
-            'a complex-valued 1D numpy array.'
+            + 'needs to be either a tuple of (amplitude, phase), or '
+            + 'a complex-valued 1D numpy array.',
         )
 
     df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
@@ -1372,11 +1376,11 @@ def amplify_motion(
             if input_motion.shape[0] <= 1:
                 raise ValueError(
                     'The frequency range covered by '
-                    '`transfer_function_single_sided` does '
-                    'not cover the frequency range implied in '
-                    'the `input_motion` (even after downsampling '
-                    'the `input_motion`). Please make sure to '
-                    'provide the correct frequency range.'
+                    + '`transfer_function_single_sided` does '
+                    + 'not cover the frequency range implied in '
+                    + 'the `input_motion` (even after downsampling '
+                    + 'the `input_motion`). Please make sure to '
+                    + 'provide the correct frequency range.',
                 )
             df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
 
@@ -1687,7 +1691,7 @@ def compare_two_accel(
         amplification_ylabel='Amplification',
         phase_shift_ylabel='Phase shift [rad]',
 ):
-    '''
+    """
     Compare two acceleration time histories: plot comparison figures showing
     two time histories and the transfer function between them.
 
@@ -1711,7 +1715,7 @@ def compare_two_accel(
         The figure object created in this function.
     ax : matplotlib.axes._subplots.AxesSubplot
         The axes object created in this function.
-    '''
+    """
     hlp.assert_2D_numpy_array(input_accel, name='input_accel')
     hlp.assert_2D_numpy_array(output_accel, name='output_accel')
 
@@ -1810,7 +1814,7 @@ def _get_freq_interval(input_motion):
     if len(a) <= 1:
         raise ValueError(
             '`input_motion` only contains one data point. '
-            'It needs at least two data points.'
+            + 'It needs at least two data points.',
         )
 
     dt = float(t[1] - t[0])  # sampling time interval
@@ -1940,7 +1944,7 @@ def calc_damping_from_param(param, strain_in_unit_1, func_stress):
 
 def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
     """
-    Calculates the damping curve from the given stress-strain curve.
+    Calculate the damping curve from the given stress-strain curve.
 
     Parameters
     ----------
@@ -1979,7 +1983,7 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
 
 def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
     """
-    Calculates G/Gmax curve from stress-strain curve.
+    Calculate G/Gmax curve from stress-strain curve.
 
     Parameters
     ----------
@@ -2177,7 +2181,7 @@ def fit_all_damping_curves(
     elif isinstance(curves, list):
         if not all([isinstance(_, np.ndarray) for _ in curves]):
             raise TypeError(
-                'If `curves` is a list, all its elements needs to be 2D numpy arrays.'
+                'If `curves` is a list, all its elements needs to be 2D numpy arrays.',
             )
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
@@ -2189,7 +2193,7 @@ def fit_all_damping_curves(
     else:
         raise TypeError(
             'Input data type of `curves` not recognized. '
-            'Please check the documentation of this function.'
+            + 'Please check the documentation of this function.',
         )
 
     other_params = [
@@ -2204,7 +2208,7 @@ def fit_all_damping_curves(
             seed,
             False,  # set `show_fig` to False; show all layers in subplots
             verbose,
-        )
+        ),
     ]
 
     if parallel:
@@ -2237,7 +2241,7 @@ def fit_all_damping_curves(
     if save_txt:
         if func_serialize is None:
             raise ValueError(
-                'Please provide a function to serialize the parameters into a lists.'
+                'Please provide a function to serialize the parameters into a lists.',
             )
         data_for_file = []
         for param in params:
@@ -2261,8 +2265,16 @@ def _fit_single_layer_loop(param):
     damping_curve, other_params = param
 
     (
-        func_fit_single_layer, use_scipy, pop_size, n_gen, lower_bound_power,
-        upper_bound_power, eta, seed, show_fig, verbose,
+        func_fit_single_layer,
+        use_scipy,
+        pop_size,
+        n_gen,
+        lower_bound_power,
+        upper_bound_power,
+        eta,
+        seed,
+        show_fig,
+        verbose,
     ) = other_params
 
     best_para = func_fit_single_layer(
@@ -2382,7 +2394,7 @@ def ga_optimization(
     """
     if suppress_warnings:
         import warnings  # TODO: enable setting it from methods that calls this function
-        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        warnings.filterwarnings('ignore', category=RuntimeWarning)
 
     if use_scipy:
         from scipy.optimize import differential_evolution as diff_evol
@@ -2419,42 +2431,54 @@ def ga_optimization(
 
         def uniform(low, up, size=None):
             try:
-                return [random.uniform(a, b) for a, b in zip(low, up)]
+                return [random.uniform(a, b) for a, b in zip(low, up)]  # noqa: S311
             except TypeError:
-                return [random.uniform(a, b) for a, b in zip([low] * size, [up] * size)]
+                return [random.uniform(a, b) for a, b in zip([low] * size, [up] * size)]  # noqa: S311
 
         LB = lower_bound
         UB = upper_bound
 
-        deap.creator.create("FitnessMin", deap.base.Fitness, weights=(-1.0,))
-        deap.creator.create("Individual", list, fitness=deap.creator.FitnessMin)
+        deap.creator.create('FitnessMin', deap.base.Fitness, weights=(-1.0,))
+        deap.creator.create('Individual', list, fitness=deap.creator.FitnessMin)
 
         toolbox = deap.base.Toolbox()
 
-        toolbox.register("attr_float", uniform, LB, UB, n_param)
+        toolbox.register('attr_float', uniform, LB, UB, n_param)
         toolbox.register(
-            "individual", deap.tools.initIterate, deap.creator.Individual, toolbox.attr_float,
-        )
-        toolbox.register("population", deap.tools.initRepeat, list, toolbox.individual)
-        toolbox.register("evaluate", loss_function__)
-        toolbox.register(
-            "mate", deap.tools.cxSimulatedBinaryBounded, low=LB, up=UB, eta=eta,
+            'individual',
+            deap.tools.initIterate,
+            deap.creator.Individual,
+            toolbox.attr_float,
         )
         toolbox.register(
-            "mutate", deap.tools.mutPolynomialBounded,
-            low=LB, up=UB, eta=eta, indpb=1.0 / n_param,
+            'population',
+            deap.tools.initRepeat,
+            list,
+            toolbox.individual,
         )
-        toolbox.register("select", deap.tools.selTournament, tournsize=10)
+        toolbox.register('evaluate', loss_function__)
+        toolbox.register(
+            'mate', deap.tools.cxSimulatedBinaryBounded, low=LB, up=UB, eta=eta,
+        )
+        toolbox.register(
+            'mutate',
+            deap.tools.mutPolynomialBounded,
+            low=LB,
+            up=UB,
+            eta=eta,
+            indpb=1.0 / n_param,
+        )
+        toolbox.register('select', deap.tools.selTournament, tournsize=10)
 
         random.seed(seed)
 
         pop = toolbox.population(n=pop_size)
         hof = deap.tools.HallOfFame(1)
         stats = deap.tools.Statistics(lambda ind: ind.fitness.values)
-        stats.register("Avg", np.mean)
-        stats.register("Std", np.std)
-        stats.register("Min", np.min)
-        stats.register("Max", np.max)
+        stats.register('Avg', np.mean)
+        stats.register('Std', np.std)
+        stats.register('Min', np.min)
+        stats.register('Max', np.max)
 
         deap.algorithms.eaSimple(
             pop,
