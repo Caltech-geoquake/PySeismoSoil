@@ -6,10 +6,10 @@ import subprocess
 import numpy as np
 import pkg_resources
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
-from . import helper_simulations as sim
-from . import helper_signal_processing as sig
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil import helper_simulations as sim
+from PySeismoSoil import helper_signal_processing as sig
 
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile

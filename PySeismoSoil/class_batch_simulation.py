@@ -8,7 +8,7 @@ from PySeismoSoil.class_simulation import (
     Nonlinear_Simulation,
 )
 
-from . import helper_generic as hlp
+from PySeismoSoil import helper_generic as hlp
 
 
 class Batch_Simulation:

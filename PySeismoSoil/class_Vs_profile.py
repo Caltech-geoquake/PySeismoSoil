@@ -1,8 +1,8 @@
 import os
 import numpy as np
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 

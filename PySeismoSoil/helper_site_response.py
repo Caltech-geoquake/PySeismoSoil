@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 from numba import jit
 
-from . import helper_generic as hlp
-from . import helper_signal_processing as sig
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_signal_processing as sig
 
 
 def calc_z1_from_Vs30(Vs30_in_meter_per_sec):

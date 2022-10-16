@@ -38,10 +38,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
-from . import helper_mkz_model as mkz
-from . import helper_hh_model as hh
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil import helper_mkz_model as mkz
+from PySeismoSoil import helper_hh_model as hh
 
 
 def hh_param_from_profile(

@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.fftpack
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
 
 def check_layer_count(

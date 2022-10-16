@@ -2,8 +2,8 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import Multiple_GGmax_Curves
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 
-from . import helper_generic as hlp
-from . import helper_hh_calibration as hhc
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_hh_calibration as hhc
 
 
 class HH_Calibration:

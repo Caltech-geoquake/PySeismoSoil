@@ -7,8 +7,8 @@ from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
 
 class Simulation_Results:

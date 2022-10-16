@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import fsolve
 
 from PySeismoSoil.class_Vs_profile import Vs_Profile
-from . import helper_site_response as sr
+from PySeismoSoil import helper_site_response as sr
 
 
 class SVM:

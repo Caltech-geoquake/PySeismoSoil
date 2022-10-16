@@ -1,8 +1,8 @@
 import numpy as np
 
-from . import helper_generic as hlp
-from . import helper_mkz_model as mkz
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_mkz_model as mkz
+from PySeismoSoil import helper_site_response as sr
 
 
 def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):

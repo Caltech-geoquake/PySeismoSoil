@@ -3,8 +3,8 @@ import scipy.signal
 import scipy.fftpack
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
 
 def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
