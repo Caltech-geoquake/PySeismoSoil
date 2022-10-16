@@ -7,7 +7,7 @@ from . import helper_hh_model as hh
 from . import helper_mkz_model as mkz
 from . import helper_site_response as sr
 
-from .class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 
 
 class Parameter(collections.UserDict):

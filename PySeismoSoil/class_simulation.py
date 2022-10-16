@@ -11,12 +11,12 @@ from . import helper_site_response as sr
 from . import helper_simulations as sim
 from . import helper_signal_processing as sig
 
-from .class_ground_motion import Ground_Motion
-from .class_Vs_profile import Vs_Profile
-from .class_parameters import Param_Multi_Layer
-from .class_curves import Multiple_GGmax_Damping_Curves
-from .class_simulation_results import Simulation_Results
-from .class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_parameters import Param_Multi_Layer
+from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 
 class Simulation:

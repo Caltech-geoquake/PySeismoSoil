@@ -4,7 +4,7 @@ import numpy as np
 import pkg_resources
 from scipy.interpolate import griddata
 
-from .class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 
 class Site_Factors:

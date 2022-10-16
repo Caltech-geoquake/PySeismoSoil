@@ -4,7 +4,7 @@ import numpy as np
 from . import helper_generic as hlp
 from . import helper_site_response as sr
 
-from .class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 
 class Vs_Profile:

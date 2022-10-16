@@ -2,7 +2,7 @@ import os
 import itertools
 import multiprocessing as mp
 
-from .class_simulation import (
+from PySeismoSoil.class_simulation import (
     Linear_Simulation,
     Equiv_Linear_Simulation,
     Nonlinear_Simulation,

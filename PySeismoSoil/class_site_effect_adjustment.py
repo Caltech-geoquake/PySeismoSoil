@@ -2,8 +2,8 @@ import numpy as np
 
 from . import helper_site_response as sr
 
-from .class_ground_motion import Ground_Motion
-from .class_site_factors import Site_Factors
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_site_factors import Site_Factors
 
 
 class Site_Effect_Adjustment:

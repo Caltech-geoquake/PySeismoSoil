@@ -2,7 +2,7 @@ import time
 import numpy as np
 from scipy.optimize import fsolve
 
-from .class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 from . import helper_site_response as sr
 
 

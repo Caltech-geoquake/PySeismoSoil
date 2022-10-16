@@ -2,8 +2,8 @@ import numpy as np
 
 from . import helper_hh_calibration as hhc
 
-from .class_Vs_profile import Vs_Profile
-from .class_curves import Damping_Curve, Multiple_Damping_Curves
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_curves import Damping_Curve, Multiple_Damping_Curves
 
 
 class Damping_Calibration:
