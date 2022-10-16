@@ -2200,10 +2200,9 @@ def fit_all_damping_curves(
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)
     elif isinstance(curves, list):
-        if not all([isinstance(_, np.ndarray) for _ in curves]):
-            raise TypeError(
-                'If `curves` is a list, all its elements needs to be 2D numpy arrays.',
-            )
+        if not all(isinstance(_, np.ndarray) for _ in curves):
+            msg = 'If `curves` is a list, all its elements needs to be 2D numpy arrays.'
+            raise TypeError(msg)
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
                 curve,

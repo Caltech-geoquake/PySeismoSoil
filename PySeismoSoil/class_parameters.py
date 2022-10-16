@@ -43,7 +43,7 @@ class Parameter(collections.UserDict):
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
         if not isinstance(allowable_keys, set) or any(
-            [type(_) != str for _ in allowable_keys],
+            type(_) != str for _ in allowable_keys
         ):
             raise TypeError('`allowable_keys` should be a set of str.')
         if param_dict.keys() != allowable_keys:

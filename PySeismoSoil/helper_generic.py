@@ -367,7 +367,7 @@ def check_Vs_profile_format(data):
         mat = data[:, 4]
         if np.any(xi <= 0) or np.any(rho <= 0):
             raise ValueError('The damping and density columns should be positive.')
-        if not all([is_int(_) for _ in mat]):
+        if not all(is_int(_) for _ in mat):
             raise ValueError('The "material number" column should be all integers.')
         if np.any(mat[:-1] <= 0):
             raise ValueError(
