@@ -633,6 +633,7 @@ class Multiple_Curves:
         self.n_layer -= 1
 
     def append(self, item):
+        """Append another curve item to the curves."""
         if not isinstance(item, self.element_class):
             raise TypeError('The new `item` must be of type %s.' % self.element_class)
         self.curves.append(item)
@@ -1455,9 +1456,7 @@ class Multiple_GGmax_Damping_Curves:
             return hlp.merge_curve_matrices(mgc_matrix, mdc_matrix)
 
     def plot(self):
-        """
-        Plot the G/Gmax and damping curves.
-        """
+        """Plot the G/Gmax and damping curves."""
         mgc, mdc = self.get_MGC_MDC_objects()
         mgc.plot(ylabel=r'$G/G_{\max}$')
         mdc.plot(ylabel='Damping [%]')

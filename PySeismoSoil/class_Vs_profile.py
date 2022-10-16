@@ -160,9 +160,7 @@ class Vs_Profile:
         self.n_layer = len(vs) - 1 if thk[-1] == 0 else len(vs)
 
     def __repr__(self):
-        """
-        Defines a presentation of the basic info of a Vs profile.
-        """
+        """Define a presentation of the basic info of a Vs profile."""
         text = '\n----------+----------+-------------+------------------+--------------\n'
         text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] | Material No. \n'
         text += '----------+----------+-------------+------------------+--------------\n'
@@ -325,7 +323,7 @@ class Vs_Profile:
 
     def get_depth_array(self):
         """
-        Returns the depth array.
+        Return the depth array.
 
         Returns
         -------
@@ -505,7 +503,7 @@ class Vs_Profile:
 
     def _plot_queried_Vs(self, vs_queried, depth, dpi=100):
         """
-        Helper subroutine that plots queried Vs values on top of the Vs profile.
+        Plot the queried Vs values on top of the Vs profile.
 
         Parameters
         ----------
@@ -581,9 +579,7 @@ class Vs_Profile:
         return tmp
 
     def summary(self):
-        """
-        Display the Vs profile on the console and plot Vs profile.
-        """
+        """Display the Vs profile on the console and plot Vs profile."""
         print(self)
         self.plot()
 

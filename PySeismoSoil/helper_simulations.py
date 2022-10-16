@@ -249,8 +249,8 @@ def equiv_linear(
     verbose : bool
         Whether t show the iteration progress on the console.
 
-    Return
-    ------
+    Returns
+    -------
     new_profile : numpy.ndarray
         Re-discretized Vs profile.
     freq_array : numpy.ndarray
@@ -433,8 +433,7 @@ def equiv_linear(
 
 def _prepare_inputs(*, vs_profile, input_motion):
     """
-    Helper function. Prepare input variables from ``vs_profile`` and
-    ``input_motion``.
+    Prepare input variables from ``vs_profile`` and ``input_motion``.
 
     Parameters
     ----------
@@ -550,8 +549,7 @@ def _lin_resp_every_layer(
         R_gamma=0.65,
 ):
     """
-    Helper function. Propagate input motion to get the linear site response of
-    every layer.
+    Propagate input motion to get the linear site response of every layer.
 
     Parameters
     ----------
@@ -713,7 +711,7 @@ def _lin_resp_every_layer(
 
 def _calc_stress(*, G, D, N, n_layer, strain):
     """
-    Helper function. Calculate stress time history from strain time history.
+    Calculate stress time history from strain time history.
 
     Parameters
     ----------
@@ -765,7 +763,7 @@ def _post_processing(
         h,
 ):
     """
-    Helper function. Post-process simulation results.
+    Post-process simulation results.
 
     Parameters
     ----------

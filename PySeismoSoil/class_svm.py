@@ -307,7 +307,7 @@ class SVM:
             show_fig=False,
     ):
         """
-        Returns the discretized Vs profile (with user-specified layer
+        Return the discretized Vs profile (with user-specified layer
         thickness, or Vs increment).
 
         Parameters
@@ -429,7 +429,7 @@ class SVM:
             verbose=True,
     ):
         """
-        Returns a randomized a 1D profile.
+        Return a randomized a 1D profile.
 
         Parameters
         ----------
@@ -523,7 +523,7 @@ class SVM:
             use_Toros_std=False,
     ):
         """
-        Helper function to get randomized 1D profile.
+        Get randomized 1D profile.
 
         Parameters
         ----------

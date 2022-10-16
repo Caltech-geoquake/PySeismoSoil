@@ -52,8 +52,8 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
 
 def transition_function(gamma, *, a, gamma_t):
     """
-    The transition function of the HH model, as defined in Equation (7) of Shi
-    & Asimaki (2017).
+    Calculate the transition function of the HH model, as defined
+    in Equation (7) of Shi & Asimaki (2017).
 
     Parameters
     ----------

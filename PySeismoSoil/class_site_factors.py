@@ -217,7 +217,7 @@ class Site_Factors:
             show_interp_plots=False,
     ):
         """
-        Helper function: get amplification or phase results.
+        Get amplification or phase results.
 
         Parameters
         ----------

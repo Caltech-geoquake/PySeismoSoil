@@ -153,9 +153,7 @@ class Ground_Motion:
         self.rms_accel, self.rms_veloc, self.rms_displ = self.__calc_RMS()
 
     def __repr__(self):
-        """
-        Basic information of a ground motion.
-        """
+        """Return basic information of a ground motion."""
         text = (
             'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'
             % (
@@ -171,9 +169,7 @@ class Ground_Motion:
         return text
 
     def summary(self):
-        """
-        Show a brief summary of the ground motion.
-        """
+        """Show a brief summary of the ground motion."""
         print(self)
         self.plot()
 
@@ -272,7 +268,7 @@ class Ground_Motion:
 
     def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5, 6), dpi=100):
         """
-        Plots acceleration, velocity, and displacement waveforms together.
+        Plot acceleration, velocity, and displacement waveforms together.
 
         Parameters
         ----------
@@ -938,7 +934,7 @@ class Ground_Motion:
             unit='m/s/s',
     ):
         """
-        Saves the acceleration as a text file.
+        Save the acceleration as a text file.
 
         Parameters
         ----------

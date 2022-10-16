@@ -123,7 +123,7 @@ class Batch_Simulation:
 
     def _run_single_sim(self, all_params):
         """
-        Helper function to run a single simulation.
+        Run a single simulation.
 
         Parameters
         ----------

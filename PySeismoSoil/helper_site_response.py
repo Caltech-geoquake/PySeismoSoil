@@ -336,7 +336,7 @@ def plot_motion(
 
 def num_int(accel):
     """
-    Performs numerical integration on acceleration to get velocity and
+    Perform numerical integration on acceleration to get velocity and
     displacement.
 
     Parameters
@@ -604,7 +604,7 @@ def response_spectra(
 
 @jit(nopython=True, nogil=True)
 def _time_stepping(para):
-    """Helper function for response_spectra()"""
+    """Step forward in time to calculate velocity, displacements, etc."""
     i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a = para
 
     u_ = np.zeros(len_a)
@@ -958,7 +958,7 @@ def calc_z1(vs_profile):
 
 def _gen_profile_plot_array(thk, vs, zmax):
     """
-    Generates (x, y) for plotting, from Vs profile information.
+    Generate (x, y) for plotting, from Vs profile information.
 
     Parameters
     ----------
@@ -1965,7 +1965,7 @@ def calc_damping_from_param(param, strain_in_unit_1, func_stress):
 
 def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
     """
-    Calculates the damping curve from the given stress-strain curve.
+    Calculate the damping curve from the given stress-strain curve.
 
     Parameters
     ----------
@@ -2004,7 +2004,7 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
 
 def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
     """
-    Calculates G/Gmax curve from stress-strain curve.
+    Calculate G/Gmax curve from stress-strain curve.
 
     Parameters
     ----------

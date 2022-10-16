@@ -147,7 +147,6 @@ def _filter_kernel(
         filter_order=4,
         padlen=None,
 ):
-    """Common helper function to the four filtering functions."""
     if filter_type in ['bandpass', 'bandstop']:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
@@ -563,7 +562,7 @@ def calc_transfer_function(
         smooth_signal=False,
 ):
     """
-    Calculates transfer function between the output and input time-domain
+    Calculate transfer function between the output and input time-domain
     signals. The two signals need to have the same time interval and same
     length.
 

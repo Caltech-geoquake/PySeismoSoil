@@ -148,7 +148,7 @@ class Simulation_Results:
             output_dir=None,
     ):
         """
-        Plots simulation results: output vs input motions, transfer functions
+        Plot simulation results: output vs input motions, transfer functions
         and maximum acceleration, velocity, displacement, strain, and stress
         profiles.
 

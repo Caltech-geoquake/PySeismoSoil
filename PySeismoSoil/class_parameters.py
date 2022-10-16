@@ -71,7 +71,7 @@ class Parameter(collections.UserDict):
 
     def serialize(self):
         """
-        Serializes the parameter values into an array of floats. The order of
+        Serialize the parameter values into an array of floats. The order of
         the parameters are arbitrary, so any subclass of this class is
         recommended to override this method.
 
@@ -241,7 +241,7 @@ class HH_Param(Parameter):
 
     def serialize(self):
         """
-        Returns an array of parameter values in the order of:
+        Return an array of parameter values in the order of:
         {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
         """
         return hh.serialize_params_to_array(self.data)
@@ -276,7 +276,7 @@ class MKZ_Param(Parameter):
 
     def serialize(self):
         """
-        Returns an array of parameter values in the order of:
+        Return an array of parameter values in the order of:
         {'gamma_ref', 's', 'beta', 'Gmax'}
         """
         return mkz.serialize_params_to_array(self.data)

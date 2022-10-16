@@ -73,7 +73,7 @@ def find_closest_index(array, value):
 
 def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     """
-    Processes figure and axes objects. If ``fig`` and ``ax`` are None, creates
+    Process figure and axes objects. If ``fig`` and ``ax`` are None, creates
     new figure and new axes according to ``figsize``, ``dpi``, and ``ax_proj``.
     Otherwise, uses the passed-in ``fig`` and/or ``ax``.
 
@@ -100,7 +100,6 @@ def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
     ax : matplotlib.axes._subplots.AxesSubplot
         The axes object being created or being passed into this function.
     """
-
     if fig is None:  # if a figure handle is not provided, create new figure
         fig = pl.figure(figsize=figsize, dpi=dpi)
     else:  # if provided, plot to the specified figure
@@ -116,8 +115,10 @@ def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
 
 def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     """
-    Internal helper function. Processes "data" into a two-columned "data_".
+    Process "data" into a two-columned "data_".
 
+    Parameters
+    ----------
     data : str or numpy.ndarray
         If str: the full file name on the hard drive containing the data.
         If np.ndarray: the numpy array containing the data.
@@ -144,7 +145,6 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     delta : float
         The "delta value", such as dt or df.
     """
-
     if isinstance(data, str):  # "data" is a file name
         data_ = np.genfromtxt(data, delimiter=sep, **kwargs_to_genfromtxt)
     elif isinstance(data, np.ndarray):
@@ -405,8 +405,8 @@ def is_int(number):
 
 def check_numbers_valid(array):
     """
-    Generic helper function to check the contents in ``array`` is valid (i.e.,
-    are numbers, are not infinite, are positive)
+    Check the contents in ``array`` is valid (i.e., are numbers, are not
+    infinite, are positive).
 
     Parameters
     ----------
