@@ -99,7 +99,7 @@ class Damping_Calibration:
 
         Parameters
         ----------
-        kwargs :
+        kwargs : dict
             Keyword arguments to be passed to this method:
                 PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params().
             Check its documentation for details:
@@ -124,7 +124,7 @@ class Damping_Calibration:
 
         Parameters
         ----------
-        kwargs :
+        kwargs : dict
             Keyword arguments to be passed to this method:
                 PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params().
             Check its documentation for details:

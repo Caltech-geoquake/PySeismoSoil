@@ -65,7 +65,7 @@ class Batch_Simulation:
         ----------
         parallel : bool
             Whether to use multiple CPU cores to run simulations.
-        n_core : int or ``None``
+        n_cores : int or ``None``
             Number of CPU cores to be used. If ``None``, all CPU cores will be
             used.
         base_output_dir : str

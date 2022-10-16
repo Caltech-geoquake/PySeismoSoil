@@ -133,6 +133,8 @@ class Linear_Simulation(Simulation):
             verbose=True,
     ):
         """
+        Run linear simulation.
+
         Parameters
         ----------
         every_layer : bool

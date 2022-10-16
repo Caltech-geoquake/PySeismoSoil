@@ -16,7 +16,9 @@ def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=Non
     orig_signal : numpy.ndarray
         The signal to be filtered (2 columns).
     cutoff_freq : float
-        Cut-off frequency.
+        Cut-off frequency, in Hz
+    show_fig : bool
+        Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
     padlen : int
@@ -49,7 +51,9 @@ def highpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
     orig_signal : numpy.ndarray
         The signal to be filtered (2 columns)
     cutoff_freq : float
-        Cut-off frequency.
+        Cut-off frequency, in Hz
+    show_fig : bool
+        Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
     padlen : int
@@ -82,7 +86,9 @@ def bandpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
     orig_signal : numpy.ndarray
         The signal to be filtered (2 columns)
     cutoff_freq : [float, float]
-        Cut-off frequencies, from low to high
+        Cut-off frequencies, from low to high, in Hz
+    show_fig : bool
+        Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
     padlen : int
@@ -115,7 +121,9 @@ def bandstop(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
     orig_signal : numpy.ndarray
         The signal to be filtered (2 columns)
     cutoff_freq : [float, float]
-        Cut-off frequencies, from low to high
+        Cut-off frequencies, from low to high, in Hz
+    show_fig : bool
+        Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
     padlen : int
@@ -532,6 +540,11 @@ def taper_Tukey(input_signal, width=0.05):
     -------
     output : numpy.ndarray
         The tapered signal.
+
+    Raises
+    ------
+    TypeError
+        When the input signal is not a numpy array
     """
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
@@ -570,7 +583,7 @@ def calc_transfer_function(
     ----------
     input_signal : numpy.ndarray
         Input signal in the time domain. Needs to have two columns.
-    ouput_signal : numpy.ndarray
+    output_signal : numpy.ndarray
         Output signal in the time domain. Needs to have two columns.
     amplitude_only : bool
         Whether to keep only the amplitude of the transfer function.
@@ -583,6 +596,11 @@ def calc_transfer_function(
     trans_func_2col : numpy.ndarray
         The complex-valued or real-valued transfer function with two columns
         (frequency and ratio).
+
+    Raises
+    ------
+    ValueError
+        When the input or output signal contains invalid values
     """
     hlp.check_two_column_format(input_signal, name='`input_signal`')
     hlp.check_two_column_format(output_signal, name='`output_signal`')
@@ -684,6 +702,11 @@ def log_smooth(
     -------
     smoothed_signal : numpy.ndarray
         The smoothed signal which has the same dimension as the original signal.
+
+    Raises
+    ------
+    ValueError
+        When the input values are not entirely valid
     """
     hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
@@ -776,6 +799,11 @@ def lin_smooth(x, window_len=15, window='hanning'):
     - length(output) != length(input), to correct
       this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
     - Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
+
+    Raises
+    ------
+    ValueError
+        When the input values are not entirely valid
     """
     if x.ndim != 1:
         raise ValueError('smooth only accepts one-dimensional arrays.')
