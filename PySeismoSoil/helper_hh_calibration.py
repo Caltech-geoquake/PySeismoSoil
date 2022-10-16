@@ -964,7 +964,7 @@ def produce_Darendeli_curves(
             )
         )
         D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # unit: % (page 226)
-        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501
+        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501, LN001
         xi[:, i] = b * GGmax[:, i]**0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
 
     xi /= 100.0

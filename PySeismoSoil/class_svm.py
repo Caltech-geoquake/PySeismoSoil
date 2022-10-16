@@ -161,7 +161,7 @@ class SVM:
                     # -------  Check if actual Vs30 matches target Vs30 -----------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
                     if verbose is True:  # print iteration progress
-                        print('  {:.1f} --> {:.1f} |'.format(actual_Vs30, target_Vs30), end='')
+                        print(f'  {actual_Vs30:.1f} --> {target_Vs30:.1f} |', end='')
 
                     if target_Vs30 - 10 <= actual_Vs30 <= target_Vs30 + 10:
                         iteration_flag = False  # end iteration
@@ -239,7 +239,7 @@ class SVM:
 
         # ----------  Show figure  -----------------
         if show_fig is True:
-            title_text = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(target_Vs30, z1)
+            title_text = f'$V_{{S30}}$={target_Vs30:.1f}m/s, $z_{{1}}$={z1:.1f}m'
             sr.plot_Vs_profile(vs_profile, title=title_text)
 
         # --------  Attributes  --------------------
