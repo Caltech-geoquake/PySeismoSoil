@@ -467,6 +467,11 @@ class Nonlinear_Simulation(Simulation):
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
+
+        Raises
+        ------
+        ValueError
+            When unknown operating system is encountered
         """
         if verbose:
             print('Nonlinear simulation running...')
