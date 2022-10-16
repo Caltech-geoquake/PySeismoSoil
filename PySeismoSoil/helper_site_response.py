@@ -1062,7 +1062,7 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=.05, fmax=30.):
         (no damping and density info), then damping and density are calculated
         automatically using ``get_xi_rho()``.
     show_fig : bool
-        Whether or not to show figures of the amplification function.
+        Whether to show figures of the amplification function.
     freq_resolution : float
         Frequency resolution of the frequency spectrum.
     fmax : float
@@ -1302,13 +1302,13 @@ def amplify_motion(
         If `False`, a regular amplification is performed; otherwise, the
         transfer function is "deducted" from the input motion ("deconvolution").
     show_fig : bool
-        Whether or not to show an illustration of how the calculation is
+        Whether to show an illustration of how the calculation is
         carried out.
     dpi : int
         Desired DPI for the figures; only effective when ``show_fig`` is
         ``True``.
     return_fig_obj : bool
-        Whether or not to return figure and axis objects to the caller.
+        Whether to return figure and axis objects to the caller.
 
     Returns
     -------
@@ -1698,7 +1698,7 @@ def compare_two_accel(
     output_accel : numpy.ndarray
         Output acceleration. (2 columns: time and acceleration.)
     smooth : bool
-        In the comparison plot, whether or not to also show the smoothed
+        In the comparison plot, whether to also show the smoothed
         amplification factor.
     input_accel_label : str
         The text label for the input acceleration in the figure legend.

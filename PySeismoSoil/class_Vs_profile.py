@@ -235,7 +235,7 @@ class Vs_Profile:
         Parameters
         ----------
         show_fig : bool
-            Whether or not show figures of the amplification function.
+            Whether show figures of the amplification function.
         freq_resolution : float
             Frequency resolution of the frequency spectrum.
         fmax : float
@@ -273,7 +273,7 @@ class Vs_Profile:
         Parameters
         ----------
         show_fig : bool
-            Whether or not show figures of the transfer function.
+            Whether show figures of the transfer function.
         freq_resolution : float
             Frequency resolution of the frequency spectrum.
         fmax : float

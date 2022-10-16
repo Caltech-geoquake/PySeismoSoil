@@ -217,7 +217,7 @@ def equiv_linear(
     max_iter : int
         Maximum number of iteration to run.
     verbose : bool
-        Whether or not t show the iteration progress on the console.
+        Whether t show the iteration progress on the console.
 
     Return
     ------

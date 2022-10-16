@@ -81,16 +81,16 @@ class HH_Calibration:
         Parameters
         ----------
         show_fig : bool
-            Whether or not to show figures G/Gmax and stress-strain curves of
+            Whether to show figures G/Gmax and stress-strain curves of
             MKZ, FKZ, and HH for each layer.
         save_fig : bool
-            Whether or not to save the figures to the hard drive. Only effective
+            Whether to save the figures to the hard drive. Only effective
             if ``show_fig`` is set to ``True``.
         fig_output_dir : str
             The output directory for the figures. Only effective if ``show_fig``
             and ``save_fig`` are both ``True``.
         save_HH_G_file : bool
-            Whether or not to save the HH parameters to the hard drive (as a
+            Whether to save the HH parameters to the hard drive (as a
             "HH_G" file).
         HH_G_file_dir : str
             The output directory for the "HH_G" file. Only effective if
@@ -99,7 +99,7 @@ class HH_Calibration:
             The name of the Vs profile, such as "CE.12345". If ``None``, a
             string of current date and time will be used as the profile name.
         verbose : bool
-            Whether or not to print progresses on the console.
+            Whether to print progresses on the console.
 
         Returns
         -------

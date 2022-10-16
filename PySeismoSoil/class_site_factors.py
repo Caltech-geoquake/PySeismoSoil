@@ -93,7 +93,7 @@ class Site_Factors:
             amplification factors. 'nl_hh' uses the results from nonlinear site
             response simulation, which is recommended.
         Fourier : bool
-            Whether or not to return Fourier-spectra-based amplification
+            Whether to return Fourier-spectra-based amplification
             factors (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
@@ -204,7 +204,7 @@ class Site_Factors:
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
         Fourier : bool
-            Whether or not to return Fourier-spectra-based amplification
+            Whether to return Fourier-spectra-based amplification
             factors (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
@@ -284,7 +284,7 @@ class Site_Factors:
         PGA : scalar
             Peak ground acceleration. Unit: g.
         Fourier : bool
-            Whether or not to return Fourier-spectra-based amplification
+            Whether to return Fourier-spectra-based amplification
             factors or response-spectra based factors.
         method : {'nl_hh', 'eq_hh', 'eq_kz'}
             Which site response simulation method was used to calculate the
@@ -481,7 +481,7 @@ class Site_Factors:
         phase_interp : numpy.array
             Interpolated phase shift factor at ``query_point``.
         Fourier : bool
-            Whether or not the amplification factors passed in are the
+            Whether the amplification factors passed in are the
             Fourier-based factors.
 
         Return
