@@ -102,15 +102,15 @@ class SVM:
         #            thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
         #
         #         Then thk and thk$ can both be solved, hence we have:
-        #             thk = (z1 - 2.5)/49.0
+        #         >>>    thk = (z1 - 2.5)/49.0
 
         p1 = -2.1688e-04  # these values come from curve fitting
         p2 = 0.5182
         p3 = 69.452
 
-        # q1 = 8.4562e-09
-        # q2 = 2.9981
-        # q3 = 0.03073
+        # q1 = 8.4562e-09  # noqa: E800
+        # q2 = 2.9981  # noqa: E800
+        # q3 = 0.03073  # noqa: E800
 
         r1 = -59.67  # updated on 2018/1/2: improved curve fitting accuracy for k_
         r2 = -0.2722
@@ -467,12 +467,12 @@ class SVM:
         if not isinstance(seed, (type(None), int, float, np.number)):
             raise TypeError('`seed` needs to be a number, or `None`.')
 
-        options = dict(
-            seed=seed,
-            show_fig=show_fig,
-            use_Toros_std=use_Toros_std,
-            use_Toros_layering=use_Toros_layering,
-        )
+        options = {
+            'seed': seed,
+            'show_fig': show_fig,
+            'use_Toros_std': use_Toros_std,
+            'use_Toros_layering': use_Toros_layering,
+        }
 
         if not vs30_z1_compliance:
             Vs_profile = self._helper_get_rand_profile(**options)
@@ -483,7 +483,7 @@ class SVM:
                 print('Iterating for compliant Vs profile:')
             while iterate:
                 seed_ = None if seed is None else seed + counter
-                options.update(dict(seed=seed_, show_fig=False))
+                options.update({'seed': seed_, 'show_fig': False})
                 Vs_profile = self._helper_get_rand_profile(**options)
                 rand_Vs30 = sr.calc_Vs30(
                     Vs_profile, option_for_profile_shallower_than_30m=1,

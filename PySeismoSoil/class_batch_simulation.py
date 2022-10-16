@@ -57,7 +57,7 @@ class Batch_Simulation:
         self.n_simulations = n_simulations
         self.sim_type = type(sim_0)
 
-    def run(self, parallel=False, n_cores=1, base_output_dir=None, options={}):
+    def run(self, parallel=False, n_cores=1, base_output_dir=None, options=None):
         """
         Run simulations in batch.
 
@@ -71,17 +71,20 @@ class Batch_Simulation:
         base_output_dir : str
             The parent directory for saving the output files/figures of the
             current batch.
-        options : dict
+        options : dict or None
             Options to be passed to the ``run()`` methods of the relevant
             simulation classes (linear, equivalent linear, or nonlinear). Check
             out the API documentation of the ``run()`` methods here:
             https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_simulation.html
+            If None, it is equivalent to an empty dict.
 
         Returns
         -------
         sim_results : list<Simulation_Result>
             Simulation results corresponding to each simulation object.
         """
+        options = {} if options is None else options
+
         N = self.n_simulations
         n_digits = len(str(N))
 

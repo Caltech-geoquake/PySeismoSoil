@@ -268,13 +268,13 @@ def deserialize_array_to_params(array, from_files=False):
     assert len(array) == 4
 
     if from_files:
-        param = dict()
+        param = {}
         param['gamma_ref'] = array[0]
         param['s'] = array[2]
         param['beta'] = array[3]
         param['Gmax'] = 1.0  # "H4_G_SITE_NAME.txt" files don't have Gmax info
     else:
-        param = dict()
+        param = {}
         param['gamma_ref'] = array[0]
         param['s'] = array[1]
         param['beta'] = array[2]

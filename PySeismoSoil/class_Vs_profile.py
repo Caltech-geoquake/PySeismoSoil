@@ -591,7 +591,7 @@ class Vs_Profile:
             self,
             fname,
             sep='\t',
-            precision=['%.2f', '%.2f', '%.4g', '%.5g', '%d'],
+            precision=('%.2f', '%.2f', '%.4g', '%.5g', '%d'),
     ):
         """
         Write Vs profile to a text file.

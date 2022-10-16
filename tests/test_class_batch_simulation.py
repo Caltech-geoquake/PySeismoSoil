@@ -54,7 +54,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim_list = [sim_1, sim_2]
 
         batch_sim = Batch_Simulation(sim_list)
-        options = dict(show_fig=False, save_txt=False, verbose=True)
+        options = {'show_fig': False, 'save_txt': False, 'verbose': True}
         non_par_results = batch_sim.run(parallel=False, n_cores=2, options=options)
         par_results = batch_sim.run(parallel=True, options=options)
 
@@ -81,7 +81,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim_list = [sim_2]
 
         batch_sim = Batch_Simulation(sim_list)
-        options = dict(show_fig=False, save_txt=False, verbose=True)
+        options = {'show_fig': False, 'save_txt': False, 'verbose': True}
         non_par_results = batch_sim.run(parallel=False, options=options)
         par_results = batch_sim.run(parallel=True, n_cores=2, options=options)
 
@@ -107,7 +107,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
 
         batch_sim = Batch_Simulation([sim])
-        options = dict(show_fig=False, save_txt=False, remove_sim_dir=True)
+        options = {'show_fig': False, 'save_txt': False, 'remove_sim_dir': True}
 
         non_par_results = batch_sim.run(parallel=False, options=options)
         par_results = batch_sim.run(parallel=True, n_cores=2, options=options)

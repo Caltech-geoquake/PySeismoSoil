@@ -9,6 +9,8 @@ from PySeismoSoil import helper_site_response as sr
 
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 
+STRAIN_RANGE_PCT = np.logspace(-2, 1)
+
 
 class Parameter(collections.UserDict):
     """
@@ -79,11 +81,11 @@ class Parameter(collections.UserDict):
             Serialized parameters.
         """
         param_array = []
-        for key, val in self.data.items():
+        for _, val in self.data.items():
             param_array.append(val)
         return np.array(param_array)
 
-    def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
+    def get_stress(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Get the shear stress array inferred from the set of parameters
 
@@ -104,7 +106,7 @@ class Parameter(collections.UserDict):
         hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
         return self.func_stress(strain_in_pct / 100.0, **self.data)
 
-    def get_GGmax(self, strain_in_pct=np.logspace(-2, 1)):
+    def get_GGmax(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Get the G/Gmax array inferred from the set of parameters
 
@@ -127,7 +129,7 @@ class Parameter(collections.UserDict):
         GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
         return GGmax
 
-    def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
+    def get_damping(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Get the damping array inferred from the set of parameters
 
@@ -347,7 +349,7 @@ class Param_Multi_Layer:
         del self.param_list[i]
         self.n_layer -= 1
 
-    def construct_curves(self, strain_in_pct=np.logspace(-2, 1)):
+    def construct_curves(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Construct G/Gmax and damping curves from parameter values.
 
@@ -363,7 +365,6 @@ class Param_Multi_Layer:
         mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
-        strain_in_pct = np.logspace(-2, 1)
         curves = None
         for param in self.param_list:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)

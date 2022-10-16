@@ -338,7 +338,7 @@ class Simulation_Results:
         fn_max_avd = os.path.join(od, '%s_max_a_v_d.txt' % motion_name)
         fn_max_gt = os.path.join(od, '%s_max_gamma_tau.txt' % motion_name)
 
-        fmt_dict = dict(delimiter='\t', fmt='%.6g')
+        fmt_dict = {'delimiter': '\t', 'fmt': '%.6g'}
 
         np.savetxt(fn_surface_accel, self.accel_on_surface.accel, **fmt_dict)
 

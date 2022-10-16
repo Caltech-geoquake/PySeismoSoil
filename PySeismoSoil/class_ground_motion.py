@@ -476,7 +476,7 @@ class Ground_Motion:
         acc_scaled = acc * factor
         return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
 
-    def truncate(self, limit, arias=True, extend=[0, 0], show_fig=False):
+    def truncate(self, limit, arias=True, extend=(0, 0), show_fig=False):
         """
         Truncate ground motion, removing data points in the head and/or tail.
 

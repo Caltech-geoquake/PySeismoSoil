@@ -113,16 +113,16 @@ class HH_Calibration:
             The HH parameters of each layer.
         """
         vs_profile = self.vs_profile.vs_profile
-        options = dict(
-            Tmax=self.Tmax_profile,
-            show_fig=show_fig,
-            save_fig=save_fig,
-            fig_output_dir=fig_output_dir,
-            save_HH_G_file=save_HH_G_file,
-            HH_G_file_dir=HH_G_file_dir,
-            profile_name=profile_name,
-            verbose=verbose,
-        )
+        options = {
+            'Tmax': self.Tmax_profile,
+            'show_fig': show_fig,
+            'save_fig': save_fig,
+            'fig_output_dir': fig_output_dir,
+            'save_HH_G_file': save_HH_G_file,
+            'HH_G_file_dir': HH_G_file_dir,
+            'profile_name': profile_name,
+            'verbose': verbose,
+        }
         if self.GGmax_curves is None:
             HH_G_param_ = hhc.hh_param_from_profile(vs_profile, **options)
         else:

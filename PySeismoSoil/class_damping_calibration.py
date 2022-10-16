@@ -6,6 +6,9 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import Damping_Curve, Multiple_Damping_Curves
 
 
+STRAIN_RANGE_PCT = np.logspace(-3, 1)
+
+
 class Damping_Calibration:
     """
     A class to generate damping curves (and associated soil model parameters)
@@ -19,7 +22,7 @@ class Damping_Calibration:
 
     def get_damping_curves(
             self,
-            strain_in_pct=np.logspace(-3, 1),
+            strain_in_pct=STRAIN_RANGE_PCT,
             use_Darendeli_Dmin=False,
             show_fig=False,
     ):

@@ -314,7 +314,7 @@ def serialize_params_to_array(param):
 
     Returns
     -------
-    param_array : numpy.array
+    param_array : numpy.ndarray
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
@@ -331,7 +331,7 @@ def deserialize_array_to_params(array):
     """
     Reconstruct a HH model parameter dictionary from an array of values.
 
-    The users needs to ensure the order of values in ``array`` are in this order:
+    The users need to ensure the order of values in ``array`` are in this order:
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters
@@ -348,7 +348,7 @@ def deserialize_array_to_params(array):
     hlp.assert_1D_numpy_array(array)
     assert len(array) == 9
 
-    param = dict()
+    param = {}
     param['gamma_t'] = array[0]
     param['a'] = array[1]
     param['gamma_ref'] = array[2]

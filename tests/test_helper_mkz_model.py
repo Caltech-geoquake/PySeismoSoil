@@ -71,11 +71,11 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         strain_in_1 = np.geomspace(1e-6, 0.1, num=50)  # unit: 1
         strain_in_pct = strain_in_1 * 100
 
-        param_1 = dict(gamma_ref=0.0035, beta=0.85, s=1.0, Gmax=1e6)
+        param_1 = {'gamma_ref': 0.0035, 'beta': 0.85, 's': 1.0, 'Gmax': 1e6}
         T_MKZ_1 = mkz.tau_MKZ(strain_in_1, **param_1)
         GGmax_1 = sr.calc_GGmax_from_stress_strain(strain_in_1, T_MKZ_1)
 
-        param_2 = dict(gamma_ref=0.02, beta=1.4, s=0.7, Gmax=2e7)
+        param_2 = {'gamma_ref': 0.02, 'beta': 1.4, 's': 0.7, 'Gmax': 2e7}
         T_MKZ_2 = mkz.tau_MKZ(strain_in_1, **param_2)
         GGmax_2 = sr.calc_GGmax_from_stress_strain(strain_in_1, T_MKZ_2)
 
