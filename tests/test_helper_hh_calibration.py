@@ -210,7 +210,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
 
     def test_hh_param_from_curves__case_1(self):
-        ## Case 1: Fit G/Gmax curves generated using Darendeli (2001)
+        # Case 1: Fit G/Gmax curves generated using Darendeli (2001)
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
         curves = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         HH_G_param = hhc.hh_param_from_curves(
@@ -236,10 +236,10 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0))
 
     def test_hh_param_from_curves__case_2(self):
-        ## Case 2: Fit manually specified ("real-world") G/Gmax curves
-        ##         (Unable to benchmark because MKZ curve fitting can produce
-        ##          different parameters with similar curve-fitting error.)
-        ##         The user needs to do a visual inspection.
+        # Case 2: Fit manually specified ("real-world") G/Gmax curves
+        #         (Unable to benchmark because MKZ curve fitting can produce
+        #          different parameters with similar curve-fitting error.)
+        #         The user needs to do a visual inspection.
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_P001.txt'))
         curves = np.genfromtxt(_join(f_dir, 'curve_P001.txt'))
         HH_G_param = hhc.hh_param_from_curves(  # noqa: F841

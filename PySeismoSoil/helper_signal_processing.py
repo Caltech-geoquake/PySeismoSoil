@@ -540,12 +540,12 @@ def taper_Tukey(input_signal, width=0.05):
     if input_signal.ndim == 2:  # if input_signal has two columns
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
-        l = len(time_array)
-        output_second_col = second_col * scipy.signal.tukey(l, width / 2.0)
+        ll = len(time_array)
+        output_second_col = second_col * scipy.signal.tukey(ll, width / 2.0)
         output = np.column_stack(time_array, output_second_col)
     elif input_signal.ndim == 1:
-        l = len(input_signal)
-        output = input_signal * scipy.signal.tukey(l, width / 2.0)
+        ll = len(input_signal)
+        output = input_signal * scipy.signal.tukey(ll, width / 2.0)
     else:
         raise TypeError(
             '`input_signal` should be either 1 or 2 dimensional. '

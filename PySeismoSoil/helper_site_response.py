@@ -417,12 +417,12 @@ def find_f0(x):
     freq = x[:, 0]
     ampl = x[:, 1]
 
-    l = len(freq)
+    ll = len(freq)
 
     current_flag = 0  # 1 means d(ampl)/d(freq) > 0; -1 means < 0
     previous_flag = 1
 
-    for i in range(l - 1):
+    for i in range(ll - 1):
         incre = ampl[i + 1] - ampl[i]
         if incre > 0:
             current_flag = 1
@@ -436,7 +436,7 @@ def find_f0(x):
 
         previous_flag = current_flag
 
-    if i == l - 2:  # if the loop above finishes without breaking
+    if i == ll - 2:  # if the loop above finishes without breaking
         i = i + 1
 
     f0 = freq[i]

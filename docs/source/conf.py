@@ -82,8 +82,8 @@ automodsumm_inherited_members = True
 
 # ------- A fix to sphinx-automodapi to exclude imported members ---------------
 # Thanks to https://github.com/astropy/sphinx-automodapi/issues/119
-from sphinx_automodapi import automodsumm
-from sphinx_automodapi.utils import find_mod_objs
+from sphinx_automodapi import automodsumm  # noqa: E402
+from sphinx_automodapi.utils import find_mod_objs  # noqa: E402
 
 
 def find_mod_objs_patched(*args, **kwargs):

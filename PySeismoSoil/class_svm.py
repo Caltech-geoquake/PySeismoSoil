@@ -640,9 +640,9 @@ class SVM:
         # ---------------    Part 3    -----------------------------------
         # Generate random values for each layer based on the baseline profile
 
-        ## ******** 3.1. Toro (1995) coefficients *********
-        ## ******** These values come from Table 5 of Toro (1995) or Table 2.3
-        ## ******** of Kamai, Abrahamson, Silva (2013) PEER report.
+        # ******** 3.1. Toro (1995) coefficients *********
+        # ******** These values come from Table 5 of Toro (1995) or Table 2.3
+        # ******** of Kamai, Abrahamson, Silva (2013) PEER report.
         if self.Vs30 < 180:  # site class E
             sigma_lnV = 0.37
             rho_0 = 0
@@ -675,7 +675,7 @@ class SVM:
             z_0 = 0
             b = 0.063
 
-        ## ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth  ****
+        # ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth  ****
         #     (Note: "mu" and "sigma" here are NOT the mean value and standard
         #     deviation of Vs, but rather the two parameters of the log-normal
         #     distribution that Vs is assumed to follow.)
@@ -691,7 +691,7 @@ class SVM:
                 Vs_analyt.shape,
             )  # page 8 of Toro (1995)
 
-        ## ****** 3.3. Generate random Vs values based on Toro's equations  ******
+        # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
         np.random.seed([2 * seed])  # specify seed value to random number generator
