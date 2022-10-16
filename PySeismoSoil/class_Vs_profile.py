@@ -393,7 +393,7 @@ class Vs_Profile:
 
         Parameters
         ----------
-        depth : float or numpy.array
+        depth : float or numpy.ndarray
             Value(s) of depths to query the Vs value at. Unit should be m.
         as_profile : bool
             If ``True``, return a Vs profile object. If False, only return the

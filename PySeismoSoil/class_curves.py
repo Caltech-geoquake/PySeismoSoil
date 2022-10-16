@@ -47,11 +47,11 @@ class Curve:
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    values : numpy.array
+    values : numpy.ndarray
         The interpolated values; same shape as ``strain``
     """
 
@@ -195,11 +195,11 @@ class GGmax_Curve(Curve):
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in.
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    GGmax : numpy.array
+    GGmax : numpy.ndarray
         The interpolated G/Gmax values; same shape as ``strain``.
     """
 
@@ -270,11 +270,11 @@ class Damping_Curve(Curve):
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in.
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    damping : numpy.array
+    damping : numpy.ndarray
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
     """
@@ -513,11 +513,11 @@ class Stress_Curve(Curve):
     ----------
     raw_data : numpy.ndarray
         The raw data that the user passed in
-    strain : numpy.array
+    strain : numpy.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
-    stress : numpy.array
+    stress : numpy.ndarray
         The interpolated damping values; same shape as ``strain``. The unit is
         always 'kPa'.
     """

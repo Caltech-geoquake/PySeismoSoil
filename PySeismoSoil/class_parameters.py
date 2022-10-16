@@ -386,7 +386,7 @@ class Param_Multi_Layer:
 
         Returns
         -------
-        param_2D_array : numpy.array
+        param_2D_array : numpy.ndarray
             A 2D numpy array whose columns are parameters of each layer.
         """
         output = []

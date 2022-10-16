@@ -128,7 +128,7 @@ def query_Vs_at_depth(vs_profile, depth):
         Shear-wave velocity profile, containing at least two columns:
            (1) thickness of layers
            (2) shear wave velocity of layers
-    depth : float or numpy.array
+    depth : float or numpy.ndarray
         Value(s) of depths to query the Vs value at. Unit should be m.
 
     Returns
@@ -964,7 +964,7 @@ def _gen_profile_plot_array(thk, vs, zmax):
     ----------
     thk : numpy.ndarray
         Thickness array.
-    vs : numpy.array
+    vs : numpy.ndarray
         Shear-wave velocity array.
     zmax : float
         Maximum depth desired.
@@ -1039,7 +1039,7 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
 
     Parameters
     ----------
-    depth_array_starting_from_0 : numpy.array
+    depth_array_starting_from_0 : numpy.ndarray
         Needs to be a 1D numpy array.
     include_halfspace : bool
         Whether to include the last layer (i.e., "half space"), which always
@@ -1047,7 +1047,7 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
 
     Returns
     -------
-    h : numpy.array
+    h : numpy.ndarray
         Thickness array.
     """
     hlp.assert_1D_numpy_array(
@@ -1333,7 +1333,7 @@ def amplify_motion(
 
     Returns
     -------
-    response : numpy.array
+    response : numpy.ndarray
         The resultant ground motion in time domain. In the same format as
         ``input_motion``.
     fig : matplotlib.figure.Figure
@@ -1494,7 +1494,7 @@ def linear_site_resp(
          |      ...      |   ...    |   ...   |       ...        |      ...     |
          +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
-    input_motion : numpy.array or str
+    input_motion : numpy.ndarray or str
         Input motion in the time domain (with two columns). If it is a string,
         it means the file name that contains the data. It should be the
         "rock outrcop" motion if ``boundary`` is set to ``"elastic"``, and it
@@ -1969,9 +1969,9 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
 
     Parameters
     ----------
-    strain_in_unit_1 : numpy.array
+    strain_in_unit_1 : numpy.ndarray
         Strain array in the unit of 1. 1D numpy array.
-    stress : numpy.array
+    stress : numpy.ndarray
         Stress. 1D numpy array
     Gmax : float
         Maximum shear modulus, whose unit needs to be identical to that of the
@@ -2126,7 +2126,7 @@ def fit_all_damping_curves(
 
     Parameters
     ----------
-    curves : numpy.ndarray or list<numpy.array>
+    curves : numpy.ndarray or list<numpy.ndarray>
         Can either be a 2D array in the "curve" format, or a list of individual
         damping curves.
         The "curve" format is as follows:

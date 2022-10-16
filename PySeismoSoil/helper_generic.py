@@ -464,10 +464,10 @@ def interpolate(
 
     Returns
     -------
-    x_query_array : numpy.array
+    x_query_array : numpy.ndarray
         A 1D numpy array constructed from ``x_query_min``, ``x_query_max``,
         and ``n_pts``.
-    y_query_array : numpy.array
+    y_query_array : numpy.ndarray
         The interpolation result. Same shape as ``x_query_array``.
     """
     if log_scale:
@@ -492,9 +492,9 @@ def mean_absolute_error(y_true, y_pred):
 
     Parameters
     ----------
-    y_true : numpy.array
+    y_true : numpy.ndarray
         Ground truth. Needs to be 1D numpy array.
-    y_pred : numpy.array
+    y_pred : numpy.ndarray
         Prediction. Needs to be 1D numpy array.
 
     Returns

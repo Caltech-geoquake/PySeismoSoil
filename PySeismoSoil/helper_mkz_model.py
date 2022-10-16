@@ -222,7 +222,7 @@ def serialize_params_to_array(param, to_files=False):
 
     Returns
     -------
-    param_array : numpy.array
+    param_array : numpy.ndarray
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """

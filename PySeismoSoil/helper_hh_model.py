@@ -67,7 +67,7 @@ def transition_function(gamma, *, a, gamma_t):
 
     Returns
     -------
-    w : numpy.array
+    w : numpy.ndarray
         The transition function, ranging from 0 to 1. Same shape as ``x``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')

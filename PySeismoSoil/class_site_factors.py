@@ -504,12 +504,12 @@ class Site_Factors:
         amps : list of numpy.ndarray
             A list of amplification factors at the reference points. Must have
             the same length as ``ref_points``.
-        amp_interp : numpy.array
+        amp_interp : numpy.ndarray
             Interpolated amplification factor at ``query_point``.
-        phases : list of numpy.array (optional)
+        phases : list of numpy.ndarray (optional)
             A list of phase shift factors at the reference points. Must have
             the same length as ``ref_points``.
-        phase_interp : numpy.array
+        phase_interp : numpy.ndarray
             Interpolated phase shift factor at ``query_point``.
         Fourier : bool
             Whether the amplification factors passed in are the
