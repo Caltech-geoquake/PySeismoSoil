@@ -57,6 +57,7 @@ class Simulation_Results:
     ----------
     Attributes same as inputs
     """
+
     def __init__(
             self,
             input_accel,
@@ -83,11 +84,11 @@ class Simulation_Results:
             raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
         if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
             raise TypeError(
-                '`trans_func` needs to be either None or of Frequency_Spectrum type.'
+                '`trans_func` needs to be either None or of Frequency_Spectrum type.',
             )
         if not isinstance(trans_func_smoothed, (Frequency_Spectrum, type(None))):
             raise TypeError(
-                '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.'
+                '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.',
             )
 
         n_layer = rediscretized_profile.n_layer
@@ -95,25 +96,25 @@ class Simulation_Results:
 
         if time_history_accel is not None:
             hlp.assert_2D_numpy_array(time_history_accel, '`time_history_accel`')
-            assert(time_history_accel.shape == (n_time_pts, n_layer + 1))
+            assert time_history_accel.shape == (n_time_pts, n_layer + 1)
         if time_history_veloc is not None:
             hlp.assert_2D_numpy_array(time_history_veloc, '`time_history_veloc`')
-            assert(time_history_veloc.shape == (n_time_pts, n_layer + 1))
+            assert time_history_veloc.shape == (n_time_pts, n_layer + 1)
         if time_history_displ is not None:
             hlp.assert_2D_numpy_array(time_history_displ, '`time_history_displ`')
-            assert(time_history_displ.shape == (n_time_pts, n_layer + 1))
+            assert time_history_displ.shape == (n_time_pts, n_layer + 1)
         if time_history_stress is not None:
             hlp.assert_2D_numpy_array(time_history_stress, '`time_history_stress`')
-            assert(time_history_stress.shape == (n_time_pts, n_layer))
+            assert time_history_stress.shape == (n_time_pts, n_layer)
         if time_history_strain is not None:
             hlp.assert_2D_numpy_array(time_history_strain, '`time_history_strain`')
-            assert(time_history_strain.shape == (n_time_pts, n_layer))
+            assert time_history_strain.shape == (n_time_pts, n_layer)
 
         if max_a_v_d is not None and max_strain_stress is not None:
             hlp.assert_2D_numpy_array(max_a_v_d, '`max_a_v_d`')
             hlp.assert_2D_numpy_array(max_strain_stress, '`max_strain_stress`')
-            assert(max_a_v_d.shape == (n_layer + 1, 4))
-            assert(max_strain_stress.shape == (n_layer, 3))
+            assert max_a_v_d.shape == (n_layer + 1, 4)
+            assert max_strain_stress.shape == (n_layer, 3)
         else:  # only when both are not `None` do we consider using them
             max_a_v_d = None
             max_strain_stress = None
@@ -187,11 +188,16 @@ class Simulation_Results:
         else:
             ampl_func_smoothed = None
 
-        fig1, axes1 \
-            = sr._plot_site_amp(accel_in, accel_out, freq, ampl_func,
-                                amplif_func_1col_smoothed=ampl_func_smoothed,
-                                phase_func_1col=phase_func, dpi=dpi,
-                                amplif_func_ylog=amplif_func_ylog)
+        fig1, axes1 = sr._plot_site_amp(
+            accel_in,
+            accel_out,
+            freq,
+            ampl_func,
+            amplif_func_1col_smoothed=ampl_func_smoothed,
+            phase_func_1col=phase_func,
+            dpi=dpi,
+            amplif_func_ylog=amplif_func_ylog,
+        )
         axes1[0].set_ylabel('Accel. [m/s/s]')
 
         # -------- Plot maximum accel/veloc/displ/strain/stress profiles -------
@@ -206,45 +212,63 @@ class Simulation_Results:
             plt.xlabel('Max. accel. [m/s/s]')
             plt.ylabel('Depth [m]')
             plt.grid(ls=':', lw=0.5)
-            ax21.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax21.xaxis.set_major_locator(
+                mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'),
+            )
 
             ax22 = plt.subplot(152)
-            plt.plot(self.max_a_v_d[:, 2] * 100, self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.plot(
+                self.max_a_v_d[:, 2] * 100, self.max_a_v_d[:, 0], ls='-', marker='.',
+            )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. veloc. [cm/s]')
             plt.grid(ls=':', lw=0.5)
             ax22.get_yaxis().set_ticklabels([])
-            ax22.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax22.xaxis.set_major_locator(
+                mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'),
+            )
 
             ax23 = plt.subplot(153)
-            plt.plot(self.max_a_v_d[:, 3] * 100, self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.plot(
+                self.max_a_v_d[:, 3] * 100, self.max_a_v_d[:, 0], ls='-', marker='.',
+            )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. displ. [cm]')
             plt.grid(ls=':', lw=0.5)
             ax23.get_yaxis().set_ticklabels([])
-            ax23.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax23.xaxis.set_major_locator(
+                mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'),
+            )
 
             ax24 = plt.subplot(154)
             plt.plot(
-                self.max_strain_stress[:, 1] * 100, self.max_strain_stress[:, 0],
-                ls='-', marker='.',
+                self.max_strain_stress[:, 1] * 100,
+                self.max_strain_stress[:, 0],
+                ls='-',
+                marker='.',
             )
             plt.ylim(max_layer_boundary_depth, 0)
-            plt.xlabel('$\gamma_{\max}$ [%]')
+            plt.xlabel(r'$\gamma_{\max}$ [%]')
             plt.grid(ls=':', lw=0.5)
             ax24.get_yaxis().set_ticklabels([])
-            ax24.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax24.xaxis.set_major_locator(
+                mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'),
+            )
 
             ax25 = plt.subplot(155)
             plt.plot(
-                self.max_strain_stress[:, 2] / 1000., self.max_strain_stress[:, 0],
-                ls='-', marker='.',
+                self.max_strain_stress[:, 2] / 1000.0,
+                self.max_strain_stress[:, 0],
+                ls='-',
+                marker='.',
             )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel(r'$\tau_{\max}$ [kPa]')
             plt.grid(ls=':', lw=0.5)
             ax25.get_yaxis().set_ticklabels([])
-            ax25.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'))
+            ax25.xaxis.set_major_locator(
+                mpl.ticker.MaxNLocator(min_n_ticks=4, nbins='auto'),
+            )
 
             plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.3)
         else:
@@ -261,10 +285,12 @@ class Simulation_Results:
                 os.makedirs(output_dir)
 
             fn_fig1 = os.path.join(
-                output_dir, '%s_ground_motions.png' % self.motion_name,
+                output_dir,
+                '%s_ground_motions.png' % self.motion_name,
             )
             fn_fig2 = os.path.join(
-                self.output_dir, '%s_max_profiles.png' % self.motion_name,
+                self.output_dir,
+                '%s_max_profiles.png' % self.motion_name,
             )
             fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')
             if fig2 is not None:
@@ -338,8 +364,9 @@ class Simulation_Results:
             np.savetxt(fn_TF_raw, self.trans_func.spectrum_2col, **fmt_dict)
 
         if self.trans_func_smoothed is not None:
-            np.savetxt(fn_TF_smoothed, self.trans_func_smoothed.amplitude_2col,
-                       **fmt_dict)
+            np.savetxt(
+                fn_TF_smoothed, self.trans_func_smoothed.amplitude_2col, **fmt_dict,
+            )
 
         if verbose:
             print('Simulation results saved to %s' % od)

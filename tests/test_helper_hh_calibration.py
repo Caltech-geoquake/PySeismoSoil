@@ -21,9 +21,14 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
     def test_calc_Gmax(self):
         rho = np.array([1600, 1700, 1800])
         Vs = np.array([200, 300, 400])
-        self.assertTrue(np.allclose(
-            hhc._calc_Gmax(Vs, rho), [6.4e7, 1.53e8, 2.88e8], rtol=1e-2, atol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                hhc._calc_Gmax(Vs, rho),
+                [6.4e7, 1.53e8, 2.88e8],
+                rtol=1e-2,
+                atol=0.0,
+            ),
+        )
 
     def test_calc_vertical_stress(self):
         h = np.array([80, 90, 100])
@@ -52,17 +57,27 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         OCR = np.array([1, 2, 3, 4, 5])
         phi = 30
         K0 = hhc._calc_K0(OCR, phi=phi)
-        self.assertTrue(np.allclose(
-            K0, [0.5, 0.707, 0.866 , 1., 1.118], atol=1e-3, rtol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                K0,
+                [0.5, 0.707, 0.866, 1.0, 1.118],
+                atol=1e-3,
+                rtol=0.0,
+            ),
+        )
 
     def test_calc_K0__case_1_phi_is_a_vector(self):
         OCR = np.array([1, 2, 3, 4, 5])
         phi = np.array([30, 40, 50, 60, 70])
         K0 = hhc._calc_K0(OCR, phi=phi)
-        self.assertTrue(np.allclose(
-            K0, [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]], atol=1e-3, rtol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                K0,
+                [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]],
+                atol=1e-3,
+                rtol=0.0,
+            ),
+        )
 
     def test_calc_PI(self):
         Vs = np.array([100, 300, 500])
@@ -93,19 +108,25 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         K0 = np.array([0.4, 0.4, 0.4])
         OCR = np.array([2, 2, 2])
         GGmax, D, gamma_ref = hhc.produce_Darendeli_curves(
-            sigma_v0, PI=PI, OCR=OCR, K0=K0, strain_in_pct=strain * 100,
+            sigma_v0,
+            PI=PI,
+            OCR=OCR,
+            K0=K0,
+            strain_in_pct=strain * 100,
         )
 
         GGmax_bench = np.array(
-            [[0.1223930, 0.1482878, 0.165438],  # from MATLAB
-             [0.0165279, 0.0205492, 0.023331]]
+            [
+                [0.1223930, 0.1482878, 0.165438],  # from MATLAB
+                [0.0165279, 0.0205492, 0.023331],
+            ],
         )
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-5, rtol=0.0))
 
-        D_bench = np.array(
-            [[0.2041934, 0.1906769, 0.1827475],
-             [0.2305960, 0.2260726, 0.2236005]]
-        )
+        D_bench = np.array([
+            [0.2041934, 0.1906769, 0.1827475],
+            [0.2305960, 0.2260726, 0.2236005],
+        ])
         self.assertTrue(np.allclose(D, D_bench, atol=1e-5, rtol=0.0))
 
         gamma_ref_bench = np.array([0.1172329, 0.1492445, 0.1718822]) * 1e-3
@@ -181,8 +202,9 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
 
     def test_hh_param_from_profile(self):
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
-        HH_G_param = hhc.hh_param_from_profile(vs_profile, show_fig=False,
-                                               verbose=False)
+        HH_G_param = hhc.hh_param_from_profile(
+            vs_profile, show_fig=False, verbose=False,
+        )
         HH_G_benchmark = np.genfromtxt(_join(f_dir, 'HH_G_FKSH14.txt'))  # calculated by MATLAB
         # use low tolerance because the whole process is highly reproducible
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
@@ -192,18 +214,23 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
         curves = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         HH_G_param = hhc.hh_param_from_curves(
-            vs_profile, curves, show_fig=False, verbose=False,
+            vs_profile,
+            curves,
+            show_fig=False,
+            verbose=False,
         )
         HH_G_benchmark = np.array(
-            [[0.0003, 0.0001, 0.0001, 0.0001, 0.0001],
-             [100, 100, 100, 100, 100],
-             [0.000285072, 0.000516205, 0.000944545, 0.00129825, 0.00144835],
-             [1.75224, 1.71444, 1.64057, 1.58664, 1.56314],
-             [0.918975, 0.919001, 0.918973, 0.919007, 0.918999],
-             [2.11104e+07, 6.859e+07, 1.4896e+08, 2.25441e+09, 3.28398e+09],
-             [0.233357, 0.199149, 0.253784, 1, 1],
-             [26501, 64856.6, 148805, 804855, 1.10785e+06],
-             [0.937739, 0.850905, 0.861759, 0.984774, 0.981156]]
+            [
+                [0.0003, 0.0001, 0.0001, 0.0001, 0.0001],
+                [100, 100, 100, 100, 100],
+                [0.000285072, 0.000516205, 0.000944545, 0.00129825, 0.00144835],
+                [1.75224, 1.71444, 1.64057, 1.58664, 1.56314],
+                [0.918975, 0.919001, 0.918973, 0.919007, 0.918999],
+                [2.11104e07, 6.859e07, 1.4896e08, 2.25441e09, 3.28398e09],
+                [0.233357, 0.199149, 0.253784, 1, 1],
+                [26501, 64856.6, 148805, 804855, 1.10785e06],
+                [0.937739, 0.850905, 0.861759, 0.984774, 0.981156],
+            ],
         )
         # use higher tolerance because MKZ curve fitting has room for small errors
         self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0))
@@ -216,7 +243,10 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_P001.txt'))
         curves = np.genfromtxt(_join(f_dir, 'curve_P001.txt'))
         HH_G_param = hhc.hh_param_from_curves(  # noqa: F841
-            vs_profile, curves, show_fig=True, verbose=False,
+            vs_profile,
+            curves,
+            show_fig=True,
+            verbose=False,
         )
 
 

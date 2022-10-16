@@ -44,5 +44,7 @@ class Test_Class_Site_Effect_Adjustment(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Site_Effect_Adjustment)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Class_Site_Effect_Adjustment,
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

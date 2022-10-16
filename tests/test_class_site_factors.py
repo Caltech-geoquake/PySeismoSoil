@@ -16,20 +16,40 @@ class Test_Class_Site_Factors(unittest.TestCase):
         self.assertEqual(SF._range_check(300, 900, 0.5), [])
         self.assertEqual(SF._range_check(400, 900, 0.5), [])
         self.assertEqual(SF._range_check(450, 750, 0.5), [])
-        self.assertEqual(SF._range_check(450, 751, 0.5), ['Invalid Vs30-z1 combination'])
-        self.assertEqual(SF._range_check(451, 750, 0.5), ['Invalid Vs30-z1 combination'])
+        self.assertEqual(
+            SF._range_check(450, 751, 0.5), ['Invalid Vs30-z1 combination'],
+        )
+        self.assertEqual(
+            SF._range_check(451, 750, 0.5), ['Invalid Vs30-z1 combination'],
+        )
         self.assertEqual(SF._range_check(550, 600, 0.5), [])
-        self.assertEqual(SF._range_check(551, 600, 0.5), ['Invalid Vs30-z1 combination'])
-        self.assertEqual(SF._range_check(550, 601, 0.5), ['Invalid Vs30-z1 combination'])
+        self.assertEqual(
+            SF._range_check(551, 600, 0.5), ['Invalid Vs30-z1 combination'],
+        )
+        self.assertEqual(
+            SF._range_check(550, 601, 0.5), ['Invalid Vs30-z1 combination'],
+        )
         self.assertEqual(SF._range_check(600, 450, 0.5), [])
-        self.assertEqual(SF._range_check(601, 450, 0.5), ['Invalid Vs30-z1 combination'])
-        self.assertEqual(SF._range_check(600, 451, 0.5), ['Invalid Vs30-z1 combination'])
+        self.assertEqual(
+            SF._range_check(601, 450, 0.5), ['Invalid Vs30-z1 combination'],
+        )
+        self.assertEqual(
+            SF._range_check(600, 451, 0.5), ['Invalid Vs30-z1 combination'],
+        )
         self.assertEqual(SF._range_check(650, 300, 0.5), [])
-        self.assertEqual(SF._range_check(651, 300, 0.5), ['Invalid Vs30-z1 combination'])
-        self.assertEqual(SF._range_check(650, 301, 0.5), ['Invalid Vs30-z1 combination'])
+        self.assertEqual(
+            SF._range_check(651, 300, 0.5), ['Invalid Vs30-z1 combination'],
+        )
+        self.assertEqual(
+            SF._range_check(650, 301, 0.5), ['Invalid Vs30-z1 combination'],
+        )
         self.assertEqual(SF._range_check(750, 150, 0.5), [])
-        self.assertEqual(SF._range_check(751, 150, 0.5), ['Invalid Vs30-z1 combination'])
-        self.assertEqual(SF._range_check(750, 151, 0.5), ['Invalid Vs30-z1 combination'])
+        self.assertEqual(
+            SF._range_check(751, 150, 0.5), ['Invalid Vs30-z1 combination'],
+        )
+        self.assertEqual(
+            SF._range_check(750, 151, 0.5), ['Invalid Vs30-z1 combination'],
+        )
         self.assertEqual(SF._range_check(800, 75, 0.5), [])
         self.assertEqual(SF._range_check(801, 75, 0.5), ['Invalid Vs30-z1 combination'])
         self.assertEqual(SF._range_check(800, 76, 0.5), ['Invalid Vs30-z1 combination'])
@@ -140,62 +160,98 @@ class Test_Class_Site_Factors(unittest.TestCase):
     def test_site_factors__out_of_bound_Vs30__lenient_case_1(self):
         sf1 = SF(170, 125, 0.3, lenient=True)
         sf2 = SF(175, 125, 0.3)
-        self.assertTrue(np.allclose(
-            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
-        ))
-        self.assertTrue(np.allclose(
-            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sf1.get_amplification().spectrum,
+                sf2.get_amplification().spectrum,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sf1.get_phase_shift().spectrum,
+                sf2.get_phase_shift().spectrum,
+            ),
+        )
 
     def test_site_factors__out_of_bound_Vs30__lenient_case_2(self):
         sf1 = SF(980, 10, 0.3, lenient=True)
         sf2 = SF(950, 10, 0.3)
-        self.assertTrue(np.allclose(
-            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
-        ))
-        self.assertTrue(np.allclose(
-            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sf1.get_amplification().spectrum,
+                sf2.get_amplification().spectrum,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sf1.get_phase_shift().spectrum,
+                sf2.get_phase_shift().spectrum,
+            ),
+        )
 
     def test_site_factors__out_of_bound_z1__lenient_case_1(self):
         sf1 = SF(275, 5, 0.3, lenient=True)
         sf2 = SF(275, 8, 0.3)
-        self.assertTrue(np.allclose(
-            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
-        ))
-        self.assertTrue(np.allclose(
-            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sf1.get_amplification().spectrum,
+                sf2.get_amplification().spectrum,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sf1.get_phase_shift().spectrum,
+                sf2.get_phase_shift().spectrum,
+            ),
+        )
 
     def test_site_factors__out_of_bound_z1__lenient_case_2(self):
         sf1 = SF(275, 980, 0.3, lenient=True)
         sf2 = SF(275, 900, 0.3)
-        self.assertTrue(np.allclose(
-            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
-        ))
-        self.assertTrue(np.allclose(
-            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sf1.get_amplification().spectrum,
+                sf2.get_amplification().spectrum,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sf1.get_phase_shift().spectrum,
+                sf2.get_phase_shift().spectrum,
+            ),
+        )
 
     def test_site_factors__out_of_bound_PGA__lenient_case_1(self):
         sf1 = SF(300, 120, 0.008, lenient=True)
         sf2 = SF(300, 120, 0.01)
-        self.assertTrue(np.allclose(
-            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
-        ))
-        self.assertTrue(np.allclose(
-            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sf1.get_amplification().spectrum,
+                sf2.get_amplification().spectrum,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sf1.get_phase_shift().spectrum,
+                sf2.get_phase_shift().spectrum,
+            ),
+        )
 
     def test_site_factors__out_of_bound_PGA__lenient_case_2(self):
         sf1 = SF(300, 120, 1.75, lenient=True)
         sf2 = SF(300, 120, 1.5)
-        self.assertTrue(np.allclose(
-            sf1.get_amplification().spectrum, sf2.get_amplification().spectrum,
-        ))
-        self.assertTrue(np.allclose(
-            sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sf1.get_amplification().spectrum,
+                sf2.get_amplification().spectrum,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sf1.get_phase_shift().spectrum,
+                sf2.get_phase_shift().spectrum,
+            ),
+        )
 
     def test_interp_plots(self):
         vs30, z1000, pga = 365, 247, 0.75

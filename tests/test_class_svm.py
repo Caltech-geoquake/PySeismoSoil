@@ -76,7 +76,9 @@ class Test_Class_SVM(unittest.TestCase):
 
         # Use iteration to pick compliant randomized Vs profile
         random_profile = svm.get_randomized_profile(
-            show_fig=True, vs30_z1_compliance=True, verbose=True,
+            show_fig=True,
+            vs30_z1_compliance=True,
+            verbose=True,
         )
 
     def test_index_closest(self):

@@ -226,7 +226,7 @@ def serialize_params_to_array(param, to_files=False):
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
-    assert(len(param) == 4)
+    assert len(param) == 4
     order = ['gamma_ref', 's', 'beta', 'Gmax']
     param_array = []
     for key in order:
@@ -265,7 +265,7 @@ def deserialize_array_to_params(array, from_files=False):
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert(len(array) == 4)
+    assert len(array) == 4
 
     if from_files:
         param = dict()
@@ -340,7 +340,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
 
     # -------------- Curve-fitting, layer by layer -----------------------------
     def func(x, beta, gamma_ref, s):
-        return 1.0 / (1 + beta * (x / gamma_ref)**s)
+        return 1.0 / (1 + beta * (x / gamma_ref) ** s)
 
     if verbose:
         print('Fitting MKZ model to G/Gmax data. Total: %d layers.' % n_ma)
@@ -391,14 +391,19 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
                 alpha=0.8,
                 label='Data points',
             )
-            plt.semilogx(gamma_ * 100, GGmax_[:, k], lw=1.5, label='Curve fit',)
+            plt.semilogx(
+                gamma_ * 100,
+                GGmax_[:, k],
+                lw=1.5,
+                label='Curve fit',
+            )
             plt.xlabel('Shear strain [%]')
             plt.ylabel('G/Gmax')
             plt.legend(loc='lower left')
             plt.grid(ls=':', lw=0.5)
             plt.title(
-                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g' \
-                % (ref_strain[k], s_value[k], beta[k])
+                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g'
+                % (ref_strain[k], s_value[k], beta[k]),
             )
         # END FOR
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)

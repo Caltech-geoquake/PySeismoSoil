@@ -1,3 +1,5 @@
+import platform
+
 import numpy as np
 import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
@@ -12,7 +14,6 @@ def detect_OS():
     result : str
         One of 'Windows', 'Linux', or 'Darwin'.
     """
-    import platform
     return platform.system()
 
 
@@ -102,7 +103,7 @@ def _process_fig_ax_objects(fig, ax, figsize=None, dpi=None, ax_proj=None):
 
     if fig is None:  # if a figure handle is not provided, create new figure
         fig = pl.figure(figsize=figsize, dpi=dpi)
-    else:   # if provided, plot to the specified figure
+    else:  # if provided, plot to the specified figure
         pl.figure(fig.number)
 
     if ax is None:  # if ax is not provided
@@ -154,12 +155,12 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):
         if delta is None:
             raise ValueError(
-                '`delta` (such as dt or df) is needed for one-column `data`.'
+                '`delta` (such as dt or df) is needed for one-column `data`.',
             )
         else:
             n = len(data_)
             col1 = np.linspace(delta, n * delta, num=n)
-            assert(np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8)
+            assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
             data_ = np.column_stack((col1, data_))
     elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
         col1 = data_[:, 0]
@@ -167,7 +168,7 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
     elif data_.shape[1] != 2:
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
-            'array, or a one-column array with a `delta` value.'
+            'array, or a one-column array with a `delta` value.',
         )
     else:
         raise TypeError('"data" must be a file name or a numpy array.')
@@ -207,7 +208,7 @@ def assert_array_length(something, length, name='`something`'):
     assert_1D_numpy_array(something, name=name)
     if len(something) != length:
         raise ValueError(
-            '%s must have length %d, but not %d.' % (name, length, len(something))
+            '%s must have length %d, but not %d.' % (name, length, len(something)),
         )
 
 
@@ -282,7 +283,10 @@ def assert_2D_numpy_array(something, name=None):
 
 
 def check_two_column_format(
-        something, name=None, ensure_non_negative=False, at_least_two_columns=False,
+        something,
+        name=None,
+        ensure_non_negative=False,
+        at_least_two_columns=False,
 ):
     """
     Check that ``something`` is a 2D numpy array with two columns. Raises an
@@ -314,9 +318,9 @@ def check_two_column_format(
 
     check_status = check_numbers_valid(something)
     if check_status == -1:
-        raise ValueError("%s should only contain numeric elements." % name)
+        raise ValueError('%s should only contain numeric elements.' % name)
     if check_status == -2:
-        raise ValueError("%s should contain no NaN values." % name)
+        raise ValueError('%s should contain no NaN values.' % name)
     if ensure_non_negative and check_status == -3:
         raise ValueError('%s should have all non-negative values.' % name)
 
@@ -334,30 +338,31 @@ def check_Vs_profile_format(data):
         Any Python object.
     """
     if not isinstance(data, np.ndarray):
-        raise TypeError("`data` should be a numpy array.")
+        raise TypeError('`data` should be a numpy array.')
 
     check_status = check_numbers_valid(data)
     if check_status == -1:
-        raise ValueError("`data` should only contain numeric elements.")
+        raise ValueError('`data` should only contain numeric elements.')
     if check_status == -2:
-        raise ValueError("`data` should contain no NaN values.")
+        raise ValueError('`data` should contain no NaN values.')
     if data.ndim != 2:
-        raise ValueError("`data` should be a 2D numpy array.")
+        raise ValueError('`data` should be a 2D numpy array.')
     if data.shape[1] not in [2, 5]:
-        raise ValueError("`data` should have either 2 or 5 columns.")
+        raise ValueError('`data` should have either 2 or 5 columns.')
 
     thk = data[:, 0]
-    Vs  = data[:, 1]
+    Vs = data[:, 1]
     if np.any(thk[:-1] <= 0):
-        raise ValueError('The thickness column should be all positive, except '
-                         'for the last layer.')
+        raise ValueError(
+            'The thickness column should be all positive, except for the last layer.',
+        )
     if np.any(thk[-1] < 0):
         raise ValueError('The last layer thickness should be non-negative.')
     if np.any(Vs <= 0):
         raise ValueError('The Vs column should be all positive.')
 
     if data.shape[1] == 5:
-        xi  = data[:, 2]
+        xi = data[:, 2]
         rho = data[:, 3]
         mat = data[:, 4]
         if np.any(xi <= 0) or np.any(rho <= 0):
@@ -367,11 +372,11 @@ def check_Vs_profile_format(data):
         if np.any(mat[:-1] <= 0):
             raise ValueError(
                 'The "material number" column should be all '
-                'positive, except for the last error.'
+                'positive, except for the last error.',
             )
         if np.any(mat[-1] < 0):
             raise ValueError(
-                'The material number of the last layer should be non-negative.'
+                'The material number of the last layer should be non-negative.',
             )
 
     return None
@@ -413,7 +418,7 @@ def check_numbers_valid(array):
     error_flag : int
         Flag indicating type of errors.
     """
-    assert(isinstance(array, np.ndarray))
+    assert isinstance(array, np.ndarray)
 
     if not np.issubdtype(array.dtype, np.number):
         return -1
@@ -467,7 +472,9 @@ def interpolate(
     """
     if log_scale:
         x_query_array = np.logspace(
-            np.log10(x_query_min), np.log10(x_query_max), n_pts,
+            np.log10(x_query_min),
+            np.log10(x_query_max),
+            n_pts,
         )
     else:
         x_query_array = np.linspace(x_query_min, x_query_max, n_pts)
@@ -543,7 +550,7 @@ def extract_from_curve_format(curves, ensure_non_negative=True):
         if curves.shape[1] % 4 != 0:
             raise ValueError(
                 'If `curves` is a numpy array, its number of '
-                'columns needs to be a multiple of 4.'
+                'columns needs to be a multiple of 4.',
             )
         n_layer = curves.shape[1] // 4
 
@@ -638,30 +645,40 @@ def merge_curve_matrices(GGmax_matrix, xi_matrix):
     assert_2D_numpy_array(GGmax_matrix, name='`GGmax_matrix`')
     assert_2D_numpy_array(xi_matrix, name='`xi_matrix`')
     if GGmax_matrix.shape[1] % 4 != 0:
-        raise ValueError('The number of columns of `GGmax_matrix` needs '
-                         'to be a multiple of 4. However, your '
-                         '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1])
+        raise ValueError(
+            'The number of columns of `GGmax_matrix` needs '
+            'to be a multiple of 4. However, your '
+            '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1],
+        )
     if xi_matrix.shape[1] % 4 != 0:
-        raise ValueError('The number of columns of `xi_matrix` needs '
-                         'to be a multiple of 4. However, your '
-                         '`xi_matrix` has %d columns.' % xi_matrix.shape[1])
+        raise ValueError(
+            'The number of columns of `xi_matrix` needs '
+            'to be a multiple of 4. However, your '
+            '`xi_matrix` has %d columns.' % xi_matrix.shape[1],
+        )
     if GGmax_matrix.shape[1] != xi_matrix.shape[1]:
-        raise ValueError('`GGmax_matrix` and `xi_matrix` need to have the '
-                         'same number of columns. You can use trim one or both'
-                         'of them outside this function to make the shape '
-                         'identical. Sorry for the inconvenience.')
+        raise ValueError(
+            '`GGmax_matrix` and `xi_matrix` need to have the '
+            'same number of columns. You can use trim one or both'
+            'of them outside this function to make the shape '
+            'identical. Sorry for the inconvenience.',
+        )
     if GGmax_matrix.shape[0] != xi_matrix.shape[0]:
-        raise ValueError('`GGmax_matrix` and `xi_matrix` need to have the '
-                         'same number of rows. You can use interpolation '
-                         'outside of this function to make the lengths '
-                         'identical. Sorry for the inconvenience.')
+        raise ValueError(
+            '`GGmax_matrix` and `xi_matrix` need to have the '
+            'same number of rows. You can use interpolation '
+            'outside of this function to make the lengths '
+            'identical. Sorry for the inconvenience.',
+        )
     n_layer = GGmax_matrix.shape[1] // 4
     merged = np.column_stack((GGmax_matrix[:, :2], xi_matrix[:, 2:4]))
     for k in range(1, n_layer):
-        merged = np.column_stack((
-            merged,
-            GGmax_matrix[:, k * 4 : k * 4 + 2],
-            xi_matrix[:, k * 4 + 2 : k * 4 + 4],
-        ))
+        merged = np.column_stack(
+            (
+                merged,
+                GGmax_matrix[:, k * 4 : k * 4 + 2],
+                xi_matrix[:, k * 4 + 2 : k * 4 + 4],
+            ),
+        )
     # END FOR
     return merged

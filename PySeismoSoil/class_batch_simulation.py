@@ -3,7 +3,9 @@ import itertools
 import multiprocessing as mp
 
 from .class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+    Linear_Simulation,
+    Equiv_Linear_Simulation,
+    Nonlinear_Simulation,
 )
 
 from . import helper_generic as hlp
@@ -29,13 +31,12 @@ class Batch_Simulation:
     sim_type : {``Linear_Simulation``, ``Equiv_Linear_Simulation``, ``Nonlinear_Simulation``}
         The object type of the site response simulations.
     """
+
     def __init__(self, list_of_simulations):
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
         if len(list_of_simulations) == 0:
-            raise ValueError(
-                '`list_of_simulations` should have at least one element.'
-            )
+            raise ValueError('`list_of_simulations` should have at least one element.')
         sim_0 = list_of_simulations[0]
         if not isinstance(
             sim_0,
@@ -44,11 +45,11 @@ class Batch_Simulation:
             raise TypeError(
                 'Elements of `list_of_simulations` should be of '
                 'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
-                'or `Nonlinear_Simulation`.'
+                'or `Nonlinear_Simulation`.',
             )
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
-                'All the elements of `list_of_simulations` should be of the same type.'
+                'All the elements of `list_of_simulations` should be of the same type.',
             )
         n_simulations = len(list_of_simulations)
 

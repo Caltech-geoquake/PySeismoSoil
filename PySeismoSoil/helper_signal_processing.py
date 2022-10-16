@@ -147,7 +147,7 @@ def _filter_kernel(
         filter_order=4,
         padlen=None,
 ):
-    """ Common helper function to the four filtering functions. """
+    """Common helper function to the four filtering functions."""
     if filter_type in ['bandpass', 'bandstop']:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
@@ -161,7 +161,7 @@ def _filter_kernel(
             raise TypeError('`cutoff_freq` must be float, int, or numpy.number.')
     else:
         raise ValueError(
-            "`filter_type` must be in {'highpass', 'lowpass', 'bandpass', 'bandstop'}."
+            "`filter_type` must be in {'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
         )
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
@@ -183,24 +183,40 @@ def _filter_kernel(
     if filter_type == 'bandpass':
         if fmax >= f_nyquist * 0.9999:
             return _filter_kernel(
-                orig_signal, fmin, 'highpass', show_fig=show_fig,
-                filter_order=filter_order, padlen=padlen,
+                orig_signal,
+                fmin,
+                'highpass',
+                show_fig=show_fig,
+                filter_order=filter_order,
+                padlen=padlen,
             )
         if fmin <= df:
             return _filter_kernel(
-                orig_signal, fmax, 'lowpass', show_fig=show_fig,
-                filter_order=filter_order, padlen=padlen,
+                orig_signal,
+                fmax,
+                'lowpass',
+                show_fig=show_fig,
+                filter_order=filter_order,
+                padlen=padlen,
             )
     if filter_type == 'bandstop':
         if fmax >= f_nyquist * 0.9999:
             return _filter_kernel(
-                orig_signal, fmin, 'lowpass', show_fig=show_fig,
-                filter_order=filter_order, padlen=padlen,
+                orig_signal,
+                fmin,
+                'lowpass',
+                show_fig=show_fig,
+                filter_order=filter_order,
+                padlen=padlen,
             )
         if fmin <= df:
             return _filter_kernel(
-                orig_signal, fmax, 'highpass', show_fig=show_fig,
-                filter_order=filter_order, padlen=padlen,
+                orig_signal,
+                fmax,
+                'highpass',
+                show_fig=show_fig,
+                filter_order=filter_order,
+                padlen=padlen,
             )
 
     b, a = scipy.signal.butter(filter_order, Wn, btype=filter_type)
@@ -326,9 +342,9 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
 
     filter_order = 2
     t_zpad = 1.5 * filter_order / cutoff_freq  # time span of zeros
-    nr_zpad = int(np.max(
-        [1000, np.round(t_zpad / dt), cross_bound_left + 1]
-    ))  # number of zeros added
+    nr_zpad = int(
+        np.max([1000, np.round(t_zpad / dt), cross_bound_left + 1]),
+    )  # number of zeros added
 
     a_cut = np.append(np.zeros(nr_zpad), np.append(a_cut, np.zeros(nr_zpad)))
     t_cut = np.linspace(dt, len(a_cut) * dt, len(a_cut), endpoint=True)
@@ -533,14 +549,18 @@ def taper_Tukey(input_signal, width=0.05):
     else:
         raise TypeError(
             '`input_signal` should be either 1 or 2 dimensional. '
-            'And if 2D, should have 2 columns.'
+            'And if 2D, should have 2 columns.',
         )
 
     return output
 
 
 def calc_transfer_function(
-        input_signal, output_signal, *, amplitude_only=True, smooth_signal=False,
+        input_signal,
+        output_signal,
+        *,
+        amplitude_only=True,
+        smooth_signal=False,
 ):
     """
     Calculates transfer function between the output and input time-domain
@@ -593,7 +613,7 @@ def calc_transfer_function(
     if not np.allclose(freq_in, freq_out, atol=1e-6):
         print(
             'WARNING in `calc_transfer_function()`: The frequency arrays '
-            'of the output and input Fourier spectra do not match.'
+            'of the output and input Fourier spectra do not match.',
         )
 
     freq = freq_in
@@ -602,7 +622,7 @@ def calc_transfer_function(
     if not amplitude_only and smooth_signal:
         raise ValueError(
             'If `smooth_signal` is set to True, `amplitude_only` '
-            'needs to be also set to True.'
+            'needs to be also set to True.',
         )
 
     if not smooth_signal:
@@ -668,17 +688,17 @@ def log_smooth(
     """
     hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
-        raise ValueError("Input vector needs to be bigger than window size.")
+        raise ValueError('Input vector needs to be bigger than window size.')
     if win_len < 3:
         return signal
     if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'"
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
         )
 
     if lin_space and (fmin is None or fmax is None):
         raise ValueError(
-            'If `lin_space` is `True`, `fmin` and `fmax` must be specified.'
+            'If `lin_space` is `True`, `fmin` and `fmax` must be specified.',
         )
 
     if n_pts is None:
@@ -705,7 +725,7 @@ def log_smooth(
         for j in range(1, n):  # exponentially weighted average
             y[j] = beta1 * y[j - 1] + (1 - beta1) * x[j]
 
-        y[-1] = np.mean(x[len(y) - n:])
+        y[-1] = np.mean(x[len(y) - n :])
         for j in range(len(y) - 2, len(y) - n - 1, -1):
             y[j] = beta2 * y[j + 1] + (1 - beta2) * x[j]
 
@@ -759,14 +779,14 @@ def lin_smooth(x, window_len=15, window='hanning'):
     - Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
     """
     if x.ndim != 1:
-        raise ValueError("smooth only accepts one-dimensional arrays.")
+        raise ValueError('smooth only accepts one-dimensional arrays.')
     if x.size < window_len:
-        raise ValueError("Input vector needs to be bigger than window size.")
+        raise ValueError('Input vector needs to be bigger than window size.')
     if window_len < 3:
         return x
     if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'"
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
         )
 
     if window == 'flat':  # moving average

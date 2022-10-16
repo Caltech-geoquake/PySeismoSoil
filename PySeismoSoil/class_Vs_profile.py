@@ -67,6 +67,7 @@ class Vs_Profile:
     n_layer : int
         Number of soil layers (not including the half space).
     """
+
     def __init__(
             self,
             data,
@@ -95,7 +96,7 @@ class Vs_Profile:
             raise ValueError("`density_unit` must be 'kg/m^3' or 'g/cm^3'.")
 
         thk = data_[:, 0]
-        vs  = data_[:, 1]
+        vs = data_[:, 1]
         n_layer_tmp, n_col = data_.shape
 
         if n_col == 2:
@@ -106,23 +107,23 @@ class Vs_Profile:
                 material_number = np.arange(1, n_layer_tmp + 1)
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
         elif n_col == 5:
-            xi  = data_[:, 2]
+            xi = data_[:, 2]
             rho = data_[:, 3]
             if density_unit in ['kg/m^3', 'kg/m3'] and min(rho) <= 1000:
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '
-                    'lower than 1,000 kg/m^3. Possible error.'
+                    'lower than 1,000 kg/m^3. Possible error.',
                 )
             elif density_unit in ['g/cm^3', 'g/cm3'] and min(rho) <= 1.0:
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '
-                    'lower than 1.0 g/cm^3. Possible error.'
+                    'lower than 1.0 g/cm^3. Possible error.',
                 )
 
             if damping_unit == '1' and max(xi) > 1:
                 print(
                     'Warning in initializing Vs_Profile: max(damping) '
-                    'larger than 100%. Possible error.'
+                    'larger than 100%. Possible error.',
                 )
 
             if density_unit in ['g/cm^3', 'g/cm3']:
@@ -135,7 +136,7 @@ class Vs_Profile:
         else:
             raise ValueError(
                 'The dimension of the input data is wrong. It '
-                'should have two or five columns.'
+                'should have two or five columns.',
             )
 
         if add_halfspace and thk[-1] != 0:
@@ -228,7 +229,7 @@ class Vs_Profile:
         )
         return fig, ax, hl
 
-    def get_ampl_function(self, show_fig=False, freq_resolution=.05, fmax=30.):
+    def get_ampl_function(self, show_fig=False, freq_resolution=0.05, fmax=30.0):
         """
         Get amplification function of the Vs profile.
 
@@ -264,8 +265,8 @@ class Vs_Profile:
     def get_transfer_function(
             self,
             show_fig=False,
-            freq_resolution=.05,
-            fmax=30.,
+            freq_resolution=0.05,
+            fmax=30.0,
     ):
         """
         Get transfer function (complex-valued) of the Vs profile.
@@ -404,19 +405,20 @@ class Vs_Profile:
             Vs values corresponding to the given depths. Its type depends on
             the type of ``depth``.
         """
-        vs_queried, is_scalar, has_duplicate_values, is_sorted \
-            = sr.query_Vs_at_depth(self.vs_profile, depth)
+        vs_queried, is_scalar, has_duplicate_values, is_sorted = sr.query_Vs_at_depth(
+            self.vs_profile, depth,
+        )
 
         if as_profile:
             if not is_sorted:
                 raise ValueError(
                     'If `as_profile` is set to True, the given '
-                    '`depth` needs to be monotonically increasing.'
+                    '`depth` needs to be monotonically increasing.',
                 )
             if has_duplicate_values:
                 raise ValueError(
                     'If `as_profile` is set to True, the given '
-                    '`depth` should not contain duplicate values.'
+                    '`depth` should not contain duplicate values.',
                 )
 
         if as_profile:
@@ -483,7 +485,10 @@ class Vs_Profile:
         if n_layers is None and isinstance(thk, (int, float, np.number)):
             n_layers = int(np.ceil(self.z_max / thk))
         vs_queried, thk_array = sr.query_Vs_given_thk(
-            self.vs_profile, thk, n_layers=n_layers, at_midpoint=at_midpoint,
+            self.vs_profile,
+            thk,
+            n_layers=n_layers,
+            at_midpoint=at_midpoint,
         )
 
         if not as_profile:

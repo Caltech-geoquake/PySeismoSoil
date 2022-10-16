@@ -2,7 +2,9 @@ import unittest
 import numpy as np
 
 from PySeismoSoil.class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+    Linear_Simulation,
+    Equiv_Linear_Simulation,
+    Nonlinear_Simulation,
 )
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
@@ -41,8 +43,9 @@ class Test_Class_Simulation(unittest.TestCase):
         soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         input_motion = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
         curves = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
-        equiv_lin_sim = Equiv_Linear_Simulation(soil_profile, input_motion,
-                                                curves, boundary='elastic')
+        equiv_lin_sim = Equiv_Linear_Simulation(
+            soil_profile, input_motion, curves, boundary='elastic',
+        )
         output = equiv_lin_sim.run(show_fig=True)
         max_v = output.max_a_v_d[:, 2]
         max_v_benchmark = [
@@ -85,11 +88,17 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_x_ = HH_Param_Multi_Layer(HH_x_data[:-1])  # exclude one layer
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
             Nonlinear_Simulation(
-                soil_profile, input_motion, G_param=HH_G_, xi_param=HH_x,
+                soil_profile,
+                input_motion,
+                G_param=HH_G_,
+                xi_param=HH_x,
             )
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
             Nonlinear_Simulation(
-                soil_profile, input_motion, G_param=HH_G, xi_param=HH_x_,
+                soil_profile,
+                input_motion,
+                G_param=HH_G,
+                xi_param=HH_x_,
             )
 
 

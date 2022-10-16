@@ -30,9 +30,25 @@ class Site_Factors:
     ----------
     Attributes same as the inputs
     """
+
     Vs30_array = [
-        175, 200, 250, 300, 350, 400, 450, 500, 550, 600,
-        650, 700, 750, 800, 850, 900, 950,
+        175,
+        200,
+        250,
+        300,
+        350,
+        400,
+        450,
+        500,
+        550,
+        600,
+        650,
+        700,
+        750,
+        800,
+        850,
+        900,
+        950,
     ]
     z1_array = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
     PGA_array = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
@@ -40,17 +56,22 @@ class Site_Factors:
     def __init__(
             self,
             Vs30_in_meter_per_sec,
-            z1_in_m, PGA_in_g,
+            z1_in_m,
+            PGA_in_g,
             lenient=False,
     ):
         self.dir_amplif = pkg_resources.resource_filename(
-            'PySeismoSoil', 'data/amplification/',
+            'PySeismoSoil',
+            'data/amplification/',
         )
         self.dir_phase = pkg_resources.resource_filename(
-            'PySeismoSoil', 'data/phase/',
+            'PySeismoSoil',
+            'data/phase/',
         )
         status = Site_Factors._range_check(
-            Vs30_in_meter_per_sec, z1_in_m, PGA_in_g,
+            Vs30_in_meter_per_sec,
+            z1_in_m,
+            PGA_in_g,
         )
         if 'Vs30 out of range' in status:
             if not lenient:
@@ -67,7 +88,9 @@ class Site_Factors:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
             else:
                 PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
-        if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
+        if (
+            'Invalid Vs30-z1 combination' in status
+        ):  # TODO: think about whether to add leniency
             raise ValueError(
                 'Vs30 and z1 combination not valid. (The `lenient` '
                 'option does not apply to this type of issue.)',
@@ -147,7 +170,7 @@ class Site_Factors:
         if method not in {'eq_hh'}:
             raise ValueError("Currently, only 'eq_hh' is valid.")
 
-        freq, phase_shift  = self._get_results(
+        freq, phase_shift = self._get_results(
             'phase',
             self.dir_phase,
             method=method,
@@ -175,7 +198,9 @@ class Site_Factors:
             Amplification and phase-shift as functions of frequency.
         """
         amplif = self.get_amplification(
-            method=method, Fourier=True, show_interp_plots=show_interp_plots,
+            method=method,
+            Fourier=True,
+            show_interp_plots=show_interp_plots,
         )
         phase = self.get_phase_shift(
             method='eq_hh',  # always use eq_hh
@@ -245,14 +270,19 @@ class Site_Factors:
 
         if Fourier:
             index_trunc = 139  # truncate at frequency = 20 Hz
-            x = x[:index_trunc + 1]
-            y_interp = y_interp[:index_trunc + 1]
+            x = x[: index_trunc + 1]
+            y_interp = y_interp[: index_trunc + 1]
             for ii in range(len(y_list)):
-                y_list[ii] = y_list[ii][:index_trunc + 1]
+                y_list[ii] = y_list[ii][: index_trunc + 1]
 
         if show_interp_plots:
             Site_Factors._plot_interp(
-                points, (Vs30, z1, PGA), x, y_list, y_interp, Fourier=Fourier,
+                points,
+                (Vs30, z1, PGA),
+                x,
+                y_list,
+                y_interp,
+                Fourier=Fourier,
             )
 
         return x, y_interp
@@ -336,11 +366,12 @@ class Site_Factors:
 
         Returns all possible combinations of Vs30, z1, and PGA values.
         """
-        Vs30_loc, z1_loc, PGA_loc \
-            = Site_Factors._find_neighbors(self.Vs30, self.z1, self.PGA)
+        Vs30_loc, z1_loc, PGA_loc = Site_Factors._find_neighbors(
+            self.Vs30, self.z1, self.PGA,
+        )
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
-        assert(len(list(combinations)) == 8)
+        assert len(list(combinations)) == 8
 
         return combinations
 
@@ -378,7 +409,7 @@ class Site_Factors:
             raise ValueError(
                 'You have encountered an internal bug. Please '
                 'copy the whole error message, and contact '
-                'the author of this library for help.'
+                'the author of this library for help.',
             )
         if value == array[0]:
             return [0, 1]
@@ -427,12 +458,12 @@ class Site_Factors:
             The interpolation result having the same length as the number of
             "versions" in ``values``.
         """
-        assert(type(ref_points) == list)
-        assert(type(values) == list)
-        assert(isinstance(interp_points, (tuple, list)))
-        assert(len(ref_points) == 8)
-        assert(len(ref_points) == len(values))
-        assert(len(interp_points) == 3)  # 3D coordinate
+        assert type(ref_points) == list
+        assert type(values) == list
+        assert isinstance(interp_points, (tuple, list))
+        assert len(ref_points) == 8
+        assert len(ref_points) == len(values)
+        assert len(interp_points) == 3  # 3D coordinate
 
         values = np.array(values)
 
@@ -539,7 +570,7 @@ class Site_Factors:
             fig.tight_layout(pad=0.3, h_pad=0.3, w_pad=0.3, rect=[0, 0.03, 1, 0.94])
         fig.suptitle('$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point)
 
-        bbox_anchor_loc = (1., 0.02, 1., 1.02)
+        bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)
         plt.legend(bbox_to_anchor=bbox_anchor_loc, loc='center left')
 
         if phase_flag:

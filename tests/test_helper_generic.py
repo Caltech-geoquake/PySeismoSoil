@@ -24,11 +24,13 @@ class Test_Helper_Generic(unittest.TestCase):
 
     def test_read_two_column_stuff(self):
         # Load from file
-        data, dt = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
-        benchmark = np.array(
-            [[.1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
-             [1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7]]
-        ).T
+        data, dt = hlp.read_two_column_stuff(
+            _join(f_dir, 'two_column_data_example.txt'),
+        )
+        benchmark = np.array([
+            [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+            [1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7],
+        ]).T
         self.assertTrue(np.allclose(data, benchmark))
         self.assertAlmostEqual(dt, benchmark[1, 0] - benchmark[0, 0])
 
@@ -41,7 +43,8 @@ class Test_Helper_Generic(unittest.TestCase):
 
         # Load from 2D numpy array
         data__, dt__ = hlp.read_two_column_stuff(
-            benchmark, benchmark[1, 0] - benchmark[0, 0],
+            benchmark,
+            benchmark[1, 0] - benchmark[0, 0],
         )
         self.assertTrue(np.allclose(data__, benchmark))
         self.assertAlmostEqual(dt__, benchmark[1, 0] - benchmark[0, 0])
@@ -117,12 +120,15 @@ class Test_Helper_Generic(unittest.TestCase):
         self.assertTrue(np.allclose(hlp.extend_scalar(2.5, None), np.array(2.5)))
 
         # Case #3: `length` is an integer
-        self.assertTrue(np.allclose(
-            hlp.extend_scalar(2.5, 3), np.array([2.5, 2.5, 2.5]),
-        ))
+        self.assertTrue(
+            np.allclose(
+                hlp.extend_scalar(2.5, 3),
+                np.array([2.5, 2.5, 2.5]),
+            ),
+        )
 
         # Case #4: `length` is not an integer
-        with self.assertRaisesRegex(TypeError, "cannot be interpreted as an integer"):
+        with self.assertRaisesRegex(TypeError, 'cannot be interpreted as an integer'):
             hlp.extend_scalar(2.5, 3.5)
 
     def test_check_length_or_extend_to_array(self):
@@ -193,34 +199,40 @@ class Test_Helper_Generic(unittest.TestCase):
 
     def test_merge_curve_matrices(self):
         m1 = np.array(
-            [[1, 2, 3],
-             [-1, -2, -3],
-             [1, 2, 3],
-             [-2, -3, -4],
-             [1, 2, 3],
-             [-3, -4, -5],
-             [1, 2, 3],
-             [-4, -5, -6]]
+            [
+                [1, 2, 3],
+                [-1, -2, -3],
+                [1, 2, 3],
+                [-2, -3, -4],
+                [1, 2, 3],
+                [-3, -4, -5],
+                [1, 2, 3],
+                [-4, -5, -6],
+            ],
         ).T
         m2 = np.array(
-            [[1, 2, 3],
-             [10, 20, 30],
-             [1, 2, 3],
-             [20, 30, 40],
-             [1, 2, 3],
-             [30, 40, 50],
-             [1, 2, 3],
-             [40, 50, 60]]
+            [
+                [1, 2, 3],
+                [10, 20, 30],
+                [1, 2, 3],
+                [20, 30, 40],
+                [1, 2, 3],
+                [30, 40, 50],
+                [1, 2, 3],
+                [40, 50, 60],
+            ],
         ).T
         benchmark = np.array(
-            [[1, 2, 3],
-             [-1, -2, -3],
-             [1, 2, 3],
-             [20, 30, 40],
-             [1, 2, 3],
-             [-3, -4, -5],
-             [1, 2, 3],
-             [40, 50, 60]]
+            [
+                [1, 2, 3],
+                [-1, -2, -3],
+                [1, 2, 3],
+                [20, 30, 40],
+                [1, 2, 3],
+                [-3, -4, -5],
+                [1, 2, 3],
+                [40, 50, 60],
+            ],
         ).T
         result = hlp.merge_curve_matrices(m1, m2)
         self.assertTrue(np.allclose(result, benchmark))

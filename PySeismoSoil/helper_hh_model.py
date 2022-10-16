@@ -45,7 +45,7 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_FKZ = mu * Gmax * gamma ** d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
+    T_FKZ = mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
 
     return T_FKZ
 
@@ -71,7 +71,7 @@ def transition_function(gamma, *, a, gamma_t):
         The transition function, ranging from 0 to 1. Same shape as ``x``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    assert(gamma_t > 0)
+    assert gamma_t > 0
     w = 1 - 1. / (1 + np.power(10, -a * (
         np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036))))
 
@@ -187,7 +187,9 @@ def fit_HH_x_single_layer(
         The best parameters found in the optimization.
     """
     hlp.check_two_column_format(
-        damping_data_in_pct, name='damping_data_in_pct', ensure_non_negative=True,
+        damping_data_in_pct,
+        name='damping_data_in_pct',
+        ensure_non_negative=True,
     )
 
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
@@ -228,15 +230,15 @@ def fit_HH_x_single_layer(
     )
 
     best_param = {}
-    best_param['gamma_t']   = 10 ** result[0]
-    best_param['a']         = 10 ** result[1]
+    best_param['gamma_t'] = 10 ** result[0]
+    best_param['a'] = 10 ** result[1]
     best_param['gamma_ref'] = 10 ** result[2]
-    best_param['beta']      = 10 ** result[3]
-    best_param['s']         = 10 ** result[4]
-    best_param['Gmax']      = 10 ** result[5]
-    best_param['mu']        = 10 ** result[6]
-    best_param['Tmax']      = 10 ** result[7]
-    best_param['d']         = 10 ** result[8]
+    best_param['beta'] = 10 ** result[3]
+    best_param['s'] = 10 ** result[4]
+    best_param['Gmax'] = 10 ** result[5]
+    best_param['mu'] = 10 ** result[6]
+    best_param['Tmax'] = 10 ** result[7]
+    best_param['d'] = 10 ** result[8]
 
     if show_fig:
         sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_HH)
@@ -316,7 +318,7 @@ def serialize_params_to_array(param):
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
-    assert(len(param) == 9)
+    assert len(param) == 9
     order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
     param_array = []
     for key in order:
@@ -344,7 +346,7 @@ def deserialize_array_to_params(array):
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert(len(array) == 9)
+    assert len(array) == 9
 
     param = dict()
     param['gamma_t'] = array[0]

@@ -4,7 +4,10 @@ import numpy as np
 import PySeismoSoil.helper_hh_model as hh
 import PySeismoSoil.helper_mkz_model as mkz
 from PySeismoSoil.class_parameters import (
-    HH_Param, MKZ_Param, HH_Param_Multi_Layer, MKZ_Param_Multi_Layer,
+    HH_Param,
+    MKZ_Param,
+    HH_Param_Multi_Layer,
+    MKZ_Param_Multi_Layer,
 )
 
 import os
@@ -22,8 +25,15 @@ class Test_Class_HH_Param(unittest.TestCase):
 
     def test_init__ensure_querying_nonexistent_parameter_name_raises_KeyError(self):
         data = {
-            'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
-            'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9,
+            'gamma_t': 1,
+            'a': 2,
+            'gamma_ref': 3,
+            'beta': 4,
+            's': 5,
+            'Gmax': 6,
+            'mu': 7,
+            'Tmax': 8,
+            'd': 9,
         }
         hhp = HH_Param(data)
         with self.assertRaisesRegex(KeyError, "'haha'"):
@@ -32,8 +42,17 @@ class Test_Class_HH_Param(unittest.TestCase):
     def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01(self):
         # Actual HH_G parameter from profile 350_750_01
         params = np.array(
-            [0.000116861, 100, 0.000314814, 1, 0.919, 9.04E+07,
-             0.0718012, 59528, 0.731508]
+            [
+                0.000116861,
+                100,
+                0.000314814,
+                1,
+                0.919,
+                9.04e07,
+                0.0718012,
+                59528,
+                0.731508,
+            ],
         )
         HH_G = HH_Param(hh.deserialize_array_to_params(params))
         GGmax = HH_G.get_GGmax(strain_in_pct=np.logspace(-4, 1, num=50))
@@ -70,8 +89,17 @@ class Test_Class_HH_Param(unittest.TestCase):
 
     def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01(self):
         params = np.array(
-            [0.014766, 1.00583, 0.0410009, 21.951, 0.620032,
-             6.44725, 151.838, 13.0971, 1]
+            [
+                0.014766,
+                1.00583,
+                0.0410009,
+                21.951,
+                0.620032,
+                6.44725,
+                151.838,
+                13.0971,
+                1,
+            ],
         )
         HH_x = HH_Param(hh.deserialize_array_to_params(params))
         damping = HH_x.get_damping(strain_in_pct=np.logspace(-4, 1, num=50))
@@ -108,8 +136,15 @@ class Test_Class_HH_Param(unittest.TestCase):
 
     def test_plot_curves(self):
         data = {
-            'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4, 's': 5,
-            'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9,
+            'gamma_t': 1,
+            'a': 2,
+            'gamma_ref': 3,
+            'beta': 4,
+            's': 5,
+            'Gmax': 6,
+            'mu': 7,
+            'Tmax': 8,
+            'd': 9,
         }
         hhp = HH_Param(data)
         hhp.plot_curves()
@@ -133,10 +168,12 @@ class Test_Class_HH_Param(unittest.TestCase):
         HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
         HH_x_array = np.genfromtxt(_join(f_dir, 'HH_X_FKSH14.txt'))
         HH_x_from_array = HH_Param_Multi_Layer(HH_x_array)
-        self.assertTrue(np.allclose(
-            HH_x.serialize_to_2D_array(),
-            HH_x_from_array.serialize_to_2D_array(),
-        ))
+        self.assertTrue(
+            np.allclose(
+                HH_x.serialize_to_2D_array(),
+                HH_x_from_array.serialize_to_2D_array(),
+            ),
+        )
 
     def test_hh_param_multi_layer__test_list_operations(self):
         HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
@@ -150,13 +187,26 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertTrue(isinstance(HH_x_1, HH_Param))
         self.assertEqual(
             sorted(HH_x_1.keys()),
-            sorted(['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']),
+            sorted(
+                ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'],
+            ),
         )
-        self.assertTrue(np.allclose(
-            hh.serialize_params_to_array(HH_x_1),
-            [0.027916, 1.01507, 0.0851825, 23.468,
-             0.638322, 5.84163, 183.507, 29.7071, 1],
-        ))
+        self.assertTrue(
+            np.allclose(
+                hh.serialize_params_to_array(HH_x_1),
+                [
+                    0.027916,
+                    1.01507,
+                    0.0851825,
+                    23.468,
+                    0.638322,
+                    5.84163,
+                    183.507,
+                    29.7071,
+                    1,
+                ],
+            ),
+        )
 
     def test_mkz_param_multi_layer__can_initiate_an_object_from_a_file(self):
         H4_G = MKZ_Param_Multi_Layer(_join(f_dir, 'H4_G_IWTH04.txt'))
@@ -173,10 +223,12 @@ class Test_Class_HH_Param(unittest.TestCase):
         H4_G = MKZ_Param_Multi_Layer(_join(f_dir, 'H4_G_IWTH04.txt'))
         H4_G_array = np.genfromtxt(_join(f_dir, 'H4_G_IWTH04.txt'))
         H4_G_from_array = MKZ_Param_Multi_Layer(H4_G_array)
-        self.assertTrue(np.allclose(
-            H4_G.serialize_to_2D_array(),
-            H4_G_from_array.serialize_to_2D_array(),
-        ))
+        self.assertTrue(
+            np.allclose(
+                H4_G.serialize_to_2D_array(),
+                H4_G_from_array.serialize_to_2D_array(),
+            ),
+        )
 
     def test_mkz_param_multi_layer__test_list_operations(self):
         H4_G = MKZ_Param_Multi_Layer(_join(f_dir, 'H4_G_IWTH04.txt'))
@@ -192,12 +244,14 @@ class Test_Class_HH_Param(unittest.TestCase):
             sorted(H4_G_1.keys()),
             sorted({'gamma_ref', 'beta', 's', 'Gmax'}),
         )
-        self.assertTrue(np.allclose(
-            mkz.serialize_params_to_array(H4_G_1),
-            [0.000856, 0, 0.88832, 1.7492],
-            atol=1e-6,
-            rtol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                mkz.serialize_params_to_array(H4_G_1),
+                [0.000856, 0, 0.88832, 1.7492],
+                atol=1e-6,
+                rtol=0.0,
+            ),
+        )
 
     def test_construct_curves__from_HH_G_parameters(self):
         HH_G = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
@@ -228,9 +282,18 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertEqual(curves.shape[1], H4_x.n_layer * 4)
 
     def test_param_serialize__from_HH_x_parameters(self):
-        HH_x = HH_Param({
-            'gamma_t': 1, 'a': 2, 'gamma_ref': 3, 'beta': 4,
-            's': 5, 'Gmax': 6, 'mu': 7, 'Tmax': 8, 'd': 9}
+        HH_x = HH_Param(
+            {
+                'gamma_t': 1,
+                'a': 2,
+                'gamma_ref': 3,
+                'beta': 4,
+                's': 5,
+                'Gmax': 6,
+                'mu': 7,
+                'Tmax': 8,
+                'd': 9,
+            },
         )
         HH_x_array = HH_x.serialize()
         self.assertTrue(np.allclose(HH_x_array, [1, 2, 3, 4, 5, 6, 7, 8, 9]))

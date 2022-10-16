@@ -12,7 +12,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
         self.atol = 1e-4
         self.param = {'gamma_ref': 0.1, 's': 0.2, 'beta': 0.3, 'Gmax': 0.4}
         self.array = np.array([1, 2, 3, 4]) / 10.0
-        super(Test_Helper_MKZ_Model, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
 
     def test_tau_MKZ(self):
         T = mkz.tau_MKZ(self.strain, gamma_ref=1, beta=2, s=3, Gmax=4)
@@ -52,7 +52,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
     def test_serialize_params_to_array__only_one_key_name_is_wrong(self):
         with self.assertRaisesRegex(KeyError, ''):
             mkz.serialize_params_to_array(
-                {'gamma_ref': 1, 's': 1, 'beta': 1, 'Gmax__': 1}  # should be "Gmax"
+                {'gamma_ref': 1, 's': 1, 'beta': 1, 'Gmax__': 1},  # should be "Gmax"
             )
 
     def test_deserialize_array_to_params__success(self):
@@ -88,10 +88,14 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
 
         # Make sure that the R^2 score between data and fit >= 0.99
         GGmax_fitted_1 = np.interp(
-            strain_in_pct, fitted_curve[:, 0], fitted_curve[:, 1],
+            strain_in_pct,
+            fitted_curve[:, 0],
+            fitted_curve[:, 1],
         )
         GGmax_fitted_2 = np.interp(
-            strain_in_pct, fitted_curve[:, 4], fitted_curve[:, 5],
+            strain_in_pct,
+            fitted_curve[:, 4],
+            fitted_curve[:, 5],
         )
         r2_1 = stats.linregress(GGmax_1, GGmax_fitted_1)[2]
         r2_2 = stats.linregress(GGmax_2, GGmax_fitted_2)[2]

@@ -54,9 +54,17 @@ class Curve:
     values : numpy.array
         The interpolated values; same shape as ``strain``
     """
+
     def __init__(
-            self, data, *, strain_unit='%', interpolate=False,
-            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            self,
+            data,
+            *,
+            strain_unit='%',
+            interpolate=False,
+            min_strain=0.0001,
+            max_strain=10.0,
+            n_pts=50,
+            log_scale=True,
             check_values=True,
     ):
 
@@ -64,7 +72,11 @@ class Curve:
 
         if interpolate:
             strain, values = hlp.interpolate(
-                min_strain, max_strain, n_pts, data[:, 0], data[:, 1],
+                min_strain,
+                max_strain,
+                n_pts,
+                data[:, 0],
+                data[:, 1],
                 log_scale=log_scale,
             )
         else:
@@ -81,11 +93,18 @@ class Curve:
         self.values = values
 
     def __repr__(self):
-        return '%s object:\n%s' % (self.__class__, str(self.raw_data))
+        return '{} object:\n{}'.format(self.__class__, str(self.raw_data))
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel=None,
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -126,7 +145,9 @@ class Curve:
             ax.semilogx(self.strain, self.values, **kwargs_to_matplotlib)
         else:
             ax.semilogx(
-                self.raw_data[:, 0], self.raw_data[:, 1], **kwargs_to_matplotlib,
+                self.raw_data[:, 0],
+                self.raw_data[:, 1],
+                **kwargs_to_matplotlib,
             )
         ax.grid(ls=':')
         ax.set_xlabel(xlabel)
@@ -181,13 +202,21 @@ class GGmax_Curve(Curve):
     GGmax : numpy.array
         The interpolated G/Gmax values; same shape as ``strain``.
     """
+
     def __init__(
-            self, data, *, strain_unit='%', interpolate=False,
-            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            self,
+            data,
+            *,
+            strain_unit='%',
+            interpolate=False,
+            min_strain=0.0001,
+            max_strain=10.0,
+            n_pts=50,
+            log_scale=True,
             check_values=True,
     ):
 
-        super(GGmax_Curve, self).__init__(
+        super().__init__(
             data,
             strain_unit=strain_unit,
             interpolate=interpolate,
@@ -249,12 +278,21 @@ class Damping_Curve(Curve):
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
     """
+
     def __init__(
-            self, data, *, strain_unit='%', damping_unit='%',
-            interpolate=False, min_strain=0.0001, max_strain=10.,
-            n_pts=50, log_scale=True, check_values=True,
+            self,
+            data,
+            *,
+            strain_unit='%',
+            damping_unit='%',
+            interpolate=False,
+            min_strain=0.0001,
+            max_strain=10.0,
+            n_pts=50,
+            log_scale=True,
+            check_values=True,
     ):
-        super(Damping_Curve, self).__init__(
+        super().__init__(
             data,
             strain_unit=strain_unit,
             interpolate=interpolate,
@@ -276,9 +314,17 @@ class Damping_Curve(Curve):
             raise ValueError('The provided damping values must be between [0, 100].')
 
     def get_HH_x_param(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False, parallel=False,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
             n_cores=None,
     ):
         """
@@ -352,9 +398,17 @@ class Damping_Curve(Curve):
         return self.HH_x_param
 
     def get_H4_x_param(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False, parallel=False,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
             n_cores=None,
     ):
         """
@@ -467,12 +521,20 @@ class Stress_Curve(Curve):
         The interpolated damping values; same shape as ``strain``. The unit is
         always 'kPa'.
     """
+
     def __init__(
-            self, data, *, strain_unit='1', stress_unit='kPa',
-            min_strain=0.0001, max_strain=10., n_pts=50, log_scale=True,
+            self,
+            data,
+            *,
+            strain_unit='1',
+            stress_unit='kPa',
+            min_strain=0.0001,
+            max_strain=10.0,
+            n_pts=50,
+            log_scale=True,
             check_values=True,
     ):
-        super(Stress_Curve, self).__init__(
+        super().__init__(
             data,
             strain_unit=strain_unit,
             min_strain=min_strain,
@@ -530,6 +592,7 @@ class Multiple_Curves:
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     """
+
     def __init__(self, list_of_curves, *, element_class=Curve):
         curves = []
         for curve in list_of_curves:
@@ -538,9 +601,7 @@ class Multiple_Curves:
             elif isinstance(curve, element_class):
                 curves.append(curve)
             else:
-                raise TypeError(
-                    'An element in `list_of_curves` has invalid type.'
-                )
+                raise TypeError('An element in `list_of_curves` has invalid type.')
 
         self.element_class = element_class
         self.curves = curves
@@ -578,8 +639,15 @@ class Multiple_Curves:
         self.n_layer += 1
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel=None, figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel=None,
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -619,8 +687,13 @@ class Multiple_Curves:
         ax = plt.axes()
         for curve in self.curves:
             curve.plot(
-                plot_interpolated=plot_interpolated, fig=fig, ax=ax,
-                figsize=figsize, dpi=dpi, title=title, xlabel=xlabel,
+                plot_interpolated=plot_interpolated,
+                fig=fig,
+                ax=ax,
+                figsize=figsize,
+                dpi=dpi,
+                title=title,
+                xlabel=xlabel,
                 ylabel=ylabel,
             )
 
@@ -660,6 +733,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     """
+
     def __init__(self, filename_or_list_of_curves, *, sep='\t'):
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
@@ -673,14 +747,21 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         self._sep = sep
 
-        super(Multiple_Damping_Curves, self).__init__(
+        super().__init__(
             list_of_damping_curves,
             element_class=Damping_Curve,
         )
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel='Damping [%]', figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel='Damping [%]',
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -716,7 +797,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         """
-        fig, ax = super(Multiple_Damping_Curves, self).plot(
+        fig, ax = super().plot(
             plot_interpolated=plot_interpolated,
             fig=fig,
             ax=ax,
@@ -731,7 +812,10 @@ class Multiple_Damping_Curves(Multiple_Curves):
         return fig, ax
 
     def get_curve_matrix(
-            self, GGmax_filler_value=1.0, save_to_file=False, full_file_name=None,
+            self,
+            GGmax_filler_value=1.0,
+            save_to_file=False,
+            full_file_name=None,
     ):
         """
         Produce a full "curve matrix" based on the damping data defined in
@@ -789,12 +873,24 @@ class Multiple_Damping_Curves(Multiple_Curves):
         return curve_matrix
 
     def get_all_HH_x_params(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False,
-            parallel=False, n_cores=None,
-            save_txt=False, txt_filename=None, sep=None,
-            save_fig=False, fig_filename=None, dpi=100,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
+            n_cores=None,
+            save_txt=False,
+            txt_filename=None,
+            sep=None,
+            save_fig=False,
+            fig_filename=None,
+            dpi=100,
     ):
         """
         Obtain the HH_x parameters from the damping curve data (for all the
@@ -896,12 +992,24 @@ class Multiple_Damping_Curves(Multiple_Curves):
         return HH_Param_Multi_Layer(params)
 
     def get_all_H4_x_params(
-            self, use_scipy=True, pop_size=800, n_gen=100,
-            lower_bound_power=-4, upper_bound_power=6, eta=0.1,
-            seed=0, show_fig=False, verbose=False,
-            parallel=False, n_cores=None,
-            save_txt=False, txt_filename=None, sep=None,
-            save_fig=False, fig_filename=None, dpi=100,
+            self,
+            use_scipy=True,
+            pop_size=800,
+            n_gen=100,
+            lower_bound_power=-4,
+            upper_bound_power=6,
+            eta=0.1,
+            seed=0,
+            show_fig=False,
+            verbose=False,
+            parallel=False,
+            n_cores=None,
+            save_txt=False,
+            txt_filename=None,
+            sep=None,
+            save_fig=False,
+            fig_filename=None,
+            dpi=100,
     ):
         """
         Obtain the H4_x parameters from the damping curve data (for all the
@@ -1022,7 +1130,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
             raise ValueError(
                 'Please make sure to create this object from '
                 'a text file, so that there is an original file '
-                'name to work with.'
+                'name to work with.',
             )
 
         path_name, file_name = os.path.split(self._filename)
@@ -1032,7 +1140,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         else:
             site_name = file_name_
 
-        new_file_name = '%s_x_%s.%s' % (prefix, site_name, extension)
+        new_file_name = '{}_x_{}.{}'.format(prefix, site_name, extension)
 
         return new_file_name
 
@@ -1070,6 +1178,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     """
+
     def __init__(self, filename_or_list_of_curves, *, sep='\t'):
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
@@ -1083,14 +1192,21 @@ class Multiple_GGmax_Curves(Multiple_Curves):
 
         self._sep = sep
 
-        super(Multiple_GGmax_Curves, self).__init__(
+        super().__init__(
             list_of_GGmax_curves,
             element_class=GGmax_Curve,
         )
 
     def plot(
-            self, plot_interpolated=True, fig=None, ax=None, title=None,
-            xlabel='Strain [%]', ylabel='G/Gmax', figsize=(3, 3), dpi=100,
+            self,
+            plot_interpolated=True,
+            fig=None,
+            ax=None,
+            title=None,
+            xlabel='Strain [%]',
+            ylabel='G/Gmax',
+            figsize=(3, 3),
+            dpi=100,
             **kwargs_to_matplotlib,
     ):
         """
@@ -1126,16 +1242,25 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         """
-        fig, ax = super(Multiple_GGmax_Curves, self).plot(
-            plot_interpolated=plot_interpolated, fig=fig,
-            ax=ax, title=title, xlabel=xlabel, ylabel=ylabel,
-            figsize=figsize, dpi=dpi, **kwargs_to_matplotlib,
+        fig, ax = super().plot(
+            plot_interpolated=plot_interpolated,
+            fig=fig,
+            ax=ax,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            figsize=figsize,
+            dpi=dpi,
+            **kwargs_to_matplotlib,
         )
 
         return fig, ax
 
     def get_curve_matrix(
-            self, damping_filler_value=1.0, save_to_file=False, full_file_name=None,
+            self,
+            damping_filler_value=1.0,
+            save_to_file=False,
+            full_file_name=None,
     ):
         """
         Produce a full "curve matrix" based on the G/Gmax data defined in
@@ -1232,16 +1357,17 @@ class Multiple_GGmax_Damping_Curves:
     n_layer : int
         Number of soil layers.
     """
+
     def __init__(self, *, mgc_and_mdc=None, data=None):
         if mgc_and_mdc is None and data is None:
             raise ValueError(
                 'Both parameters are `None`. Please provide '
-                'one and only one input parameter.'
+                'one and only one input parameter.',
             )
         if mgc_and_mdc is not None and data is not None:
             raise ValueError(
                 'Both parameters are not `None`. Please provide '
-                'one and only one input parameter.'
+                'one and only one input parameter.',
             )
         if mgc_and_mdc is not None:
             if not isinstance(mgc_and_mdc, tuple):
@@ -1251,12 +1377,12 @@ class Multiple_GGmax_Damping_Curves:
             if not isinstance(mgc_and_mdc[0], Multiple_GGmax_Curves):
                 raise TypeError(
                     'The 0th element of `mgc_and_mdc` needs to '
-                    'be of type `Multiple_GGmax_Curves`.'
+                    'be of type `Multiple_GGmax_Curves`.',
                 )
             if not isinstance(mgc_and_mdc[-1], Multiple_Damping_Curves):
                 raise TypeError(
                     'The last element of `mgc_and_mdc` needs to '
-                    'be of type `Multiple_Damping_Curves`.'
+                    'be of type `Multiple_Damping_Curves`.',
                 )
             self.mgc = mgc_and_mdc[0]
             self.mdc = mgc_and_mdc[-1]
@@ -1265,7 +1391,7 @@ class Multiple_GGmax_Damping_Curves:
                 raise ValueError(
                     'The ``Multiple_GGmax_Curves`` instance and '
                     'the ``Multiple_Damping_Curves`` instance '
-                    'need to have the same number of soil layers.'
+                    'need to have the same number of soil layers.',
                 )
             self.n_layer = self.mgc.n_layer
         else:  # `data` is not `None`
@@ -1280,7 +1406,7 @@ class Multiple_GGmax_Damping_Curves:
                 raise ValueError(
                     'The number of columns of `data` needs '
                     'to be a multiple of 4. However, your '
-                    '`data` has %d columns.' % data.shape[1]
+                    '`data` has %d columns.' % data.shape[1],
                 )
             self.data = data
             self.n_layer = data.shape[1] // 4
@@ -1300,7 +1426,8 @@ class Multiple_GGmax_Damping_Curves:
             return self.mgc, self.mdc
         else:  # the user provides a matrix containing curve information
             GGmax_curve_list, damping_curves_list = hlp.extract_from_curve_format(
-                self.data, ensure_non_negative=False,
+                self.data,
+                ensure_non_negative=False,
             )
             mgc = Multiple_GGmax_Curves(GGmax_curve_list)
             mdc = Multiple_Damping_Curves(damping_curves_list)
@@ -1332,5 +1459,5 @@ class Multiple_GGmax_Damping_Curves:
         Plot the G/Gmax and damping curves.
         """
         mgc, mdc = self.get_MGC_MDC_objects()
-        mgc.plot(ylabel='$G/G_{\max}$')
+        mgc.plot(ylabel=r'$G/G_{\max}$')
         mdc.plot(ylabel='Damping [%]')

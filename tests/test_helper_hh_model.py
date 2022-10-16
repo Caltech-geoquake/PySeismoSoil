@@ -10,11 +10,18 @@ class Test_Helper_HH_Model(unittest.TestCase):
         self.strain = np.logspace(-2, 1, num=12)
         self.atol = 1e-4
         self.param = {
-            'gamma_t': 0.1, 'a': 0.2, 'gamma_ref': 0.3, 'beta': 0.4,
-            's': 0.5, 'Gmax': 0.6, 'mu': 0.7, 'Tmax': 0.8, 'd': 0.9,
+            'gamma_t': 0.1,
+            'a': 0.2,
+            'gamma_ref': 0.3,
+            'beta': 0.4,
+            's': 0.5,
+            'Gmax': 0.6,
+            'mu': 0.7,
+            'Tmax': 0.8,
+            'd': 0.9,
         }
         self.array = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]) / 10.0
-        super(Test_Helper_HH_Model, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
 
     def test_tau_FKZ(self):
         T = hh.tau_FKZ(self.strain, Gmax=4, mu=3, d=2, Tmax=1)
@@ -43,8 +50,16 @@ class Test_Helper_HH_Model(unittest.TestCase):
 
     def test_tau_HH(self):
         T = hh.tau_HH(
-            self.strain, gamma_t=1, a=2, gamma_ref=3, beta=4, s=5,
-            Gmax=6, mu=7, Tmax=8, d=9,
+            self.strain,
+            gamma_t=1,
+            a=2,
+            gamma_ref=3,
+            beta=4,
+            s=5,
+            Gmax=6,
+            mu=7,
+            Tmax=8,
+            d=9,
         )
         self.assertTrue(np.allclose(
             T,
@@ -92,7 +107,7 @@ class Test_Helper_HH_Model(unittest.TestCase):
                     'mu': 1,
                     'Tmax': 1,
                     'd___': 1,  # should be "d"
-                }
+                },
             )
 
     def test_deserialize_array_to_params__success(self):
