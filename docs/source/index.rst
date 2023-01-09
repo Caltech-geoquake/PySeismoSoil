@@ -73,7 +73,7 @@ To report bugs and submit suggestions, please use the `"Issues" section <https:/
 Current version
 ---------------
 
-* v0.4.10
+* v0.5.1
 
 
 Indices and tables

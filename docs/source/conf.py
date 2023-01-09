@@ -24,7 +24,7 @@ copyright = '2019, California Institute of Technology'
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.4.10'
+release = 'v0.5.1'
 
 
 # -- General configuration ---------------------------------------------------
