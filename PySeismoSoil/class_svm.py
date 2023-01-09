@@ -687,9 +687,8 @@ class SVM:
                 + 0.4233
             )
         else:
-            sigma_lognormal_Vs = sigma_lnV * np.ones(
-                Vs_analyt.shape,
-            )  # page 8 of Toro (1995)
+            # From page 8 of Toro (1995):
+            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)
 
         # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
@@ -698,9 +697,9 @@ class SVM:
 
         for i in range(0, len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
-            sigma_ = sigma_lognormal_Vs[
-                index_value
-            ]  # query sigma value where z = z_mid[j]
+
+            # query sigma value where z = z_mid[j]:
+            sigma_ = sigma_lognormal_Vs[index_value]
 
             if z_mid[i] > 200:
                 rho_z = rho_200
