@@ -211,7 +211,7 @@ class Damping_Curve(Curve):
     ----------
     data : numpy.ndarray
         A 2D numpy array with 2 columns. Its 0th column contains the strain
-        array, and the 1st column contains the G/Gmax values.
+        array, and the 1st column contains the damping values.
     strain_unit : {'1', '%'}
         The unit of the strain.
     damping_unit : {'1', '%'}
