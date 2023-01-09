@@ -112,8 +112,8 @@ class Simulation_Results:
         if max_a_v_d is not None and max_strain_stress is not None:
             hlp.assert_2D_numpy_array(max_a_v_d, '`max_a_v_d`')
             hlp.assert_2D_numpy_array(max_strain_stress, '`max_strain_stress`')
-            assert(max_a_v_d.shape == (n_layer + 1, 4))
-            assert(max_strain_stress.shape == (n_layer, 3))
+            assert max_a_v_d.shape == (n_layer + 1, 4)
+            assert max_strain_stress.shape == (n_layer, 3)
         else:  # only when both are not `None` do we consider using them
             max_a_v_d = None
             max_strain_stress = None
