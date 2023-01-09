@@ -23,16 +23,11 @@ Install most recent stable version:
 pip install PySeismoSoil
 ```
 
-Or, install with latest changes (may contain features ahead of the stable version):
-
-```bash
-pip install git+https://github.com/jsh9/PySeismoSoil
-```
-
+If you already have an older version installed and want to upgrade to the newest version, use `pip install --upgrade PySeismoSoil`.
 
 ## Dependencies
 
-* Python: 3.6+
+* Python: 3.7+
 * matplotlib: 2.0.0+
 * numpy: 1.11.0+
 * scipy: 1.1.0+
