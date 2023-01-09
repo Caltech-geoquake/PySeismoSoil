@@ -27,13 +27,12 @@ setup(
     classifiers=[
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
     ],
     install_requires=load_requirements('requirements.txt'),
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     include_package_data=True,
 )
