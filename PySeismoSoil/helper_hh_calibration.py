@@ -748,6 +748,7 @@ def _calc_rho(h, Vs):
     1. Mayne, Schneider & Martin (1999) "Small- and large-strain soil
        properties from seismic flat dilatometer tests." Pre-failure
        deformation characteristics of geomaterials, 1999 Balkema, Rotterdam.
+       (https://www.marchetti-dmt.it/wp-content/uploads/bibliografia/mayne_1999_torino_SDMT_small_large_strain.pdf)
     2. Burns & Mayne (1996) "Small- and high-strain soil properties using the
        seismic piezocone." Transportation Research Record 1548, National
        Acad. Press, Washington DC, 81-88.
@@ -755,7 +756,14 @@ def _calc_rho(h, Vs):
     z = sr.thk2dep(h, midpoint=False)
     z[z == 0] = 0.0001  # avoid error of dividing by zero
     lb = 1.65  # lower bound of density: 1.65 g/cm^3
-    rho = np.maximum(lb, 1 + 1. / (0.614 + 58.7 * (np.log(z) + 1.095) / Vs))
+
+    # Note: we are using log10(z) here instead of log(z) as written Eq (2)
+    # in Mayne et al. (1999). This is because Mayne et al. actually meant
+    # log10 (as evident in Figure 2 in the paper), but they incorrectly used
+    # the notation of "log", which in the US means "ln" (natural logarithm)
+    # rather than log10.
+    rho = np.maximum(lb, 1 + 1. / (0.614 + 58.7 * (np.log10(z) + 1.095) / Vs))
+
     rho *= 1000  # unit: g/cm^3 --> kg/m^3
     return rho
 
