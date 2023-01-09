@@ -908,7 +908,7 @@ def calc_basin_depth(vs_profile, bedrock_Vs=1000.0):
     vs = vs_profile[:, 1]
 
     depth = thk2dep(thk, midpoint=False)
-    assert(depth[0] == 0)  # assert that `depth` means the layer top
+    assert depth[0] == 0  # assert that `depth` means the layer top
     basin_depth = -1
     for j in range(len(vs)):
         current_depth = depth[j]
@@ -1329,24 +1329,24 @@ def amplify_motion(
         i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
         input motion at all.
     """
-    assert(type(transfer_function_single_sided) == tuple)
-    assert(len(transfer_function_single_sided) == 2)
+    assert type(transfer_function_single_sided) == tuple
+    assert len(transfer_function_single_sided) == 2
 
     f_array, tf_ss = transfer_function_single_sided
     hlp.assert_1D_numpy_array(f_array, name='`f_array`')
 
     if isinstance(tf_ss, np.ndarray):
-        assert(tf_ss.ndim == 1)
-        assert(len(f_array) == len(tf_ss))
+        assert tf_ss.ndim == 1
+        assert len(f_array) == len(tf_ss)
         amp_ss = np.abs(tf_ss)
         phase_ss = robust_unwrap(np.angle(tf_ss))
     elif isinstance(tf_ss, tuple):
-        assert(len(tf_ss) == 2)
+        assert len(tf_ss) == 2
         amp_ss, phase_ss = tf_ss
-        assert(amp_ss.ndim == 1)
-        assert(phase_ss.ndim == 1)
-        assert(len(amp_ss) == len(f_array))
-        assert(len(phase_ss) == len(f_array))
+        assert amp_ss.ndim == 1
+        assert phase_ss.ndim == 1
+        assert len(amp_ss) == len(f_array)
+        assert len(phase_ss) == len(f_array)
     else:
         raise TypeError(
             'The last element of `transfer_function_single_sided` '
@@ -1612,7 +1612,7 @@ def _plot_site_amp(
 
     t_in, accel_in = accel_in_2col.T
     t_out, accel_out = accel_out_2col.T
-    assert(np.allclose(t_in, t_out, atol=1e-4))
+    assert np.allclose(t_in, t_out, atol=1e-4)
     time = t_in
 
     fig, _ = hlp._process_fig_ax_objects(fig, ax=None, figsize=figsize, dpi=dpi)

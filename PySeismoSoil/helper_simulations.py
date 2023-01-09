@@ -437,8 +437,8 @@ def _prepare_inputs(*, vs_profile, input_motion):
 
     ACCEL_IN = scipy.fftpack.fft(accel_in)
     N = len(ACCEL_IN)
-    assert(N == n)
-    assert(N % 2 == 1)
+    assert N == n
+    assert N % 2 == 1
 
     freq = np.arange(1, N + 1, 1) / (N * dt)  # frequency
 
@@ -538,12 +538,12 @@ def _lin_resp_every_layer(
 
     # (3) Complex shear-wave velocities of each layer (Kramer's book, page 260)
     vs_star = np.sqrt(G * (1 + 2 * 1j * D) / rho)  # shape: (n_layer, )
-    assert(vs_star.shape == (n_layer, ))
+    assert vs_star.shape == (n_layer, )
 
     # (4) Complex wave number (Kramer's book, page 260)
     vs_star_recip = (1.0 / vs_star).reshape((1, n_layer))  # (1, n_layer)
     k_star = omega[:half_N].reshape(half_N, 1) * vs_star_recip  # (half_N, n_layer)
-    assert(k_star.shape == (half_N, n_layer))
+    assert k_star.shape == (half_N, n_layer)
 
     # (5) Compute A and B (Kramer's book, page 269)
     A = np.zeros((half_N, n_layer), dtype=np.complex_)

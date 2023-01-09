@@ -391,7 +391,7 @@ def produce_HH_G_param(
         if verbose:
             print('------ G/Gmax provided; fitting MKZ curves to data: ------')
         hlp.assert_2D_numpy_array(curves)
-        assert(curves.shape[1] == n_layer * 4)
+        assert curves.shape[1] == n_layer * 4
 
         # ----------- Extract G/Gmax information ------------------------------
         strain = curves[:, 0::4]  # unit: percent

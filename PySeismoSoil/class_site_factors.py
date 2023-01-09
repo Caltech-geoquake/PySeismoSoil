@@ -340,7 +340,7 @@ class Site_Factors:
             = Site_Factors._find_neighbors(self.Vs30, self.z1, self.PGA)
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
-        assert(len(list(combinations)) == 8)
+        assert len(list(combinations)) == 8
 
         return combinations
 
@@ -427,12 +427,12 @@ class Site_Factors:
             The interpolation result having the same length as the number of
             "versions" in ``values``.
         """
-        assert(type(ref_points) == list)
-        assert(type(values) == list)
-        assert(isinstance(interp_points, (tuple, list)))
-        assert(len(ref_points) == 8)
-        assert(len(ref_points) == len(values))
-        assert(len(interp_points) == 3)  # 3D coordinate
+        assert type(ref_points) == list
+        assert type(values) == list
+        assert isinstance(interp_points, (tuple, list))
+        assert len(ref_points) == 8
+        assert len(ref_points) == len(values)
+        assert len(interp_points) == 3  # 3D coordinate
 
         values = np.array(values)
 
