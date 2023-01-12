@@ -6,7 +6,9 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+    Linear_Simulation,
+    Equiv_Linear_Simulation,
+    Nonlinear_Simulation,
 )
 from PySeismoSoil.class_batch_simulation import Batch_Simulation
 
@@ -19,7 +21,9 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 class Test_Class_Batch_Simulation(unittest.TestCase):
     def test_init__case_1_not_a_list(self):
-        with self.assertRaisesRegex(TypeError, '`list_of_simulations` should be a list.'):
+        with self.assertRaisesRegex(
+            TypeError, '`list_of_simulations` should be a list.',
+        ):
             Batch_Simulation(1.4)
 
     def test_init__case_2_a_list_of_0_length(self):
@@ -50,16 +54,21 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim_list = [sim_1, sim_2]
 
         batch_sim = Batch_Simulation(sim_list)
-        options = dict(show_fig=False, save_txt=False, verbose=True)
+        options = {'show_fig': False, 'save_txt': False, 'verbose': True}
         non_par_results = batch_sim.run(parallel=False, n_cores=2, options=options)
         par_results = batch_sim.run(parallel=True, options=options)
 
         accel_out_1_non_par = non_par_results[1].accel_on_surface.accel
         accel_out_1_par = par_results[1].accel_on_surface.accel
 
-        self.assertTrue(np.allclose(
-            accel_out_1_non_par, accel_out_1_par, atol=0.0, rtol=1e-3,
-        ))
+        self.assertTrue(
+            np.allclose(
+                accel_out_1_non_par,
+                accel_out_1_par,
+                atol=0.0,
+                rtol=1e-3,
+            ),
+        )
 
     def test_equiv_linear(self):
         gm_raw = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
@@ -72,16 +81,21 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim_list = [sim_2]
 
         batch_sim = Batch_Simulation(sim_list)
-        options = dict(show_fig=False, save_txt=False, verbose=True)
+        options = {'show_fig': False, 'save_txt': False, 'verbose': True}
         non_par_results = batch_sim.run(parallel=False, options=options)
         par_results = batch_sim.run(parallel=True, n_cores=2, options=options)
 
         accel_out_0_non_par = non_par_results[0].accel_on_surface.accel
         accel_out_0_par = par_results[0].accel_on_surface.accel
 
-        self.assertTrue(np.allclose(
-            accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=1e-3,
-        ))
+        self.assertTrue(
+            np.allclose(
+                accel_out_0_non_par,
+                accel_out_0_par,
+                atol=0.0,
+                rtol=1e-3,
+            ),
+        )
 
     def test_nonlinear(self):
         accel_data = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
@@ -93,7 +107,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
 
         batch_sim = Batch_Simulation([sim])
-        options = dict(show_fig=False, save_txt=False, remove_sim_dir=True)
+        options = {'show_fig': False, 'save_txt': False, 'remove_sim_dir': True}
 
         non_par_results = batch_sim.run(parallel=False, options=options)
         par_results = batch_sim.run(parallel=True, n_cores=2, options=options)
@@ -101,9 +115,14 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         accel_out_0_non_par = non_par_results[0].accel_on_surface.accel
         accel_out_0_par = par_results[0].accel_on_surface.accel
 
-        self.assertTrue(np.allclose(
-            accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=1e-3,
-        ))
+        self.assertTrue(
+            np.allclose(
+                accel_out_0_non_par,
+                accel_out_0_par,
+                atol=0.0,
+                rtol=1e-3,
+            ),
+        )
 
 
 if __name__ == '__main__':

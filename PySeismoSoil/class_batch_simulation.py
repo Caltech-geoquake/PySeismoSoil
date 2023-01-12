@@ -2,11 +2,13 @@ import os
 import itertools
 import multiprocessing as mp
 
-from .class_simulation import (
-    Linear_Simulation, Equiv_Linear_Simulation, Nonlinear_Simulation,
+from PySeismoSoil.class_simulation import (
+    Linear_Simulation,
+    Equiv_Linear_Simulation,
+    Nonlinear_Simulation,
 )
 
-from . import helper_generic as hlp
+from PySeismoSoil import helper_generic as hlp
 
 
 class Batch_Simulation:
@@ -29,13 +31,12 @@ class Batch_Simulation:
     sim_type : {``Linear_Simulation``, ``Equiv_Linear_Simulation``, ``Nonlinear_Simulation``}
         The object type of the site response simulations.
     """
+
     def __init__(self, list_of_simulations):
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
         if len(list_of_simulations) == 0:
-            raise ValueError(
-                '`list_of_simulations` should have at least one element.'
-            )
+            raise ValueError('`list_of_simulations` should have at least one element.')
         sim_0 = list_of_simulations[0]
         if not isinstance(
             sim_0,
@@ -44,11 +45,11 @@ class Batch_Simulation:
             raise TypeError(
                 'Elements of `list_of_simulations` should be of '
                 'type `Linear_Simulation`, `Equiv_Linear_Simulation`, '
-                'or `Nonlinear_Simulation`.'
+                'or `Nonlinear_Simulation`.',
             )
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
-                'All the elements of `list_of_simulations` should be of the same type.'
+                'All the elements of `list_of_simulations` should be of the same type.',
             )
         n_simulations = len(list_of_simulations)
 
@@ -56,7 +57,7 @@ class Batch_Simulation:
         self.n_simulations = n_simulations
         self.sim_type = type(sim_0)
 
-    def run(self, parallel=False, n_cores=1, base_output_dir=None, options={}):
+    def run(self, parallel=False, n_cores=1, base_output_dir=None, options=None):
         """
         Run simulations in batch.
 
@@ -64,23 +65,26 @@ class Batch_Simulation:
         ----------
         parallel : bool
             Whether to use multiple CPU cores to run simulations.
-        n_core : int or ``None``
+        n_cores : int or ``None``
             Number of CPU cores to be used. If ``None``, all CPU cores will be
             used.
         base_output_dir : str
             The parent directory for saving the output files/figures of the
             current batch.
-        options : dict
+        options : dict or None
             Options to be passed to the ``run()`` methods of the relevant
             simulation classes (linear, equivalent linear, or nonlinear). Check
             out the API documentation of the ``run()`` methods here:
             https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_simulation.html
+            If None, it is equivalent to an empty dict.
 
         Returns
         -------
         sim_results : list<Simulation_Result>
             Simulation results corresponding to each simulation object.
         """
+        options = {} if options is None else options
+
         N = self.n_simulations
         n_digits = len(str(N))
 
@@ -119,7 +123,7 @@ class Batch_Simulation:
 
     def _run_single_sim(self, all_params):
         """
-        Helper function to run a single simulation.
+        Run a single simulation.
 
         Parameters
         ----------

@@ -14,19 +14,21 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 class Test_Helper_Signal_Processing(unittest.TestCase):
     def test_fourier_transform(self):
-        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
+        accel, _ = hlp.read_two_column_stuff(
+            _join(f_dir, 'two_column_data_example.txt'),
+        )
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
         freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667, 5.3333]
         FS_bench = [
-            60.0000 +  0.0000j,
-            -1.5000 +  7.0569j,
-            -1.5000 +  3.3691j,
+            60.0000 + 0.0000j,
+            -1.5000 + 7.0569j,
+            -1.5000 + 3.3691j,
             -7.5000 + 10.3229j,
-            -1.5000 +  1.3506j,
-            -1.5000 +  0.8660j,
-            -7.5000 +  2.4369j,
-            -1.5000 +  0.1577j,
+            -1.5000 + 1.3506j,
+            -1.5000 + 0.8660j,
+            -7.5000 + 2.4369j,
+            -1.5000 + 0.1577j,
         ]
 
         self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0))
@@ -40,7 +42,9 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         self.assertTrue(np.allclose(transfer_func[:, 1], 2.3))
 
     def test_lin_smooth(self):
-        raw_signal = sig.fourier_transform(np.genfromtxt(_join(f_dir, 'sample_accel.txt')))
+        raw_signal = sig.fourier_transform(
+            np.genfromtxt(_join(f_dir, 'sample_accel.txt')),
+        )
         freq = raw_signal[:, 0]
         log_smoothed = sig.log_smooth(raw_signal[:, 1], lin_space=False)
         lin_smoothed = sig.lin_smooth(raw_signal[:, 1])

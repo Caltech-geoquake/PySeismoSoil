@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
 
 
 def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
@@ -222,7 +222,7 @@ def serialize_params_to_array(param, to_files=False):
 
     Returns
     -------
-    param_array : numpy.array
+    param_array : numpy.ndarray
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
@@ -268,13 +268,13 @@ def deserialize_array_to_params(array, from_files=False):
     assert len(array) == 4
 
     if from_files:
-        param = dict()
+        param = {}
         param['gamma_ref'] = array[0]
         param['s'] = array[2]
         param['beta'] = array[3]
         param['Gmax'] = 1.0  # "H4_G_SITE_NAME.txt" files don't have Gmax info
     else:
-        param = dict()
+        param = {}
         param['gamma_ref'] = array[0]
         param['s'] = array[1]
         param['beta'] = array[2]
@@ -301,7 +301,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
         The damping information is neglected in this function, so users can
         supply some dummy values.
     show_fig : bool
-        Whether or not to show curve-fitting results.
+        Whether to show curve-fitting results.
     verbose : bool
         Whether to show messages about the calculation progress on the console.
 
@@ -340,7 +340,7 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
 
     # -------------- Curve-fitting, layer by layer -----------------------------
     def func(x, beta, gamma_ref, s):
-        return 1.0 / (1 + beta * (x / gamma_ref)**s)
+        return 1.0 / (1 + beta * (x / gamma_ref) ** s)
 
     if verbose:
         print('Fitting MKZ model to G/Gmax data. Total: %d layers.' % n_ma)
@@ -391,14 +391,19 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
                 alpha=0.8,
                 label='Data points',
             )
-            plt.semilogx(gamma_ * 100, GGmax_[:, k], lw=1.5, label='Curve fit',)
+            plt.semilogx(
+                gamma_ * 100,
+                GGmax_[:, k],
+                lw=1.5,
+                label='Curve fit',
+            )
             plt.xlabel('Shear strain [%]')
             plt.ylabel('G/Gmax')
             plt.legend(loc='lower left')
             plt.grid(ls=':', lw=0.5)
             plt.title(
-                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g' \
-                % (ref_strain[k], s_value[k], beta[k])
+                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g'
+                % (ref_strain[k], s_value[k], beta[k]),
             )
         # END FOR
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)

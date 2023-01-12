@@ -14,42 +14,48 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 class Test_Helper_Site_Response(unittest.TestCase):
     def test_num_int(self):
-        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
+        accel, _ = hlp.read_two_column_stuff(
+            _join(f_dir, 'two_column_data_example.txt'),
+        )
         v, u = sr.num_int(accel)
 
         v_bench = np.array(
-            [[0.1000, 0.1000],
-             [0.2000, 0.3000],
-             [0.3000, 0.6000],
-             [0.4000, 1.0000],
-             [0.5000, 1.5000],
-             [0.6000, 1.7000],
-             [0.7000, 2.0000],
-             [0.8000, 2.4000],
-             [0.9000, 2.9000],
-             [1.0000, 3.5000],
-             [1.1000, 3.8000],
-             [1.2000, 4.2000],
-             [1.3000, 4.7000],
-             [1.4000, 5.3000],
-             [1.5000, 6.0000]]
+            [
+                [0.1000, 0.1000],
+                [0.2000, 0.3000],
+                [0.3000, 0.6000],
+                [0.4000, 1.0000],
+                [0.5000, 1.5000],
+                [0.6000, 1.7000],
+                [0.7000, 2.0000],
+                [0.8000, 2.4000],
+                [0.9000, 2.9000],
+                [1.0000, 3.5000],
+                [1.1000, 3.8000],
+                [1.2000, 4.2000],
+                [1.3000, 4.7000],
+                [1.4000, 5.3000],
+                [1.5000, 6.0000],
+            ],
         )
         u_bench = np.array(
-            [[0.1000, 0.0100],
-             [0.2000, 0.0400],
-             [0.3000, 0.1000],
-             [0.4000, 0.2000],
-             [0.5000, 0.3500],
-             [0.6000, 0.5200],
-             [0.7000, 0.7200],
-             [0.8000, 0.9600],
-             [0.9000, 1.2500],
-             [1.0000, 1.6000],
-             [1.1000, 1.9800],
-             [1.2000, 2.4000],
-             [1.3000, 2.8700],
-             [1.4000, 3.4000],
-             [1.5000, 4.0000]]
+            [
+                [0.1000, 0.0100],
+                [0.2000, 0.0400],
+                [0.3000, 0.1000],
+                [0.4000, 0.2000],
+                [0.5000, 0.3500],
+                [0.6000, 0.5200],
+                [0.7000, 0.7200],
+                [0.8000, 0.9600],
+                [0.9000, 1.2500],
+                [1.0000, 1.6000],
+                [1.1000, 1.9800],
+                [1.2000, 2.4000],
+                [1.3000, 2.8700],
+                [1.4000, 3.4000],
+                [1.5000, 4.0000],
+            ],
         )
 
         self.assertTrue(np.allclose(v, v_bench))
@@ -57,54 +63,66 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
     def test_num_diff(self):
         v_bench = np.array(
-            [[0.1000, 0.1000],
-             [0.2000, 0.3000],
-             [0.3000, 0.6000],
-             [0.4000, 1.0000],
-             [0.5000, 1.5000],
-             [0.6000, 1.7000],
-             [0.7000, 2.0000],
-             [0.8000, 2.4000],
-             [0.9000, 2.9000],
-             [1.0000, 3.5000]]
+            [
+                [0.1000, 0.1000],
+                [0.2000, 0.3000],
+                [0.3000, 0.6000],
+                [0.4000, 1.0000],
+                [0.5000, 1.5000],
+                [0.6000, 1.7000],
+                [0.7000, 2.0000],
+                [0.8000, 2.4000],
+                [0.9000, 2.9000],
+                [1.0000, 3.5000],
+            ],
         )
         v_bench[0, 1] = 0  # because the "initial offset" info is lost in num_diff
         displac = np.array(
-            [[0.1000, 0.0100],
-             [0.2000, 0.0400],
-             [0.3000, 0.1000],
-             [0.4000, 0.2000],
-             [0.5000, 0.3500],
-             [0.6000, 0.5200],
-             [0.7000, 0.7200],
-             [0.8000, 0.9600],
-             [0.9000, 1.2500],
-             [1.0000, 1.6000]]
+            [
+                [0.1000, 0.0100],
+                [0.2000, 0.0400],
+                [0.3000, 0.1000],
+                [0.4000, 0.2000],
+                [0.5000, 0.3500],
+                [0.6000, 0.5200],
+                [0.7000, 0.7200],
+                [0.8000, 0.9600],
+                [0.9000, 1.2500],
+                [1.0000, 1.6000],
+            ],
         )
         veloc = sr.num_diff(displac)
         self.assertTrue(np.allclose(veloc, v_bench))
 
     def test_stratify(self):
         prof1 = np.array(
-            [[3, 4, 5, 6, 0], [225, 225 * 2, 225 * 3, 225 * 2.4, 225 * 5]]
+            [[3, 4, 5, 6, 0], [225, 225 * 2, 225 * 3, 225 * 2.4, 225 * 5]],
         ).T
         prof1_ = sr.stratify(prof1)
 
         prof1_benchmark = np.array(
-            [[1, 1, 1, 2, 2, 2.5, 2.5, 2, 2, 2, 0],
-             [225, 225, 225, 450, 450, 675, 675, 540, 540, 540, 1125]]
+            [
+                [1, 1, 1, 2, 2, 2.5, 2.5, 2, 2, 2, 0],
+                [225, 225, 225, 450, 450, 675, 675, 540, 540, 540, 1125],
+            ],
         ).T
 
         self.assertTrue(np.allclose(prof1_, prof1_benchmark))
 
     def test_response_spectra(self):
-        accel, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
+        accel, _ = hlp.read_two_column_stuff(
+            _join(f_dir, 'two_column_data_example.txt'),
+        )
 
         T_min = 0.01
         T_max = 10
         n_pts = 50
         Tn, SA = sr.response_spectra(
-            accel, T_min=T_min, T_max=T_max, n_pts=n_pts, parallel=False,
+            accel,
+            T_min=T_min,
+            T_max=T_max,
+            n_pts=n_pts,
+            parallel=False,
         )[:2]
 
         Tn_bench = np.logspace(np.log10(T_min), np.log10(T_max), n_pts)
@@ -117,7 +135,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
              8.1594, 6.9023, 7.1242, 6.5462, 6.3940, 6.3472,
              6.7302, 7.0554, 7.2901, 7.6946, 7.6408, 7.1073,
              6.3034, 5.3997, 4.5102, 3.6991, 2.9946, 2.4023,
-             1.9156, 1.5218]
+             1.9156, 1.5218],
         )
 
         self.assertTrue(np.allclose(Tn, Tn_bench))
@@ -138,21 +156,25 @@ class Test_Helper_Site_Response(unittest.TestCase):
     def test_get_xi_rho(self):
         vs = np.array([100, 300, 500, 700, 900])
         xi, rho = sr.get_xi_rho(vs, formula_type=1)
-        self.assertTrue(np.allclose(xi, [.05, .02, .02, .02, .01]))
+        self.assertTrue(np.allclose(xi, [0.05, 0.02, 0.02, 0.02, 0.01]))
         self.assertTrue(np.allclose(rho, [1600, 1800, 1800, 1800, 2000]))
 
-        self.assertTrue(np.allclose(
-            sr.get_xi_rho(vs, formula_type=2)[0],
-            [0.0484, 0.0295, 0.0167, 0.0108, 0.0077],
-            atol=0.01,
-            rtol=0.0,
-        ))
-        self.assertTrue(np.allclose(
-            sr.get_xi_rho(vs, formula_type=3)[0],
-            [0.0833, 0.0278, 0.0167, 0.0119, 0.0093],
-            atol=0.01,
-            rtol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                sr.get_xi_rho(vs, formula_type=2)[0],
+                [0.0484, 0.0295, 0.0167, 0.0108, 0.0077],
+                atol=0.01,
+                rtol=0.0,
+            ),
+        )
+        self.assertTrue(
+            np.allclose(
+                sr.get_xi_rho(vs, formula_type=3)[0],
+                [0.0833, 0.0278, 0.0167, 0.0119, 0.0093],
+                atol=0.01,
+                rtol=0.0,
+            ),
+        )
 
     def test_calc_Vs30_and_VsZ(self):
         vs_profile = np.array([[10, 10, 10, 10], [200, 300, 400, 500]]).T
@@ -188,8 +210,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         dep_top = np.array([0, 6, 11, 15, 18, 20])
 
         self.assertTrue(np.allclose(sr.dep2thk(dep_top), thk))
-        self.assertTrue(np.allclose(sr.dep2thk(dep_top, include_halfspace=False),
-                                    thk[:-1]))
+        self.assertTrue(
+            np.allclose(sr.dep2thk(dep_top, include_halfspace=False), thk[:-1]),
+        )
         self.assertTrue(np.allclose(sr.thk2dep(thk, midpoint=True), dep_mid))
         self.assertTrue(np.allclose(sr.thk2dep(thk), dep_top))
 
@@ -206,13 +229,17 @@ class Test_Helper_Site_Response(unittest.TestCase):
         phase = -b * np.ones_like(freq)  # all frequencies are delayed by b rad
 
         motion_out = sr.amplify_motion(
-            input_motion, (freq, (amp, phase)), show_fig=True, taper=False,
+            input_motion,
+            (freq, (amp, phase)),
+            show_fig=True,
+            taper=False,
         )
 
         # you can calculate the response by hand:
         accel_out_bench = (
-            a * np.sin(time - b) + a * np.cos(2 * time + 1 - b) +
-            a * np.sin(4 * time + 2 - b)
+            a * np.sin(time - b)
+            + a * np.cos(2 * time + 1 - b)
+            + a * np.sin(4 * time + 2 - b)
         )
         motion_out_bench = np.column_stack((time, accel_out_bench))
 
@@ -243,7 +270,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
         strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([4, 6, 7])
         GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
-        self.assertTrue(np.allclose(GGmax, [1., 3. / 4, 7. / 3. / 4]))
+        self.assertTrue(np.allclose(GGmax, [1.0, 3.0 / 4, 7.0 / 3.0 / 4]))
 
     def test_calc_damping_from_stress_strain__case_1(self):
         # Case 1: Test linear stress strain: damping should be 0
@@ -275,12 +302,12 @@ class Test_Helper_Site_Response(unittest.TestCase):
         stress = np.array([1, 2, 2, 2])
         Gmax = stress[0] / strain[0]
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
-        self.assertTrue(np.allclose(damping, [0, 0, 2. / 3. / np.pi, 1. / np.pi]))
+        self.assertTrue(np.allclose(damping, [0, 0, 2.0 / 3.0 / np.pi, 1.0 / np.pi]))
 
     def test_calc_damping_from_stress_strain__case_3(self):
         # Case 3: An edge case -- the initial damping is, in theory, almost 0
         strain_in_1 = np.array(
-            [0.0001, 0.00011514, 0.000132571, 0.000152642, 0.000175751]
+            [0.0001, 0.00011514, 0.000132571, 0.000152642, 0.000175751],
         )
         stress = np.array([274768, 304917, 336106, 369023, 403429])
         Gmax = 3102980000.0
@@ -310,8 +337,13 @@ class Test_Helper_Site_Response(unittest.TestCase):
         curve = data[:, 2:4]
         with self.assertRaisesRegex(ValueError, 'provide a function to serialize'):
             sr.fit_all_damping_curves(
-                [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
-                n_gen=1, save_txt=True, func_serialize=None,
+                [curve],
+                hh.fit_HH_x_single_layer,
+                hh.tau_HH,
+                pop_size=1,
+                n_gen=1,
+                save_txt=True,
+                func_serialize=None,
             )
 
     def test_fit_all_damping_curves__exception_with_incorrect_func_serialize(self):
@@ -322,8 +354,13 @@ class Test_Helper_Site_Response(unittest.TestCase):
         curve = data[:, 2:4]
         with self.assertRaisesRegex(AssertionError, ''):
             sr.fit_all_damping_curves(
-                [curve], hh.fit_HH_x_single_layer, hh.tau_HH, pop_size=1,
-                n_gen=1, save_txt=True, txt_filename='1.txt',  # no effect anyways
+                [curve],
+                hh.fit_HH_x_single_layer,
+                hh.tau_HH,
+                pop_size=1,
+                n_gen=1,
+                save_txt=True,
+                txt_filename='1.txt',  # no effect anyways
                 func_serialize=mkz.serialize_params_to_array,
             )
 

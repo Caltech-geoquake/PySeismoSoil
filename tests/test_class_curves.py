@@ -5,8 +5,13 @@ import os
 from os.path import join as _join
 
 from PySeismoSoil.class_curves import (
-    Curve, GGmax_Curve, Damping_Curve, Stress_Curve, Multiple_Damping_Curves,
-    Multiple_GGmax_Curves, Multiple_GGmax_Damping_Curves,
+    Curve,
+    GGmax_Curve,
+    Damping_Curve,
+    Stress_Curve,
+    Multiple_Damping_Curves,
+    Multiple_GGmax_Curves,
+    Multiple_GGmax_Damping_Curves,
 )
 
 
@@ -19,8 +24,16 @@ class Test_Class_Curves(unittest.TestCase):
         curve = Curve(data[:, 2:4])
         damping_data = curve.raw_data[:, 1]
         damping_bench = [
-            1.6683, 1.8386, 2.4095, 3.8574, 7.4976,
-            12.686, 18.102, 21.005, 21.783, 21.052,
+            1.6683,
+            1.8386,
+            2.4095,
+            3.8574,
+            7.4976,
+            12.686,
+            18.102,
+            21.005,
+            21.783,
+            21.052,
         ]
         self.assertTrue(np.allclose(damping_data, damping_bench))
 
@@ -38,8 +51,9 @@ class Test_Class_Curves(unittest.TestCase):
         curve = Damping_Curve(data[:, 2:4])
 
         try:
-            hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
-                                       use_scipy=False)
+            hhx = curve.get_HH_x_param(
+                pop_size=1, n_gen=1, show_fig=True, use_scipy=False,
+            )
             self.assertEqual(len(hhx), 9)
             self.assertEqual(
                 hhx.keys(),
@@ -48,8 +62,7 @@ class Test_Class_Curves(unittest.TestCase):
         except ImportError:  # DEAP library may not be installed
             pass
 
-        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True,
-                                   use_scipy=True)
+        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True, use_scipy=True)
         self.assertEqual(len(hhx), 9)
         self.assertEqual(
             hhx.keys(),
@@ -62,7 +75,10 @@ class Test_Class_Curves(unittest.TestCase):
 
         try:
             h4x = curve.get_H4_x_param(
-                pop_size=1, n_gen=1, show_fig=True, use_scipy=False,
+                pop_size=1,
+                n_gen=1,
+                show_fig=True,
+                use_scipy=False,
             )
             self.assertEqual(len(h4x), 4)
             self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
@@ -70,7 +86,10 @@ class Test_Class_Curves(unittest.TestCase):
             pass
 
         h4x = curve.get_H4_x_param(
-            pop_size=1, n_gen=1, show_fig=True, use_scipy=True,
+            pop_size=1,
+            n_gen=1,
+            show_fig=True,
+            use_scipy=True,
         )
         self.assertEqual(len(h4x), 4)
         self.assertEqual(h4x.keys(), {'gamma_ref', 's', 'beta', 'Gmax'})
@@ -93,8 +112,16 @@ class Test_Class_Curves(unittest.TestCase):
         # Test __getitem__
         strain_bench = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
         damping_bench = [
-            1.6683, 1.8386, 2.4095, 3.8574, 7.4976,
-            12.686, 18.102, 21.005, 21.783, 21.052,
+            1.6683,
+            1.8386,
+            2.4095,
+            3.8574,
+            7.4976,
+            12.686,
+            18.102,
+            21.005,
+            21.783,
+            21.052,
         ]
         layer_0_bench = np.column_stack((strain_bench, damping_bench))
         self.assertTrue(np.allclose(mdc[0].raw_data, layer_0_bench))
@@ -135,7 +162,10 @@ class Test_Class_Curves(unittest.TestCase):
         mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc_ = mdc[:2]
         hhx = mdc_.get_all_HH_x_params(
-            pop_size=1, n_gen=1, save_txt=False, use_scipy=True,
+            pop_size=1,
+            n_gen=1,
+            save_txt=False,
+            use_scipy=True,
         )
         self.assertEqual(len(hhx), 2)
         self.assertTrue(isinstance(hhx[0].data, dict))
@@ -149,7 +179,10 @@ class Test_Class_Curves(unittest.TestCase):
         mdc_ = mdc[:2]
         try:
             hhx = mdc_.get_all_HH_x_params(
-                pop_size=1, n_gen=1, save_txt=False, use_scipy=False,
+                pop_size=1,
+                n_gen=1,
+                save_txt=False,
+                use_scipy=False,
             )
             self.assertEqual(len(hhx), 2)
             self.assertTrue(isinstance(hhx[0].data, dict))
@@ -164,7 +197,10 @@ class Test_Class_Curves(unittest.TestCase):
         mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         mdc_ = mdc[:2]
         h4x = mdc_.get_all_H4_x_params(
-            pop_size=1, n_gen=1, save_txt=False, use_scipy=True,
+            pop_size=1,
+            n_gen=1,
+            save_txt=False,
+            use_scipy=True,
         )
         self.assertEqual(len(h4x), 2)
         self.assertTrue(isinstance(h4x[0].data, dict))
@@ -175,7 +211,10 @@ class Test_Class_Curves(unittest.TestCase):
         mdc_ = mdc[:2]
         try:
             h4x = mdc_.get_all_H4_x_params(
-                pop_size=1, n_gen=1, save_txt=False, use_scipy=False,
+                pop_size=1,
+                n_gen=1,
+                save_txt=False,
+                use_scipy=False,
             )
             self.assertEqual(len(h4x), 2)
             self.assertTrue(isinstance(h4x[0].data, dict))
@@ -241,7 +280,9 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
 
         # Case 3: with a file name
-        with self.assertRaisesRegex(TypeError, 'must be a 2D numpy array or a file name'):
+        with self.assertRaisesRegex(
+            TypeError, 'must be a 2D numpy array or a file name',
+        ):
             Multiple_GGmax_Damping_Curves(data=3.5)
         mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()

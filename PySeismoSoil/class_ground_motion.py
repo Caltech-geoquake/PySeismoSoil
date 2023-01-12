@@ -2,9 +2,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
-from . import helper_signal_processing as sig
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil import helper_signal_processing as sig
 
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
 from PySeismoSoil.class_Vs_profile import Vs_Profile
@@ -80,8 +80,15 @@ class Ground_Motion:
     _path_name, _file_name : str
         Names of the directory and file of the input data, if a file name.
     """
+
     def __init__(
-            self, data, *, unit, motion_type='accel', dt=None, sep='\t',
+            self,
+            data,
+            *,
+            unit,
+            motion_type='accel',
+            dt=None,
+            sep='\t',
             **kwargs_to_genfromtxt,
     ):
         if isinstance(data, str):  # a file name
@@ -97,7 +104,7 @@ class Ground_Motion:
                 raise ValueError("Please use '/s/s' instead of 's^2' in `unit`.")
             else:
                 raise ValueError(
-                    "Invalid `unit` name. Valid names are: %s" % valid_unit_name
+                    'Invalid `unit` name. Valid names are: %s' % valid_unit_name,
                 )
 
         if motion_type not in ['accel', 'veloc', 'displ']:
@@ -105,7 +112,7 @@ class Ground_Motion:
 
         if (unit == 'g' or unit == 'gal') and motion_type != 'accel':
             raise ValueError(
-                "If unit is 'g' or 'gal', then `motion_type` must be 'accel'."
+                "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
             )
 
         if unit in ['cm', 'cm/s', 'cm/s/s', 'gal']:
@@ -134,7 +141,7 @@ class Ground_Motion:
         self.pgd = float(np.max(np.abs(self.displ[:, 1])))
 
         self.pga_in_gal = self.pga * 100.0
-        self.pga_in_g   = self.pga / 9.81
+        self.pga_in_g = self.pga / 9.81
         self.pgv_in_cm_s = self.pgv * 100.0
         self.pgd_in_cm = self.pgd * 100.0
 
@@ -146,23 +153,31 @@ class Ground_Motion:
         self.rms_accel, self.rms_veloc, self.rms_displ = self.__calc_RMS()
 
     def __repr__(self):
-        """
-        Basic information of a ground motion.
-        """
-        text = 'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'\
-               % (self.npts, self.dt, self.pga_in_g, self.pga_in_gal,
-                  self.pgv_in_cm_s, self.pgd_in_cm, self.T5_95)
+        """Return basic information of a ground motion."""
+        text = (
+            'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'
+            % (
+                self.npts,
+                self.dt,
+                self.pga_in_g,
+                self.pga_in_gal,
+                self.pgv_in_cm_s,
+                self.pgd_in_cm,
+                self.T5_95,
+            )
+        )
         return text
 
     def summary(self):
-        """
-        Show a brief summary of the ground motion.
-        """
+        """Show a brief summary of the ground motion."""
         print(self)
         self.plot()
 
     def get_Fourier_spectrum(
-            self, real_val=True, double_sided=False, show_fig=False,
+            self,
+            real_val=True,
+            double_sided=False,
+            show_fig=False,
     ):
         """
         Get Fourier spectrum of the ground motion.
@@ -184,14 +199,24 @@ class Ground_Motion:
             A frequency spectrum object.
         """
         x = sig.fourier_transform(
-            self.accel, real_val=real_val, double_sided=double_sided, show_fig=show_fig,
+            self.accel,
+            real_val=real_val,
+            double_sided=double_sided,
+            show_fig=show_fig,
         )
         fs = FS(x)
         return fs
 
     def get_response_spectra(
-            self, T_min=0.01, T_max=10, n_pts=60, damping=0.05, show_fig=True,
-            parallel=False, n_cores=None, subsample_interval=1,
+            self,
+            T_min=0.01,
+            T_max=10,
+            n_pts=60,
+            damping=0.05,
+            show_fig=True,
+            parallel=False,
+            n_cores=None,
+            subsample_interval=1,
     ):
         """
         Get elastic response spectra of the ground motion, using the "exact"
@@ -229,16 +254,21 @@ class Ground_Motion:
             and frequencies, respectively. Units: SI.
         """
         rs = sr.response_spectra(
-            self.accel, damping=damping, T_min=T_min,
-            T_max=T_max, n_pts=n_pts, show_fig=show_fig,
-            parallel=parallel, n_cores=n_cores,
+            self.accel,
+            damping=damping,
+            T_min=T_min,
+            T_max=T_max,
+            n_pts=n_pts,
+            show_fig=show_fig,
+            parallel=parallel,
+            n_cores=n_cores,
             subsample_interval=subsample_interval,
         )
         return rs
 
     def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5, 6), dpi=100):
         """
-        Plots acceleration, velocity, and displacement waveforms together.
+        Plot acceleration, velocity, and displacement waveforms together.
 
         Parameters
         ----------
@@ -277,8 +307,13 @@ class Ground_Motion:
             raise ValueError("`show_as_unit` can only be 'm', 'cm', or 'g'.")
 
         fig, ax = sr.plot_motion(
-            accel_, unit=show_as_unit, title=title,
-            fig=fig, ax=ax, figsize=figsize, dpi=dpi,
+            accel_,
+            unit=show_as_unit,
+            title=title,
+            fig=fig,
+            ax=ax,
+            figsize=figsize,
+            dpi=dpi,
         )
         return fig, ax
 
@@ -381,7 +416,7 @@ class Ground_Motion:
 
         dt = t[1] - t[0]
         Ia_1col = np.zeros(n)
-        a_sq = a ** 2.0
+        a_sq = a**2.0
 
         for i in range(1, n):
             Ia_1col[i] = Ia_1col[i - 1] + np.pi / (2 * g) * a_sq[i - 1] * dt
@@ -437,7 +472,7 @@ class Ground_Motion:
         acc_scaled = acc * factor
         return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
 
-    def truncate(self, limit, arias=True, extend=[0, 0], show_fig=False):
+    def truncate(self, limit, arias=True, extend=(0, 0), show_fig=False):
         """
         Truncate ground motion, removing data points in the head and/or tail.
 
@@ -455,7 +490,7 @@ class Ground_Motion:
             time limits are [3, 50] sec, then the actual time limits are
             [0, 55] sec. (3 - 5 = -2 smaller than 0, so truncated at 0.)
         show_fig : bool
-            Whether or not to show the waveforms before and after truncation.
+            Whether to show the waveforms before and after truncation.
 
         Returns
         -------
@@ -501,7 +536,7 @@ class Ground_Motion:
         if n2 > self.npts:
             n2 = self.npts
 
-        time_trunc = self.accel[:n2 - n1, 0]
+        time_trunc = self.accel[: n2 - n1, 0]
         accel_trunc = self.accel[n1:n2, 1]
         truncated = np.column_stack((time_trunc, accel_trunc))
 
@@ -512,20 +547,22 @@ class Ground_Motion:
 
             ax[0] = fig.add_subplot(3, 1, 1)
             ax[0].plot(self.time, self.accel[:, 1], 'gray', lw=1.75, label='original')
-            ax[0].plot(self.time[n1:n2], truncated[:, 1], 'm', lw=1., label='truncated')
+            ax[0].plot(
+                self.time[n1:n2], truncated[:, 1], 'm', lw=1.0, label='truncated',
+            )
             ax[0].grid(ls=':')
             ax[0].set_ylabel('Accel. [m/s/s]')
             ax[0].legend(loc='best')
 
             ax[1] = fig.add_subplot(3, 1, 2)
             ax[1].plot(self.time, self.veloc[:, 1], 'gray', lw=1.75)
-            ax[1].plot(self.time[n1:n2], sr.num_int(truncated)[0][:, 1], 'm', lw=1.)
+            ax[1].plot(self.time[n1:n2], sr.num_int(truncated)[0][:, 1], 'm', lw=1.0)
             ax[1].grid(ls=':')
             ax[1].set_ylabel('Veloc. [m/s]')
 
             ax[2] = fig.add_subplot(3, 1, 3)
             ax[2].plot(self.time, self.displ[:, 1], 'gray', lw=1.75)
-            ax[2].plot(self.time[n1:n2], sr.num_int(truncated)[1][:, 1], 'm', lw=1.)
+            ax[2].plot(self.time[n1:n2], sr.num_int(truncated)[1][:, 1], 'm', lw=1.0)
             ax[2].grid(ls=':')
             ax[2].set_ylabel('Displ. [m]')
             ax[2].set_xlabel('Time [sec]')
@@ -537,8 +574,14 @@ class Ground_Motion:
         return Ground_Motion(truncated, unit='m'), fig, ax, (n1, n2)
 
     def amplify_by_tf(
-            self, transfer_function, taper=False, extrap_tf=True,
-            deconv=False, show_fig=False, dpi=100, return_fig_obj=False,
+            self,
+            transfer_function,
+            taper=False,
+            extrap_tf=True,
+            deconv=False,
+            show_fig=False,
+            dpi=100,
+            return_fig_obj=False,
     ):
         """
         Amplify (or de-amplify) ground motions in the frequency domain. The
@@ -562,13 +605,13 @@ class Ground_Motion:
             If ``False``, a regular amplification is performed; otherwise, the
             transfer function is "deducted" from the input motion ("deconvolution").
         show_fig : bool
-            Whether or not to show an illustration of how the calculation is
+            Whether to show an illustration of how the calculation is
             carried out.
         dpi : int
             Desired DPI for the figures; only effective when ``show_fig`` is
             ``True``.
         return_fig_obj : bool
-            Whether or not to return figure and axis objects to the caller.
+            Whether to return figure and axis objects to the caller.
 
         Returns
         -------
@@ -591,7 +634,7 @@ class Ground_Motion:
         if not isinstance(transfer_function, FS):
             raise TypeError(
                 '`transfer_function` needs to be of type '
-                '`Frequency_Spectrum` (or its subclass).'
+                '`Frequency_Spectrum` (or its subclass).',
             )
         freq = transfer_function.freq
         tf_1col = transfer_function.spectrum
@@ -625,7 +668,7 @@ class Ground_Motion:
         boundary : {'elastic', 'rigid'}
             The type of boundary of the bottom of the soil profile.
         show_fig : bool
-            Whether or not to show a figure that illustrates the deconvolution
+            Whether to show a figure that illustrates the deconvolution
             process.
 
         Returns
@@ -639,15 +682,22 @@ class Ground_Motion:
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI
         response = sr.linear_site_resp(
-            vs_profile, surface_motion, deconv=False,
-            boundary=boundary, show_fig=show_fig,
+            vs_profile,
+            surface_motion,
+            deconv=False,
+            boundary=boundary,
+            show_fig=show_fig,
         )[0]
         output_motion = Ground_Motion(response, unit='m')
         return output_motion
 
     def compare(
-            self, another_ground_motion, this_ground_motion_as_input=True,
-            smooth=True, input_accel_label='Input', output_accel_label='Output',
+            self,
+            another_ground_motion,
+            this_ground_motion_as_input=True,
+            smooth=True,
+            input_accel_label='Input',
+            output_accel_label='Output',
     ):
         """
         Compare with another ground motion: plot comparison figures showing
@@ -661,7 +711,7 @@ class Ground_Motion:
             If ``True``, this ground motion is treated as the input ground
             motion. Otherwise, the other ground motion is treated as the input.
         smooth : bool
-            In the comparison plot, whether or not to also show the smoothed
+            In the comparison plot, whether to also show the smoothed
             amplification factor.
         input_accel_label : str
             The text label for the input acceleration in the figure legend.
@@ -714,7 +764,7 @@ class Ground_Motion:
         boundary : {'elastic', 'rigid'}
             The type of boundary of the bottom of the soil profile.
         show_fig : bool
-            Whether or not to show a figure that illustrates the deconvolution
+            Whether to show a figure that illustrates the deconvolution
             process.
 
         Returns
@@ -728,8 +778,11 @@ class Ground_Motion:
         vs_profile = soil_profile.vs_profile
         surface_motion = self.accel  # note: unit is SI
         response = sr.linear_site_resp(
-            vs_profile, surface_motion, deconv=True,
-            boundary=boundary, show_fig=show_fig,
+            vs_profile,
+            surface_motion,
+            deconv=True,
+            boundary=boundary,
+            show_fig=show_fig,
         )[0]
         deconv_motion = Ground_Motion(response, unit='m')
         return deconv_motion
@@ -745,7 +798,7 @@ class Ground_Motion:
             The frequency (unit: Hz) for high passing. Energies below this
             frequency are filtered out.
         show_fig : bool
-            Whether or not to show figures comparing before and after.
+            Whether to show figures comparing before and after.
 
         Returns
         -------
@@ -776,8 +829,11 @@ class Ground_Motion:
             Filtered signal.
         """
         accel_ = sig.lowpass(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return Ground_Motion(accel_, unit='m')
 
@@ -802,8 +858,11 @@ class Ground_Motion:
             Filtered signal.
         """
         accel_ = sig.highpass(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return Ground_Motion(accel_, unit='m')
 
@@ -828,8 +887,11 @@ class Ground_Motion:
             Filtered signal
         """
         accel_ = sig.bandpass(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return Ground_Motion(accel_, unit='m')
 
@@ -855,16 +917,24 @@ class Ground_Motion:
             Filtered signal
         """
         accel_ = sig.bandstop(
-            self.accel, cutoff_freq, show_fig=show_fig,
-            filter_order=filter_order, padlen=padlen,
+            self.accel,
+            cutoff_freq,
+            show_fig=show_fig,
+            filter_order=filter_order,
+            padlen=padlen,
         )
         return Ground_Motion(accel_, unit='m')
 
     def save_accel(
-            self, fname, sep='\t', t_prec='%.5g', motion_prec='%.5g', unit='m/s/s',
+            self,
+            fname,
+            sep='\t',
+            t_prec='%.5g',
+            motion_prec='%.5g',
+            unit='m/s/s',
     ):
         """
-        Saves the acceleration as a text file.
+        Save the acceleration as a text file.
 
         Parameters
         ----------

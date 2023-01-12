@@ -1,9 +1,9 @@
 import numpy as np
 
-from . import helper_site_response as sr
+from PySeismoSoil import helper_site_response as sr
 
-from .class_ground_motion import Ground_Motion
-from .class_site_factors import Site_Factors
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_site_factors import Site_Factors
 
 
 class Site_Effect_Adjustment:
@@ -37,6 +37,7 @@ class Site_Effect_Adjustment:
     PGA_in_g : float
         Peak ground acceleration of the input motion. (Unit: g)
     """
+
     def __init__(
             self,
             input_motion,
@@ -61,7 +62,10 @@ class Site_Effect_Adjustment:
         PGA_in_g = input_motion.pga_in_g
 
         site_factor = Site_Factors(
-            Vs30_in_meter_per_sec, z1_in_m, PGA_in_g, lenient=lenient,
+            Vs30_in_meter_per_sec,
+            z1_in_m,
+            PGA_in_g,
+            lenient=lenient,
         )
 
         self.input_motion = input_motion
@@ -79,7 +83,7 @@ class Site_Effect_Adjustment:
         Parameters
         ----------
         show_fig : bool
-            Whether or not to show a figure demonstrating how the adjustment
+            Whether to show a figure demonstrating how the adjustment
             works.
         return_fig_obj : bool
             Whether to return the figure and axes objects.
@@ -104,19 +108,19 @@ class Site_Effect_Adjustment:
                 'Warning in Site_Effect_Adjustment.run(): the frequency '
                 'arrays of the amplification factor '
                 'and the phase factor are not identical---something may '
-                'be wrong in class_site_factors.py.'
+                'be wrong in class_site_factors.py.',
             )
         if af.iscomplex:
             print(
                 'Warning in Site_Effect_Adjustment.run(): the '
                 'amplification factor is complex, rather than '
-                'real---something may be wrong in class_site_factors.py'
+                'real---something may be wrong in class_site_factors.py',
             )
         if phf.iscomplex:
             print(
                 'Warning in Site_Effect_Adjustment.run(): the phase '
                 'factor is complex, rather than '
-                'real---something may be wrong in class_site_factors.py'
+                'real---something may be wrong in class_site_factors.py',
             )
 
         freq = af.freq
@@ -137,8 +141,8 @@ class Site_Effect_Adjustment:
             ax[0].set_ylabel('Accel. [m/s/s]')
             ax[0].set_title(
                 '$V_{S30}$=%.1fm/s, $z_1$=%.1fm, '
-                '$\mathrm{PGA}_{\mathrm{input}}$=%.3g$g$' % \
-                (self.Vs30, self.z1, self.PGA_in_g)
+                r'$\mathrm{PGA}_{\mathrm{input}}$=%.3g$g$'
+                % (self.Vs30, self.z1, self.PGA_in_g),
             )
             ax[1].set_ylabel('Amplif. factor')
             ax[2].set_ylabel('Phase factor [rad]')

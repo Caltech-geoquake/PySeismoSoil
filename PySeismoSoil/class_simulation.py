@@ -6,17 +6,17 @@ import subprocess
 import numpy as np
 import pkg_resources
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
-from . import helper_simulations as sim
-from . import helper_signal_processing as sig
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil import helper_simulations as sim
+from PySeismoSoil import helper_signal_processing as sig
 
-from .class_ground_motion import Ground_Motion
-from .class_Vs_profile import Vs_Profile
-from .class_parameters import Param_Multi_Layer
-from .class_curves import Multiple_GGmax_Damping_Curves
-from .class_simulation_results import Simulation_Results
-from .class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil.class_parameters import Param_Multi_Layer
+from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 
 class Simulation:
@@ -47,9 +47,16 @@ class Simulation:
     ----------
     Attributes same as the inputs
     """
+
     def __init__(
-            self, soil_profile, input_motion, *, boundary='elastic',
-            G_param=None, xi_param=None, GGmax_and_damping_curves=None,
+            self,
+            soil_profile,
+            input_motion,
+            *,
+            boundary='elastic',
+            G_param=None,
+            xi_param=None,
+            GGmax_and_damping_curves=None,
     ):
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
@@ -65,22 +72,21 @@ class Simulation:
             raise TypeError(
                 '`G_param` must be of a subclass of '
                 '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
-                'or `MKZ_Param_Multi_Layer`.'
+                'or `MKZ_Param_Multi_Layer`.',
             )
         if xi_param is not None and not isinstance(xi_param, Param_Multi_Layer):
             raise TypeError(
                 '`xi_param` must be of a subclass of '
                 '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
-                'or `MKZ_Param_Multi_Layer`.'
+                'or `MKZ_Param_Multi_Layer`.',
             )
 
-        if (
-            GGmax_and_damping_curves is not None and
-            not isinstance(GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves)
+        if GGmax_and_damping_curves is not None and not isinstance(
+            GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves,
         ):
             raise TypeError(
                 '`GGmax_and_damping_curves` must be a '
-                '`Multiple_GGmax_Curves` object.'
+                '`Multiple_GGmax_Curves` object.',
             )
 
         self.input_motion = input_motion
@@ -113,12 +119,22 @@ class Linear_Simulation(Simulation):
     ----------
     Attributes same as the inputs
     """
+
     def run(
-            self, every_layer=True, deconv=False, show_fig=False,
-            save_fig=False, motion_name=None, save_txt=False,
-            save_full_time_history=False, output_dir=None, verbose=True,
+            self,
+            every_layer=True,
+            deconv=False,
+            show_fig=False,
+            save_fig=False,
+            motion_name=None,
+            save_txt=False,
+            save_full_time_history=False,
+            output_dir=None,
+            verbose=True,
     ):
         """
+        Run linear simulation.
+
         Parameters
         ----------
         every_layer : bool
@@ -165,8 +181,17 @@ class Linear_Simulation(Simulation):
                 boundary=self.boundary,
             )
             (
-                new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
-                out_d, out_gamma, out_tau, max_avd, max_gt,
+                new_profile,
+                freq_array,
+                tf,
+                accel_on_surface,
+                out_a,
+                out_v,
+                out_d,
+                out_gamma,
+                out_tau,
+                max_avd,
+                max_gt,
             ) = results
 
             sim_results = Simulation_Results(
@@ -233,25 +258,35 @@ class Equiv_Linear_Simulation(Simulation):
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
     """
+
     def __init__(
-            self, soil_profile, input_motion, GGmax_and_damping_curves,
+            self,
+            soil_profile,
+            input_motion,
+            GGmax_and_damping_curves,
             boundary='elastic',
     ):
         if GGmax_and_damping_curves is None:
             raise TypeError('`GGmax_and_damping_curves` cannot be None.')
-        super(Equiv_Linear_Simulation, self).__init__(
+        super().__init__(
             soil_profile,
             input_motion,
             GGmax_and_damping_curves=GGmax_and_damping_curves,
             boundary=boundary,
         )
         sim.check_layer_count(
-            soil_profile, GGmax_and_damping_curves=GGmax_and_damping_curves,
+            soil_profile,
+            GGmax_and_damping_curves=GGmax_and_damping_curves,
         )
 
     def run(
-            self, verbose=True, show_fig=False, save_fig=False,
-            motion_name=None, save_txt=False, save_full_time_history=False,
+            self,
+            verbose=True,
+            show_fig=False,
+            save_fig=False,
+            motion_name=None,
+            save_txt=False,
+            save_full_time_history=False,
             output_dir=None,
     ):
         """
@@ -289,13 +324,25 @@ class Equiv_Linear_Simulation(Simulation):
         curve = self.GGmax_and_damping_curves.get_curve_matrix()
 
         results = sim.equiv_linear(
-            vs_profile, input_accel, curve,
-            boundary=self.boundary, verbose=verbose,
+            vs_profile,
+            input_accel,
+            curve,
+            boundary=self.boundary,
+            verbose=verbose,
         )
 
         (
-            new_profile, freq_array, tf, accel_on_surface, out_a, out_v,
-            out_d, out_gamma, out_tau, max_avd, max_gt,
+            new_profile,
+            freq_array,
+            tf,
+            accel_on_surface,
+            out_a,
+            out_v,
+            out_d,
+            out_gamma,
+            out_tau,
+            max_avd,
+            max_gt,
         ) = results
 
         sim_results = Simulation_Results(
@@ -319,7 +366,8 @@ class Equiv_Linear_Simulation(Simulation):
 
         if save_txt:
             sim_results.to_txt(
-                save_full_time_history=save_full_time_history, verbose=verbose,
+                save_full_time_history=save_full_time_history,
+                verbose=verbose,
             )
 
         return sim_results
@@ -351,24 +399,39 @@ class Nonlinear_Simulation(Simulation):
     ----------
     Attributes same as the inputs
     """
+
     def __init__(
-            self, soil_profile, input_motion, *, G_param, xi_param,
+            self,
+            soil_profile,
+            input_motion,
+            *,
+            G_param,
+            xi_param,
             boundary='elastic',
     ):
         if G_param is None:
             raise TypeError('`G_param` cannot be None.')
         if xi_param is None:
             raise TypeError('`xi_param` cannot be None.')
-        super(Nonlinear_Simulation, self).__init__(
-            soil_profile, input_motion,
-            G_param=G_param, xi_param=xi_param, boundary=boundary,
+        super().__init__(
+            soil_profile,
+            input_motion,
+            G_param=G_param,
+            xi_param=xi_param,
+            boundary=boundary,
         )
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
     def run(
-            self, sim_dir=None, motion_name=None, save_txt=False,
-            save_full_time_history=True, show_fig=False, save_fig=False,
-            remove_sim_dir=False, verbose=True,
+            self,
+            sim_dir=None,
+            motion_name=None,
+            save_txt=False,
+            save_full_time_history=True,
+            show_fig=False,
+            save_fig=False,
+            remove_sim_dir=False,
+            verbose=True,
     ):
         """
         Start nonlinear simulation.
@@ -404,6 +467,11 @@ class Nonlinear_Simulation(Simulation):
         -------
         sim_results : Simulation_Results
             An object that contains all the simulation results.
+
+        Raises
+        ------
+        ValueError
+            When unknown operating system is encountered
         """
         if verbose:
             print('Nonlinear simulation running...')
@@ -426,7 +494,10 @@ class Nonlinear_Simulation(Simulation):
         if os.path.exists(sim_dir):
             sim_dir += '_'
         os.makedirs(sim_dir)
-        os.chmod(sim_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+        os.chmod(
+            sim_dir,
+            stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
+        )
 
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
@@ -438,16 +509,18 @@ class Nonlinear_Simulation(Simulation):
 
         # Three coefficients (tau, alpha, beta) for modeling Q, from Table 1
         # of Liu and Archuleta (2006) BSSA
-        tabk = np.array([
-            [1.72333E-03, 1.66958E-02, 8.98758E-02],
-            [1.80701E-03, 3.81644E-02, 6.84635E-02],
-            [5.38887E-03, 9.84666E-03, 9.67052E-02],
-            [1.99322E-02, -1.36803E-02, 1.20172E-01],
-            [8.49833E-02, -2.85125E-02, 1.30728E-01],
-            [4.09335E-01, -5.37309E-02, 1.38746E-01],
-            [2.05951E+00, -6.65035E-02, 1.40705E-01],
-            [1.32629E+01, -1.33696E-01, 2.14647E-01],
-        ])
+        tabk = np.array(
+            [
+                [1.72333e-03, 1.66958e-02, 8.98758e-02],
+                [1.80701e-03, 3.81644e-02, 6.84635e-02],
+                [5.38887e-03, 9.84666e-03, 9.67052e-02],
+                [1.99322e-02, -1.36803e-02, 1.20172e-01],
+                [8.49833e-02, -2.85125e-02, 1.30728e-01],
+                [4.09335e-01, -5.37309e-02, 1.38746e-01],
+                [2.05951e00, -6.65035e-02, 1.40705e-01],
+                [1.32629e01, -1.33696e-01, 2.14647e-01],
+            ],
+        )
 
         # --------- Re-discretize Vs profile -----------------------------------
         new_profile = sr.stratify(self.soil_profile.vs_profile)
@@ -478,7 +551,8 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
         dir_exec_files = pkg_resources.resource_filename(
-            'PySeismoSoil', 'exec_files',
+            'PySeismoSoil',
+            'exec_files',
         )
         shutil.copy(os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir)
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
@@ -486,16 +560,20 @@ class Nonlinear_Simulation(Simulation):
         # -------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
             fp.write(
-                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f' \
-                % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs)
+                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
+                % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs),
             )
 
         # -------- Write data to files for the Fortran kernel to read ----------
         np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
         np.savetxt(os.path.join(sim_dir, 'incident.dat'), input_accel)
         np.savetxt(os.path.join(sim_dir, 'curve.dat'), curves)
-        np.savetxt(os.path.join(sim_dir, 'HH_G.dat'), self.G_param.serialize_to_2D_array())
-        np.savetxt(os.path.join(sim_dir, 'HH_x.dat'), self.xi_param.serialize_to_2D_array())
+        np.savetxt(
+            os.path.join(sim_dir, 'HH_G.dat'), self.G_param.serialize_to_2D_array(),
+        )
+        np.savetxt(
+            os.path.join(sim_dir, 'HH_x.dat'), self.xi_param.serialize_to_2D_array(),
+        )
 
         # ------- Execute Fortran kernel ---------------------------------------
         cwd = os.getcwd()
@@ -556,11 +634,15 @@ class Nonlinear_Simulation(Simulation):
         accel_surface = out_a[:, 0]
         accel_surface_2col = np.column_stack((t, accel_surface))
         tf_unsmoothed = sig.calc_transfer_function(
-            self.input_motion.accel, accel_surface_2col, amplitude_only=False,
+            self.input_motion.accel,
+            accel_surface_2col,
+            amplitude_only=False,
         )
         tf_smoothed = sig.calc_transfer_function(
-            self.input_motion.accel, accel_surface_2col,
-            amplitude_only=True, smooth_signal=True,
+            self.input_motion.accel,
+            accel_surface_2col,
+            amplitude_only=True,
+            smooth_signal=True,
         )
         os.chdir(cwd)
 
@@ -590,7 +672,8 @@ class Nonlinear_Simulation(Simulation):
 
         if save_txt:
             sim_results.to_txt(
-                save_full_time_history=save_full_time_history, verbose=verbose,
+                save_full_time_history=save_full_time_history,
+                verbose=verbose,
             )
 
         if not save_txt and not save_fig and remove_sim_dir:

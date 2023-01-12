@@ -2,12 +2,14 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_hh_model as hh
-from . import helper_mkz_model as mkz
-from . import helper_site_response as sr
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_hh_model as hh
+from PySeismoSoil import helper_mkz_model as mkz
+from PySeismoSoil import helper_site_response as sr
 
-from .class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+
+STRAIN_RANGE_PCT = np.logspace(-2, 1)
 
 
 class Parameter(collections.UserDict):
@@ -36,23 +38,26 @@ class Parameter(collections.UserDict):
     allowable_keys : set<str>
         Same as the input parameter.
     """
+
     def __init__(self, param_dict, *, allowable_keys=None, func_stress=None):
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
-        if not isinstance(allowable_keys, set) \
-           or any([type(_) != str for _ in allowable_keys]):
+        if not isinstance(allowable_keys, set) or any(
+            type(_) != str for _ in allowable_keys
+        ):
             raise TypeError('`allowable_keys` should be a set of str.')
         if param_dict.keys() != allowable_keys:
             raise KeyError(
-                "Invalid keys exist in your input data. We only "
-                "allow %s." % allowable_keys
+                'Invalid keys exist in your input data. We only '
+                'allow %s.' % allowable_keys,
             )
         self.allowable_keys = allowable_keys
         self.func_stress = func_stress
-        super(Parameter, self).__init__(param_dict)
+        super().__init__(param_dict)
 
     def __repr__(self):
         import json
+
         return json.dumps(self.data, indent=2).replace('"', '')
 
     def __setitem__(self, key, item):
@@ -66,7 +71,7 @@ class Parameter(collections.UserDict):
 
     def serialize(self):
         """
-        Serializes the parameter values into an array of floats. The order of
+        Serialize the parameter values into an array of floats. The order of
         the parameters are arbitrary, so any subclass of this class is
         recommended to override this method.
 
@@ -76,11 +81,11 @@ class Parameter(collections.UserDict):
             Serialized parameters.
         """
         param_array = []
-        for key, val in self.data.items():
+        for _, val in self.data.items():
             param_array.append(val)
         return np.array(param_array)
 
-    def get_stress(self, strain_in_pct=np.logspace(-2, 1)):
+    def get_stress(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Get the shear stress array inferred from the set of parameters
 
@@ -99,9 +104,9 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
         hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
-        return self.func_stress(strain_in_pct / 100., **self.data)
+        return self.func_stress(strain_in_pct / 100.0, **self.data)
 
-    def get_GGmax(self, strain_in_pct=np.logspace(-2, 1)):
+    def get_GGmax(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Get the G/Gmax array inferred from the set of parameters
 
@@ -120,11 +125,11 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
         Gmax = self.data['Gmax']
-        strain_in_1 = strain_in_pct / 100.
+        strain_in_1 = strain_in_pct / 100.0
         GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
         return GGmax
 
-    def get_damping(self, strain_in_pct=np.logspace(-2, 1)):
+    def get_damping(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Get the damping array inferred from the set of parameters
 
@@ -142,7 +147,9 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
         damping_in_1 = sr.calc_damping_from_param(
-            self.data, strain_in_pct / 100., self.func_stress,
+            self.data,
+            strain_in_pct / 100.0,
+            self.func_stress,
         )
         return damping_in_1 * 100
 
@@ -213,17 +220,28 @@ class HH_Param(Parameter):
     allowable_keys : set<str>
         Valid parameter names of the HH model.
     """
+
     def __init__(self, param_dict):
         allowable_keys = {
-            'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd',
+            'gamma_t',
+            'a',
+            'gamma_ref',
+            'beta',
+            's',
+            'Gmax',
+            'mu',
+            'Tmax',
+            'd',
         }
-        super(HH_Param, self).__init__(
-            param_dict, func_stress=hh.tau_HH, allowable_keys=allowable_keys,
+        super().__init__(
+            param_dict,
+            func_stress=hh.tau_HH,
+            allowable_keys=allowable_keys,
         )
 
     def serialize(self):
         """
-        Returns an array of parameter values in the order of:
+        Return an array of parameter values in the order of:
         {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
         """
         return hh.serialize_params_to_array(self.data)
@@ -247,21 +265,24 @@ class MKZ_Param(Parameter):
     allowable_keys : set<str>
         Valid parameter names of the MKZ model.
     """
+
     def __init__(self, param_dict):
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
-        super(MKZ_Param, self).__init__(
-            param_dict, func_stress=mkz.tau_MKZ, allowable_keys=allowable_keys,
+        super().__init__(
+            param_dict,
+            func_stress=mkz.tau_MKZ,
+            allowable_keys=allowable_keys,
         )
 
     def serialize(self):
         """
-        Returns an array of parameter values in the order of:
+        Return an array of parameter values in the order of:
         {'gamma_ref', 's', 'beta', 'Gmax'}
         """
         return mkz.serialize_params_to_array(self.data)
 
 
-class Param_Multi_Layer():
+class Param_Multi_Layer:
     """
     Class implementation of multiple curves.
 
@@ -293,6 +314,7 @@ class Param_Multi_Layer():
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     """
+
     def __init__(self, list_of_param_data, *, element_class):
         param_list = []
         for param_data in list_of_param_data:
@@ -302,7 +324,7 @@ class Param_Multi_Layer():
                 param_list.append(param_data)
             else:
                 raise TypeError(
-                    'An element in ``list_of_param_data`` has invalid type.'
+                    'An element in ``list_of_param_data`` has invalid type.',
                 )
         self.param_list = param_list
         self.n_layer = len(param_list)
@@ -327,7 +349,7 @@ class Param_Multi_Layer():
         del self.param_list[i]
         self.n_layer -= 1
 
-    def construct_curves(self, strain_in_pct=np.logspace(-2, 1)):
+    def construct_curves(self, strain_in_pct=STRAIN_RANGE_PCT):
         """
         Construct G/Gmax and damping curves from parameter values.
 
@@ -343,18 +365,15 @@ class Param_Multi_Layer():
         mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
-        strain_in_pct = np.logspace(-2, 1)
         curves = None
         for param in self.param_list:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
-                curves = np.column_stack(
-                    (strain_in_pct, GGmax, strain_in_pct, damping)
-                )
+                curves = np.column_stack((strain_in_pct, GGmax, strain_in_pct, damping))
             else:
                 curves = np.column_stack(
-                    (curves, strain_in_pct, GGmax, strain_in_pct, damping)
+                    (curves, strain_in_pct, GGmax, strain_in_pct, damping),
                 )
 
         mgdc = Multiple_GGmax_Damping_Curves(data=curves)
@@ -367,7 +386,7 @@ class Param_Multi_Layer():
 
         Returns
         -------
-        param_2D_array : numpy.array
+        param_2D_array : numpy.ndarray
             A 2D numpy array whose columns are parameters of each layer.
         """
         output = []
@@ -395,7 +414,11 @@ class Param_Multi_Layer():
         """
         param_2D_array = self.serialize_to_2D_array()
         np.savetxt(
-            filename, param_2D_array, fmt=precision, delimiter=sep, **kw_to_savetxt,
+            filename,
+            param_2D_array,
+            fmt=precision,
+            delimiter=sep,
+            **kw_to_savetxt,
         )
 
 
@@ -443,6 +466,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     """
+
     def __init__(self, filename_or_data, *, sep='\t'):
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
@@ -465,8 +489,9 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
         self._sep = sep
 
-        super(HH_Param_Multi_Layer, self).__init__(
-            list_of_param, element_class=HH_Param,
+        super().__init__(
+            list_of_param,
+            element_class=HH_Param,
         )
 
 
@@ -514,6 +539,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     n_layer : int
         The number of soil layers (i.e., the length of the list).
     """
+
     def __init__(self, filename_or_data, *, sep='\t'):
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
@@ -536,6 +562,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
         self._sep = sep
 
-        super(MKZ_Param_Multi_Layer, self).__init__(
-            list_of_param, element_class=MKZ_Param,
+        super().__init__(
+            list_of_param,
+            element_class=MKZ_Param,
         )

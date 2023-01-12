@@ -2,8 +2,8 @@ import time
 import numpy as np
 from scipy.optimize import fsolve
 
-from .class_Vs_profile import Vs_Profile
-from . import helper_site_response as sr
+from PySeismoSoil.class_Vs_profile import Vs_Profile
+from PySeismoSoil import helper_site_response as sr
 
 
 class SVM:
@@ -39,13 +39,13 @@ class SVM:
         ``Vs_cap``. Do not change this parameter, unless you know what you
         are doing.
     show_fig : bool
-        Whether or not to plot the generated Vs profile.
+        Whether to plot the generated Vs profile.
     iterate : bool
-        Whether or not to iteratively adjust the input Vs30 so that the actual
+        Whether to iteratively adjust the input Vs30 so that the actual
         Vs30 (calculated from the resultant Vs profile) falls within 10 m/s
         of the ``target_Vs30``. (There is usually no need to do this.)
     verbose : bool
-        Whether or not to print iteration progress (trial Vs30 value and
+        Whether to print iteration progress (trial Vs30 value and
         calculated Vs30 value) on the terminal. It has no effects if ``iterate``
         is ``False``.
 
@@ -63,6 +63,7 @@ class SVM:
     has_bedrock_Vs : bool
         Whether the Vs profile has a bedrock Vs value.
     """
+
     def __init__(
             self,
             target_Vs30,
@@ -81,7 +82,7 @@ class SVM:
                 '***** Warning in initializing an SVM object: your Vs30 '
                 '(%.2f m/s) is out of the range of applicability of the '
                 'SVM (173.1 m/s to 1000 m/s); the result may not be '
-                'as credible. *****'
+                'as credible. *****',
             )
 
         if eta <= 0 or eta > 1:
@@ -101,15 +102,15 @@ class SVM:
         #            thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
         #
         #         Then thk and thk$ can both be solved, hence we have:
-        #             thk = (z1 - 2.5)/49.0
+        #         >>>    thk = (z1 - 2.5)/49.0
 
         p1 = -2.1688e-04  # these values come from curve fitting
         p2 = 0.5182
         p3 = 69.452
 
-        # q1 = 8.4562e-09
-        # q2 = 2.9981
-        # q3 = 0.03073
+        # q1 = 8.4562e-09  # noqa: E800
+        # q2 = 2.9981  # noqa: E800
+        # q3 = 0.03073  # noqa: E800
 
         r1 = -59.67  # updated on 2018/1/2: improved curve fitting accuracy for k_
         r2 = -0.2722
@@ -124,7 +125,7 @@ class SVM:
             z1 = sr.calc_z1_from_Vs30(target_Vs30)
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
-            Vs0_ = p1 * target_Vs30 ** 2.0 + p2 * target_Vs30 + p3
+            Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
             vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])  # just one layer
         else:  # this is most of the cases...
             Vs30 = target_Vs30
@@ -132,14 +133,18 @@ class SVM:
 
             while iteration_flag is True:
                 # --------  Calculate analytical Vs profile from Vs30  ---------
-                Vs0_ = p1 * Vs30 ** 2.0 + p2 * Vs30 + p3
+                Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
 
-                k_ = np.exp(r1 * Vs30 ** r2 + r3)  # updated on 2018/1/2
+                k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
                 n_ = np.max([1.0, s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30)])
 
                 z_array_analyt = np.arange(0.0, z1 - thk_addl_layer, thk)  # depth array
-                th_array_analyt = sr.dep2thk(z_array_analyt)  # thickness array (for analytical Vs)
-                Vs_analyt = Vs0_ * (1. + k_ * z_array_analyt)**(1. / n_)  # analytical Vs ( = Vs0*(1+k*z)^(1/n) )  # noqa: E501
+
+                # thickness array (for analytical Vs)
+                th_array_analyt = sr.dep2thk(z_array_analyt)
+
+                # analytical Vs ( = Vs0*(1+k*z)^(1/n) )
+                Vs_analyt = Vs0_ * (1. + k_ * z_array_analyt)**(1. / n_)
 
                 # the homogeneous layer with Vs = Vs0:
                 array1 = np.array([thk_addl_layer, Vs_analyt[0]])
@@ -154,9 +159,9 @@ class SVM:
                     iteration_flag = False  # abort while loop after only one run
                 else:
                     # -------  Check if actual Vs30 matches target Vs30 -----------
-                    actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)  # calculate "actual" Vs30
+                    actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
                     if verbose is True:  # print iteration progress
-                        print('  %.1f --> %.1f |' % (actual_Vs30, target_Vs30), end='')
+                        print(f'  {actual_Vs30:.1f} --> {target_Vs30:.1f} |', end='')
 
                     if target_Vs30 - 10 <= actual_Vs30 <= target_Vs30 + 10:
                         iteration_flag = False  # end iteration
@@ -188,7 +193,9 @@ class SVM:
 
             # ---------   Prepare output variables  ---------------
             if Vs_cap is not False:  # if we need to "cap" the Vs profile somehow
-                if Vs_cap is True:  # if Vs_cap value not specified (i.e., user inputs "True")
+
+                # if Vs_cap value not specified (i.e., user inputs "True")
+                if Vs_cap is True:
                     Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap
 
                 # if Vs_analyt eventually exceeds Vs_cap
@@ -208,10 +215,9 @@ class SVM:
                     # change Vs value where Vs > eta * Vs_cap
                     for i in range(idx_eta_Vs_cap, end_index):
                         # linearly distribute Vs increment from eta*Vs_cap to Vs_cap
-                        Vs_analyt[i] = (
-                            Vs_cap * eta + Vs_cap * (1 - eta) /
-                            (end_index - idx_eta_Vs_cap) * (i - idx_eta_Vs_cap)
-                        )
+                        Vs_analyt[i] = Vs_cap * eta + Vs_cap * (1 - eta) / (
+                            end_index - idx_eta_Vs_cap
+                        ) * (i - idx_eta_Vs_cap)
                     # END
 
                 # thickness (including a 0-m "phantom" layer)
@@ -225,7 +231,7 @@ class SVM:
 
                 # stack additional layer on top
                 vs_profile = np.row_stack((array1, array5))
-            else:   # if Vs profile is not to be capped
+            else:  # if Vs profile is not to be capped
                 vs_profile = np.copy(temp_Vs_profile)
             # END OF VS_CAP TRUE/FALSE CHECKING
 
@@ -233,7 +239,7 @@ class SVM:
 
         # ----------  Show figure  -----------------
         if show_fig is True:
-            title_text = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (target_Vs30, z1)
+            title_text = f'$V_{{S30}}$={target_Vs30:.1f}m/s, $z_{{1}}$={z1:.1f}m'
             sr.plot_Vs_profile(vs_profile, title=title_text)
 
         # --------  Attributes  --------------------
@@ -249,7 +255,7 @@ class SVM:
             self.bedrock_Vs = None
 
     def __repr__(self):
-        return 'Vs30 = %.2g m/s, z1 = %.2g m' % (self.Vs30, self.z1)
+        return 'Vs30 = {:.2g} m/s, z1 = {:.2g} m'.format(self.Vs30, self.z1)
 
     def plot(self, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100, **kwargs):
         """
@@ -280,7 +286,7 @@ class SVM:
         h_line : matplotlib.lines.Line2D
             The line object.
         """
-        title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
+        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(self.Vs30, self.z1)
         fig, ax, h_line = sr.plot_Vs_profile(
             self._base_profile,
             title=title,
@@ -301,7 +307,7 @@ class SVM:
             show_fig=False,
     ):
         """
-        Returns the discretized Vs profile (with user-specified layer
+        Return the discretized Vs profile (with user-specified layer
         thickness, or Vs increment).
 
         Parameters
@@ -330,14 +336,16 @@ class SVM:
             raise ValueError(msg)
         if fixed_thk is not None:
             discr_prof = self.base_profile.query_Vs_given_thk(
-                fixed_thk, as_profile=True, at_midpoint=at_midpoint,
+                fixed_thk,
+                as_profile=True,
+                at_midpoint=at_midpoint,
             )
         else:  # Vs_increment is not None
             max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
                 raise ValueError(
                     '`Vs_increment` needs to < %.2g m/s (the '
-                    'max Vs of the smooth profile)' % max_Vs
+                    'max Vs of the smooth profile)' % max_Vs,
                 )
             n_layers = self._base_profile.shape[0]
             discr_Vs_previous_layer = self._base_profile[0, 1]
@@ -367,10 +375,13 @@ class SVM:
                     layer_bottom_depth_array.append(current_depth)
             # END "for j in range(n_layers):"
 
-            thk_array = sr.dep2thk(np.array(layer_bottom_depth_array),
-                                   include_halfspace=False)
+            thk_array = sr.dep2thk(
+                np.array(layer_bottom_depth_array), include_halfspace=False,
+            )
             discr_prof = self.base_profile.query_Vs_given_thk(
-                thk_array, as_profile=True, at_midpoint=at_midpoint,
+                thk_array,
+                as_profile=True,
+                at_midpoint=at_midpoint,
             )
         # END "if fixed_thk is not None:"
 
@@ -393,10 +404,15 @@ class SVM:
         label : str
             Label of the additional profile, to be shown in the legend.
         """
-        title = '$V_{S30}$=%.1fm/s, $z_{1}$=%.1fm' % (self.Vs30, self.z1)
+        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(self.Vs30, self.z1)
         fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='Smooth')
         sr.plot_Vs_profile(
-            addtl_profile, fig=fig, ax=ax, c='orange', alpha=0.85, label=label,
+            addtl_profile,
+            fig=fig,
+            ax=ax,
+            c='orange',
+            alpha=0.85,
+            label=label,
         )
         ax.set_title(title)
         ax.legend(loc='best')
@@ -413,7 +429,7 @@ class SVM:
             verbose=True,
     ):
         """
-        Returns a randomized a 1D profile.
+        Return a randomized a 1D profile.
 
         Parameters
         ----------
@@ -421,15 +437,15 @@ class SVM:
             The seed value for setting the random state. It not set, this
             method automatically uses the current time to generate a seed.
         show_fig : bool
-            Whether or not to show the figure of smooth and randomized profiles.
+            Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
-            Whether or not to use the layering relation in Toro (1995) instead
+            Whether to use the layering relation in Toro (1995) instead
             of Eq (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
-            Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
+            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
             in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
         vs30_z1_compliance : bool
-            Whether or not to ensure that the resultant Vs30 and z1 of the
+            Whether to ensure that the resultant Vs30 and z1 of the
             randomized profile are compliant with the user-specified Vs30 and z1
             values. The criteria for "compliance" are:
                 1. The absolute difference between the randomized and target
@@ -439,7 +455,7 @@ class SVM:
                 3. The relative difference of the randomized and target z1 is
                    < 20%.
         verbose : bool
-            Whether or not to show the progress of iteratively searching for
+            Whether to show the progress of iteratively searching for
             compliant randomized Vs profile. Only effective if
             ``vs30_z1_compliance`` is ``True``.
 
@@ -451,12 +467,12 @@ class SVM:
         if not isinstance(seed, (type(None), int, float, np.number)):
             raise TypeError('`seed` needs to be a number, or `None`.')
 
-        options = dict(
-            seed=seed,
-            show_fig=show_fig,
-            use_Toros_std=use_Toros_std,
-            use_Toros_layering=use_Toros_layering,
-        )
+        options = {
+            'seed': seed,
+            'show_fig': show_fig,
+            'use_Toros_std': use_Toros_std,
+            'use_Toros_layering': use_Toros_layering,
+        }
 
         if not vs30_z1_compliance:
             Vs_profile = self._helper_get_rand_profile(**options)
@@ -467,9 +483,11 @@ class SVM:
                 print('Iterating for compliant Vs profile:')
             while iterate:
                 seed_ = None if seed is None else seed + counter
-                options.update(dict(seed=seed_, show_fig=False))
+                options.update({'seed': seed_, 'show_fig': False})
                 Vs_profile = self._helper_get_rand_profile(**options)
-                rand_Vs30 = sr.calc_Vs30(Vs_profile, option_for_profile_shallower_than_30m=1)
+                rand_Vs30 = sr.calc_Vs30(
+                    Vs_profile, option_for_profile_shallower_than_30m=1,
+                )
                 rand_Vs_last = Vs_profile[-1, 1]
                 rand_z1 = sr.calc_z1(Vs_profile)
                 base_Vs30 = self.Vs30
@@ -505,7 +523,7 @@ class SVM:
             use_Toros_std=False,
     ):
         """
-        Helper function to get randomized 1D profile.
+        Get randomized 1D profile.
 
         Parameters
         ----------
@@ -514,12 +532,12 @@ class SVM:
             method automatically uses the current time to generate a seed.
             Not effective if ``vs30_z1_compliance`` is set to ``True``.
         show_fig : bool
-            Whether or not to show the figure of smooth and randomized profiles.
+            Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
-            Whether or not to use the layering relation in Toro (1995) instead
+            Whether to use the layering relation in Toro (1995) instead
             of Eq (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
-            Whether or not to use the standard deviation (i.e., sigma(ln(Vs)))
+            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
             in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
 
         Returns
@@ -535,10 +553,10 @@ class SVM:
         np.random.seed(int(seed))
 
         # --------------  Part 1. Soil Layering Randomization  -------------
-        z_top = [0]   # depth of layer top
-        z_bot = []    # depth of layer bottom
-        z_mid = []    # midpoint depth of soil layers
-        thk = []    # thickness
+        z_top = [0]  # depth of layer top
+        z_bot = []  # depth of layer bottom
+        z_mid = []  # midpoint depth of soil layers
+        thk = []  # thickness
 
         while len(z_bot) == 0 or z_bot[-1] < self.z1:
             if use_Toros_layering:
@@ -560,14 +578,18 @@ class SVM:
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fsolve() properly converges
                         mean_thk, info, ier, msg = fsolve(
-                            func, z_top[-1] + 4.0, full_output=True,
+                            func,
+                            z_top[-1] + 4.0,
+                            full_output=True,
                         )
                     # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
                     while ier != 1:  # keeps trying until fzero() properly converges
                         mean_thk, info, ier, msg = fsolve(
-                            func, z_top[-1] + 4.0, full_output=True,
+                            func,
+                            z_top[-1] + 4.0,
+                            full_output=True,
                         )
                     # END
                 # END
@@ -577,7 +599,7 @@ class SVM:
                 mean_thk = mean_thk[0]
 
                 z_mid_temp = z_top[-1] + mean_thk / 2.0
-                std_thk = 0.951 * z_mid_temp ** 0.628  # Eq (8) of Shi & Asimaki (2018)
+                std_thk = 0.951 * z_mid_temp**0.628  # Eq (8) of Shi & Asimaki (2018)
 
                 # randomized thickness based on mean and std
                 thk_rand = np.random.normal(mean_thk, std_thk)
@@ -618,12 +640,12 @@ class SVM:
         # ---------------    Part 3    -----------------------------------
         # Generate random values for each layer based on the baseline profile
 
-        ## ******** 3.1. Toro (1995) coefficients *********
-        ## ******** These values come from Table 5 of Toro (1995) or Table 2.3
-        ## ******** of Kamai, Abrahamson, Silva (2013) PEER report.
+        # ******** 3.1. Toro (1995) coefficients *********
+        # ******** These values come from Table 5 of Toro (1995) or Table 2.3
+        # ******** of Kamai, Abrahamson, Silva (2013) PEER report.
         if self.Vs30 < 180:  # site class E
             sigma_lnV = 0.37
-            rho_0  = 0
+            rho_0 = 0
             Delta = 5.0
             rho_200 = 0.50
             z_0 = 0
@@ -653,43 +675,47 @@ class SVM:
             z_0 = 0
             b = 0.063
 
-        ## ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth  ****
+        # ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth  ****
         #     (Note: "mu" and "sigma" here are NOT the mean value and standard
         #     deviation of Vs, but rather the two parameters of the log-normal
         #     distribution that Vs is assumed to follow.)
         if not use_Toros_std:
             sigma_lognormal_Vs = (
-                -7.769e-10 * Vs_analyt ** 3 +
-                1.597e-06 * Vs_analyt ** 2 -
-                0.0008724 * Vs_analyt +
-                0.4233
+                -7.769e-10 * Vs_analyt**3
+                + 1.597e-06 * Vs_analyt**2
+                - 0.0008724 * Vs_analyt
+                + 0.4233
             )
         else:
-            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)  # page 8 of Toro (1995)
+            # From page 8 of Toro (1995):
+            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)
 
-        ## ****** 3.3. Generate random Vs values based on Toro's equations  ******
+        # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
         np.random.seed([2 * seed])  # specify seed value to random number generator
 
         for i in range(0, len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
-            sigma_ = sigma_lognormal_Vs[index_value]  # query sigma value where z = z_mid[j]
+
+            # query sigma value where z = z_mid[j]:
+            sigma_ = sigma_lognormal_Vs[index_value]
 
             if z_mid[i] > 200:
                 rho_z = rho_200
             else:
-                rho_z = rho_200 * ((z_mid[i] + z_0) / (200.0 + z_0))**b
+                rho_z = rho_200 * ((z_mid[i] + z_0) / (200.0 + z_0)) ** b
 
             rho_thk = rho_0 * np.exp(-thk[i] / Delta)
             rho_1L = (1 - rho_z) * rho_thk + rho_z
 
             if i == 0:  # for the first layer
-                Y[i] = np.random.normal(0, 1, (1, 1))  # generate a 1-by-nr_of_rand_profiles vector
+                # generate a 1-by-nr_of_rand_profiles vector
+                Y[i] = np.random.normal(0, 1, (1, 1))
             else:  # for other layers
                 Y[i] = (
-                    rho_1L * Y[i - 1] +
-                    np.random.normal(0, 1, (1, 1)) * np.sqrt(1 - rho_1L ** 2)
+                    rho_1L * Y[i - 1]
+                    + np.random.normal(0, 1, (1, 1)) * np.sqrt(1 - rho_1L ** 2)
                 )
 
             Vs_hat[i] = baseline_Vs[i] * np.exp(Y[i] * sigma_)

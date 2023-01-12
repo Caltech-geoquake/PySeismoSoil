@@ -38,10 +38,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import helper_generic as hlp
-from . import helper_site_response as sr
-from . import helper_mkz_model as mkz
-from . import helper_hh_model as hh
+from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil import helper_mkz_model as mkz
+from PySeismoSoil import helper_hh_model as hh
 
 
 def hh_param_from_profile(
@@ -75,16 +75,16 @@ def hh_param_from_profile(
         Shear strength of each layer of soil. If ``None``, it will be
         calculated using a combination of Ladd (1991) and Mohr-Coulomb criteria.
     show_fig : bool
-        Whether or not to show figures G/Gmax and stress-strain curves of MKZ,
+        Whether to show figures G/Gmax and stress-strain curves of MKZ,
         FKZ, and HH for each layer.
     save_fig : bool
-        Whether or not to save the figures to the hard drive. Only effective
+        Whether to save the figures to the hard drive. Only effective
         if ``show_fig`` is set to ``True``.
     fig_output_dir : str
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     save_HH_G_file : bool
-        Whether or not to save the HH parameters to the hard drive (as a
+        Whether to save the HH parameters to the hard drive (as a
         "HH_G" file).
     HH_G_file_dir : str
         The output directory for the "HH_G" file. Only effective if
@@ -93,7 +93,7 @@ def hh_param_from_profile(
         The name of the Vs profile, such as "CE.12345". If ``None``, a string
         of current date and time will be used as the profile name.
     verbose : bool
-        Whether or not to print progresses on the console.
+        Whether to print progresses on the console.
 
     Returns
     -------
@@ -103,7 +103,7 @@ def hh_param_from_profile(
         this order:
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
     """
-    phi = 30.  # friction angle (choose 30 degrees, because there is no better info)
+    phi = 30.0  # friction angle (choose 30 degrees, because there is no better info)
 
     hlp.check_Vs_profile_format(vs_profile)
     h = vs_profile[:-1, 0]
@@ -113,20 +113,28 @@ def hh_param_from_profile(
     if Tmax is not None:
         hlp.assert_array_length(Tmax, n_layer)
 
-    rho      = _calc_rho(h, Vs)
-    Gmax     = _calc_Gmax(Vs, rho)
+    rho = _calc_rho(h, Vs)
+    Gmax = _calc_Gmax(Vs, rho)
     sigma_v0 = _calc_vertical_stress(h, rho)
-    OCR      = _calc_OCR(Vs, rho, sigma_v0)
-    K0       = _calc_K0(OCR, phi=phi)
-    PI       = _calc_PI(Vs)
+    OCR = _calc_OCR(Vs, rho, sigma_v0)
+    K0 = _calc_K0(OCR, phi=phi)
+    PI = _calc_PI(Vs)
 
     if Tmax is None:
         Tmax = _calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)
 
     HH_G_param = produce_HH_G_param(
-        Vs, Gmax, Tmax, OCR, sigma_v0, K0,
-        curves=None, PI=PI, phi=phi,
-        show_fig=show_fig, save_fig=save_fig,
+        Vs,
+        Gmax,
+        Tmax,
+        OCR,
+        sigma_v0,
+        K0,
+        curves=None,
+        PI=PI,
+        phi=phi,
+        show_fig=show_fig,
+        save_fig=save_fig,
         fig_output_dir=fig_output_dir,
         verbose=verbose,
     )
@@ -188,16 +196,16 @@ def hh_param_from_curves(
         Shear strength of each layer of soil. If ``None``, it will be
         calculated using a combination of Ladd (1991) and Mohr-Coulomb criteria.
     show_fig : bool
-        Whether or not to show figures G/Gmax and stress-strain curves of MKZ,
+        Whether to show figures G/Gmax and stress-strain curves of MKZ,
         FKZ, and HH for each layer.
     save_fig : bool
-        Whether or not to save the figures to the hard drive. Only effective
+        Whether to save the figures to the hard drive. Only effective
         if ``show_fig`` is set to ``True``.
     fig_output_dir : str
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     save_HH_G_file : bool
-        Whether or not to save the HH parameters to the hard drive (as a
+        Whether to save the HH parameters to the hard drive (as a
         "HH_G" file).
     HH_G_file_dir : str
         The output directory for the "HH_G" file. Only effective if
@@ -206,7 +214,7 @@ def hh_param_from_curves(
         The name of the Vs profile, such as "CE.12345". If ``None``, a string
         of current date and time will be used as the profile name.
     verbose : bool
-        Whether or not to print progresses on the console.
+        Whether to print progresses on the console.
 
     Returns
     -------
@@ -244,7 +252,7 @@ def hh_param_from_curves(
     curves_old = curves.copy()
     curves_expanded = None
     for j in range(n_layer):
-        tmp = curves_old[:, int(mat[j]) * 4 - 4: int(mat[j]) * 4]
+        tmp = curves_old[:, int(mat[j]) * 4 - 4 : int(mat[j]) * 4]
         if curves_expanded is None:
             curves_expanded = tmp
         else:
@@ -252,10 +260,19 @@ def hh_param_from_curves(
     curves = curves_expanded
 
     HH_G_param = produce_HH_G_param(
-        Vs, Gmax, Tmax, OCR, sigma_v0, K0,
-        curves=curves, PI=None, phi=None,
-        show_fig=show_fig, save_fig=save_fig,
-        fig_output_dir=fig_output_dir, verbose=verbose,
+        Vs,
+        Gmax,
+        Tmax,
+        OCR,
+        sigma_v0,
+        K0,
+        curves=curves,
+        PI=None,
+        phi=None,
+        show_fig=show_fig,
+        save_fig=save_fig,
+        fig_output_dir=fig_output_dir,
+        verbose=verbose,
     )
 
     if save_HH_G_file:
@@ -333,16 +350,16 @@ def produce_HH_G_param(
         an array, it must have shape ``(n_layer, )``. If a single value, it
         means that all layers share this same value.
     show_fig : bool
-        Whether or not to show figures G/Gmax and stress-strain curves of MKZ,
+        Whether to show figures G/Gmax and stress-strain curves of MKZ,
         FKZ, and HH for each layer.
     save_fig : bool
-        Whether or not to save the figures to the hard drive. Only effective
+        Whether to save the figures to the hard drive. Only effective
         if ``show_fig`` is set to ``True``.
     fig_output_dir : str
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     verbose : bool
-        Whether or not to print progresses on the console.
+        Whether to print progresses on the console.
 
     Returns
     -------
@@ -376,13 +393,18 @@ def produce_HH_G_param(
         if verbose:
             print(
                 '------ G/Gmax not provided; will generate MKZ curves using '
-                'Darendeli (2001): ------'
+                'Darendeli (2001): ------',
             )
         # END
 
         strain_ = np.geomspace(1e-4, 10, 400)  # unit: percent
         GGmax, _, gamma_ref = produce_Darendeli_curves(
-            sigma_v0, PI, OCR=OCR, K0=K0, phi=phi, strain_in_pct=strain_,
+            sigma_v0,
+            PI,
+            OCR=OCR,
+            K0=K0,
+            phi=phi,
+            strain_in_pct=strain_,
         )
         strain = np.tile(strain_, (n_layer, 1)).T  # strain matrix for all layers
         beta = np.ones(n_layer)
@@ -410,7 +432,7 @@ def produce_HH_G_param(
             if verbose:
                 print(
                     f'Layer {j}: gamma_ref = {gamma_ref[j]:.3g}, '
-                    f's = {s[j]:.3g}, beta = {beta[j]:.3g}'
+                    f's = {s[j]:.3g}, beta = {beta[j]:.3g}',
                 )
             # END
         # END
@@ -450,9 +472,9 @@ def produce_HH_G_param(
     parameters = np.zeros((9, n_layer))
 
     lw = 1.0
-    muted_blue = np.array([107, 174, 214]) / 255.
-    muted_green = np.array([120, 198, 121]) / 255.
-    muted_red = np.array([222, 45, 38]) / 255.
+    muted_blue = np.array([107, 174, 214]) / 255.0
+    muted_green = np.array([120, 198, 121]) / 255.0
+    muted_red = np.array([222, 45, 38]) / 255.0
 
     for j in range(n_layer):
         strain_j = strain[:, j]
@@ -468,7 +490,7 @@ def produce_HH_G_param(
         if verbose:
             print(
                 f'{j + 1}/{n_layer}: mu = {mu[j]:.3f}, a = {a:.1f}, '
-                f'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}'
+                f'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}',
             )
         T_FKZ = hh.tau_FKZ(
             strain_j / 100.0,
@@ -508,41 +530,56 @@ def produce_HH_G_param(
             plt.subplot(211)
             if curves is None:
                 plt.semilogx(
-                    strain_j, sigma[:, j] / 1000.,
-                    c=muted_blue, lw=lw * 2.5, label='MKZ',  # Darendeli's curve
+                    strain_j,
+                    sigma[:, j] / 1000.0,
+                    c=muted_blue,
+                    lw=lw * 2.5,
+                    label='MKZ',  # Darendeli's curve
                 )
                 plt.semilogx(
-                    strain_j, T_FKZ / 1000.,
-                    c=muted_green, lw=lw * 1.75, label='FKZ',
+                    strain_j,
+                    T_FKZ / 1000.0,
+                    c=muted_green,
+                    lw=lw * 1.75,
+                    label='FKZ',
                 )
             else:
                 plt.semilogx(
-                    strain_j, sigma[:, j] / 1000.,
-                    c=muted_blue, marker='o', ls='-', lw=lw * 2.5,
+                    strain_j,
+                    sigma[:, j] / 1000.0,
+                    c=muted_blue,
+                    marker='o',
+                    ls='-',
+                    lw=lw * 2.5,
                     label=r'Given $G/G_{\max}$',
                 )
                 plt.semilogx(
-                    strain_j, T_FKZ / 1000.,
-                    c=muted_green, lw=lw * 1.75, label='FKZ',
+                    strain_j,
+                    T_FKZ / 1000.0,
+                    c=muted_green,
+                    lw=lw * 1.75,
+                    label='FKZ',
                 )
             plt.grid(ls=':', lw=0.5)
             plt.plot(
                 [np.min(strain_j), np.max(strain_j)],
-                np.array([Tmax[j], Tmax[j]]) / 1000.,
-                lw=lw, c='gray', ls='--',
+                np.array([Tmax[j], Tmax[j]]) / 1000.0,
+                lw=lw,
+                c='gray',
+                ls='--',
             )
-            plt.plot(strain_j, T_HH / 1000., c=muted_red, lw=lw, label='HH')
+            plt.plot(strain_j, T_HH / 1000.0, c=muted_red, lw=lw, label='HH')
             plt.plot([gamma_t * 100] * 2, plt.ylim(), ls='--', c='gray')
             plt.ylabel('Stress [kPa]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.legend(loc='upper left')
 
-            title_txt = '$V_S$ = {0:.1f} m/s, '.format(Vs[j])
-            title_txt += r'$G_{\max}$' + ' = {0:.3f} MPa,\n'.format(Gmax[j] / 1e6)
+            title_txt = f'$V_S$ = {Vs[j]:.1f} m/s, '
+            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'
             title_txt += r'$\tau_{\mathrm{ff}}$ = '
-            title_txt += '{0:.3f} kPa, '.format(Tmax[j] / 1e3)
+            title_txt += f'{Tmax[j] / 1e3:.3f} kPa, '
             title_txt += r'$\gamma_{\mathrm{ref}}$ = '
-            title_txt += '{0:.3f}%'.format(gamma_ref[j] * 100)
+            title_txt += f'{gamma_ref[j] * 100:.3f}%'
 
             plt.title(title_txt)
 
@@ -551,14 +588,19 @@ def produce_HH_G_param(
                 plt.semilogx(strain_j, GGmax[:, j], c=muted_blue, lw=lw * 2.5)
             else:
                 plt.semilogx(
-                    strain_j, GGmax[:, j],
-                    c=muted_blue, ls='-', marker='o', lw=lw * 2.5,
+                    strain_j,
+                    GGmax[:, j],
+                    c=muted_blue,
+                    ls='-',
+                    marker='o',
+                    lw=lw * 2.5,
                 )
             plt.grid(ls=':', lw=0.5)
             plt.plot(
                 strain_j,
                 mu[j] / (1 + Gmax[j]/Tmax[j]*mu[j]*np.abs(strain_j/100.)),  # noqa: E226
-                c=muted_green, lw=lw * 1.75,
+                c=muted_green,
+                lw=lw * 1.75,
             )
             plt.plot(strain_j, GGmax_HH, c=muted_red, lw=lw)
             plt.plot([gamma_t * 100] * 2, plt.ylim(), ls='--', c='gray')
@@ -566,9 +608,9 @@ def produce_HH_G_param(
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
-                "$\mu$ = %.3f, a = %.1f, $\gamma_{\mathrm{t}}$ = %.4f%%\n"
-                "d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
-                % (mu[j], a, gamma_t * 100, d, p0[j])
+                '$\\mu$ = %.3f, a = %.1f, $\\gamma_{\\mathrm{t}}$ = %.4f%%\n'
+                r"d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
+                % (mu[j], a, gamma_t * 100, d, p0[j]),
             )
 
             fig.tight_layout(pad=0.5, h_pad=1.2, w_pad=0.3)
@@ -581,7 +623,7 @@ def produce_HH_G_param(
                     os.path.join(
                         fig_output_dir,
                         'Stress_GGmax_of_Layer_#%d.png' % (j + 1),
-                    )
+                    ),
                 )
             # END
 
@@ -623,7 +665,7 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
     Tmax = np.zeros(len(Vs))
     for j in range(len(Vs)):
         if Vs[j] <= 760:  # for softer soils, calculate undrained shear strength
-            Tmax[j] = dyna_coeff * 0.28 * OCR[j]**0.8 * sigma_v0[j]  # Ladd (1991)
+            Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]  # Ladd (1991)
         else:  # stiffer soils: Mohr-Coulomb criterion
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
             sigma_1 = np.max([sigma_v0[j], sigma_h0])  # largest principal stress
@@ -631,8 +673,8 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
 
             # normal effective stress on the slip plane
             sigma_n = (
-                (sigma_1 + sigma_3) / 2.0 -
-                (sigma_1 - sigma_3) / 2.0 * np.sin(np.deg2rad(phi[j]))
+                (sigma_1 + sigma_3) / 2.0
+                - (sigma_1 - sigma_3) / 2.0 * np.sin(np.deg2rad(phi[j]))
             )
 
             Tmax[j] = dyna_coeff * sigma_n * np.tan(np.deg2rad(phi[j]))
@@ -712,7 +754,7 @@ def _calc_vertical_stress(h, rho):
     if np.mean(rho) < 1000:
         print(
             'Warning in __calc_vertical_stress(): It looks like the unit '
-            'of mass density is g/cm^3. The correct unit should be kg/m^3.'
+            'of mass density is g/cm^3. The correct unit should be kg/m^3.',
         )
 
     if h[-1] == 0:  # zero thickness, i.e., half space
@@ -720,7 +762,11 @@ def _calc_vertical_stress(h, rho):
 
     stress[0] = rho[0] * g * h[0] / 2  # divided by 2: middle of layer
     for i in range(1, n):
-        stress[i] = stress[i - 1] + rho[i - 1] * g * h[i - 1] / 2 + rho[i] * g * h[i] / 2
+        stress[i] = (
+            stress[i - 1]
+            + rho[i - 1] * g * h[i - 1] / 2
+            + rho[i] * g * h[i] / 2
+        )
 
     return stress
 
@@ -795,7 +841,7 @@ def _calc_PI(Vs):
     return PI
 
 
-def _calc_K0(OCR, phi=30.):
+def _calc_K0(OCR, phi=30.0):
     """
     Calculate K0 (lateral earth pressure coefficient at rest) from OCR using
     the empirical formula by Mayne & Kulhawy (1982).
@@ -821,7 +867,12 @@ def _calc_K0(OCR, phi=30.):
 
 
 def produce_Darendeli_curves(
-        sigma_v0, PI=20., OCR=1., K0=0.5, phi=30.0, strain_in_pct=None,
+        sigma_v0,
+        PI=20.0,
+        OCR=1.0,
+        K0=0.5,
+        phi=30.0,
+        strain_in_pct=None,
 ):
     """
     Produce G/Gmax and damping curves using empirical correlations by
@@ -913,14 +964,15 @@ def produce_Darendeli_curves(
     for i in range(n_layer):
         GGmax[:, i] = 1. / (1 + (gamma / gamma_r[i])**a)  # G of i-th layer (Eq 9.2a)
         D_masing_1 = (  # unit: % (page 226)
-            (100. / np.pi) *
-            (
-                4 * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i])) /
-                (gamma**2 / (gamma + gamma_r[i])) - 2
+            (100. / np.pi)
+            * (
+                4
+                * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
+                / (gamma**2 / (gamma + gamma_r[i])) - 2
             )
         )
         D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # unit: % (page 226)
-        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501
+        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501, LN001
         xi[:, i] = b * GGmax[:, i]**0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
 
     xi /= 100.0
@@ -1007,7 +1059,14 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
     else:  # cannot find a proper d value
         range_d = np.linspace(0.67, 1.39, 400)  # increase grid density to 400
         area = __calc_area(
-            range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ,
+            range_d,
+            x,
+            Gmax,
+            mu,
+            tau_f,
+            gamma_t_LB,
+            gamma_t_UB,
+            T_MKZ,
         )
         if np.min(area) < np.inf:
             gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
@@ -1015,7 +1074,14 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
             range_d = np.linspace(0.67, 1.39, 1000)  # increase grid density
             new_gamma_t_LB = 0.005  # further relax
             area = __calc_area(
-                range_d, x, Gmax, mu, tau_f, new_gamma_t_LB, gamma_t_UB, T_MKZ,
+                range_d,
+                x,
+                Gmax,
+                mu,
+                tau_f,
+                new_gamma_t_LB,
+                gamma_t_UB,
+                T_MKZ,
             )
             if np.min(area) < np.inf:
                 gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
@@ -1073,7 +1139,7 @@ def __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ):
 
 
 def __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ):
-    """
+    r"""
     Calculate the "area" between the MKZ stress curve and the FKZ stress curve.
     The MKZ stress curve is supplied as a parameter, and the FKZ stress curve
     is determined by ``x``, ``Gmax``, ``mu``, ``d``, ``tau_f``, and ``gamma_t``.
@@ -1114,7 +1180,7 @@ def __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ):
         copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)  # "copt" = cross-over point
         gamma_t = x[copt]
         if (gamma_t >= range_gamma_t[0]) and (gamma_t <= range_gamma_t[-1]):
-            diff_T = np.abs(T_MKZ[:copt + 1] - T_FKZ[:copt + 1])
+            diff_T = np.abs(T_MKZ[: copt + 1] - T_FKZ[: copt + 1])
             area[j] = np.linalg.norm(diff_T) / (copt + 1.0)
         else:
             area[j] = np.inf

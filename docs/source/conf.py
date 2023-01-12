@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 
@@ -23,7 +24,7 @@ copyright = '2019, California Institute of Technology'
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.5.1'
+release = 'v0.5.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -81,15 +82,18 @@ automodsumm_inherited_members = True
 
 # ------- A fix to sphinx-automodapi to exclude imported members ---------------
 # Thanks to https://github.com/astropy/sphinx-automodapi/issues/119
-from sphinx_automodapi import automodsumm
-from sphinx_automodapi.utils import find_mod_objs
+from sphinx_automodapi import automodsumm  # noqa: E402
+from sphinx_automodapi.utils import find_mod_objs  # noqa: E402
+
 
 def find_mod_objs_patched(*args, **kwargs):
     return find_mod_objs(args[0], onlylocals=True)
+
 
 def patch_automodapi(app):
     """Monkey-patch the automodapi extension to exclude imported members"""
     automodsumm.find_mod_objs = find_mod_objs_patched
 
+
 def setup(app):
-    app.connect("builder-inited", patch_automodapi)
+    app.connect('builder-inited', patch_automodapi)
