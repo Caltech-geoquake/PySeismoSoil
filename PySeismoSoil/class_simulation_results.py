@@ -78,14 +78,18 @@ class Simulation_Results:
     ):
         if not isinstance(input_accel, Ground_Motion):
             raise TypeError('`input_accel` needs to be of Ground_Motion type.')
+
         if not isinstance(accel_on_surface, Ground_Motion):
             raise TypeError('`accel_on_surface` needs to be of Ground_Motion type.')
+
         if not isinstance(rediscretized_profile, Vs_Profile):
             raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
+
         if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
             raise TypeError(
                 '`trans_func` needs to be either None or of Frequency_Spectrum type.',
             )
+
         if not isinstance(trans_func_smoothed, (Frequency_Spectrum, type(None))):
             raise TypeError(
                 '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.',
@@ -97,15 +101,19 @@ class Simulation_Results:
         if time_history_accel is not None:
             hlp.assert_2D_numpy_array(time_history_accel, '`time_history_accel`')
             assert time_history_accel.shape == (n_time_pts, n_layer + 1)
+
         if time_history_veloc is not None:
             hlp.assert_2D_numpy_array(time_history_veloc, '`time_history_veloc`')
             assert time_history_veloc.shape == (n_time_pts, n_layer + 1)
+
         if time_history_displ is not None:
             hlp.assert_2D_numpy_array(time_history_displ, '`time_history_displ`')
             assert time_history_displ.shape == (n_time_pts, n_layer + 1)
+
         if time_history_stress is not None:
             hlp.assert_2D_numpy_array(time_history_stress, '`time_history_stress`')
             assert time_history_stress.shape == (n_time_pts, n_layer)
+
         if time_history_strain is not None:
             hlp.assert_2D_numpy_array(time_history_strain, '`time_history_strain`')
             assert time_history_strain.shape == (n_time_pts, n_layer)
@@ -122,6 +130,7 @@ class Simulation_Results:
         current_time = hlp.get_current_time(for_filename=True)
         if motion_name is None:
             motion_name = 'accel_%s' % current_time
+
         if output_dir is None:
             output_dir = os.path.join('./', 'sim_%s' % current_time)
 
@@ -183,6 +192,7 @@ class Simulation_Results:
             freq = None
             ampl_func = None
             phase_func = None
+
         if self.trans_func_smoothed is not None:
             ampl_func_smoothed = self.trans_func_smoothed.amplitude
         else:
@@ -281,6 +291,7 @@ class Simulation_Results:
         if save_fig:
             if output_dir is None:
                 output_dir = self.output_dir
+
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
@@ -345,18 +356,23 @@ class Simulation_Results:
         np.savetxt(fn_new_profile, self.rediscretized_profile.vs_profile, **fmt_dict)
         if self.max_a_v_d is not None:
             np.savetxt(fn_max_avd, self.max_a_v_d, **fmt_dict)
+
         if self.max_strain_stress is not None:
             np.savetxt(fn_max_gt, self.max_strain_stress, **fmt_dict)
 
         if save_full_time_history:
             if self.time_history_accel is not None:
                 np.savetxt(fn_out_a, self.time_history_accel, **fmt_dict)
+
             if self.time_history_veloc is not None:
                 np.savetxt(fn_out_v, self.time_history_veloc, **fmt_dict)
+
             if self.time_history_displ is not None:
                 np.savetxt(fn_out_d, self.time_history_displ, **fmt_dict)
+
             if self.time_history_strain is not None:
                 np.savetxt(fn_out_gamma, self.time_history_strain, **fmt_dict)
+
             if self.time_history_stress is not None:
                 np.savetxt(fn_out_tau, self.time_history_stress, **fmt_dict)
 

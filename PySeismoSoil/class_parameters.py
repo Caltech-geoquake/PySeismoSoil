@@ -42,15 +42,18 @@ class Parameter(collections.UserDict):
     def __init__(self, param_dict, *, allowable_keys=None, func_stress=None):
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
+
         if not isinstance(allowable_keys, set) or any(
             type(_) != str for _ in allowable_keys
         ):
             raise TypeError('`allowable_keys` should be a set of str.')
+
         if param_dict.keys() != allowable_keys:
             raise KeyError(
                 'Invalid keys exist in your input data. We only '
                 'allow %s.' % allowable_keys,
             )
+
         self.allowable_keys = allowable_keys
         self.func_stress = func_stress
         super().__init__(param_dict)
@@ -63,6 +66,7 @@ class Parameter(collections.UserDict):
     def __setitem__(self, key, item):
         if key not in self.allowable_keys:
             raise KeyError("The model does not have a '%s' parameter." % key)
+
         self.data[key] = item
         return None
 
@@ -83,6 +87,7 @@ class Parameter(collections.UserDict):
         param_array = []
         for _, val in self.data.items():
             param_array.append(val)
+
         return np.array(param_array)
 
     def get_stress(self, strain_in_pct=STRAIN_RANGE_PCT):
@@ -103,6 +108,7 @@ class Parameter(collections.UserDict):
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
             return None
+
         hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
         return self.func_stress(strain_in_pct / 100.0, **self.data)
 
@@ -124,6 +130,7 @@ class Parameter(collections.UserDict):
         if tau is None:
             print('You did not provide a function to calculate shear stress.')
             return None
+
         Gmax = self.data['Gmax']
         strain_in_1 = strain_in_pct / 100.0
         GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
@@ -146,6 +153,7 @@ class Parameter(collections.UserDict):
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
             return None
+
         damping_in_1 = sr.calc_damping_from_param(
             self.data,
             strain_in_pct / 100.0,
@@ -180,6 +188,7 @@ class Parameter(collections.UserDict):
 
         if figsize is None:
             figsize = (6, 3)
+
         if dpi is None:
             dpi = 100
 
@@ -326,6 +335,7 @@ class Param_Multi_Layer:
                 raise TypeError(
                     'An element in ``list_of_param_data`` has invalid type.',
                 )
+
         self.param_list = param_list
         self.n_layer = len(param_list)
 
@@ -341,8 +351,10 @@ class Param_Multi_Layer:
     def __getitem__(self, i):
         if isinstance(i, int):
             return self.param_list[i]
+
         if isinstance(i, slice):  # return an object of the same class
             return self.__class__(self.param_list[i])  # filled with the sliced data
+
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
     def __delitem__(self, i):

@@ -78,16 +78,19 @@ class Site_Factors:
                 raise ValueError('Vs30 should be between [175, 950] m/s')
             else:
                 Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950
+
         if 'z1 out of range' in status:
             if not lenient:
                 raise ValueError('z1_in_m should be between [8, 900] m')
             else:
                 z1_in_m = 8 if z1_in_m < 8 else 900
+
         if 'PGA out of range' in status:
             if not lenient:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
             else:
                 PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
+
         if (
             'Invalid Vs30-z1 combination' in status
         ):  # TODO: think about whether to add leniency
@@ -147,6 +150,7 @@ class Site_Factors:
         else:  # response spectra
             freq = 1.0 / period_or_freq
             result = np.column_stack((freq, amplif))[::-1, :]  # so that freq increases
+
         return Frequency_Spectrum(result)
 
     def get_phase_shift(self, method='eq_hh', show_interp_plots=False):
@@ -333,8 +337,10 @@ class Site_Factors:
         """
         if Vs30 not in Site_Factors.Vs30_array:
             raise ValueError('`Vs30` should be in %s.' % Site_Factors.Vs30_array)
+
         if z1 not in Site_Factors.z1_array:
             raise ValueError('`z1` should be in %s.' % Site_Factors.z1_array)
+
         if PGA not in Site_Factors.PGA_array:
             raise ValueError('`PGA` should be in %s.' % Site_Factors.PGA_array)
 
@@ -411,8 +417,10 @@ class Site_Factors:
                 'copy the whole error message, and contact '
                 'the author of this library for help.',
             )
+
         if value == array[0]:
             return [0, 1]
+
         if value == array[-1]:
             return [len(array) - 2, len(array) - 1]
 
@@ -539,6 +547,7 @@ class Site_Factors:
             ax2 = plt.subplot(1, 2, 2)
         else:
             ax = plt.axes()
+
         for j, ref_point in enumerate(ref_points):
             label = '%d m/s, %d m, %.2gg' % ref_point
             if phase_flag:
@@ -564,10 +573,12 @@ class Site_Factors:
                 ax.set_xlabel('Frequency [Hz]')
             else:
                 ax.set_xlabel('Period [sec]')
+
             ax.set_ylabel('Amplification or phase shift')
 
         if phase_flag:
             fig.tight_layout(pad=0.3, h_pad=0.3, w_pad=0.3, rect=[0, 0.03, 1, 0.94])
+
         fig.suptitle('$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point)
 
         bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)
@@ -589,8 +600,10 @@ class Site_Factors:
         """
         if not isinstance(Vs30_in_mps, (float, int, np.number)):
             raise TypeError('Vs30 must be int, float, or numpy.number.')
+
         if not isinstance(z1_in_m, (float, int, np.number)):
             raise TypeError('z1_in_m must be int, float, or numpy.number.')
+
         if not isinstance(PGA_in_g, (float, int, np.number)):
             raise TypeError('PGA_in_g must be int, float, or numpy.number.')
 
@@ -598,8 +611,10 @@ class Site_Factors:
 
         if Vs30_in_mps < 175 or Vs30_in_mps > 950:
             status.append('Vs30 out of range')
+
         if z1_in_m < 8 or z1_in_m > 900:
             status.append('z1 out of range')
+
         if PGA_in_g < 0.01 or PGA_in_g > 1.5:
             status.append('PGA out of range')
 

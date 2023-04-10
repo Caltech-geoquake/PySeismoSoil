@@ -142,8 +142,10 @@ def hh_param_from_profile(
     if save_HH_G_file:
         if HH_G_file_dir is None:
             raise ValueError('Please specify `HH_G_file_dir`.')
+
         if profile_name is None:
             profile_name = hlp.get_current_time(for_filename=True)
+
         np.savetxt(
             os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
             HH_G_param,
@@ -257,6 +259,7 @@ def hh_param_from_curves(
             curves_expanded = tmp
         else:
             curves_expanded = np.column_stack((curves_expanded, tmp))
+
     curves = curves_expanded
 
     HH_G_param = produce_HH_G_param(
@@ -278,8 +281,10 @@ def hh_param_from_curves(
     if save_HH_G_file:
         if HH_G_file_dir is None:
             raise ValueError('Please specify `HH_G_file_dir`.')
+
         if profile_name is None:
             profile_name = hlp.get_current_time(for_filename=True)
+
         np.savetxt(
             os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
             HH_G_param,
@@ -412,6 +417,7 @@ def produce_HH_G_param(
     else:  # user provides own curves
         if verbose:
             print('------ G/Gmax provided; fitting MKZ curves to data: ------')
+
         hlp.assert_2D_numpy_array(curves)
         assert curves.shape[1] == n_layer * 4
 
@@ -428,6 +434,7 @@ def produce_HH_G_param(
         # ----------- Show results on console ---------------------------------
         if verbose:
             print('****** MKZ parameters: ******')
+
         for j in range(n_layer):
             if verbose:
                 print(
@@ -469,6 +476,7 @@ def produce_HH_G_param(
     # ========== Start FKZ optimization =======================================
     if verbose:
         print('-----------  FKZ optimization  -----------------------------')
+
     parameters = np.zeros((9, n_layer))
 
     lw = 1.0
@@ -492,6 +500,7 @@ def produce_HH_G_param(
                 f'{j + 1}/{n_layer}: mu = {mu[j]:.3f}, a = {a:.1f}, '
                 f'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}',
             )
+
         T_FKZ = hh.tau_FKZ(
             strain_j / 100.0,
             Gmax=Gmax[j],
@@ -560,6 +569,7 @@ def produce_HH_G_param(
                     lw=lw * 1.75,
                     label='FKZ',
                 )
+
             plt.grid(ls=':', lw=0.5)
             plt.plot(
                 [np.min(strain_j), np.max(strain_j)],
@@ -595,6 +605,7 @@ def produce_HH_G_param(
                     marker='o',
                     lw=lw * 2.5,
                 )
+
             plt.grid(ls=':', lw=0.5)
             plt.plot(
                 strain_j,

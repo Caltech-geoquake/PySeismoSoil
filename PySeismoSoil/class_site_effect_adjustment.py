@@ -48,17 +48,21 @@ class Site_Effect_Adjustment:
     ):
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
+
         if not isinstance(Vs30_in_meter_per_sec, (int, float, np.number)):
             msg = '`Vs30_in_meter_per_sec` must be int, float, or numpy.number.'
             raise TypeError(msg)
+
         if not isinstance(z1_in_m, (int, float, np.number, type(None))):
             msg = '`z1_in_m` must be int, float, numpy.number, or None.'
             raise TypeError(msg)
+
         if ampl_method not in {'nl_hh', 'eq_hh'}:
             raise ValueError("Currently, only 'nl_hh' and 'eq_hh' are valid.")
 
         if z1_in_m is None:
             z1_in_m = sr.calc_z1_from_Vs30(Vs30_in_meter_per_sec)
+
         PGA_in_g = input_motion.pga_in_g
 
         site_factor = Site_Factors(
@@ -110,12 +114,14 @@ class Site_Effect_Adjustment:
                 'and the phase factor are not identical---something may '
                 'be wrong in class_site_factors.py.',
             )
+
         if af.iscomplex:
             print(
                 'Warning in Site_Effect_Adjustment.run(): the '
                 'amplification factor is complex, rather than '
                 'real---something may be wrong in class_site_factors.py',
             )
+
         if phf.iscomplex:
             print(
                 'Warning in Site_Effect_Adjustment.run(): the phase '
@@ -153,6 +159,7 @@ class Site_Effect_Adjustment:
         if return_fig_obj:
             if not show_fig:
                 fig, ax = None, None
+
             return output_motion, fig, ax
         else:
             return output_motion

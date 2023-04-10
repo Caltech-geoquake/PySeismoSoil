@@ -344,9 +344,11 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
 
     if verbose:
         print('Fitting MKZ model to G/Gmax data. Total: %d layers.' % n_ma)
+
     for j in range(n_ma):
         if verbose:
             print('  Layer #%d' % j)
+
         x_data = gamma[:, j]
         y_data = GGmax[:, j]
         popt, _ = curve_fit(

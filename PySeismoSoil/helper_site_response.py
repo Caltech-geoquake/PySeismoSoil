@@ -220,8 +220,10 @@ def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
             raise TypeError(
                 'If `thk` is a scalar, you need to provide ' '`n_layers` as an integer.',
             )
+
         if n_layers <= 0:
             raise ValueError('`n_layers` should be positive.')
+
         thk_array = thk * np.ones(n_layers)
 
     depth_array = thk2dep(thk_array, midpoint=at_midpoint)
@@ -702,6 +704,7 @@ def get_xi_rho(Vs, formula_type=3):
                 Qs[i] = 0.14 * Vs[i]
             else:
                 Qs[i] = 0.16 * Vs[i]
+
         xi = 1.0 / (2.0 * Qs)
 
     for i in range(nr):
@@ -756,6 +759,7 @@ def calc_VsZ(profile, Z, option_for_profile_shallower_than_Z=1, verbose=False):
     for i in range(len(thick)):
         if depth[i + 1] < Z:
             cumul_sl = cumul_sl + sl[i] * thick[i]  # cumulative Vs*thickness
+
         if depth[i + 1] >= Z:
             cumul_sl = cumul_sl + sl[i] * (thick[i] - (depth[i + 1] - Z))
             break
@@ -767,10 +771,12 @@ def calc_VsZ(profile, Z, option_for_profile_shallower_than_Z=1, verbose=False):
                     f"The input profile doesn't reach Z = {Z:.2f} m.\n"
                     f'Assume last Vs value goes down to {Z:.2f} m.',
                 )
+
             cumul_sl = cumul_sl + sl[-1] * (Z - total_thickness)
             VsZ = float(Z) / cumul_sl
         else:
             VsZ = float(Z) / cumul_sl
+
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth
         VsZ = np.min([total_thickness, Z]) / float(cumul_sl)  # use actual depth
 
@@ -1154,9 +1160,11 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
             D[1, 0, j] = 0.5 * ((1 - alpha_star[j]) * np.exp(1j * k_star[j] * h[j]))
             D[1, 1, j] = 0.5 * ((1 + alpha_star[j]) * np.exp(-1j * k_star[j] * h[j]))
             E = np.dot(E, D[:, :, j])
+
         TF_ro[i] = 1.0 / (E[0, 0] + E[0, 1])
         TF_in[i] = 2.0 / (E[0, 0] + E[0, 1])
         TF_bh[i] = 2.0 / (E[0, 0] + E[1, 0] + E[0, 1] + E[1, 1])
+
     AF_ro = np.absolute(TF_ro)
     AF_in = np.absolute(TF_in)
     AF_bh = np.absolute(TF_bh)
@@ -1383,6 +1391,7 @@ def amplify_motion(
             amp_ss = np.append(amp_ss, amp_ss[-1])
             # extrapolate phase knowing that it is a straight line in general:
             phase_ss = np.append(phase_ss, phase_slope * fmax)
+
         if np.min(f_array) > df:  # `f_array` does not cover fmin (i.e., `df`)
             f_array = np.append(df, f_array)
             amp_ss = np.append(1.0, amp_ss)
@@ -1399,6 +1408,7 @@ def amplify_motion(
                     'the `input_motion`). Please make sure to '
                     'provide the correct frequency range.',
                 )
+
             df, fmax, n, half_n, ref_f_array = _get_freq_interval(input_motion)
 
     # interpolate amplitude and phase (NOT the real/imag parts)
@@ -1437,6 +1447,7 @@ def amplify_motion(
         a_tapered = sig.taper_Tukey(a)
     else:
         a_tapered = a
+
     A = scipy.fftpack.fft(a_tapered)
 
     # ------------Multiplication---------------------------------------
@@ -1533,6 +1544,7 @@ def linear_site_resp(
     """
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
+
     if isinstance(input_motion, str):
         input_motion = np.genfromtxt(input_motion)
 
@@ -1625,13 +1637,16 @@ def _plot_site_amp(
         amplif_func_1col = None  # set all to `None` to avoid potential errors
         amplif_func_1col_smoothed = None
         phase_func_1col = None
+
     if amplif_func_1col is not None:
         hlp.assert_1D_numpy_array(amplif_func_1col, name='`amplif_func_1col`')
+
     if amplif_func_1col_smoothed is not None:
         hlp.assert_1D_numpy_array(
             amplif_func_1col_smoothed,
             name='`amplif_func_1col_smoothed`',
         )
+
     if phase_func_1col is not None:
         hlp.assert_1D_numpy_array(phase_func_1col, name='`phase_func_1col`')
 
@@ -1655,6 +1670,7 @@ def _plot_site_amp(
     else:
         plt.plot(time, accel_in, c=red, label=input_accel_label, alpha=alpha_)
         plt.plot(time, accel_out, c=blue, label=output_accel_label, alpha=alpha_)
+
     plt.grid(ls=':')
     plt.legend(loc='upper right')
     plt.xlim(np.min(time), np.max(time))
@@ -1668,14 +1684,17 @@ def _plot_site_amp(
         plt.semilogx(freq, amplif_func_1col, c=[0.1] * 3, label='Unsmoothed')
         if amplif_func_1col_smoothed is not None:
             plt.semilogx(freq, amplif_func_1col_smoothed, c='orange', label='Smoothed')
+
         plt.semilogx(freq, np.ones(len(freq)), '--', c='gray')
         if amplif_func_1col_smoothed is not None:
             plt.legend(loc='best')
+
         plt.xlabel('Frequency [Hz]')
         plt.ylabel(amplification_ylabel)
         plt.grid(ls=':')
         if amplif_func_ylog:
             plt.yscale('log')
+
         ax.append(ax_)
 
     if phase_func_1col is not None:
@@ -1915,6 +1934,7 @@ def robust_unwrap(signal, discont=3.141592653589793):
                 flag = 0
                 if peak > trough + 1:  # only keep such anomalies
                     drawer.append((trough, peak))
+
             trough = i
         else:
             peak = i
@@ -2203,12 +2223,14 @@ def fit_all_damping_curves(
         if not all(isinstance(_, np.ndarray) for _ in curves):
             msg = 'If `curves` is a list, all its elements needs to be 2D numpy arrays.'
             raise TypeError(msg)
+
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
                 curve,
                 name='Damping curve for layer #%d' % j,
                 ensure_non_negative=True,
             )
+
         curves_list = curves
     else:
         raise TypeError(
@@ -2258,6 +2280,7 @@ def fit_all_damping_curves(
                 fig=fig,
                 ax=ax,
             )
+
         fig.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
 
     if show_fig and save_fig:
@@ -2268,6 +2291,7 @@ def fit_all_damping_curves(
             raise ValueError(
                 'Please provide a function to serialize the parameters into a lists.',
             )
+
         data_for_file = []
         for param in params:
             data_for_file.append(func_serialize(param))

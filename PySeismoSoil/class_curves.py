@@ -149,10 +149,12 @@ class Curve:
                 self.raw_data[:, 1],
                 **kwargs_to_matplotlib,
             )
+
         ax.grid(ls=':')
         ax.set_xlabel(xlabel)
         if ylabel:
             ax.set_ylabel(ylabel)
+
         if title:
             ax.set_title(title)
 
@@ -619,13 +621,16 @@ class Multiple_Curves:
     def __setitem__(self, i, item):
         if not isinstance(item, self.element_class):
             raise TypeError('The new `item` must be of type %s.' % self.element_class)
+
         self.curves[i] = item
 
     def __getitem__(self, i):
         if isinstance(i, int):
             return self.curves[i]
+
         if isinstance(i, slice):  # return an object of the same class
             return self.__class__(self.curves[i])  # filled with the sliced data
+
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
     def __delitem__(self, i):
@@ -636,6 +641,7 @@ class Multiple_Curves:
         """Append another curve item to the curves."""
         if not isinstance(item, self.element_class):
             raise TypeError('The new `item` must be of type %s.' % self.element_class)
+
         self.curves.append(item)
         self.n_layer += 1
 
@@ -962,6 +968,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         if save_txt:
             if txt_filename is None:
                 txt_filename = self._produce_output_file_name('HH', 'txt')
+
             if sep is None:
                 sep = self._sep
 
@@ -1081,6 +1088,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         if save_txt:
             if txt_filename is None:
                 txt_filename = self._produce_output_file_name('H4', 'txt')
+
             if sep is None:
                 sep = self._sep
 
@@ -1365,26 +1373,32 @@ class Multiple_GGmax_Damping_Curves:
                 'Both parameters are `None`. Please provide '
                 'one and only one input parameter.',
             )
+
         if mgc_and_mdc is not None and data is not None:
             raise ValueError(
                 'Both parameters are not `None`. Please provide '
                 'one and only one input parameter.',
             )
+
         if mgc_and_mdc is not None:
             if not isinstance(mgc_and_mdc, tuple):
                 raise TypeError('`mgc_and_mdc` needs to be a tuple.')
+
             if len(mgc_and_mdc) != 2:
                 raise ValueError('Length of `mgc_and_mdc` needs to be 2.')
+
             if not isinstance(mgc_and_mdc[0], Multiple_GGmax_Curves):
                 raise TypeError(
                     'The 0th element of `mgc_and_mdc` needs to '
                     'be of type `Multiple_GGmax_Curves`.',
                 )
+
             if not isinstance(mgc_and_mdc[-1], Multiple_Damping_Curves):
                 raise TypeError(
                     'The last element of `mgc_and_mdc` needs to '
                     'be of type `Multiple_Damping_Curves`.',
                 )
+
             self.mgc = mgc_and_mdc[0]
             self.mdc = mgc_and_mdc[-1]
             self.data = None
@@ -1394,12 +1408,15 @@ class Multiple_GGmax_Damping_Curves:
                     'the ``Multiple_Damping_Curves`` instance '
                     'need to have the same number of soil layers.',
                 )
+
             self.n_layer = self.mgc.n_layer
         else:  # `data` is not `None`
             if not isinstance(data, (np.ndarray, str)):
                 raise TypeError('`data` must be a 2D numpy array or a file name.')
+
             if isinstance(data, str):
                 data = np.genfromtxt(data)
+
             self.mgc = None
             self.mdc = None
             hlp.assert_2D_numpy_array(data, name='`data`')
@@ -1409,6 +1426,7 @@ class Multiple_GGmax_Damping_Curves:
                     'to be a multiple of 4. However, your '
                     '`data` has %d columns.' % data.shape[1],
                 )
+
             self.data = data
             self.n_layer = data.shape[1] // 4
 

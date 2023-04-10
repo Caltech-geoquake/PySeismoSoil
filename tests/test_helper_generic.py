@@ -52,8 +52,10 @@ class Test_Helper_Generic(unittest.TestCase):
     def test_check_two_column_format(self):
         with self.assertRaisesRegex(TypeError, '1.5 should be a numpy array.'):
             hlp.check_two_column_format(1.5, '1.5')
+
         with self.assertRaisesRegex(TypeError, '_a_ should be a 2D numpy array.'):
             hlp.check_two_column_format(np.array([1, 2, 3]), '_a_')
+
         with self.assertRaisesRegex(TypeError, '_b_ should have two columns.'):
             hlp.check_two_column_format(np.ones((2, 3)), '_b_')
 
@@ -91,8 +93,10 @@ class Test_Helper_Generic(unittest.TestCase):
     def test_assert_1D_numpy_array(self):
         with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
             hlp.assert_1D_numpy_array([1, 2, 3, 4])
+
         with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
             hlp.assert_1D_numpy_array(np.array([[1, 2, 3, 4]]))
+
         with self.assertRaisesRegex(TypeError, 'must be a 1D numpy array.'):
             hlp.assert_1D_numpy_array(np.array([[1, 2], [3, 4]]))
 

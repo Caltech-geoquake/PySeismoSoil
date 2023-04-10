@@ -309,18 +309,23 @@ def check_two_column_format(
 
     if not isinstance(something, np.ndarray):
         raise TypeError('%s should be a numpy array.' % name)
+
     if something.ndim != 2:
         raise TypeError('%s should be a 2D numpy array.' % name)
+
     if not at_least_two_columns and something.shape[1] != 2:
         raise TypeError('%s should have two columns.' % name)
+
     if at_least_two_columns and something.shape[1] < 2:
         raise TypeError('%s should have >= 2 columns.' % name)
 
     check_status = check_numbers_valid(something)
     if check_status == -1:
         raise ValueError('%s should only contain numeric elements.' % name)
+
     if check_status == -2:
         raise ValueError('%s should contain no NaN values.' % name)
+
     if ensure_non_negative and check_status == -3:
         raise ValueError('%s should have all non-negative values.' % name)
 
@@ -343,10 +348,13 @@ def check_Vs_profile_format(data):
     check_status = check_numbers_valid(data)
     if check_status == -1:
         raise ValueError('`data` should only contain numeric elements.')
+
     if check_status == -2:
         raise ValueError('`data` should contain no NaN values.')
+
     if data.ndim != 2:
         raise ValueError('`data` should be a 2D numpy array.')
+
     if data.shape[1] not in [2, 5]:
         raise ValueError('`data` should have either 2 or 5 columns.')
 
@@ -356,8 +364,10 @@ def check_Vs_profile_format(data):
         raise ValueError(
             'The thickness column should be all positive, except for the last layer.',
         )
+
     if np.any(thk[-1] < 0):
         raise ValueError('The last layer thickness should be non-negative.')
+
     if np.any(Vs <= 0):
         raise ValueError('The Vs column should be all positive.')
 
@@ -367,13 +377,16 @@ def check_Vs_profile_format(data):
         mat = data[:, 4]
         if np.any(xi <= 0) or np.any(rho <= 0):
             raise ValueError('The damping and density columns should be positive.')
+
         if not all(is_int(_) for _ in mat):
             raise ValueError('The "material number" column should be all integers.')
+
         if np.any(mat[:-1] <= 0):
             raise ValueError(
                 'The "material number" column should be all '
                 'positive, except for the last error.',
             )
+
         if np.any(mat[-1] < 0):
             raise ValueError(
                 'The material number of the last layer should be non-negative.',
@@ -394,8 +407,10 @@ def is_int(number):
     """
     if not isinstance(number, (int, float, np.number)):
         return False
+
     if isinstance(number, (int, np.integer)):
         return True
+
     try:
         if number.is_integer():
             return True
@@ -422,8 +437,10 @@ def check_numbers_valid(array):
 
     if not np.issubdtype(array.dtype, np.number):
         return -1
+
     if not np.isfinite(array).all():
         return -2
+
     if np.any(array < 0):
         return -3
 
@@ -547,11 +564,13 @@ def extract_from_curve_format(curves, ensure_non_negative=True):
     else:
         if curves.ndim != 2:
             raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
+
         if curves.shape[1] % 4 != 0:
             raise ValueError(
                 'If `curves` is a numpy array, its number of '
                 'columns needs to be a multiple of 4.',
             )
+
         n_layer = curves.shape[1] // 4
 
         GGmax_curves_list = []
@@ -650,12 +669,14 @@ def merge_curve_matrices(GGmax_matrix, xi_matrix):
             'to be a multiple of 4. However, your '
             '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1],
         )
+
     if xi_matrix.shape[1] % 4 != 0:
         raise ValueError(
             'The number of columns of `xi_matrix` needs '
             'to be a multiple of 4. However, your '
             '`xi_matrix` has %d columns.' % xi_matrix.shape[1],
         )
+
     if GGmax_matrix.shape[1] != xi_matrix.shape[1]:
         raise ValueError(
             '`GGmax_matrix` and `xi_matrix` need to have the '
@@ -663,6 +684,7 @@ def merge_curve_matrices(GGmax_matrix, xi_matrix):
             'of them outside this function to make the shape '
             'identical. Sorry for the inconvenience.',
         )
+
     if GGmax_matrix.shape[0] != xi_matrix.shape[0]:
         raise ValueError(
             '`GGmax_matrix` and `xi_matrix` need to have the '
@@ -670,6 +692,7 @@ def merge_curve_matrices(GGmax_matrix, xi_matrix):
             'outside of this function to make the lengths '
             'identical. Sorry for the inconvenience.',
         )
+
     n_layer = GGmax_matrix.shape[1] // 4
     merged = np.column_stack((GGmax_matrix[:, :2], xi_matrix[:, 2:4]))
     for k in range(1, n_layer):

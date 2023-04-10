@@ -55,6 +55,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         # Test invalid unit names
         with self.assertRaisesRegex(ValueError, 'Invalid `unit` name.'):
             GM(np.array([1, 2, 3, 4, 5]), unit='test', dt=0.1)
+
         with self.assertRaisesRegex(ValueError, r"use '/s/s' instead of 's\^2'"):
             GM(np.array([1, 2, 3, 4, 5]), unit='m/s^2', dt=0.1)
 
