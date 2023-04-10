@@ -873,7 +873,7 @@ def _calc_K0(OCR, phi=30.0):
         K0 value(s). If either ``OCR`` or ``phi`` is an array, ``K0`` will be
         an array of the same length.
     """
-    K0 = (1 - np.sin(np.deg2rad(phi))) * OCR ** (np.sin(np.deg2rad(phi)))
+    K0 = (1 - np.sin(np.deg2rad(phi))) * OCR ** np.sin(np.deg2rad(phi))
     return K0
 
 
