@@ -76,20 +76,20 @@ class Site_Factors:
         if 'Vs30 out of range' in status:
             if not lenient:
                 raise ValueError('Vs30 should be between [175, 950] m/s')
-            else:
-                Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950
+
+            Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950
 
         if 'z1 out of range' in status:
             if not lenient:
                 raise ValueError('z1_in_m should be between [8, 900] m')
-            else:
-                z1_in_m = 8 if z1_in_m < 8 else 900
+
+            z1_in_m = 8 if z1_in_m < 8 else 900
 
         if 'PGA out of range' in status:
             if not lenient:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
-            else:
-                PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
+
+            PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
 
         if (
             'Invalid Vs30-z1 combination' in status
@@ -586,8 +586,8 @@ class Site_Factors:
 
         if phase_flag:
             return fig, ax1, ax2
-        else:
-            return fig, ax
+
+        return fig, ax
 
     @staticmethod
     def _range_check(Vs30_in_mps, z1_in_m, PGA_in_g):

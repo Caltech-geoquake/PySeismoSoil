@@ -100,7 +100,7 @@ class Ground_Motion:
 
         valid_unit_name = ['m', 'cm', 'm/s', 'cm/s', 'm/s/s', 'cm/s/s', 'gal', 'g']
         if unit not in valid_unit_name:
-            if 's^2' in unit:
+            if 's^2' in unit:  # noqa: R506
                 raise ValueError("Please use '/s/s' instead of 's^2' in `unit`.")
             else:
                 raise ValueError(
@@ -660,9 +660,9 @@ class Ground_Motion:
         if return_fig_obj:
             output_accel, fig, ax = result
             return Ground_Motion(output_accel, unit='m'), fig, ax
-        else:
-            output_accel = result
-            return Ground_Motion(output_accel, unit='m')
+
+        output_accel = result
+        return Ground_Motion(output_accel, unit='m')
 
     def amplify(self, soil_profile, boundary='elastic', show_fig=False):
         """

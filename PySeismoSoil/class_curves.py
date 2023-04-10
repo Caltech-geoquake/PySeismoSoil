@@ -1443,14 +1443,15 @@ class Multiple_GGmax_Damping_Curves:
         """
         if self.mgc is not None:
             return self.mgc, self.mdc
-        else:  # the user provides a matrix containing curve information
-            GGmax_curve_list, damping_curves_list = hlp.extract_from_curve_format(
-                self.data,
-                ensure_non_negative=False,
-            )
-            mgc = Multiple_GGmax_Curves(GGmax_curve_list)
-            mdc = Multiple_Damping_Curves(damping_curves_list)
-            return mgc, mdc
+
+        # the user provides a matrix containing curve information
+        GGmax_curve_list, damping_curves_list = hlp.extract_from_curve_format(
+            self.data,
+            ensure_non_negative=False,
+        )
+        mgc = Multiple_GGmax_Curves(GGmax_curve_list)
+        mdc = Multiple_Damping_Curves(damping_curves_list)
+        return mgc, mdc
 
     def get_curve_matrix(self):
         """
@@ -1468,10 +1469,10 @@ class Multiple_GGmax_Damping_Curves:
         """
         if self.data is not None:
             return self.data
-        else:
-            mgc_matrix = self.mgc.get_curve_matrix()
-            mdc_matrix = self.mdc.get_curve_matrix()
-            return hlp.merge_curve_matrices(mgc_matrix, mdc_matrix)
+
+        mgc_matrix = self.mgc.get_curve_matrix()
+        mdc_matrix = self.mdc.get_curve_matrix()
+        return hlp.merge_curve_matrices(mgc_matrix, mdc_matrix)
 
     def plot(self):
         """Plot the G/Gmax and damping curves."""

@@ -387,4 +387,3 @@ class Simulation_Results:
         if verbose:
             print('Simulation results saved to %s' % od)
 
-        return None

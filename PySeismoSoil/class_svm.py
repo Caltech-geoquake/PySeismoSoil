@@ -420,7 +420,6 @@ class SVM:
         ax.set_title(title)
         ax.legend(loc='best')
         ax.set_xlim(0, np.max(np.append(addtl_profile[:, 1], 1000)) * 1.1)
-        return None
 
     def get_randomized_profile(
             self,

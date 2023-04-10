@@ -68,7 +68,6 @@ class Parameter(collections.UserDict):
             raise KeyError("The model does not have a '%s' parameter." % key)
 
         self.data[key] = item
-        return None
 
     def __delitem__(self, key):
         raise ValueError('Deleting items from the parameter set is not allowed.')

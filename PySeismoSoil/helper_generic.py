@@ -32,8 +32,8 @@ def get_current_time(for_filename=True):
 
     if for_filename:
         return datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    else:
-        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def find_closest_index(array, value):
@@ -157,15 +157,15 @@ def read_two_column_stuff(data, delta=None, sep='\t', **kwargs_to_genfromtxt):
             raise ValueError(
                 '`delta` (such as dt or df) is needed for one-column `data`.',
             )
-        else:
-            n = len(data_)
-            col1 = np.linspace(delta, n * delta, num=n)
-            assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
-            data_ = np.column_stack((col1, data_))
+
+        n = len(data_)
+        col1 = np.linspace(delta, n * delta, num=n)
+        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
+        data_ = np.column_stack((col1, data_))
     elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
         col1 = data_[:, 0]
         delta = col1[1] - col1[0]
-    elif data_.shape[1] != 2:
+    elif data_.shape[1] != 2:  # noqa: R506
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
             'array, or a one-column array with a `delta` value.',
@@ -329,8 +329,6 @@ def check_two_column_format(
     if ensure_non_negative and check_status == -3:
         raise ValueError('%s should have all non-negative values.' % name)
 
-    return None
-
 
 def check_Vs_profile_format(data):
     """
@@ -391,8 +389,6 @@ def check_Vs_profile_format(data):
             raise ValueError(
                 'The material number of the last layer should be non-negative.',
             )
-
-    return None
 
 
 def is_int(number):
@@ -561,35 +557,35 @@ def extract_from_curve_format(curves, ensure_non_negative=True):
     """
     if not isinstance(curves, np.ndarray):
         raise TypeError('`curves` needs to be a numpy array.')
-    else:
-        if curves.ndim != 2:
-            raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
 
-        if curves.shape[1] % 4 != 0:
-            raise ValueError(
-                'If `curves` is a numpy array, its number of '
-                'columns needs to be a multiple of 4.',
-            )
+    if curves.ndim != 2:
+        raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
 
-        n_layer = curves.shape[1] // 4
+    if curves.shape[1] % 4 != 0:
+        raise ValueError(
+            'If `curves` is a numpy array, its number of '
+            'columns needs to be a multiple of 4.',
+        )
 
-        GGmax_curves_list = []
-        damping_curves_list = []
-        for j in range(n_layer):
-            GGmax = curves[:, j * 4 + 0 : j * 4 + 2]
-            damping = curves[:, j * 4 + 2 : j * 4 + 4]
-            check_two_column_format(
-                GGmax,
-                name='G/Gmax curve for layer #%d' % j,
-                ensure_non_negative=ensure_non_negative,
-            )
-            check_two_column_format(
-                damping,
-                name='Damping curve for layer #%d' % j,
-                ensure_non_negative=ensure_non_negative,
-            )
-            GGmax_curves_list.append(GGmax)
-            damping_curves_list.append(damping)
+    n_layer = curves.shape[1] // 4
+
+    GGmax_curves_list = []
+    damping_curves_list = []
+    for j in range(n_layer):
+        GGmax = curves[:, j * 4 + 0 : j * 4 + 2]
+        damping = curves[:, j * 4 + 2 : j * 4 + 4]
+        check_two_column_format(
+            GGmax,
+            name='G/Gmax curve for layer #%d' % j,
+            ensure_non_negative=ensure_non_negative,
+        )
+        check_two_column_format(
+            damping,
+            name='Damping curve for layer #%d' % j,
+            ensure_non_negative=ensure_non_negative,
+        )
+        GGmax_curves_list.append(GGmax)
+        damping_curves_list.append(damping)
 
     return GGmax_curves_list, damping_curves_list
 

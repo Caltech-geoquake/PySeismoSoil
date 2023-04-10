@@ -161,5 +161,5 @@ class Site_Effect_Adjustment:
                 fig, ax = None, None
 
             return output_motion, fig, ax
-        else:
-            return output_motion
+
+        return output_motion

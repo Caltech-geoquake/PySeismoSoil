@@ -45,8 +45,6 @@ def check_layer_count(
             'Not enough sets of curves in `GGmax_and_damping_curves` for `vs_profile`.',
         )
 
-    return None
-
 
 def linear(vs_profile, input_motion, boundary='elastic'):
     """

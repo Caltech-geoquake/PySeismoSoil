@@ -368,9 +368,9 @@ class Vs_Profile:
                 last_row[0] = last_thk
                 profile_.append(last_row)
                 break
-            else:
-                profile_.append(self.vs_profile[j, :])
-                total_depth += self._thk[j]
+
+            profile_.append(self.vs_profile[j, :])
+            total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
             profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
@@ -441,14 +441,14 @@ class Vs_Profile:
 
             # A halfspace is already implicitly added by sr.depth2thk()
             return Vs_Profile(vs_, add_halfspace=False)
-        else:
-            if show_fig:
-                self._plot_queried_Vs(vs_queried, depth)
 
-            if is_scalar:
-                return float(vs_queried)
-            else:
-                return vs_queried
+        if show_fig:
+            self._plot_queried_Vs(vs_queried, depth)
+
+        if is_scalar:
+            return float(vs_queried)
+
+        return vs_queried
 
     def query_Vs_given_thk(
             self,
@@ -505,13 +505,13 @@ class Vs_Profile:
                 self._plot_queried_Vs(vs_queried, depth)
 
             return vs_queried
-        else:
-            vs_ = np.column_stack((thk_array, vs_queried))
-            if show_fig:
-                fig, ax, _ = self.plot()
-                sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
 
-            return Vs_Profile(vs_, add_halfspace=add_halfspace)
+        vs_ = np.column_stack((thk_array, vs_queried))
+        if show_fig:
+            fig, ax, _ = self.plot()
+            sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
+
+        return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
     def _plot_queried_Vs(self, vs_queried, depth, dpi=100):
         """
@@ -529,8 +529,6 @@ class Vs_Profile:
         y_lim = ax.get_ylim()
         if np.max(y_lim) <= np.max(depth):
             ax.set_ylim((np.max(depth), np.min(y_lim)))
-
-        return None
 
     def get_basin_depth(self, bedrock_Vs=1000.0):
         """

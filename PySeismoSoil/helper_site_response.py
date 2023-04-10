@@ -1035,8 +1035,8 @@ def thk2dep(thk, midpoint=False):
 
     if not midpoint:
         return z_top
-    else:
-        return z_mid
+
+    return z_mid
 
 
 def dep2thk(depth_array_starting_from_0, include_halfspace=True):
@@ -1071,8 +1071,8 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
 
     if include_halfspace:
         return h
-    else:
-        return h[:-1]
+
+    return h[:-1]
 
 
 def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
@@ -1479,8 +1479,8 @@ def amplify_motion(
 
     if not return_fig_obj:
         return response
-    else:
-        return response, fig, ax
+
+    return response, fig, ax
 
 
 def linear_site_resp(
