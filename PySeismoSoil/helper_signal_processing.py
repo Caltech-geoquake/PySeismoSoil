@@ -159,10 +159,13 @@ def _filter_kernel(
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
             raise TypeError('`cutoff_freq` must be a list, tuple, or numpy array.')
+
         if len(cutoff_freq) != 2:
             raise ValueError('`cutoff_freq` must have length 2.')
+
         if cutoff_freq[1] <= cutoff_freq[0]:
             raise ValueError('`cutoff_freq` must be two values from smaller to larger.')
+
     elif filter_type in ['highpass', 'lowpass']:
         if not isinstance(cutoff_freq, (float, int, np.number)):
             raise TypeError('`cutoff_freq` must be float, int, or numpy.number.')
@@ -184,6 +187,7 @@ def _filter_kernel(
 
     if filter_type == 'highpass' and cutoff_freq <= 0:
         return orig_signal
+
     if filter_type == 'lowpass' and cutoff_freq >= f_nyquist:
         return orig_signal
 
@@ -197,6 +201,7 @@ def _filter_kernel(
                 filter_order=filter_order,
                 padlen=padlen,
             )
+
         if fmin <= df:
             return _filter_kernel(
                 orig_signal,
@@ -206,6 +211,7 @@ def _filter_kernel(
                 filter_order=filter_order,
                 padlen=padlen,
             )
+
     if filter_type == 'bandstop':
         if fmax >= f_nyquist * 0.9999:
             return _filter_kernel(
@@ -216,6 +222,7 @@ def _filter_kernel(
                 filter_order=filter_order,
                 padlen=padlen,
             )
+
         if fmin <= df:
             return _filter_kernel(
                 orig_signal,
@@ -253,6 +260,7 @@ def _filter_kernel(
             plt.plot([cutoff_freq[1]] * 2, ylim, c='orange')
         else:
             plt.plot([cutoff_freq] * 2, ylim, c='orange')
+
         plt.xscale('log')
         plt.xlim(0.01)
         plt.ylim(0, np.max(spec_orig[1:]))
@@ -269,6 +277,7 @@ def _filter_kernel(
             plt.plot([cutoff_freq[1]] * 2, ylim, c='orange')
         else:
             plt.plot([cutoff_freq] * 2, ylim, c='orange')
+
         plt.xscale('log')
         plt.xlim(0.01)
         plt.ylim(0, np.max(spec[1:]))
@@ -325,6 +334,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
             flag2 = 1
         else:
             flag2 = -1
+
         if flag1 * flag2 < 0:
             cross_bound_left = i
             break
@@ -606,6 +616,7 @@ def calc_transfer_function(
     hlp.check_two_column_format(output_signal, name='`output_signal`')
     if hlp.check_numbers_valid(input_signal) in [-1, -2]:
         raise ValueError('`input_signal` contains invalid values.')
+
     if hlp.check_numbers_valid(output_signal) in [-1, -2]:
         raise ValueError('`output_signal` contains invalid values.')
 
@@ -711,8 +722,10 @@ def log_smooth(
     hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
         raise ValueError('Input vector needs to be bigger than window size.')
+
     if win_len < 3:
         return signal
+
     if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError(
             "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
@@ -740,6 +753,7 @@ def log_smooth(
 
         if beta1 < 0 or beta1 > 1:
             raise ValueError('`beta1` should be within [0, 1].')
+
         if beta2 < 0 or beta2 > 1:
             raise ValueError('`beta2` should be within [0, 1].')
 
@@ -807,10 +821,13 @@ def lin_smooth(x, window_len=15, window='hanning'):
     """
     if x.ndim != 1:
         raise ValueError('smooth only accepts one-dimensional arrays.')
+
     if x.size < window_len:
         raise ValueError('Input vector needs to be bigger than window size.')
+
     if window_len < 3:
         return x
+
     if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError(
             "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",

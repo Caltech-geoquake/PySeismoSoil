@@ -18,6 +18,7 @@ class Damping_Calibration:
     def __init__(self, vs_profile):
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
+
         self.vs_profile = vs_profile
 
     def get_damping_curves(
@@ -77,6 +78,7 @@ class Damping_Calibration:
             if not use_Darendeli_Dmin:
                 xi_j -= xi_j[0]
                 xi_j += self.vs_profile.vs_profile[j, 2]
+
             dc = Damping_Curve(
                 np.column_stack((strain_in_pct, xi_j)),
                 strain_unit='%',
@@ -85,6 +87,7 @@ class Damping_Calibration:
                 check_values=True,
             )
             curve_list.append(dc)
+
         mdc = Multiple_Damping_Curves(curve_list)
 
         if show_fig:

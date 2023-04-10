@@ -98,8 +98,10 @@ class Test_Class_Curves(unittest.TestCase):
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))[:, 2:4]
         with self.assertRaisesRegex(ValueError, 'G/Gmax values must be between'):
             GGmax_Curve(data)
+
         with self.assertRaisesRegex(ValueError, 'damping values must be between'):
             Damping_Curve(data * 100.0)
+
         with self.assertRaisesRegex(ValueError, 'should have all non-negative'):
             Stress_Curve(data * -1)
 
@@ -129,6 +131,7 @@ class Test_Class_Curves(unittest.TestCase):
         # Test __setitem__
         with self.assertRaisesRegex(TypeError, 'new `item` must be of type'):
             mdc[2] = 2.5  # use an incorrect type
+
         mdc[4] = Damping_Curve(layer_0_bench)
         self.assertTrue(np.allclose(mdc[0].raw_data, mdc[4].raw_data))
 
@@ -254,10 +257,13 @@ class Test_Class_Curves(unittest.TestCase):
         mdc = Multiple_Damping_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         with self.assertRaisesRegex(ValueError, 'Both parameters are `None`'):
             Multiple_GGmax_Damping_Curves()
+
         with self.assertRaisesRegex(ValueError, 'one and only one input parameter'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data=2.6)
+
         with self.assertRaisesRegex(TypeError, 'needs to be of type'):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mdc, mgc))
+
         mgc_ = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         del mgc_[-1]
         with self.assertRaisesRegex(ValueError, 'same number of soil layers'):
@@ -284,6 +290,7 @@ class Test_Class_Curves(unittest.TestCase):
             TypeError, 'must be a 2D numpy array or a file name',
         ):
             Multiple_GGmax_Damping_Curves(data=3.5)
+
         mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
         self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))

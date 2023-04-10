@@ -93,6 +93,7 @@ class Test_Class_Simulation(unittest.TestCase):
                 G_param=HH_G_,
                 xi_param=HH_x,
             )
+
         with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
             Nonlinear_Simulation(
                 soil_profile,

@@ -47,17 +47,20 @@ class HH_Calibration:
     def __init__(self, vs_profile, *, GGmax_curves=None, Tmax_profile=None):
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
+
         if GGmax_curves is not None:
             if not isinstance(GGmax_curves, Multiple_GGmax_Curves):
                 raise TypeError(
                     'If `GGmax_curves` is not `None`, it must be '
                     'of type Multiple_GGmax_Curves.',
                 )
+
             if GGmax_curves.n_layer != vs_profile.n_layer:
                 raise ValueError(
                     'The number of layers implied in `GGmax_curves` '
                     'and `vs_profile` must be the same.',
                 )
+
         if Tmax_profile is not None:
             hlp.assert_1D_numpy_array(Tmax_profile, '`Tmax_profile`')
             if len(Tmax_profile) != vs_profile.n_layer:
@@ -66,6 +69,7 @@ class HH_Calibration:
                     'equal to the number of layers (not including '
                     'the rock half space) in `vs_profile`.',
                 )
+
         self.vs_profile = vs_profile
         self.GGmax_curves = GGmax_curves
         self.Tmax_profile = Tmax_profile

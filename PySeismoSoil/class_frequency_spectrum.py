@@ -112,6 +112,7 @@ class Frequency_Spectrum:
                 data_[:, 1],
                 log_scale=log_scale,
             )
+
         self.raw_df = df
         self.raw_data = data_
         self.n_pts = n_pts
@@ -183,13 +184,16 @@ class Frequency_Spectrum:
             ax.plot(self.freq, self.amplitude, **kwargs_plot)
         else:
             ax.plot(self.freq, self.spectrum, **kwargs_plot)
+
         ax.set_xlabel('Frequency [Hz]')
         ax.set_ylabel('Amplitude or phase')
         ax.grid(ls=':')
         if logx:
             ax.set_xscale('log')
+
         if logy:
             ax.set_yscale('log')
+
         if self._file_name:
             ax.set_title(self._file_name)
 

@@ -60,6 +60,7 @@ class Simulation:
     ):
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
+
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
 
@@ -68,12 +69,14 @@ class Simulation:
 
         if type(G_param) != type(xi_param):
             raise TypeError('`G_param` and `xi_param` must be of the same type.')
+
         if G_param is not None and not isinstance(G_param, Param_Multi_Layer):
             raise TypeError(
                 '`G_param` must be of a subclass of '
                 '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
                 'or `MKZ_Param_Multi_Layer`.',
             )
+
         if xi_param is not None and not isinstance(xi_param, Param_Multi_Layer):
             raise TypeError(
                 '`xi_param` must be of a subclass of '
@@ -268,6 +271,7 @@ class Equiv_Linear_Simulation(Simulation):
     ):
         if GGmax_and_damping_curves is None:
             raise TypeError('`GGmax_and_damping_curves` cannot be None.')
+
         super().__init__(
             soil_profile,
             input_motion,
@@ -411,8 +415,10 @@ class Nonlinear_Simulation(Simulation):
     ):
         if G_param is None:
             raise TypeError('`G_param` cannot be None.')
+
         if xi_param is None:
             raise TypeError('`xi_param` cannot be None.')
+
         super().__init__(
             soil_profile,
             input_motion,
@@ -493,6 +499,7 @@ class Nonlinear_Simulation(Simulation):
 
         if os.path.exists(sim_dir):
             sim_dir += '_'
+
         os.makedirs(sim_dir)
         os.chmod(
             sim_dir,
@@ -550,6 +557,7 @@ class Nonlinear_Simulation(Simulation):
             exec_ext = 'unix'
         else:
             raise ValueError('Unknown operating system.')
+
         dir_exec_files = pkg_resources.resource_filename(
             'PySeismoSoil',
             'exec_files',

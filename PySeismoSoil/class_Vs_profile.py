@@ -92,6 +92,7 @@ class Vs_Profile:
 
         if damping_unit not in ['1', '%']:
             raise ValueError("`damping_unit` must be '1' or '%'.")
+
         if density_unit not in ['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3']:
             raise ValueError("`density_unit` must be 'kg/m^3' or 'g/cm^3'.")
 
@@ -105,6 +106,7 @@ class Vs_Profile:
                 material_number = np.append(np.arange(1, n_layer_tmp), [0])
             else:
                 material_number = np.arange(1, n_layer_tmp + 1)
+
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
         elif n_col == 5:
             xi = data_[:, 2]
@@ -128,6 +130,7 @@ class Vs_Profile:
 
             if density_unit in ['g/cm^3', 'g/cm3']:
                 data_[:, 3] *= 1000.0  # g/cm^3 --> kg/m^3
+
             if damping_unit == '%':
                 data_[:, 2] /= 100.0  # percent --> 1
 
@@ -352,8 +355,10 @@ class Vs_Profile:
         """
         if depth is None or depth <= 0:
             raise ValueError('`depth` needs to be a positive number.')
+
         if Vs is None or Vs <= 0:
             raise ValueError('`Vs` needs to be a positive number.')
+
         profile_ = []
         total_depth = 0
         for j in range(len(self._vs)):
@@ -363,9 +368,9 @@ class Vs_Profile:
                 last_row[0] = last_thk
                 profile_.append(last_row)
                 break
-            else:
-                profile_.append(self.vs_profile[j, :])
-                total_depth += self._thk[j]
+
+            profile_.append(self.vs_profile[j, :])
+            total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
             profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
@@ -375,6 +380,7 @@ class Vs_Profile:
             bedrock = [0, Vs, xi[0], rho[0], 0]
         else:  # just numbers
             bedrock = [0, Vs, xi, rho, 0]
+
         profile_.append(bedrock)  # add half space whose Vs is `Vs`
         profile_ = np.array(profile_)
 
@@ -413,6 +419,7 @@ class Vs_Profile:
                     'If `as_profile` is set to True, the given '
                     '`depth` needs to be monotonically increasing.',
                 )
+
             if has_duplicate_values:
                 raise ValueError(
                     'If `as_profile` is set to True, the given '
@@ -425,6 +432,7 @@ class Vs_Profile:
                 vs_queried = np.append(vs_queried[0:1], vs_queried)
             else:  # `depth` has been guarenteed to be sorted with no duplicates
                 thk_array = sr.dep2thk(depth)
+
             vs_ = np.column_stack((thk_array, vs_queried))
 
             if show_fig:
@@ -433,13 +441,14 @@ class Vs_Profile:
 
             # A halfspace is already implicitly added by sr.depth2thk()
             return Vs_Profile(vs_, add_halfspace=False)
-        else:
-            if show_fig:
-                self._plot_queried_Vs(vs_queried, depth)
-            if is_scalar:
-                return float(vs_queried)
-            else:
-                return vs_queried
+
+        if show_fig:
+            self._plot_queried_Vs(vs_queried, depth)
+
+        if is_scalar:
+            return float(vs_queried)
+
+        return vs_queried
 
     def query_Vs_given_thk(
             self,
@@ -482,6 +491,7 @@ class Vs_Profile:
         """
         if n_layers is None and isinstance(thk, (int, float, np.number)):
             n_layers = int(np.ceil(self.z_max / thk))
+
         vs_queried, thk_array = sr.query_Vs_given_thk(
             self.vs_profile,
             thk,
@@ -493,13 +503,15 @@ class Vs_Profile:
             if show_fig:
                 depth = sr.thk2dep(thk_array, midpoint=at_midpoint)
                 self._plot_queried_Vs(vs_queried, depth)
+
             return vs_queried
-        else:
-            vs_ = np.column_stack((thk_array, vs_queried))
-            if show_fig:
-                fig, ax, _ = self.plot()
-                sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
-            return Vs_Profile(vs_, add_halfspace=add_halfspace)
+
+        vs_ = np.column_stack((thk_array, vs_queried))
+        if show_fig:
+            fig, ax, _ = self.plot()
+            sr.plot_Vs_profile(vs_, fig=fig, ax=ax, c='orange', alpha=0.75)
+
+        return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
     def _plot_queried_Vs(self, vs_queried, depth, dpi=100):
         """
@@ -517,8 +529,6 @@ class Vs_Profile:
         y_lim = ax.get_ylim()
         if np.max(y_lim) <= np.max(depth):
             ax.set_ylim((np.max(depth), np.min(y_lim)))
-
-        return None
 
     def get_basin_depth(self, bedrock_Vs=1000.0):
         """
@@ -604,6 +614,7 @@ class Vs_Profile:
         """
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
+
         if len(precision) != 5:
             raise ValueError('Length of precision must be 5.')
 

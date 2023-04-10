@@ -331,9 +331,11 @@ class SVM:
         if fixed_thk is None and Vs_increment is None:
             msg = 'You need to provide either `fixed_thk` or `Vs_increment`.'
             raise ValueError(msg)
+
         if fixed_thk is not None and Vs_increment is not None:
             msg = 'Please only provide `fixed_thk` or `Vs_increment`; do not provide both.'
             raise ValueError(msg)
+
         if fixed_thk is not None:
             discr_prof = self.base_profile.query_Vs_given_thk(
                 fixed_thk,
@@ -347,6 +349,7 @@ class SVM:
                     '`Vs_increment` needs to < %.2g m/s (the '
                     'max Vs of the smooth profile)' % max_Vs,
                 )
+
             n_layers = self._base_profile.shape[0]
             discr_Vs_previous_layer = self._base_profile[0, 1]
             layer_bottom_depth_array = [0]
@@ -417,7 +420,6 @@ class SVM:
         ax.set_title(title)
         ax.legend(loc='best')
         ax.set_xlim(0, np.max(np.append(addtl_profile[:, 1], 1000)) * 1.1)
-        return None
 
     def get_randomized_profile(
             self,
@@ -481,6 +483,7 @@ class SVM:
             counter = 0
             if verbose:
                 print('Iterating for compliant Vs profile:')
+
             while iterate:
                 seed_ = None if seed is None else seed + counter
                 options.update({'seed': seed_, 'show_fig': False})
@@ -612,6 +615,7 @@ class SVM:
                 thk.append(thk_rand)
             else:  # a single-element 1D numpy array
                 thk.append(thk_rand[0])
+
             z_mid.append(z_top[-1] + thk_rand / 2.0)
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
@@ -774,6 +778,7 @@ class SVM:
         array = np.array(array)
         if len(array) == 0:
             raise ValueError('The length of `array` needs to >= 0.')
+
         if array.ndim > 1:
             raise ValueError('`array` must be a 1D numpy array.')
 

@@ -100,7 +100,7 @@ class Ground_Motion:
 
         valid_unit_name = ['m', 'cm', 'm/s', 'cm/s', 'm/s/s', 'cm/s/s', 'gal', 'g']
         if unit not in valid_unit_name:
-            if 's^2' in unit:
+            if 's^2' in unit:  # noqa: R506
                 raise ValueError("Please use '/s/s' instead of 's^2' in `unit`.")
             else:
                 raise ValueError(
@@ -372,6 +372,7 @@ class Ground_Motion:
 
         if t is None:
             t = self.accel[:, 0]
+
         if Ia_normalized is None:
             Ia_normalized = self.Arias_Intensity_normalized[:, 1]
 
@@ -386,8 +387,10 @@ class Ground_Motion:
         for i in range(n):
             if Ia_normalized[i] >= low_lim and prev < low_lim:
                 t_low = t[i]
+
             if Ia_normalized[i] >= high_lim and prev < high_lim:
                 t_high = t[i]
+
             prev = Ia_normalized[i]
 
         return t_low, t_high
@@ -506,10 +509,13 @@ class Ground_Motion:
         """
         if not isinstance(limit, (tuple, list)):
             raise TypeError('"limit" must be a list/tuple of  two elements.')
+
         if len(limit) != 2:
             raise ValueError('Length of "limit" must be 2.')
+
         if not isinstance(extend, (tuple, list)):
             raise TypeError('"extend" must be a list/tuple of  two elements.')
+
         if len(extend) != 2:
             raise ValueError('Length of "extend" must be 2.')
 
@@ -533,6 +539,7 @@ class Ground_Motion:
 
         if n1 < 0:
             n1 = 0
+
         if n2 > self.npts:
             n2 = self.npts
 
@@ -636,6 +643,7 @@ class Ground_Motion:
                 '`transfer_function` needs to be of type '
                 '`Frequency_Spectrum` (or its subclass).',
             )
+
         freq = transfer_function.freq
         tf_1col = transfer_function.spectrum
         transfer_function_single_sided = (freq, tf_1col)
@@ -652,9 +660,9 @@ class Ground_Motion:
         if return_fig_obj:
             output_accel, fig, ax = result
             return Ground_Motion(output_accel, unit='m'), fig, ax
-        else:
-            output_accel = result
-            return Ground_Motion(output_accel, unit='m')
+
+        output_accel = result
+        return Ground_Motion(output_accel, unit='m')
 
     def amplify(self, soil_profile, boundary='elastic', show_fig=False):
         """

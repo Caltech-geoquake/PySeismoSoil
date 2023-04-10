@@ -31,10 +31,12 @@ def check_layer_count(
     max_mat_num = np.max(vs_profile._material_number)
     if G_param is not None and G_param.n_layer < max_mat_num:
         raise ValueError('Not enough sets of parameters in `G_param` for `vs_profile`.')
+
     if xi_param is not None and xi_param.n_layer < max_mat_num:
         raise ValueError(
             'Not enough sets of parameters in `xi_param` for `vs_profile`.',
         )
+
     if (
         GGmax_and_damping_curves is not None
         and GGmax_and_damping_curves.n_layer < max_mat_num  # noqa: W503
@@ -42,7 +44,6 @@ def check_layer_count(
         raise ValueError(
             'Not enough sets of curves in `GGmax_and_damping_curves` for `vs_profile`.',
         )
-    return None
 
 
 def linear(vs_profile, input_motion, boundary='elastic'):

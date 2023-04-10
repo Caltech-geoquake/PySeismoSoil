@@ -317,14 +317,17 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         # (7) Test invalid input: list
         with self.assertRaisesRegex(TypeError, 'needs to be a single number'):
             prof.query_Vs_at_depth([1, 2])
+
         with self.assertRaisesRegex(TypeError, 'needs to be a single number'):
             prof.query_Vs_at_depth({1, 2})
+
         with self.assertRaisesRegex(TypeError, 'needs to be a single number'):
             prof.query_Vs_at_depth((1, 2))
 
         # (8) Test invalid input: negative values
         with self.assertRaisesRegex(ValueError, 'Please provide non-negative'):
             prof.query_Vs_at_depth(-2)
+
         with self.assertRaisesRegex(ValueError, 'Please provide non-negative'):
             prof.query_Vs_at_depth(np.array([-2, 1]))
 
