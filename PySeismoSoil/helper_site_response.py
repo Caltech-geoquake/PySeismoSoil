@@ -891,7 +891,7 @@ def plot_Vs_profile(
 
     x, y = _gen_profile_plot_array(thk, vs, zmax)
 
-    h_line, _ = ax.plot(x, y, c=c, lw=lw, label=label, **other_kwargs)
+    h_line = ax.plot(x, y, c=c, lw=lw, label=label, **other_kwargs)
     ax.set_xlim(0, np.max(vs) * 1.1)
     ax.set_ylim(zmax, 0)  # reversed Y axis
     ax.set_xlabel('Shear-wave velocity [m/s]', fontsize=12)
