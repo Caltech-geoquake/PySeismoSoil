@@ -218,7 +218,7 @@ def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
     else:  # need to construct an array
         if not isinstance(n_layers, (int, np.integer)):
             raise TypeError(
-                'If `thk` is a scalar, you need to provide ' '`n_layers` as an integer.',
+                'If `thk` is a scalar, you need to provide `n_layers` as an integer.',
             )
 
         if n_layers <= 0:

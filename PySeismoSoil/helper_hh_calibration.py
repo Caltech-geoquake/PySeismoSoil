@@ -585,7 +585,7 @@ def produce_HH_G_param(
             plt.legend(loc='upper left')
 
             title_txt = f'$V_S$ = {Vs[j]:.1f} m/s, '
-            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'
+            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'  # noqa: ISC003
             title_txt += r'$\tau_{\mathrm{ff}}$ = '
             title_txt += f'{Tmax[j] / 1e3:.3f} kPa, '
             title_txt += r'$\gamma_{\mathrm{ref}}$ = '
