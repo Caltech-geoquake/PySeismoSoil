@@ -1,5 +1,12 @@
 # PySeismoSoil
 
+[![PyPI](https://img.shields.io/pypi/v/pyseismosoil)](https://pypi.org/project/PySeismoSoil/)
+[![Documentation Status](https://readthedocs.org/projects/pyseismosoil/badge/?version=stable)](https://pyseismosoil.readthedocs.io/en/stable/?badge=stable)
+[![Downloads](https://static.pepy.tech/badge/pyseismosoil)](https://pepy.tech/project/pyseismosoil)
+[![Downloads](https://static.pepy.tech/badge/pyseismosoil/month)](https://pepy.tech/project/pyseismosoil)
+[![Downloads](https://static.pepy.tech/badge/pyseismosoil/week)](https://pepy.tech/project/pyseismosoil)
+
+
 PySeismoSoil is a Python library for performing 1D seismic site response analysis.
 
 
