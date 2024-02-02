@@ -49,7 +49,9 @@ class Site_Effect_Adjustment:
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
 
         if not isinstance(Vs30_in_meter_per_sec, (int, float, np.number)):
-            msg = '`Vs30_in_meter_per_sec` must be int, float, or numpy.number.'
+            msg = (
+                '`Vs30_in_meter_per_sec` must be int, float, or numpy.number.'
+            )
             raise TypeError(msg)
 
         if not isinstance(z1_in_m, (int, float, np.number, type(None))):

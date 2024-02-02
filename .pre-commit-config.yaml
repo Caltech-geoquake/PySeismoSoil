@@ -5,7 +5,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/jsh9/cercis
-    rev: 0.2.5
+    rev: 0.2.3
     hooks:
       - id: cercis
 
