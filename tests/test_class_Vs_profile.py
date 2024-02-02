@@ -1,21 +1,21 @@
-import unittest
-import numpy as np
-import matplotlib.pyplot as plt
-
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-
-import PySeismoSoil.helper_generic as hlp
-
 import os
+import unittest
 from os.path import join as _join
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+import PySeismoSoil.helper_generic as hlp
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 
 class Test_Class_Vs_Profile(unittest.TestCase):
     def __init__(self, methodName='runTest'):
-        data, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
+        data, _ = hlp.read_two_column_stuff(
+            _join(f_dir, 'two_column_data_example.txt')
+        )
         data[:, 0] *= 10
         data[:, 1] *= 100
         prof = Vs_Profile(data)
@@ -25,34 +25,44 @@ class Test_Class_Vs_Profile(unittest.TestCase):
     def test_Vs_profile_format__case_1(self):
         # Test `None` as `data`
         data = None
-        with self.assertRaisesRegex(TypeError, 'must be a file name or a numpy array'):
+        with self.assertRaisesRegex(
+            TypeError, 'must be a file name or a numpy array'
+        ):
             Vs_Profile(data)
 
     def test_Vs_profile_format__case_2(self):
         # Test other type as `data`
         data = 3.6
-        with self.assertRaisesRegex(TypeError, 'must be a file name or a numpy array'):
+        with self.assertRaisesRegex(
+            TypeError, 'must be a file name or a numpy array'
+        ):
             Vs_Profile(data)
 
     def test_Vs_profile_format__case_3(self):
         # Test NaN values
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 1] = np.nan
-        with self.assertRaisesRegex(ValueError, 'should contain no NaN values'):
+        with self.assertRaisesRegex(
+            ValueError, 'should contain no NaN values'
+        ):
             Vs_Profile(data)
 
     def test_Vs_profile_format__case_4(self):
         # Test non-positive values in thickness
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 0] = 0
-        with self.assertRaisesRegex(ValueError, 'should be all positive, except'):
+        with self.assertRaisesRegex(
+            ValueError, 'should be all positive, except'
+        ):
             Vs_Profile(data)
 
     def test_Vs_profile_format__case_5(self):
         # Test negative values in last layer thickness
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[-1, 0] = -1
-        with self.assertRaisesRegex(ValueError, 'last layer thickness should be'):
+        with self.assertRaisesRegex(
+            ValueError, 'last layer thickness should be'
+        ):
             Vs_Profile(data)
 
     def test_Vs_profile_format__case_6(self):
@@ -65,7 +75,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         # Test negative values in Vs
         data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
         data[2, 1] = -1
-        with self.assertRaisesRegex(ValueError, 'Vs column should be all positive.'):
+        with self.assertRaisesRegex(
+            ValueError, 'Vs column should be all positive.'
+        ):
             Vs_Profile(data)
 
     def test_Vs_profile_format__case_8(self):
@@ -133,7 +145,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         ).T
         data_ = data.copy()
         data_[-1, -1] = -1
-        with self.assertRaisesRegex(ValueError, 'last layer should be non-negative'):
+        with self.assertRaisesRegex(
+            ValueError, 'last layer should be non-negative'
+        ):
             Vs_Profile(data_)
 
     def test_Vs_profile_format__case_12(self):
@@ -193,7 +207,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
     def test_get_amplif_function(self):
         profile_FKSH14 = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        af_RO = profile_FKSH14.get_ampl_function(freq_resolution=0.5, fmax=15)[0]
+        af_RO = profile_FKSH14.get_ampl_function(freq_resolution=0.5, fmax=15)[
+            0
+        ]
         af_benchmark = np.array(
             [
                 [0.50, 1.20218233839345],  # from MATLAB
@@ -264,12 +280,16 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
         prof = Vs_Profile(data)
         new_prof = prof.truncate(depth=30, Vs=2000)
-        benchmark = np.array([[5, 4, 3, 2, 16, 0], [200, 500, 700, 1000, 1200, 2000]]).T
+        benchmark = np.array(
+            [[5, 4, 3, 2, 16, 0], [200, 500, 700, 1000, 1200, 2000]]
+        ).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
     def test_truncate__case_3b(self):
         # Case 3b: Truncation beyond the total depth of original profile
-        data_ = np.array([[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1500]]).T
+        data_ = np.array(
+            [[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1500]]
+        ).T
         prof = Vs_Profile(data_)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(
@@ -279,7 +299,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
     def test_truncate__case_3c(self):
         # Case 3c: Truncation beyond the total depth of original profile
-        data_ = np.array([[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1200]]).T
+        data_ = np.array(
+            [[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1200]]
+        ).T
         prof = Vs_Profile(data_)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(
@@ -291,18 +313,30 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
 
         # (1) Test ground surface
-        self.assertAlmostEqual(prof.query_Vs_at_depth(0.0, as_profile=False), 120.0)
+        self.assertAlmostEqual(
+            prof.query_Vs_at_depth(0.0, as_profile=False), 120.0
+        )
 
         # (2) Test depth within a layer
-        self.assertAlmostEqual(prof.query_Vs_at_depth(1.0, as_profile=False), 120.0)
+        self.assertAlmostEqual(
+            prof.query_Vs_at_depth(1.0, as_profile=False), 120.0
+        )
 
         # (3) Test depth at layer interface
-        self.assertAlmostEqual(prof.query_Vs_at_depth(105, as_profile=False), 1030.0)
-        self.assertAlmostEqual(prof.query_Vs_at_depth(106, as_profile=False), 1210.0)
-        self.assertAlmostEqual(prof.query_Vs_at_depth(107, as_profile=False), 1210.0)
+        self.assertAlmostEqual(
+            prof.query_Vs_at_depth(105, as_profile=False), 1030.0
+        )
+        self.assertAlmostEqual(
+            prof.query_Vs_at_depth(106, as_profile=False), 1210.0
+        )
+        self.assertAlmostEqual(
+            prof.query_Vs_at_depth(107, as_profile=False), 1210.0
+        )
 
         # (4) Test infinite depth
-        self.assertAlmostEqual(prof.query_Vs_at_depth(1e9, as_profile=False), 1210.0)
+        self.assertAlmostEqual(
+            prof.query_Vs_at_depth(1e9, as_profile=False), 1210.0
+        )
 
         # (5) Test depth at layer interface -- input is an array
         result = prof.query_Vs_at_depth(np.array([7, 8, 9]), as_profile=False)
@@ -310,7 +344,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(is_all_close)
 
         # (6) Test depth at ground sufrace and interface
-        result = prof.query_Vs_at_depth(np.array([0, 1, 2, 3]), as_profile=False)
+        result = prof.query_Vs_at_depth(
+            np.array([0, 1, 2, 3]), as_profile=False
+        )
         is_all_close = np.allclose(result, [120, 120, 190, 190])
         self.assertTrue(is_all_close)
 
@@ -335,11 +371,15 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
 
         # (1) Test invalid input: non-increasing array
-        with self.assertRaisesRegex(ValueError, 'needs to be monotonically increasing'):
+        with self.assertRaisesRegex(
+            ValueError, 'needs to be monotonically increasing'
+        ):
             prof.query_Vs_at_depth(np.array([1, 2, 5, 4, 6]), as_profile=True)
 
         # (2) Test invalid input: repeated values
-        with self.assertRaisesRegex(ValueError, 'should not contain duplicate values'):
+        with self.assertRaisesRegex(
+            ValueError, 'should not contain duplicate values'
+        ):
             prof.query_Vs_at_depth(np.array([1, 2, 4, 4, 6]), as_profile=True)
 
         # (3) Test a scalar input
@@ -349,8 +389,12 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         self.assertTrue(compare)
 
         # (4) Test a general case
-        result = prof.query_Vs_at_depth(np.array([0, 1, 2, 3, 9]), as_profile=True)
-        benchmark = Vs_Profile(np.array([[1, 1, 1, 6, 0], [120, 120, 190, 190, 280]]).T)
+        result = prof.query_Vs_at_depth(
+            np.array([0, 1, 2, 3, 9]), as_profile=True
+        )
+        benchmark = Vs_Profile(
+            np.array([[1, 1, 1, 6, 0], [120, 120, 190, 190, 280]]).T
+        )
         compare = np.allclose(result.vs_profile, benchmark.vs_profile)
         self.assertTrue(compare)
 
@@ -385,7 +429,9 @@ class Test_Class_Vs_Profile(unittest.TestCase):
             result = prof.query_Vs_given_thk(1, n_layers=0)
 
         # (3b) Test invalid input
-        with self.assertRaisesRegex(TypeError, 'needs to be a scalar or a numpy'):
+        with self.assertRaisesRegex(
+            TypeError, 'needs to be a scalar or a numpy'
+        ):
             result = prof.query_Vs_given_thk([1, 2], n_layers=0)
 
         # (4a) Test large thickness: top of layer

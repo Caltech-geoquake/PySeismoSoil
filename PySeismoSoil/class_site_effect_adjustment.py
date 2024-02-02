@@ -1,7 +1,6 @@
 import numpy as np
 
 from PySeismoSoil import helper_site_response as sr
-
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_site_factors import Site_Factors
 

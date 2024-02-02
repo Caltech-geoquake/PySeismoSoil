@@ -30,7 +30,9 @@ def check_layer_count(
     """
     max_mat_num = np.max(vs_profile._material_number)
     if G_param is not None and G_param.n_layer < max_mat_num:
-        raise ValueError('Not enough sets of parameters in `G_param` for `vs_profile`.')
+        raise ValueError(
+            'Not enough sets of parameters in `G_param` for `vs_profile`.'
+        )
 
     if xi_param is not None and xi_param.n_layer < max_mat_num:
         raise ValueError(
@@ -151,7 +153,9 @@ def linear(vs_profile, input_motion, boundary='elastic'):
     )
 
     # --------- Part 3: Calculate stress from strain ---------------------------
-    stress, half_N = _calc_stress(G=G, D=D, strain=strain, N=N, n_layer=n_layer)
+    stress, half_N = _calc_stress(
+        G=G, D=D, strain=strain, N=N, n_layer=n_layer
+    )
 
     # --------- Part 4: Post-processing -----------------------------------------
     (
@@ -378,7 +382,10 @@ def equiv_linear(
         if verbose:
             print(
                 '  G_diff = %7.2f%%, D_diff = %7.2f%%'
-                % (np.max(G_relative_diff) * 100, np.max(D_relative_diff) * 100),
+                % (
+                    np.max(G_relative_diff) * 100,
+                    np.max(D_relative_diff) * 100,
+                ),
             )
 
         # --------- Check convergence ------------------------------------------
@@ -389,7 +396,9 @@ def equiv_linear(
     # END FOR
 
     # --------- Part 3: Calculate stress from strain ---------------------------
-    stress, half_N = _calc_stress(G=G, D=D, strain=strain, N=N, n_layer=n_layer)
+    stress, half_N = _calc_stress(
+        G=G, D=D, strain=strain, N=N, n_layer=n_layer
+    )
 
     # --------- Part 4: Post-processing ----------------------------------------
     (
@@ -615,9 +624,9 @@ def _lin_resp_every_layer(
     # (2) Complex impedance ratio between each layer
     alpha = np.zeros(n_layer - 1, dtype=np.complex_)
     for j in range(n_layer - 1):  # layer by layer
-        alpha[j] = (
-            (rho[j] * np.sqrt(G[j] * (1 + 2 * 1j * D[j]) / rho[j]))
-            / (rho[j + 1] * np.sqrt(G[j + 1] * (1 + 2 * 1j * D[j + 1]) / rho[j + 1]))
+        alpha[j] = (rho[j] * np.sqrt(G[j] * (1 + 2 * 1j * D[j]) / rho[j])) / (
+            rho[j + 1]
+            * np.sqrt(G[j + 1] * (1 + 2 * 1j * D[j + 1]) / rho[j + 1])
         )
 
     if boundary == 'rigid':
@@ -638,14 +647,16 @@ def _lin_resp_every_layer(
     A[:, 0] = 1
     B[:, 0] = 1
     for k in range(n_layer - 1):  # layer by layer
-        A[:, k + 1] = (
-            0.5 * A[:, k] * (1 + alpha[k]) * np.exp(1j * k_star[:, k] * h[k])
-            + 0.5 * B[:, k] * (1 - alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])  # left half
-        )
-        B[:, k + 1] = (
-            0.5 * A[:, k] * (1 - alpha[k]) * np.exp(1j * k_star[:, k] * h[k])
-            + 0.5 * B[:, k] * (1 + alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])  # left half
-        )
+        A[:, k + 1] = 0.5 * A[:, k] * (1 + alpha[k]) * np.exp(
+            1j * k_star[:, k] * h[k]
+        ) + 0.5 * B[:, k] * (1 - alpha[k]) * np.exp(
+            -1j * k_star[:, k] * h[k]
+        )  # left half
+        B[:, k + 1] = 0.5 * A[:, k] * (1 - alpha[k]) * np.exp(
+            1j * k_star[:, k] * h[k]
+        ) + 0.5 * B[:, k] * (1 + alpha[k]) * np.exp(
+            -1j * k_star[:, k] * h[k]
+        )  # left half
 
     # (6) Compute linear transfer function
     H_ss = np.zeros((half_N, n_layer), dtype=np.complex_)  # single-sided transfer function
@@ -695,7 +706,8 @@ def _lin_resp_every_layer(
 
     # simple baseline correction of displacement time history
     offset = np.matmul(
-        np.arange(1, N + 1, 1).reshape(-1, 1) / (N + 1.0), displ[-1, :].reshape(1, -1),
+        np.arange(1, N + 1, 1).reshape(-1, 1) / (N + 1.0),
+        displ[-1, :].reshape(1, -1),
     )
     displ -= offset
 

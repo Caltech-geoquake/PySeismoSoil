@@ -1,6 +1,7 @@
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
@@ -67,8 +68,9 @@ class Curve:
             log_scale=True,
             check_values=True,
     ):
-
-        hlp.check_two_column_format(data, '`curve`', ensure_non_negative=check_values)
+        hlp.check_two_column_format(
+            data, '`curve`', ensure_non_negative=check_values
+        )
 
         if interpolate:
             strain, values = hlp.interpolate(
@@ -140,7 +142,9 @@ class Curve:
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         """
-        fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
+        fig, ax = hlp._process_fig_ax_objects(
+            fig, ax, figsize=figsize, dpi=dpi
+        )
         if plot_interpolated:
             ax.semilogx(self.strain, self.values, **kwargs_to_matplotlib)
         else:
@@ -217,7 +221,6 @@ class GGmax_Curve(Curve):
             log_scale=True,
             check_values=True,
     ):
-
         super().__init__(
             data,
             strain_unit=strain_unit,
@@ -231,7 +234,9 @@ class GGmax_Curve(Curve):
         self.GGmax = self.values
 
         if check_values and (np.any(self.GGmax > 1) or np.any(self.GGmax < 0)):
-            raise ValueError('The provided G/Gmax values must be between [0, 1].')
+            raise ValueError(
+                'The provided G/Gmax values must be between [0, 1].'
+            )
 
 
 class Damping_Curve(Curve):
@@ -312,8 +317,12 @@ class Damping_Curve(Curve):
         if damping_unit == '1':
             self.damping *= 100  # unit: 1 --> %
 
-        if check_values and (np.any(self.damping > 100) or np.any(self.damping < 0)):
-            raise ValueError('The provided damping values must be between [0, 100].')
+        if check_values and (
+            np.any(self.damping > 100) or np.any(self.damping < 0)
+        ):
+            raise ValueError(
+                'The provided damping values must be between [0, 100].'
+            )
 
     def get_HH_x_param(
             self,
@@ -548,7 +557,9 @@ class Stress_Curve(Curve):
         self.stress = self.values
 
         if stress_unit not in ['Pa', 'kPa', 'MPa', 'GPa']:
-            raise ValueError("`stress_unit` must be {'Pa', 'kPa', 'MPa', 'GPa'}.")
+            raise ValueError(
+                "`stress_unit` must be {'Pa', 'kPa', 'MPa', 'GPa'}."
+            )
 
         if stress_unit == 'Pa':
             self.stress /= 1e3
@@ -603,7 +614,9 @@ class Multiple_Curves:
             elif isinstance(curve, element_class):
                 curves.append(curve)
             else:
-                raise TypeError('An element in `list_of_curves` has invalid type.')
+                raise TypeError(
+                    'An element in `list_of_curves` has invalid type.'
+                )
 
         self.element_class = element_class
         self.curves = curves
@@ -620,7 +633,9 @@ class Multiple_Curves:
 
     def __setitem__(self, i, item):
         if not isinstance(item, self.element_class):
-            raise TypeError('The new `item` must be of type %s.' % self.element_class)
+            raise TypeError(
+                'The new `item` must be of type %s.' % self.element_class
+            )
 
         self.curves[i] = item
 
@@ -640,7 +655,9 @@ class Multiple_Curves:
     def append(self, item):
         """Append another curve item to the curves."""
         if not isinstance(item, self.element_class):
-            raise TypeError('The new `item` must be of type %s.' % self.element_class)
+            raise TypeError(
+                'The new `item` must be of type %s.' % self.element_class
+            )
 
         self.curves.append(item)
         self.n_layer += 1
@@ -750,7 +767,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
             list_of_damping_curves = filename_or_list_of_curves
             self._filename = None
         else:
-            raise TypeError('Unrecognized type for `filename_or_list_of_curves`.')
+            raise TypeError(
+                'Unrecognized type for `filename_or_list_of_curves`.'
+            )
 
         self._sep = sep
 
@@ -866,7 +885,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
                 strain_ = strain  # we can use the original strain array
                 damping_ = curve_.damping
             else:  # otherwise we need a new strain array to match `max_length`
-                strain_ = np.geomspace(np.min(strain), np.max(strain), max_length)
+                strain_ = np.geomspace(
+                    np.min(strain), np.max(strain), max_length
+                )
                 damping_ = np.interp(strain_, strain, curve_.damping)
             # END IF
             GGmax = np.ones_like(strain_) * GGmax_filler_value
@@ -1197,7 +1218,9 @@ class Multiple_GGmax_Curves(Multiple_Curves):
             list_of_GGmax_curves = filename_or_list_of_curves
             self._filename = None
         else:
-            raise TypeError('Unrecognized type for `filename_or_list_of_curves`.')
+            raise TypeError(
+                'Unrecognized type for `filename_or_list_of_curves`.'
+            )
 
         self._sep = sep
 
@@ -1313,7 +1336,9 @@ class Multiple_GGmax_Curves(Multiple_Curves):
                 strain_ = strain  # we can use the original strain array
                 GGmax_ = curve_.GGmax
             else:  # otherwise we need a new strain array to match `max_length`
-                strain_ = np.geomspace(np.min(strain), np.max(strain), max_length)
+                strain_ = np.geomspace(
+                    np.min(strain), np.max(strain), max_length
+                )
                 GGmax_ = np.interp(strain_, strain, curve_.GGmax)
             # END IF
             damping = np.ones_like(strain_) * damping_filler_value
@@ -1412,7 +1437,9 @@ class Multiple_GGmax_Damping_Curves:
             self.n_layer = self.mgc.n_layer
         else:  # `data` is not `None`
             if not isinstance(data, (np.ndarray, str)):
-                raise TypeError('`data` must be a 2D numpy array or a file name.')
+                raise TypeError(
+                    '`data` must be a 2D numpy array or a file name.'
+                )
 
             if isinstance(data, str):
                 data = np.genfromtxt(data)

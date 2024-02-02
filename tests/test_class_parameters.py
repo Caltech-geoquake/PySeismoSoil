@@ -1,18 +1,17 @@
+import os
 import unittest
+from os.path import join as _join
+
 import numpy as np
 
 import PySeismoSoil.helper_hh_model as hh
 import PySeismoSoil.helper_mkz_model as mkz
 from PySeismoSoil.class_parameters import (
     HH_Param,
-    MKZ_Param,
     HH_Param_Multi_Layer,
+    MKZ_Param,
     MKZ_Param_Multi_Layer,
 )
-
-import os
-from os.path import join as _join
-
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -20,10 +19,14 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_HH_Param(unittest.TestCase):
     def test_init__ensure_invalid_parameter_names_are_blocked(self):
         invalid_data = {'key': 1, 'lock': 2}
-        with self.assertRaisesRegex(KeyError, 'Invalid keys exist in your input'):
+        with self.assertRaisesRegex(
+            KeyError, 'Invalid keys exist in your input'
+        ):
             hhp = HH_Param(invalid_data)  # noqa: F841
 
-    def test_init__ensure_querying_nonexistent_parameter_name_raises_KeyError(self):
+    def test_init__ensure_querying_nonexistent_parameter_name_raises_KeyError(
+            self,
+    ):
         data = {
             'gamma_t': 1,
             'a': 2,
@@ -56,6 +59,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         )
         HH_G = HH_Param(hh.deserialize_array_to_params(params))
         GGmax = HH_G.get_GGmax(strain_in_pct=np.logspace(-4, 1, num=50))
+        # fmt: off
         GGmax_bench = [
             0.994964, 0.993758, 0.992265, 0.990419, 0.988137,
             0.985319, 0.981846, 0.977568, 0.972312, 0.965866,
@@ -68,12 +72,16 @@ class Test_Class_HH_Param(unittest.TestCase):
             0.0442915, 0.0360909, 0.02929, 0.0236855, 0.0190929,
             0.0153483, 0.0123084, 0.00985001, 0.00786843, 0.00627576,
         ]
+        # fmt: on
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
     def test_get_GGmax__the_0th_layer_of_actual_H4_G_parameter_of_IBRH17(self):
         params = np.array([0.00028511, 0, 0.919, 1.7522])
-        H4_G = MKZ_Param(mkz.deserialize_array_to_params(params, from_files=True))
+        H4_G = MKZ_Param(
+            mkz.deserialize_array_to_params(params, from_files=True)
+        )
         GGmax = H4_G.get_GGmax(strain_in_pct=np.geomspace(0.0001, 6, num=50))
+        # fmt: off
         GGmax_bench = [
             0.99038, 0.9882, 0.98553, 0.98228, 0.9783, 0.97346,
             0.96758, 0.96044, 0.95182, 0.94142, 0.92895, 0.91406,
@@ -85,6 +93,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             0.017423, 0.01422, 0.0116, 0.0094575, 0.0077078, 0.0062797,
             0.0051149, 0.0041652,
         ]
+        # fmt: on
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
     def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01(self):
@@ -103,6 +112,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         )
         HH_x = HH_Param(hh.deserialize_array_to_params(params))
         damping = HH_x.get_damping(strain_in_pct=np.logspace(-4, 1, num=50))
+        # fmt: off
         damping_bench = [
             1.6815, 1.70007, 1.72351, 1.75306, 1.79029, 1.83716,
             1.89609, 1.97005, 2.06272, 2.17854, 2.32286, 2.50202,
@@ -114,13 +124,23 @@ class Test_Class_HH_Param(unittest.TestCase):
             21.6271, 21.4606, 21.2554, 21.0184, 20.7555, 20.472,
             20.1723, 19.8606,
         ]
+        # fmt: on
         # The error could be high, due to curve-fitting errors of genetic algorithms
-        self.assertTrue(np.allclose(damping, damping_bench, atol=7.0, rtol=0.0))
+        self.assertTrue(
+            np.allclose(damping, damping_bench, atol=7.0, rtol=0.0)
+        )
 
-    def test_get_damping__the_0th_layer_of_actual_H4_x_parameter_from_IBTH17(self):
+    def test_get_damping__the_0th_layer_of_actual_H4_x_parameter_from_IBTH17(
+            self,
+    ):
         params = np.array([0.00062111, 0, 0.60001, 1.797])
-        H4_x = MKZ_Param(mkz.deserialize_array_to_params(params, from_files=True))
-        damping = H4_x.get_damping(strain_in_pct=np.geomspace(0.0001, 6, num=50))
+        H4_x = MKZ_Param(
+            mkz.deserialize_array_to_params(params, from_files=True)
+        )
+        damping = H4_x.get_damping(
+            strain_in_pct=np.geomspace(0.0001, 6, num=50)
+        )
+        # fmt: off
         damping_bench = [
             2.3463, 2.3679, 2.3949, 2.4286, 2.4705, 2.5227,
             2.5876, 2.6682, 2.768, 2.8913, 3.0433, 3.2299,
@@ -132,7 +152,10 @@ class Test_Class_HH_Param(unittest.TestCase):
             22.396, 22.282, 22.125, 21.933, 21.71, 21.463,
             21.197, 20.914,
         ]
-        self.assertTrue(np.allclose(damping, damping_bench, atol=7.0, rtol=0.0))
+        # fmt: on
+        self.assertTrue(
+            np.allclose(damping, damping_bench, atol=7.0, rtol=0.0)
+        )
 
     def test_plot_curves(self):
         data = {
@@ -158,13 +181,17 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertEqual(len(HH_x), 5)
         self.assertEqual(HH_x.n_layer, 5)
 
-    def test_hh_param_multi_layer__can_initiate_an_object_from_a_2D_array(self):
+    def test_hh_param_multi_layer__can_initiate_an_object_from_a_2D_array(
+            self,
+    ):
         HH_x_array = np.genfromtxt(_join(f_dir, 'HH_X_FKSH14.txt'))
         HH_x_from_array = HH_Param_Multi_Layer(HH_x_array)
         self.assertEqual(len(HH_x_from_array), 5)
         self.assertEqual(HH_x_from_array.n_layer, 5)
 
-    def test_hh_param_multi_layer__ensure_identical_objects_from_file_or_array(self):
+    def test_hh_param_multi_layer__ensure_identical_objects_from_file_or_array(
+            self,
+    ):
         HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
         HH_x_array = np.genfromtxt(_join(f_dir, 'HH_X_FKSH14.txt'))
         HH_x_from_array = HH_Param_Multi_Layer(HH_x_array)
@@ -188,7 +215,17 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertEqual(
             sorted(HH_x_1.keys()),
             sorted(
-                ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'],
+                [
+                    'gamma_t',
+                    'a',
+                    'gamma_ref',
+                    'beta',
+                    's',
+                    'Gmax',
+                    'mu',
+                    'Tmax',
+                    'd',
+                ],
             ),
         )
         self.assertTrue(
@@ -213,13 +250,17 @@ class Test_Class_HH_Param(unittest.TestCase):
         self.assertEqual(len(H4_G), 14)
         self.assertEqual(H4_G.n_layer, 14)
 
-    def test_mkz_param_multi_layer__can_initiate_an_object_from_a_2D_array(self):
+    def test_mkz_param_multi_layer__can_initiate_an_object_from_a_2D_array(
+            self,
+    ):
         H4_G_array = np.genfromtxt(_join(f_dir, 'H4_G_IWTH04.txt'))
         H4_G_from_array = MKZ_Param_Multi_Layer(H4_G_array)
         self.assertEqual(len(H4_G_from_array), 14)
         self.assertEqual(H4_G_from_array.n_layer, 14)
 
-    def test_mkz_param_multi_layer__ensure_identical_objects_from_file_or_array(self):
+    def test_mkz_param_multi_layer__ensure_identical_objects_from_file_or_array(
+            self,
+    ):
         H4_G = MKZ_Param_Multi_Layer(_join(f_dir, 'H4_G_IWTH04.txt'))
         H4_G_array = np.genfromtxt(_join(f_dir, 'H4_G_IWTH04.txt'))
         H4_G_from_array = MKZ_Param_Multi_Layer(H4_G_array)

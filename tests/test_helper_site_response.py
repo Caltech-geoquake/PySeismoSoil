@@ -1,13 +1,12 @@
+import os
 import unittest
+from os.path import join as _join
+
 import numpy as np
 import scipy.stats
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_site_response as sr
-
-import os
-from os.path import join as _join
-
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -127,22 +126,67 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         Tn_bench = np.logspace(np.log10(T_min), np.log10(T_max), n_pts)
         SA_bench = np.array(
-            [7.0000, 7.0000, 7.0000, 7.0000, 7.0001, 7.0002,
-             6.9995, 7.0007, 7.0024, 6.9941, 7.0176, 6.9908,
-             6.9930, 6.9615, 7.0031, 7.1326, 6.9622, 7.0992,
-             6.5499, 7.3710, 7.3458, 6.8662, 8.3708, 8.5229,
-             7.9719, 7.5457, 8.9573, 10.6608, 10.5915, 9.4506,
-             8.1594, 6.9023, 7.1242, 6.5462, 6.3940, 6.3472,
-             6.7302, 7.0554, 7.2901, 7.6946, 7.6408, 7.1073,
-             6.3034, 5.3997, 4.5102, 3.6991, 2.9946, 2.4023,
-             1.9156, 1.5218],
+            [
+                7.0000,
+                7.0000,
+                7.0000,
+                7.0000,
+                7.0001,
+                7.0002,
+                6.9995,
+                7.0007,
+                7.0024,
+                6.9941,
+                7.0176,
+                6.9908,
+                6.9930,
+                6.9615,
+                7.0031,
+                7.1326,
+                6.9622,
+                7.0992,
+                6.5499,
+                7.3710,
+                7.3458,
+                6.8662,
+                8.3708,
+                8.5229,
+                7.9719,
+                7.5457,
+                8.9573,
+                10.6608,
+                10.5915,
+                9.4506,
+                8.1594,
+                6.9023,
+                7.1242,
+                6.5462,
+                6.3940,
+                6.3472,
+                6.7302,
+                7.0554,
+                7.2901,
+                7.6946,
+                7.6408,
+                7.1073,
+                6.3034,
+                5.3997,
+                4.5102,
+                3.6991,
+                2.9946,
+                2.4023,
+                1.9156,
+                1.5218,
+            ],
         )
 
         self.assertTrue(np.allclose(Tn, Tn_bench))
         self.assertTrue(np.allclose(SA, SA_bench, rtol=0.0001, atol=0.0))
 
     def test_find_f0(self):
-        data, _ = hlp.read_two_column_stuff(_join(f_dir, 'two_column_data_example.txt'))
+        data, _ = hlp.read_two_column_stuff(
+            _join(f_dir, 'two_column_data_example.txt')
+        )
         f0 = sr.find_f0(data)
         f0_benchmark = 0.5
         self.assertAlmostEqual(f0, f0_benchmark)
@@ -186,12 +230,16 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertAlmostEqual(vs40, vs40_benchmark)
 
         vs_profile = np.array([[10, 10], [200, 300]]).T
-        vs30 = sr.calc_Vs30(vs_profile, option_for_profile_shallower_than_30m=1)
+        vs30 = sr.calc_Vs30(
+            vs_profile, option_for_profile_shallower_than_30m=1
+        )
         vs30_benchmark = scipy.stats.hmean([200, 300, 300])
         self.assertAlmostEqual(vs30, vs30_benchmark)
 
         vs_profile = np.array([[10, 10], [200, 300]]).T
-        vs30 = sr.calc_Vs30(vs_profile, option_for_profile_shallower_than_30m=2)
+        vs30 = sr.calc_Vs30(
+            vs_profile, option_for_profile_shallower_than_30m=2
+        )
         vs30_benchmark = scipy.stats.hmean(vs_profile[:, 1])
         self.assertAlmostEqual(vs30, vs30_benchmark)
 
@@ -199,7 +247,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         vs_prof_1 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
         self.assertAlmostEqual(sr.calc_z1(vs_prof_1), 12)
 
-    def test_calc_z1__abnormal_case__Vs_doesnt_reaches_1000_meters_per_sec(self):
+    def test_calc_z1__abnormal_case__Vs_doesnt_reaches_1000_meters_per_sec(
+            self,
+    ):
         # Abnormal case: Vs does not reach 1000 m/s ---> use total depth
         vs_prof_2 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 800, 900]]).T
         self.assertAlmostEqual(sr.calc_z1(vs_prof_2), 15)
@@ -211,7 +261,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         self.assertTrue(np.allclose(sr.dep2thk(dep_top), thk))
         self.assertTrue(
-            np.allclose(sr.dep2thk(dep_top, include_halfspace=False), thk[:-1]),
+            np.allclose(
+                sr.dep2thk(dep_top, include_halfspace=False), thk[:-1]
+            ),
         )
         self.assertTrue(np.allclose(sr.thk2dep(thk, midpoint=True), dep_mid))
         self.assertTrue(np.allclose(sr.thk2dep(thk), dep_top))
@@ -244,7 +296,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         motion_out_bench = np.column_stack((time, accel_out_bench))
 
         self.assertTrue(np.all(np.isreal(motion_out)))
-        self.assertTrue(np.allclose(motion_out, motion_out_bench, atol=0.02, rtol=0.0))
+        self.assertTrue(
+            np.allclose(motion_out, motion_out_bench, atol=0.02, rtol=0.0)
+        )
 
     def test_gen_profile_plot_array(self):
         thk = np.array([1, 2, 3, 4])
@@ -259,7 +313,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         self.assertTrue(np.allclose(x, x_benchmark))
         self.assertTrue(np.allclose(y, y_benchmark))
 
-    def test_calc_GGmax_from_stress_strain_curve__linear_case_GGmax_should_be_1(self):
+    def test_calc_GGmax_from_stress_strain_curve__linear_case_GGmax_should_be_1(
+            self,
+    ):
         # Test linear stress strain: G/Gmax should be all 1's
         strain = np.array([0.1, 0.2, 0.3])
         stress = np.array([2, 4, 6])
@@ -302,7 +358,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
         stress = np.array([1, 2, 2, 2])
         Gmax = stress[0] / strain[0]
         damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
-        self.assertTrue(np.allclose(damping, [0, 0, 2.0 / 3.0 / np.pi, 1.0 / np.pi]))
+        self.assertTrue(
+            np.allclose(damping, [0, 0, 2.0 / 3.0 / np.pi, 1.0 / np.pi])
+        )
 
     def test_calc_damping_from_stress_strain__case_3(self):
         # Case 3: An edge case -- the initial damping is, in theory, almost 0
@@ -335,7 +393,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
 
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         curve = data[:, 2:4]
-        with self.assertRaisesRegex(ValueError, 'provide a function to serialize'):
+        with self.assertRaisesRegex(
+            ValueError, 'provide a function to serialize'
+        ):
             sr.fit_all_damping_curves(
                 [curve],
                 hh.fit_HH_x_single_layer,
@@ -346,7 +406,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
                 func_serialize=None,
             )
 
-    def test_fit_all_damping_curves__exception_with_incorrect_func_serialize(self):
+    def test_fit_all_damping_curves__exception_with_incorrect_func_serialize(
+            self,
+    ):
         import PySeismoSoil.helper_hh_model as hh
         import PySeismoSoil.helper_mkz_model as mkz
 
@@ -390,10 +452,14 @@ class Test_Helper_Site_Response(unittest.TestCase):
     def test_align_two_time_arrays__failure__length_less_than_2(self):
         t1 = np.array([3])
         t2 = np.array([1, 2, 3])
-        with self.assertRaisesRegex(ValueError, 'Both time arrays need to have'):
+        with self.assertRaisesRegex(
+            ValueError, 'Both time arrays need to have'
+        ):
             sr._align_two_time_arrays(t1, t2)
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Site_Response)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Helper_Site_Response
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

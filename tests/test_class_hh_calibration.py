@@ -1,14 +1,13 @@
-import unittest
-import numpy as np
-
-from PySeismoSoil.class_hh_calibration import HH_Calibration
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_curves import Multiple_GGmax_Curves
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
-
 import os
+import unittest
 from os.path import join as _join
 
+import numpy as np
+
+from PySeismoSoil.class_curves import Multiple_GGmax_Curves
+from PySeismoSoil.class_hh_calibration import HH_Calibration
+from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -29,9 +28,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
 
     def test_init__incorrect_curves_type(self):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        msg = (
-            'If `GGmax_curves` is not `None`, it must be of type Multiple_GGmax_Curves'
-        )
+        msg = 'If `GGmax_curves` is not `None`, it must be of type Multiple_GGmax_Curves'
         with self.assertRaisesRegex(TypeError, msg):
             HH_Calibration(vs_profile, GGmax_curves=np.array([1, 2, 3]))
 
@@ -63,7 +60,9 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
         Tmax = np.array([1, 2, 3, 4, 5])
-        hh_c = HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
+        hh_c = HH_Calibration(
+            vs_profile, GGmax_curves=curves, Tmax_profile=Tmax
+        )
         self.assertTrue(isinstance(hh_c.vs_profile, Vs_Profile))
         self.assertTrue(isinstance(hh_c.GGmax_curves, Multiple_GGmax_Curves))
         self.assertTrue(isinstance(hh_c.Tmax_profile, np.ndarray))
@@ -72,7 +71,9 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         hh_c = HH_Calibration(vs_profile)
         HH_G_param = hh_c.fit(verbose=False)
-        HH_G_param_benchmark = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
+        HH_G_param_benchmark = HH_Param_Multi_Layer(
+            _join(f_dir, 'HH_G_FKSH14.txt')
+        )
         self.assertTrue(
             np.allclose(
                 HH_G_param.serialize_to_2D_array(),
@@ -91,7 +92,13 @@ class Test_Class_HH_Calibration(unittest.TestCase):
             [
                 [0.0003, 0.0001, 0.0001, 0.0001, 0.0001],
                 [100, 100, 100, 100, 100],
-                [0.000285072, 0.000516205, 0.000944545, 0.00129825, 0.00144835],
+                [
+                    0.000285072,
+                    0.000516205,
+                    0.000944545,
+                    0.00129825,
+                    0.00144835,
+                ],
                 [1.75224, 1.71444, 1.64057, 1.58664, 1.56314],
                 [0.918975, 0.919001, 0.918973, 0.919007, 0.918999],
                 [2.11104e07, 6.859e07, 1.4896e08, 2.25441e09, 3.28398e09],
@@ -112,5 +119,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_HH_Calibration)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Class_HH_Calibration
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

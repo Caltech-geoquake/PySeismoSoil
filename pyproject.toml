@@ -1,0 +1,11 @@
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.cercis]
+wrap-line-with-long-string = true
+
+[tool.pydoclint]
+style = 'numpy'
+exclude = '\.git|.?venv|\.tox'
+require-return-section-when-returning-nothing = true

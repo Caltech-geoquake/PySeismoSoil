@@ -1,11 +1,11 @@
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
-from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil import helper_signal_processing as sig
-
+from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
@@ -98,17 +98,31 @@ class Ground_Motion:
 
         data_, dt = hlp.read_two_column_stuff(data, delta=dt, sep=sep)
 
-        valid_unit_name = ['m', 'cm', 'm/s', 'cm/s', 'm/s/s', 'cm/s/s', 'gal', 'g']
+        valid_unit_name = [
+            'm',
+            'cm',
+            'm/s',
+            'cm/s',
+            'm/s/s',
+            'cm/s/s',
+            'gal',
+            'g',
+        ]
         if unit not in valid_unit_name:
             if 's^2' in unit:  # noqa: R506
-                raise ValueError("Please use '/s/s' instead of 's^2' in `unit`.")
+                raise ValueError(
+                    "Please use '/s/s' instead of 's^2' in `unit`."
+                )
             else:
                 raise ValueError(
-                    'Invalid `unit` name. Valid names are: %s' % valid_unit_name,
+                    'Invalid `unit` name. Valid names are: %s'
+                    % valid_unit_name,
                 )
 
         if motion_type not in ['accel', 'veloc', 'displ']:
-            raise ValueError("`motion_type` must be in {'accel', 'veloc', 'displ'}")
+            raise ValueError(
+                "`motion_type` must be in {'accel', 'veloc', 'displ'}"
+            )
 
         if (unit == 'g' or unit == 'gal') and motion_type != 'accel':
             raise ValueError(
@@ -266,7 +280,9 @@ class Ground_Motion:
         )
         return rs
 
-    def plot(self, show_as_unit='m', fig=None, ax=None, figsize=(5, 6), dpi=100):
+    def plot(
+            self, show_as_unit='m', fig=None, ax=None, figsize=(5, 6), dpi=100
+    ):
         """
         Plot acceleration, velocity, and displacement waveforms together.
 
@@ -342,7 +358,9 @@ class Ground_Motion:
         elif unit == 'g':
             accel[:, 1] /= 9.81  # m/s/s --> g
         else:
-            raise ValueError('Unrecognized `unit`. Must be an acceleration unit.')
+            raise ValueError(
+                'Unrecognized `unit`. Must be an acceleration unit.'
+            )
 
         return accel
 
@@ -442,7 +460,9 @@ class Ground_Motion:
 
             y_low, y_high = ax.get_ylim()
             plt.plot([t_low, t_low], [y_low, y_high], lw=0.75, ls='--', c='r')
-            plt.plot([t_high, t_high], [y_low, y_high], lw=0.75, ls='--', c='r')
+            plt.plot(
+                [t_high, t_high], [y_low, y_high], lw=0.75, ls='--', c='r'
+            )
 
         return Ia, Ia_norm, Ia_peak, T5_95
 
@@ -553,9 +573,15 @@ class Ground_Motion:
             fig.subplots_adjust(left=0.2)
 
             ax[0] = fig.add_subplot(3, 1, 1)
-            ax[0].plot(self.time, self.accel[:, 1], 'gray', lw=1.75, label='original')
             ax[0].plot(
-                self.time[n1:n2], truncated[:, 1], 'm', lw=1.0, label='truncated',
+                self.time, self.accel[:, 1], 'gray', lw=1.75, label='original'
+            )
+            ax[0].plot(
+                self.time[n1:n2],
+                truncated[:, 1],
+                'm',
+                lw=1.0,
+                label='truncated',
             )
             ax[0].grid(ls=':')
             ax[0].set_ylabel('Accel. [m/s/s]')
@@ -563,13 +589,17 @@ class Ground_Motion:
 
             ax[1] = fig.add_subplot(3, 1, 2)
             ax[1].plot(self.time, self.veloc[:, 1], 'gray', lw=1.75)
-            ax[1].plot(self.time[n1:n2], sr.num_int(truncated)[0][:, 1], 'm', lw=1.0)
+            ax[1].plot(
+                self.time[n1:n2], sr.num_int(truncated)[0][:, 1], 'm', lw=1.0
+            )
             ax[1].grid(ls=':')
             ax[1].set_ylabel('Veloc. [m/s]')
 
             ax[2] = fig.add_subplot(3, 1, 3)
             ax[2].plot(self.time, self.displ[:, 1], 'gray', lw=1.75)
-            ax[2].plot(self.time[n1:n2], sr.num_int(truncated)[1][:, 1], 'm', lw=1.0)
+            ax[2].plot(
+                self.time[n1:n2], sr.num_int(truncated)[1][:, 1], 'm', lw=1.0
+            )
             ax[2].grid(ls=':')
             ax[2].set_ylabel('Displ. [m]')
             ax[2].set_xlabel('Time [sec]')
@@ -734,7 +764,9 @@ class Ground_Motion:
             The axes object created in this function.
         """
         if not isinstance(another_ground_motion, Ground_Motion):
-            raise TypeError('`another_ground_motion` must be a `Ground_Motion`.')
+            raise TypeError(
+                '`another_ground_motion` must be a `Ground_Motion`.'
+            )
         # END IF
 
         if this_ground_motion_as_input:
@@ -745,8 +777,12 @@ class Ground_Motion:
             accel_out = self.accel
         # END IF-ELSE
 
-        amp_ylabel = f'Amplification\n({input_accel_label} ➡ {output_accel_label})'
-        phs_ylabel = f'Phase shift [rad]\n({input_accel_label} ➡ {output_accel_label})'
+        amp_ylabel = (
+            f'Amplification\n({input_accel_label} ➡ {output_accel_label})'
+        )
+        phs_ylabel = (
+            f'Phase shift [rad]\n({input_accel_label} ➡ {output_accel_label})'
+        )
 
         fig, ax = sr.compare_two_accel(
             accel_in,
@@ -813,7 +849,9 @@ class Ground_Motion:
         corrected : Ground_Motion
             The baseline-corrected ground motion, with SI units.
         """
-        accel_ = sig.baseline(self.accel, show_fig=show_fig, cutoff_freq=cutoff_freq)
+        accel_ = sig.baseline(
+            self.accel, show_fig=show_fig, cutoff_freq=cutoff_freq
+        )
         return Ground_Motion(accel_, unit='m')
 
     def lowpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
@@ -845,7 +883,9 @@ class Ground_Motion:
         )
         return Ground_Motion(accel_, unit='m')
 
-    def highpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
+    def highpass(
+            self, cutoff_freq, show_fig=False, filter_order=4, padlen=150
+    ):
         """
         Zero-phase-shift high-pass filtering.
 
@@ -874,7 +914,9 @@ class Ground_Motion:
         )
         return Ground_Motion(accel_, unit='m')
 
-    def bandpass(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
+    def bandpass(
+            self, cutoff_freq, show_fig=False, filter_order=4, padlen=150
+    ):
         """
         Zero-phase-shift band-pass filtering.
 
@@ -903,7 +945,9 @@ class Ground_Motion:
         )
         return Ground_Motion(accel_, unit='m')
 
-    def bandstop(self, cutoff_freq, show_fig=False, filter_order=4, padlen=150):
+    def bandstop(
+            self, cutoff_freq, show_fig=False, filter_order=4, padlen=150
+    ):
         """
         Zero-phase-shift band-stop filtering.
 

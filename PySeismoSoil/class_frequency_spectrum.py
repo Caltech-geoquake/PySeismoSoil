@@ -1,10 +1,11 @@
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
-from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil import helper_signal_processing as sig
+from PySeismoSoil import helper_site_response as sr
 
 
 class Frequency_Spectrum:
@@ -178,7 +179,9 @@ class Frequency_Spectrum:
         ax : matplotlib.axes._subplots.AxesSubplot
             The axes object being created or being passed into this function.
         """
-        fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
+        fig, ax = hlp._process_fig_ax_objects(
+            fig, ax, figsize=figsize, dpi=dpi
+        )
 
         if plot_abs:
             ax.plot(self.freq, self.amplitude, **kwargs_plot)
@@ -238,7 +241,9 @@ class Frequency_Spectrum:
         if show_fig:
             fig = plt.figure()
             ax = plt.axes()
-            ax.semilogx(self.freq, self.spectrum, color='gray', label='original')
+            ax.semilogx(
+                self.freq, self.spectrum, color='gray', label='original'
+            )
             ax.semilogx(self.freq, sm, color='m', label='smoothed')
             ax.grid(ls=':')
             ax.set_xlabel('Frequency [Hz]')
@@ -281,5 +286,7 @@ class Frequency_Spectrum:
             unwrapped_phase = np.unwrap(self.phase)
 
         data_1col = self.amplitude * np.exp(1j * unwrapped_phase)
-        unwrapped = Frequency_Spectrum(data_1col, df=self.raw_df, interpolate=False)
+        unwrapped = Frequency_Spectrum(
+            data_1col, df=self.raw_df, interpolate=False
+        )
         return unwrapped

@@ -1,12 +1,11 @@
-import unittest
-import numpy as np
-
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_damping_calibration import Damping_Calibration
-
 import os
+import unittest
 from os.path import join as _join
 
+import numpy as np
+
+from PySeismoSoil.class_damping_calibration import Damping_Calibration
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -48,7 +47,9 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
         for i in range(mdc.n_layer):
             gamma = curve_matrix[:, i * 4 + 2]
             xi = curve_matrix[:, i * 4 + 3]
-            self.assertTrue(np.allclose(gamma, strain_in_pct, atol=1e-5, rtol=0.0))
+            self.assertTrue(
+                np.allclose(gamma, strain_in_pct, atol=1e-5, rtol=0.0)
+            )
             self.assertGreaterEqual(xi[-1], 1.0)  # last element of each damping curve
 
     def test_get_damping_curves__check_use_Darendeli_Dmin_correct(self):
@@ -108,5 +109,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Damping_Calibration)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Class_Damping_Calibration
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

@@ -1,12 +1,11 @@
+import os
 import unittest
+from os.path import join as _join
+
 import numpy as np
 
 import PySeismoSoil.helper_generic as hlp
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
-
-import os
-from os.path import join as _join
-
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -31,5 +30,7 @@ class Test_Class_Frequency_Spectrum(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Frequency_Spectrum)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Class_Frequency_Spectrum
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

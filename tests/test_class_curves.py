@@ -1,19 +1,18 @@
-import unittest
-import numpy as np
-
 import os
+import unittest
 from os.path import join as _join
+
+import numpy as np
 
 from PySeismoSoil.class_curves import (
     Curve,
-    GGmax_Curve,
     Damping_Curve,
-    Stress_Curve,
+    GGmax_Curve,
     Multiple_Damping_Curves,
     Multiple_GGmax_Curves,
     Multiple_GGmax_Damping_Curves,
+    Stress_Curve,
 )
-
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -52,21 +51,46 @@ class Test_Class_Curves(unittest.TestCase):
 
         try:
             hhx = curve.get_HH_x_param(
-                pop_size=1, n_gen=1, show_fig=True, use_scipy=False,
+                pop_size=1,
+                n_gen=1,
+                show_fig=True,
+                use_scipy=False,
             )
             self.assertEqual(len(hhx), 9)
             self.assertEqual(
                 hhx.keys(),
-                {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'},
+                {
+                    'gamma_t',
+                    'a',
+                    'gamma_ref',
+                    'beta',
+                    's',
+                    'Gmax',
+                    'mu',
+                    'Tmax',
+                    'd',
+                },
             )
         except ImportError:  # DEAP library may not be installed
             pass
 
-        hhx = curve.get_HH_x_param(pop_size=1, n_gen=1, show_fig=True, use_scipy=True)
+        hhx = curve.get_HH_x_param(
+            pop_size=1, n_gen=1, show_fig=True, use_scipy=True
+        )
         self.assertEqual(len(hhx), 9)
         self.assertEqual(
             hhx.keys(),
-            {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'},
+            {
+                'gamma_t',
+                'a',
+                'gamma_ref',
+                'beta',
+                's',
+                'Gmax',
+                'mu',
+                'Tmax',
+                'd',
+            },
         )
 
     def test_H4_x_fit_single_layer(self):
@@ -96,13 +120,19 @@ class Test_Class_Curves(unittest.TestCase):
 
     def test_value_check(self):
         data = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))[:, 2:4]
-        with self.assertRaisesRegex(ValueError, 'G/Gmax values must be between'):
+        with self.assertRaisesRegex(
+            ValueError, 'G/Gmax values must be between'
+        ):
             GGmax_Curve(data)
 
-        with self.assertRaisesRegex(ValueError, 'damping values must be between'):
+        with self.assertRaisesRegex(
+            ValueError, 'damping values must be between'
+        ):
             Damping_Curve(data * 100.0)
 
-        with self.assertRaisesRegex(ValueError, 'should have all non-negative'):
+        with self.assertRaisesRegex(
+            ValueError, 'should have all non-negative'
+        ):
             Stress_Curve(data * -1)
 
     def test_multiple_damping_curves(self):
@@ -112,7 +142,18 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertEqual(len(mdc), 5)
 
         # Test __getitem__
-        strain_bench = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
+        strain_bench = [
+            0.0001,
+            0.0003,
+            0.001,
+            0.003,
+            0.01,
+            0.03,
+            0.1,
+            0.3,
+            1,
+            3,
+        ]
         damping_bench = [
             1.6683,
             1.8386,
@@ -153,7 +194,9 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(isinstance(mdc_slice[0], Damping_Curve))
 
         # Test append
-        with self.assertRaisesRegex(TypeError, '`curve` should be a numpy array'):
+        with self.assertRaisesRegex(
+            TypeError, '`curve` should be a numpy array'
+        ):
             mdc[2] = GGmax_Curve(_join(f_dir, 'curve_FKSH14.txt'))  # use an incorrect type
 
         self.assertEqual(len(mdc), 4)
@@ -174,7 +217,17 @@ class Test_Class_Curves(unittest.TestCase):
         self.assertTrue(isinstance(hhx[0].data, dict))
         self.assertEqual(
             hhx[0].keys(),
-            {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'},
+            {
+                'gamma_t',
+                'a',
+                'gamma_ref',
+                'beta',
+                's',
+                'Gmax',
+                'mu',
+                'Tmax',
+                'd',
+            },
         )
 
     def test_HH_x_fit_multi_layer__DEAP_algorithm(self):
@@ -191,7 +244,17 @@ class Test_Class_Curves(unittest.TestCase):
             self.assertTrue(isinstance(hhx[0].data, dict))
             self.assertEqual(
                 hhx[0].keys(),
-                {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'},
+                {
+                    'gamma_t',
+                    'a',
+                    'gamma_ref',
+                    'beta',
+                    's',
+                    'Gmax',
+                    'mu',
+                    'Tmax',
+                    'd',
+                },
             )
         except ImportError:  # DEAP library may not be installed
             pass
@@ -236,7 +299,9 @@ class Test_Class_Curves(unittest.TestCase):
             if j % 4 == 3:  # original damping info is lost; use same dummy value
                 curve_benchmark[:, j] = damping
 
-        self.assertTrue(np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0))
+        self.assertTrue(
+            np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
+        )
 
     def test_multiple_damping_curve_get_curve_matrix(self):
         GGmax = 0.76  # choose a dummy value
@@ -249,7 +314,9 @@ class Test_Class_Curves(unittest.TestCase):
             if j % 4 == 1:  # original damping info is lost; use same dummy value
                 curve_benchmark[:, j] = GGmax
 
-        self.assertTrue(np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0))
+        self.assertTrue(
+            np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
+        )
 
     def test_init_multiple_GGmax_damping_curves(self):
         # Case 1: with MGC and MDC
@@ -258,7 +325,9 @@ class Test_Class_Curves(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Both parameters are `None`'):
             Multiple_GGmax_Damping_Curves()
 
-        with self.assertRaisesRegex(ValueError, 'one and only one input parameter'):
+        with self.assertRaisesRegex(
+            ValueError, 'one and only one input parameter'
+        ):
             Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc), data=2.6)
 
         with self.assertRaisesRegex(TypeError, 'needs to be of type'):
@@ -282,19 +351,30 @@ class Test_Class_Curves(unittest.TestCase):
 
         mgdc = Multiple_GGmax_Damping_Curves(data=array)
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
-        self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))
-        self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
+        self.assertTrue(
+            np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix())
+        )
+        self.assertTrue(
+            np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix())
+        )
 
         # Case 3: with a file name
         with self.assertRaisesRegex(
-            TypeError, 'must be a 2D numpy array or a file name',
+            TypeError,
+            'must be a 2D numpy array or a file name',
         ):
             Multiple_GGmax_Damping_Curves(data=3.5)
 
-        mgdc = Multiple_GGmax_Damping_Curves(data=_join(f_dir, 'curve_FKSH14.txt'))
+        mgdc = Multiple_GGmax_Damping_Curves(
+            data=_join(f_dir, 'curve_FKSH14.txt')
+        )
         mgc_, mdc_ = mgdc.get_MGC_MDC_objects()
-        self.assertTrue(np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix()))
-        self.assertTrue(np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix()))
+        self.assertTrue(
+            np.allclose(mgc_.get_curve_matrix(), mgc.get_curve_matrix())
+        )
+        self.assertTrue(
+            np.allclose(mdc_.get_curve_matrix(), mdc.get_curve_matrix())
+        )
 
 
 if __name__ == '__main__':

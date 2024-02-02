@@ -1,13 +1,12 @@
+import os
 import unittest
-import numpy as np
+from os.path import join as _join
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
-
-import os
-from os.path import join as _join
-
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -19,7 +18,16 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         )
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
-        freq_bench = [0.6667, 1.3333, 2.0000, 2.6667, 3.3333, 4.0000, 4.6667, 5.3333]
+        freq_bench = [
+            0.6667,
+            1.3333,
+            2.0000,
+            2.6667,
+            3.3333,
+            4.0000,
+            4.6667,
+            5.3333,
+        ]
         FS_bench = [
             60.0000 + 0.0000j,
             -1.5000 + 7.0569j,
@@ -61,5 +69,7 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Signal_Processing)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Helper_Signal_Processing
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

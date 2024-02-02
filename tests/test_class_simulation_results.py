@@ -1,15 +1,13 @@
-import unittest
-import numpy as np
-
-from PySeismoSoil.class_ground_motion import Ground_Motion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_simulation_results import Simulation_Results
-
-import PySeismoSoil.helper_site_response as sr
-
 import os
+import unittest
 from os.path import join as _join
 
+import numpy as np
+
+import PySeismoSoil.helper_site_response as sr
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -17,7 +15,9 @@ f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 class Test_Class_Simulation_Results(unittest.TestCase):
     def test_plot(self):
         # Test that the desired data are correctly imported to the object
-        accel_in = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='m/s/s')
+        accel_in = Ground_Motion(
+            _join(f_dir, 'sample_accel.txt'), unit='m/s/s'
+        )
         accel_tmp = accel_in.accel.copy()
         accel_tmp[:, 1] *= 5.0
         accel_out = Ground_Motion(accel_tmp, unit='m/s/s')
@@ -48,5 +48,7 @@ class Test_Class_Simulation_Results(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Class_Simulation_Results)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Class_Simulation_Results
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

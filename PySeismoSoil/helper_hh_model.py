@@ -45,7 +45,9 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_FKZ = mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
+    T_FKZ = (
+        mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
+    )
 
     return T_FKZ
 
@@ -72,9 +74,13 @@ def transition_function(gamma, *, a, gamma_t):
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     assert gamma_t > 0
-    w = 1 - 1. / (1 + np.power(10, -a * (
-        np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036)
-    )))
+    w = 1 - 1.0 / (
+        1
+        + np.power(
+            10,
+            -a * (np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036)),
+        )
+    )
 
     return w
 
@@ -271,15 +277,15 @@ def _damping_misfit(param, damping_data):
     """
     gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
 
-    gamma_t = 10 ** gamma_t_
-    a = 10 ** a_
-    gamma_ref = 10 ** gamma_ref_
-    beta = 10 ** beta_
-    s = 10 ** s_
-    Gmax = 10 ** Gmax_
-    mu = 10 ** mu_
-    Tmax = 10 ** Tmax_
-    d = 10 ** d_
+    gamma_t = 10**gamma_t_
+    a = 10**a_
+    gamma_ref = 10**gamma_ref_
+    beta = 10**beta_
+    s = 10**s_
+    Gmax = 10**Gmax_
+    mu = 10**mu_
+    Tmax = 10**Tmax_
+    d = 10**d_
 
     strain = damping_data[:, 0]
     damping_true = damping_data[:, 1]
@@ -320,7 +326,17 @@ def serialize_params_to_array(param):
         in the order specified above.
     """
     assert len(param) == 9
-    order = ['gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd']
+    order = [
+        'gamma_t',
+        'a',
+        'gamma_ref',
+        'beta',
+        's',
+        'Gmax',
+        'mu',
+        'Tmax',
+        'd',
+    ]
     param_array = []
     for key in order:
         param_array.append(param[key])

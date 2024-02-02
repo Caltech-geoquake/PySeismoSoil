@@ -1,22 +1,22 @@
-import os
 import glob
-import stat
+import os
 import shutil
+import stat
 import subprocess
+
 import numpy as np
 import pkg_resources
 
 from PySeismoSoil import helper_generic as hlp
-from PySeismoSoil import helper_site_response as sr
-from PySeismoSoil import helper_simulations as sim
 from PySeismoSoil import helper_signal_processing as sig
-
-from PySeismoSoil.class_ground_motion import Ground_Motion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_parameters import Param_Multi_Layer
+from PySeismoSoil import helper_simulations as sim
+from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
-from PySeismoSoil.class_simulation_results import Simulation_Results
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_parameters import Param_Multi_Layer
+from PySeismoSoil.class_simulation_results import Simulation_Results
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 class Simulation:
@@ -68,7 +68,9 @@ class Simulation:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
 
         if type(G_param) != type(xi_param):
-            raise TypeError('`G_param` and `xi_param` must be of the same type.')
+            raise TypeError(
+                '`G_param` and `xi_param` must be of the same type.'
+            )
 
         if G_param is not None and not isinstance(G_param, Param_Multi_Layer):
             raise TypeError(
@@ -77,7 +79,9 @@ class Simulation:
                 'or `MKZ_Param_Multi_Layer`.',
             )
 
-        if xi_param is not None and not isinstance(xi_param, Param_Multi_Layer):
+        if xi_param is not None and not isinstance(
+            xi_param, Param_Multi_Layer
+        ):
             raise TypeError(
                 '`xi_param` must be of a subclass of '
                 '`Param_Multi_Layer`, e.g., `HH_Param_Multi_Layer` '
@@ -85,7 +89,8 @@ class Simulation:
             )
 
         if GGmax_and_damping_curves is not None and not isinstance(
-            GGmax_and_damping_curves, Multiple_GGmax_Damping_Curves,
+            GGmax_and_damping_curves,
+            Multiple_GGmax_Damping_Curves,
         ):
             raise TypeError(
                 '`GGmax_and_damping_curves` must be a '
@@ -203,7 +208,9 @@ class Linear_Simulation(Simulation):
                 Vs_Profile(new_profile, density_unit='g/cm^3'),
                 max_a_v_d=max_avd,
                 max_strain_stress=max_gt,
-                trans_func=Frequency_Spectrum(tf, df=freq_array[1] - freq_array[0]),
+                trans_func=Frequency_Spectrum(
+                    tf, df=freq_array[1] - freq_array[0]
+                ),
                 time_history_accel=out_a,
                 time_history_veloc=out_v,
                 time_history_displ=out_d,
@@ -355,7 +362,9 @@ class Equiv_Linear_Simulation(Simulation):
             Vs_Profile(new_profile, density_unit='g/cm^3'),
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
-            trans_func=Frequency_Spectrum(tf, df=freq_array[1] - freq_array[0]),
+            trans_func=Frequency_Spectrum(
+                tf, df=freq_array[1] - freq_array[0]
+            ),
             time_history_accel=out_a,
             time_history_veloc=out_v,
             time_history_displ=out_d,
@@ -503,7 +512,11 @@ class Nonlinear_Simulation(Simulation):
         os.makedirs(sim_dir)
         os.chmod(
             sim_dir,
-            stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
+            stat.S_IRWXU
+            | stat.S_IRGRP
+            | stat.S_IXGRP
+            | stat.S_IROTH
+            | stat.S_IXOTH,
         )
 
         f_max = 30  # maximum frequency modeled, unit is Hz
@@ -562,14 +575,26 @@ class Nonlinear_Simulation(Simulation):
             'PySeismoSoil',
             'exec_files',
         )
-        shutil.copy(os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir)
+        shutil.copy(
+            os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir
+        )
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
         # -------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
             fp.write(
                 '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
-                % (f_max, ppw, n_dt, n_bound, n_layer, nt_out, n_ma, N_spr, N_obs),
+                % (
+                    f_max,
+                    ppw,
+                    n_dt,
+                    n_bound,
+                    n_layer,
+                    nt_out,
+                    n_ma,
+                    N_spr,
+                    N_obs,
+                ),
             )
 
         # -------- Write data to files for the Fortran kernel to read ----------
@@ -577,10 +602,12 @@ class Nonlinear_Simulation(Simulation):
         np.savetxt(os.path.join(sim_dir, 'incident.dat'), input_accel)
         np.savetxt(os.path.join(sim_dir, 'curve.dat'), curves)
         np.savetxt(
-            os.path.join(sim_dir, 'HH_G.dat'), self.G_param.serialize_to_2D_array(),
+            os.path.join(sim_dir, 'HH_G.dat'),
+            self.G_param.serialize_to_2D_array(),
         )
         np.savetxt(
-            os.path.join(sim_dir, 'HH_x.dat'), self.xi_param.serialize_to_2D_array(),
+            os.path.join(sim_dir, 'HH_x.dat'),
+            self.xi_param.serialize_to_2D_array(),
         )
 
         # ------- Execute Fortran kernel ---------------------------------------
