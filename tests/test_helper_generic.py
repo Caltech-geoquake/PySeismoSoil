@@ -146,7 +146,8 @@ class Test_Helper_Generic(unittest.TestCase):
 
         # Case #4: `length` is not an integer
         with self.assertRaisesRegex(
-            TypeError, 'cannot be interpreted as an integer'
+            TypeError,
+            "expected a sequence of integers or a single integer, got '3.5'",
         ):
             hlp.extend_scalar(2.5, 3.5)
 

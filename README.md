@@ -28,13 +28,11 @@ pip install PySeismoSoil
 
 If you already have an older version installed and want to upgrade to the newest version, use `pip install --upgrade PySeismoSoil`.
 
-## Dependencies
+## Supported Python versions
 
-- Python: 3.7+
-- matplotlib: 2.0.0+
-- numpy: 1.11.0+
-- scipy: 1.1.0+
-- numba: 0.38.0+
+PySeismoSoil currently supports Python versions from 3.7 to 3.11.
+
+(Python 3.12 is not fully supported yet.)
 
 ## API Documentation
 
