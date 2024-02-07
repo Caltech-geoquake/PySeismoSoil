@@ -67,7 +67,7 @@ class Simulation:
         if boundary not in ['elastic', 'rigid']:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
 
-        if type(G_param) != type(xi_param):
+        if type(G_param) != type(xi_param):  # noqa: E721
             raise TypeError(
                 '`G_param` and `xi_param` must be of the same type.'
             )

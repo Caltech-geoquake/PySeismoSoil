@@ -475,8 +475,8 @@ class Site_Factors:
             The interpolation result having the same length as the number of
             "versions" in ``values``.
         """
-        assert type(ref_points) == list
-        assert type(values) == list
+        assert isinstance(ref_points, list)
+        assert isinstance(values, list)
         assert isinstance(interp_points, (tuple, list))
         assert len(ref_points) == 8
         assert len(ref_points) == len(values)

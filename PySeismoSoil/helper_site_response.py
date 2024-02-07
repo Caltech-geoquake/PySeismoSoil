@@ -885,7 +885,7 @@ def calc_Vs30(profile, option_for_profile_shallower_than_30m=1, verbose=False):
     Vs30 = calc_VsZ(
         profile,
         30.0,
-        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,
+        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,  # noqa: LN001
         verbose=verbose,
     )
     return Vs30
@@ -1449,7 +1449,7 @@ def amplify_motion(
         i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
         input motion at all.
     """
-    assert type(transfer_function_single_sided) == tuple
+    assert isinstance(transfer_function_single_sided, tuple)
     assert len(transfer_function_single_sided) == 2
 
     f_array, tf_ss = transfer_function_single_sided
