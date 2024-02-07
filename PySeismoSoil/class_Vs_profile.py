@@ -1,9 +1,9 @@
 import os
+
 import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
-
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 
@@ -230,7 +230,9 @@ class Vs_Profile:
         )
         return fig, ax, hl
 
-    def get_ampl_function(self, show_fig=False, freq_resolution=0.05, fmax=30.0):
+    def get_ampl_function(
+            self, show_fig=False, freq_resolution=0.05, fmax=30.0
+    ):
         """
         Get amplification function of the Vs profile.
 
@@ -409,8 +411,14 @@ class Vs_Profile:
             Vs values corresponding to the given depths. Its type depends on
             the type of ``depth``.
         """
-        vs_queried, is_scalar, has_duplicate_values, is_sorted = sr.query_Vs_at_depth(
-            self.vs_profile, depth,
+        (
+            vs_queried,
+            is_scalar,
+            has_duplicate_values,
+            is_sorted,
+        ) = sr.query_Vs_at_depth(
+            self.vs_profile,
+            depth,
         )
 
         if as_profile:

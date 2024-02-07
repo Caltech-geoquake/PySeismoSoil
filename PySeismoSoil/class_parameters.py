@@ -1,12 +1,12 @@
 import collections
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
-
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 
 STRAIN_RANGE_PCT = np.logspace(-2, 1)
@@ -44,7 +44,7 @@ class Parameter(collections.UserDict):
             raise TypeError('`param_dict` must be a dictionary.')
 
         if not isinstance(allowable_keys, set) or any(
-            type(_) != str for _ in allowable_keys
+            not isinstance(_, str) for _ in allowable_keys
         ):
             raise TypeError('`allowable_keys` should be a set of str.')
 
@@ -70,7 +70,9 @@ class Parameter(collections.UserDict):
         self.data[key] = item
 
     def __delitem__(self, key):
-        raise ValueError('Deleting items from the parameter set is not allowed.')
+        raise ValueError(
+            'Deleting items from the parameter set is not allowed.'
+        )
 
     def serialize(self):
         """
@@ -381,7 +383,9 @@ class Param_Multi_Layer:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
-                curves = np.column_stack((strain_in_pct, GGmax, strain_in_pct, damping))
+                curves = np.column_stack(
+                    (strain_in_pct, GGmax, strain_in_pct, damping)
+                )
             else:
                 curves = np.column_stack(
                     (curves, strain_in_pct, GGmax, strain_in_pct, damping),
@@ -487,8 +491,12 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
                 hh.deserialize_array_to_params(_) for _ in list_of_param_array
             ]
         elif isinstance(filename_or_data, np.ndarray):
-            hlp.assert_2D_numpy_array(filename_or_data, name='`filename_or_data`')
-            list_of_param_array = hlp.extract_from_param_format(filename_or_data)
+            hlp.assert_2D_numpy_array(
+                filename_or_data, name='`filename_or_data`'
+            )
+            list_of_param_array = hlp.extract_from_param_format(
+                filename_or_data
+            )
             list_of_param = [
                 hh.deserialize_array_to_params(_) for _ in list_of_param_array
             ]
@@ -560,8 +568,12 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
                 mkz.deserialize_array_to_params(_) for _ in list_of_param_array
             ]
         elif isinstance(filename_or_data, np.ndarray):
-            hlp.assert_2D_numpy_array(filename_or_data, name='`filename_or_data`')
-            list_of_param_array = hlp.extract_from_param_format(filename_or_data)
+            hlp.assert_2D_numpy_array(
+                filename_or_data, name='`filename_or_data`'
+            )
+            list_of_param_array = hlp.extract_from_param_format(
+                filename_or_data
+            )
             list_of_param = [
                 mkz.deserialize_array_to_params(_) for _ in list_of_param_array
             ]

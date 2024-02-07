@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
@@ -188,9 +188,9 @@ def damping_misfit(param_without_Gmax, damping_data):
     """
     gamma_ref_, s_, beta_ = param_without_Gmax
 
-    gamma_ref = 10 ** gamma_ref_
-    beta = 10 ** beta_
-    s = 10 ** s_
+    gamma_ref = 10**gamma_ref_
+    beta = 10**beta_
+    s = 10**s_
     Gmax = 1.0  # does not affect damping, because it gets cancels out
 
     strain = damping_data[:, 0]

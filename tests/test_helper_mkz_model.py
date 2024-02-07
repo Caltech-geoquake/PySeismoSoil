@@ -1,4 +1,5 @@
 import unittest
+
 import numpy as np
 from scipy import stats
 
@@ -17,29 +18,51 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
     def test_tau_MKZ(self):
         T = mkz.tau_MKZ(self.strain, gamma_ref=1, beta=2, s=3, Gmax=4)
         # note: benchmark results come from comparable functions in MATLAB
-        self.assertTrue(np.allclose(
-            T,
-            [
-                0.0400, 0.0750, 0.1404, 0.2630, 0.4913,
-                0.9018, 1.4898, 1.5694, 0.7578, 0.2413,
-                0.0700, 0.0200,
-            ],
-            atol=self.atol,
-            rtol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                T,
+                [
+                    0.0400,
+                    0.0750,
+                    0.1404,
+                    0.2630,
+                    0.4913,
+                    0.9018,
+                    1.4898,
+                    1.5694,
+                    0.7578,
+                    0.2413,
+                    0.0700,
+                    0.0200,
+                ],
+                atol=self.atol,
+                rtol=0.0,
+            )
+        )
 
     def test_calc_damping_from_param(self):
         xi = sr.calc_damping_from_param(self.param, self.strain, mkz.tau_MKZ)
-        self.assertTrue(np.allclose(
-            xi,
-            [
-                0, 0.0072, 0.0101, 0.0119, 0.0133,
-                0.0147, 0.0163, 0.0178, 0.0195, 0.0213,
-                0.0232, 0.0251,
-            ],
-            atol=self.atol,
-            rtol=0.0,
-        ))
+        self.assertTrue(
+            np.allclose(
+                xi,
+                [
+                    0,
+                    0.0072,
+                    0.0101,
+                    0.0119,
+                    0.0133,
+                    0.0147,
+                    0.0163,
+                    0.0178,
+                    0.0195,
+                    0.0213,
+                    0.0232,
+                    0.0251,
+                ],
+                atol=self.atol,
+                rtol=0.0,
+            )
+        )
 
     def test_serialize_params_to_array__success(self):
         array = mkz.serialize_params_to_array(self.param)
@@ -81,8 +104,14 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
 
         damping = np.ones_like(strain_in_pct)  # dummy values
         curve_data = np.column_stack((
-            strain_in_pct, GGmax_1, strain_in_pct, damping,
-            strain_in_pct, GGmax_2, strain_in_pct, damping,
+            strain_in_pct,
+            GGmax_1,
+            strain_in_pct,
+            damping,
+            strain_in_pct,
+            GGmax_2,
+            strain_in_pct,
+            damping,
         ))
         param, fitted_curve = mkz.fit_MKZ(curve_data, show_fig=True)
 

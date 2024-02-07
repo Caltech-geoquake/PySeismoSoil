@@ -1,9 +1,10 @@
 import time
+
 import numpy as np
 from scipy.optimize import fsolve
 
-from PySeismoSoil.class_Vs_profile import Vs_Profile
 from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 class SVM:
@@ -136,7 +137,9 @@ class SVM:
                 Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
 
                 k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
-                n_ = np.max([1.0, s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30)])
+                n_ = np.max(
+                    [1.0, s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30)]
+                )
 
                 z_array_analyt = np.arange(0.0, z1 - thk_addl_layer, thk)  # depth array
 
@@ -144,7 +147,7 @@ class SVM:
                 th_array_analyt = sr.dep2thk(z_array_analyt)
 
                 # analytical Vs ( = Vs0*(1+k*z)^(1/n) )
-                Vs_analyt = Vs0_ * (1. + k_ * z_array_analyt)**(1. / n_)
+                Vs_analyt = Vs0_ * (1.0 + k_ * z_array_analyt) ** (1.0 / n_)
 
                 # the homogeneous layer with Vs = Vs0:
                 array1 = np.array([thk_addl_layer, Vs_analyt[0]])
@@ -161,7 +164,10 @@ class SVM:
                     # -------  Check if actual Vs30 matches target Vs30 -----------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
                     if verbose is True:  # print iteration progress
-                        print(f'  {actual_Vs30:.1f} --> {target_Vs30:.1f} |', end='')
+                        print(
+                            f'  {actual_Vs30:.1f} --> {target_Vs30:.1f} |',
+                            end='',
+                        )
 
                     if target_Vs30 - 10 <= actual_Vs30 <= target_Vs30 + 10:
                         iteration_flag = False  # end iteration
@@ -193,7 +199,6 @@ class SVM:
 
             # ---------   Prepare output variables  ---------------
             if Vs_cap is not False:  # if we need to "cap" the Vs profile somehow
-
                 # if Vs_cap value not specified (i.e., user inputs "True")
                 if Vs_cap is True:
                     Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap
@@ -239,7 +244,9 @@ class SVM:
 
         # ----------  Show figure  -----------------
         if show_fig is True:
-            title_text = f'$V_{{S30}}$={target_Vs30:.1f}m/s, $z_{{1}}$={z1:.1f}m'
+            title_text = (
+                f'$V_{{S30}}$={target_Vs30:.1f}m/s, $z_{{1}}$={z1:.1f}m'
+            )
             sr.plot_Vs_profile(vs_profile, title=title_text)
 
         # --------  Attributes  --------------------
@@ -286,7 +293,9 @@ class SVM:
         h_line : matplotlib.lines.Line2D
             The line object.
         """
-        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(self.Vs30, self.z1)
+        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
+            self.Vs30, self.z1
+        )
         fig, ax, h_line = sr.plot_Vs_profile(
             self._base_profile,
             title=title,
@@ -379,7 +388,8 @@ class SVM:
             # END "for j in range(n_layers):"
 
             thk_array = sr.dep2thk(
-                np.array(layer_bottom_depth_array), include_halfspace=False,
+                np.array(layer_bottom_depth_array),
+                include_halfspace=False,
             )
             discr_prof = self.base_profile.query_Vs_given_thk(
                 thk_array,
@@ -407,7 +417,9 @@ class SVM:
         label : str
             Label of the additional profile, to be shown in the legend.
         """
-        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(self.Vs30, self.z1)
+        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
+            self.Vs30, self.z1
+        )
         fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='Smooth')
         sr.plot_Vs_profile(
             addtl_profile,
@@ -489,7 +501,8 @@ class SVM:
                 options.update({'seed': seed_, 'show_fig': False})
                 Vs_profile = self._helper_get_rand_profile(**options)
                 rand_Vs30 = sr.calc_Vs30(
-                    Vs_profile, option_for_profile_shallower_than_30m=1,
+                    Vs_profile,
+                    option_for_profile_shallower_than_30m=1,
                 )
                 rand_Vs_last = Vs_profile[-1, 1]
                 rand_z1 = sr.calc_z1(Vs_profile)
@@ -498,7 +511,9 @@ class SVM:
                 base_z1 = sr.calc_z1(self._base_profile)
 
                 condition_1 = np.abs(rand_Vs30 - base_Vs30) < 25.0
-                condition_2 = np.abs(rand_Vs_last - base_Vs_last) / base_Vs_last < 0.05
+                condition_2 = (
+                    np.abs(rand_Vs_last - base_Vs_last) / base_Vs_last < 0.05
+                )
                 condition_3 = np.abs(rand_z1 - base_z1) / base_z1 < 0.20
 
                 if condition_1 and condition_2 and condition_3:
@@ -638,7 +653,9 @@ class SVM:
         for i in range(len(thk)):  # query Vs value where z = z_mid[j]
             # Note: _find_index_closest() is used here because it is more
             # appropriate for depth arrays with small layer thicknesses.
-            index_value, ____ = self._find_index_closest(z_array_analyt, z_mid[i])
+            index_value, ____ = self._find_index_closest(
+                z_array_analyt, z_mid[i]
+            )
             baseline_Vs[i] = Vs_analyt[index_value]
 
         # ---------------    Part 3    -----------------------------------
@@ -717,10 +734,9 @@ class SVM:
                 # generate a 1-by-nr_of_rand_profiles vector
                 Y[i] = np.random.normal(0, 1, (1, 1))
             else:  # for other layers
-                Y[i] = (
-                    rho_1L * Y[i - 1]
-                    + np.random.normal(0, 1, (1, 1)) * np.sqrt(1 - rho_1L ** 2)
-                )
+                Y[i] = rho_1L * Y[i - 1] + np.random.normal(
+                    0, 1, (1, 1)
+                ) * np.sqrt(1 - rho_1L**2)
 
             Vs_hat[i] = baseline_Vs[i] * np.exp(Y[i] * sigma_)
 

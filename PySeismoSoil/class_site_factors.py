@@ -1,5 +1,6 @@
-import os
 import itertools
+import os
+
 import numpy as np
 import pkg_resources
 from scipy.interpolate import griddata
@@ -91,9 +92,7 @@ class Site_Factors:
 
             PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
 
-        if (
-            'Invalid Vs30-z1 combination' in status
-        ):  # TODO: think about whether to add leniency
+        if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
             raise ValueError(
                 'Vs30 and z1 combination not valid. (The `lenient` '
                 'option does not apply to this type of issue.)',
@@ -183,7 +182,9 @@ class Site_Factors:
         )
         return Frequency_Spectrum(np.column_stack((freq, phase_shift)))
 
-    def get_both_amplf_and_phase(self, method='nl_hh', show_interp_plots=False):
+    def get_both_amplf_and_phase(
+            self, method='nl_hh', show_interp_plots=False
+    ):
         """
         Get both amplification and phase-shift factors
 
@@ -336,7 +337,9 @@ class Site_Factors:
             frequency).
         """
         if Vs30 not in Site_Factors.Vs30_array:
-            raise ValueError('`Vs30` should be in %s.' % Site_Factors.Vs30_array)
+            raise ValueError(
+                '`Vs30` should be in %s.' % Site_Factors.Vs30_array
+            )
 
         if z1 not in Site_Factors.z1_array:
             raise ValueError('`z1` should be in %s.' % Site_Factors.z1_array)
@@ -345,7 +348,9 @@ class Site_Factors:
             raise ValueError('`PGA` should be in %s.' % Site_Factors.PGA_array)
 
         if method not in ['nl_hh', 'eq_kz', 'eq_hh']:
-            raise ValueError("`method` must be within {'nl_hh', 'eq_kz', 'eq_hh'}")
+            raise ValueError(
+                "`method` must be within {'nl_hh', 'eq_kz', 'eq_hh'}"
+            )
 
         if amplif_or_phase == 'amplif':
             if Fourier:
@@ -373,7 +378,9 @@ class Site_Factors:
         Returns all possible combinations of Vs30, z1, and PGA values.
         """
         Vs30_loc, z1_loc, PGA_loc = Site_Factors._find_neighbors(
-            self.Vs30, self.z1, self.PGA,
+            self.Vs30,
+            self.z1,
+            self.PGA,
         )
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
@@ -390,7 +397,9 @@ class Site_Factors:
 
         The three inputs need to already within the correct range.
         """
-        Vs30_loc = Site_Factors._search_sorted(Vs30_in_mps, Site_Factors.Vs30_array)
+        Vs30_loc = Site_Factors._search_sorted(
+            Vs30_in_mps, Site_Factors.Vs30_array
+        )
         z1_loc = Site_Factors._search_sorted(z1_in_m, Site_Factors.z1_array)
         PGA_loc = Site_Factors._search_sorted(PGA_in_g, Site_Factors.PGA_array)
 
@@ -466,8 +475,8 @@ class Site_Factors:
             The interpolation result having the same length as the number of
             "versions" in ``values``.
         """
-        assert type(ref_points) == list
-        assert type(values) == list
+        assert isinstance(ref_points, list)
+        assert isinstance(values, list)
         assert isinstance(interp_points, (tuple, list))
         assert len(ref_points) == 8
         assert len(ref_points) == len(values)
@@ -481,7 +490,9 @@ class Site_Factors:
         n = len(values[0])
         interp_result = []
         for i in range(n):
-            res = griddata(ref_points, values[:, i], interp_points, method=method)
+            res = griddata(
+                ref_points, values[:, i], interp_points, method=method
+            )
             interp_result.append(res.flatten()[0])
 
         return np.array(interp_result)
@@ -562,12 +573,16 @@ class Site_Factors:
             ax1.set_xlabel('Frequency [Hz]')
             ax1.set_ylabel('Amplification')
 
-            ax2.plot(T_or_freq, phase_interp, 'k--', lw=2.5, label='Interpolated')
+            ax2.plot(
+                T_or_freq, phase_interp, 'k--', lw=2.5, label='Interpolated'
+            )
             ax2.grid(ls=':')
             ax2.set_xlabel('Frequency [Hz]')
             ax2.set_ylabel('Phase shift')
         else:
-            ax.semilogx(T_or_freq, amp_interp, 'k--', lw=2.5, label='Interpolated')
+            ax.semilogx(
+                T_or_freq, amp_interp, 'k--', lw=2.5, label='Interpolated'
+            )
             ax.grid(ls=':')
             if Fourier:
                 ax.set_xlabel('Frequency [Hz]')
@@ -577,9 +592,13 @@ class Site_Factors:
             ax.set_ylabel('Amplification or phase shift')
 
         if phase_flag:
-            fig.tight_layout(pad=0.3, h_pad=0.3, w_pad=0.3, rect=[0, 0.03, 1, 0.94])
+            fig.tight_layout(
+                pad=0.3, h_pad=0.3, w_pad=0.3, rect=[0, 0.03, 1, 0.94]
+            )
 
-        fig.suptitle('$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point)
+        fig.suptitle(
+            '$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point
+        )
 
         bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)
         plt.legend(bbox_to_anchor=bbox_anchor_loc, loc='center left')

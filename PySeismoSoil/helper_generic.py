@@ -1,8 +1,8 @@
 import platform
 
-import numpy as np
 import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def detect_OS():
@@ -208,7 +208,8 @@ def assert_array_length(something, length, name='`something`'):
     assert_1D_numpy_array(something, name=name)
     if len(something) != length:
         raise ValueError(
-            '%s must have length %d, but not %d.' % (name, length, len(something)),
+            '%s must have length %d, but not %d.'
+            % (name, length, len(something)),
         )
 
 
@@ -230,7 +231,9 @@ def extend_scalar(scalar, length):
         A 1D numpy array with length ``length`` and elements of value ``scalar``.
     """
     if not isinstance(scalar, (float, int, np.number)):
-        raise TypeError('`scalar` must be a float, int, or a numpy.number type.')
+        raise TypeError(
+            '`scalar` must be a float, int, or a numpy.number type.'
+        )
 
     array = scalar * np.ones(length)
     return array
@@ -374,10 +377,14 @@ def check_Vs_profile_format(data):
         rho = data[:, 3]
         mat = data[:, 4]
         if np.any(xi <= 0) or np.any(rho <= 0):
-            raise ValueError('The damping and density columns should be positive.')
+            raise ValueError(
+                'The damping and density columns should be positive.'
+            )
 
         if not all(is_int(_) for _ in mat):
-            raise ValueError('The "material number" column should be all integers.')
+            raise ValueError(
+                'The "material number" column should be all integers.'
+            )
 
         if np.any(mat[:-1] <= 0):
             raise ValueError(

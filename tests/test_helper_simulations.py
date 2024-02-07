@@ -1,16 +1,14 @@
+import os
 import unittest
+from os.path import join as _join
+
 import numpy as np
 
 import PySeismoSoil.helper_simulations as sim
 import PySeismoSoil.helper_site_response as sr
-
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
-
-import os
-from os.path import join as _join
-
+from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -30,7 +28,9 @@ class Test_Helper_Simulations(unittest.TestCase):
 
         # Case 2(a): abnormal case, with parameters
         del HH_G[-1]
-        with self.assertRaisesRegex(ValueError, 'Not enough sets of parameters'):
+        with self.assertRaisesRegex(
+            ValueError, 'Not enough sets of parameters'
+        ):
             sim.check_layer_count(vs_profile, G_param=HH_G)
 
         # Case 2(b): abnormal case, with curves
@@ -48,7 +48,9 @@ class Test_Helper_Simulations(unittest.TestCase):
         accel_in = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
 
         result_1 = sim.linear(vs_profile, accel_in, boundary='elastic')[3]
-        result_1_ = sr.linear_site_resp(vs_profile, accel_in, boundary='elastic')[0]
+        result_1_ = sr.linear_site_resp(
+            vs_profile, accel_in, boundary='elastic'
+        )[0]
 
         # Time arrays need to match well
         self.assertTrue(
@@ -69,8 +71,12 @@ class Test_Helper_Simulations(unittest.TestCase):
         import matplotlib.pyplot as plt
 
         plt.figure()
-        plt.plot(result_1[:, 0], result_1[:, 1], label='every layer', alpha=0.6)
-        plt.plot(result_1_[:, 0], result_1_[:, 1], label='surface only', alpha=0.6)
+        plt.plot(
+            result_1[:, 0], result_1[:, 1], label='every layer', alpha=0.6
+        )
+        plt.plot(
+            result_1_[:, 0], result_1_[:, 1], label='surface only', alpha=0.6
+        )
         plt.legend()
         plt.xlabel('Time [sec]')
         plt.ylabel('Acceleration')
@@ -86,7 +92,9 @@ class Test_Helper_Simulations(unittest.TestCase):
         accel_in = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
 
         result_2 = sim.linear(vs_profile, accel_in, boundary='rigid')[3]
-        result_2_ = sr.linear_site_resp(vs_profile, accel_in, boundary='rigid')[0]
+        result_2_ = sr.linear_site_resp(
+            vs_profile, accel_in, boundary='rigid'
+        )[0]
         self.assertTrue(
             np.allclose(
                 result_2[:, 0],
@@ -101,8 +109,12 @@ class Test_Helper_Simulations(unittest.TestCase):
         import matplotlib.pyplot as plt
 
         plt.figure()
-        plt.plot(result_2[:, 0], result_2[:, 1], label='every layer', alpha=0.6)
-        plt.plot(result_2_[:, 0], result_2_[:, 1], label='surface only', alpha=0.6)
+        plt.plot(
+            result_2[:, 0], result_2[:, 1], label='every layer', alpha=0.6
+        )
+        plt.plot(
+            result_2_[:, 0], result_2_[:, 1], label='surface only', alpha=0.6
+        )
         plt.legend()
         plt.xlabel('Time [sec]')
         plt.grid(ls=':', lw=0.5)
@@ -110,5 +122,7 @@ class Test_Helper_Simulations(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_Simulations)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Helper_Simulations
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

@@ -35,13 +35,14 @@ they are not shown in the documentation page.
 """
 
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
-from PySeismoSoil import helper_site_response as sr
-from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_hh_model as hh
+from PySeismoSoil import helper_mkz_model as mkz
+from PySeismoSoil import helper_site_response as sr
 
 
 def hh_param_from_profile(
@@ -459,7 +460,9 @@ def produce_HH_G_param(
     mu = np.zeros_like(OCR)
     for j in range(n_layer):
         if Vs[j] <= 760:  # softer soil: use Vardanega & Bolton (2011) CGJ formula
-            mu[j] = 1.0 / (0.000872 * Gmax[j]/Tmax[j] * OCR[j]**0.47 * p0[j]**0.28)  # noqa: E226
+            mu[j] = 1.0 / (
+                0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
+            )  # noqa: E226
             if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
                 # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
                 mu[j] = mu[j] * 10.0 ** (0.236 * 3)
@@ -609,7 +612,8 @@ def produce_HH_G_param(
             plt.grid(ls=':', lw=0.5)
             plt.plot(
                 strain_j,
-                mu[j] / (1 + Gmax[j]/Tmax[j]*mu[j]*np.abs(strain_j/100.)),  # noqa: E226
+                mu[j]
+                / (1 + Gmax[j] / Tmax[j] * mu[j] * np.abs(strain_j / 100.0)),  # noqa: E226
                 c=muted_green,
                 lw=lw * 1.75,
             )
@@ -683,10 +687,9 @@ def _calc_shear_strength(Vs, OCR, sigma_v0, K0=None, phi=30.0):
             sigma_3 = np.min([sigma_v0[j], sigma_h0])  # smallest principal stress
 
             # normal effective stress on the slip plane
-            sigma_n = (
-                (sigma_1 + sigma_3) / 2.0
-                - (sigma_1 - sigma_3) / 2.0 * np.sin(np.deg2rad(phi[j]))
-            )
+            sigma_n = (sigma_1 + sigma_3) / 2.0 - (
+                sigma_1 - sigma_3
+            ) / 2.0 * np.sin(np.deg2rad(phi[j]))
 
             Tmax[j] = dyna_coeff * sigma_n * np.tan(np.deg2rad(phi[j]))
         # END
@@ -738,7 +741,9 @@ def _calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=None):
     sigma_p0 = 0.106 * Vs**1.47  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated fromseismic piezocone tests"  # noqa: E501,E226
     sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
-    OCR = np.minimum(OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit)
+    OCR = np.minimum(
+        OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit
+    )
     return OCR
 
 
@@ -819,7 +824,7 @@ def _calc_rho(h, Vs):
     # log10 (as evident in Figure 2 in the paper), but they incorrectly used
     # the notation of "log", which in the US means "ln" (natural logarithm)
     # rather than log10.
-    rho = np.maximum(lb, 1 + 1. / (0.614 + 58.7 * (np.log10(z) + 1.095) / Vs))
+    rho = np.maximum(lb, 1 + 1.0 / (0.614 + 58.7 * (np.log10(z) + 1.095) / Vs))
 
     rho *= 1000  # unit: g/cm^3 --> kg/m^3
     return rho
@@ -973,18 +978,22 @@ def produce_Darendeli_curves(
     GGmax = np.zeros((n_strain_pts, n_layer))
     xi = np.zeros_like(GGmax)
     for i in range(n_layer):
-        GGmax[:, i] = 1. / (1 + (gamma / gamma_r[i])**a)  # G of i-th layer (Eq 9.2a)
-        D_masing_1 = (  # unit: % (page 226)
-            (100. / np.pi)
-            * (
-                4
-                * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
-                / (gamma**2 / (gamma + gamma_r[i])) - 2
-            )
+        GGmax[:, i] = 1.0 / (1 + (gamma / gamma_r[i]) ** a)  # G of i-th layer (Eq 9.2a)
+        D_masing_1 = (100.0 / np.pi) * (  # unit: % (page 226)
+            4
+            * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
+            / (gamma**2 / (gamma + gamma_r[i]))
+            - 2
         )
-        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # unit: % (page 226)
-        D_min = (phi6 + phi7 * PI[i] * OCR[i]**phi8) * sigma_0[i]**phi9 * (1 + phi10 * np.log(frq))  # Eq 9.1c (page 221)  # noqa: E501, LN001
-        xi[:, i] = b * GGmax[:, i]**0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
+        D_masing = (
+            c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3
+        )  # unit: % (page 226)
+        D_min = (
+            (phi6 + phi7 * PI[i] * OCR[i] ** phi8)
+            * sigma_0[i] ** phi9
+            * (1 + phi10 * np.log(frq))
+        )  # Eq 9.1c (page 221)  # noqa: E501, LN001
+        xi[:, i] = b * GGmax[:, i] ** 0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
 
     xi /= 100.0
     gamma_r /= 100.0
@@ -1064,7 +1073,9 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
         gamma_t_LB = 0.001
 
     range_d = np.linspace(0.67, 1.39, 200)
-    area = __calc_area(range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ)
+    area = __calc_area(
+        range_d, x, Gmax, mu, tau_f, gamma_t_LB, gamma_t_UB, T_MKZ
+    )
     if np.min(area) < np.inf:  # it means that a proper d value is found
         gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
     else:  # cannot find a proper d value
@@ -1080,7 +1091,9 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
             T_MKZ,
         )
         if np.min(area) < np.inf:
-            gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
+            gamma_t, d = __find_x_t_and_d(
+                area, range_d, x, Gmax, mu, tau_f, T_MKZ
+            )
         else:
             range_d = np.linspace(0.67, 1.39, 1000)  # increase grid density
             new_gamma_t_LB = 0.005  # further relax
@@ -1095,7 +1108,9 @@ def _optimization_kernel(x, x_ref, beta, s, Gmax, tau_f, mu):
                 T_MKZ,
             )
             if np.min(area) < np.inf:
-                gamma_t, d = __find_x_t_and_d(area, range_d, x, Gmax, mu, tau_f, T_MKZ)
+                gamma_t, d = __find_x_t_and_d(
+                    area, range_d, x, Gmax, mu, tau_f, T_MKZ
+                )
             else:
                 d = 1.03
                 gamma_t = 1e-3 / 100.0  # further ralax to 0.001%

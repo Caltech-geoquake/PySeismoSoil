@@ -1,12 +1,11 @@
-import unittest
-import numpy as np
-
-from PySeismoSoil.class_site_effect_adjustment import Site_Effect_Adjustment
-from PySeismoSoil.class_ground_motion import Ground_Motion
-
 import os
+import unittest
 from os.path import join as _join
 
+import numpy as np
+
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_site_effect_adjustment import Site_Effect_Adjustment
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 

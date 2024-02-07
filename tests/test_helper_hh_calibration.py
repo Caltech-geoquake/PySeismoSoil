@@ -1,11 +1,10 @@
+import os
 import unittest
+from os.path import join as _join
+
 import numpy as np
 
 import PySeismoSoil.helper_hh_calibration as hhc
-
-import os
-from os.path import join as _join
-
 
 f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
@@ -130,16 +129,22 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         self.assertTrue(np.allclose(D, D_bench, atol=1e-5, rtol=0.0))
 
         gamma_ref_bench = np.array([0.1172329, 0.1492445, 0.1718822]) * 1e-3
-        self.assertTrue(np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5, rtol=0.0))
+        self.assertTrue(
+            np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5, rtol=0.0)
+        )
 
-    def test_produce_Darendeli_curves__one_of_the_inputs_has_incorrect_length(self):
+    def test_produce_Darendeli_curves__one_of_the_inputs_has_incorrect_length(
+            self,
+    ):
         # Case #2: one of the inputs has incorrect length
         strain = np.array([0.001, 0.01])
         sigma_v0 = np.array([3000, 6000, 9000])
         PI = np.array([10, 10, 10])
         K0 = np.array([0.4, 0.4, 0.4])
         OCR = np.array([2, 2, 2])
-        with self.assertRaisesRegex(ValueError, '`PI` must have length 3, but not 6'):
+        with self.assertRaisesRegex(
+            ValueError, '`PI` must have length 3, but not 6'
+        ):
             hhc.produce_Darendeli_curves(
                 sigma_v0,
                 PI=np.append(PI, PI),
@@ -203,11 +208,15 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
     def test_hh_param_from_profile(self):
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
         HH_G_param = hhc.hh_param_from_profile(
-            vs_profile, show_fig=False, verbose=False,
+            vs_profile,
+            show_fig=False,
+            verbose=False,
         )
         HH_G_benchmark = np.genfromtxt(_join(f_dir, 'HH_G_FKSH14.txt'))  # calculated by MATLAB
         # use low tolerance because the whole process is highly reproducible
-        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0))
+        self.assertTrue(
+            np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0)
+        )
 
     def test_hh_param_from_curves__case_1(self):
         # Case 1: Fit G/Gmax curves generated using Darendeli (2001)
@@ -223,7 +232,13 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
             [
                 [0.0003, 0.0001, 0.0001, 0.0001, 0.0001],
                 [100, 100, 100, 100, 100],
-                [0.000285072, 0.000516205, 0.000944545, 0.00129825, 0.00144835],
+                [
+                    0.000285072,
+                    0.000516205,
+                    0.000944545,
+                    0.00129825,
+                    0.00144835,
+                ],
                 [1.75224, 1.71444, 1.64057, 1.58664, 1.56314],
                 [0.918975, 0.919001, 0.918973, 0.919007, 0.918999],
                 [2.11104e07, 6.859e07, 1.4896e08, 2.25441e09, 3.28398e09],
@@ -233,7 +248,9 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
             ],
         )
         # use higher tolerance because MKZ curve fitting has room for small errors
-        self.assertTrue(np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0))
+        self.assertTrue(
+            np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0)
+        )
 
     def test_hh_param_from_curves__case_2(self):
         # Case 2: Fit manually specified ("real-world") G/Gmax curves
@@ -251,5 +268,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Test_Helper_HH_Calibration)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(
+        Test_Helper_HH_Calibration
+    )
     unittest.TextTestRunner(verbosity=2).run(SUITE)

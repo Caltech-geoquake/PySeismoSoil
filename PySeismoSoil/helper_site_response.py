@@ -1,8 +1,7 @@
-import numpy as np
-import scipy.fftpack
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
+import numpy as np
+import scipy.fftpack
 from numba import jit
 
 from PySeismoSoil import helper_generic as hlp
@@ -165,7 +164,9 @@ def query_Vs_at_depth(vs_profile, depth):
         raise ValueError('Please provide non-negative `depth` values.')
 
     hlp.check_two_column_format(
-        vs_profile, at_least_two_columns=True, name='`vs_profile`',
+        vs_profile,
+        at_least_two_columns=True,
+        name='`vs_profile`',
     )
 
     # ------------------ Start querying ----------------------------------------
@@ -526,16 +527,76 @@ def response_spectra(
     PSA = np.zeros(len_wd)
 
     # A, B, C, and D in Table 5.2.1, page 169
-    A = np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt)+np.cos(wd*dt))  # noqa: E226,E501
-    B = np.exp(-xi*wn*dt)*(1./wd*np.sin(wd*dt))  # noqa: E226,E501
-    C = 1./wn**2.*(2.*xi/wn/dt + np.exp(-xi*wn*dt)*(((1.-2.*xi**2.)/wd/dt-xi/np.sqrt(1.-xi**2.))*np.sin(wd*dt) - (1+2.*xi/wn/dt)*np.cos(wd*dt)))  # noqa: E226,E501,LN001
-    D = 1./wn**2.*(1 - 2.*xi/wn/dt + np.exp(-xi*wn*dt)*((2.*xi**2.-1)/wd/dt*np.sin(wd*dt)+2.*xi/wn/dt*np.cos(wd*dt)))  # noqa: E226,E501,LN001
+    A = np.exp(-xi * wn * dt) * (
+        xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt)
+    )  # noqa: E226,E501
+    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))  # noqa: E226,E501
+    C = (
+        1.0
+        / wn**2.0
+        * (
+            2.0 * xi / wn / dt
+            + np.exp(-xi * wn * dt)
+            * (
+                (
+                    (1.0 - 2.0 * xi**2.0) / wd / dt
+                    - xi / np.sqrt(1.0 - xi**2.0)
+                )
+                * np.sin(wd * dt)
+                - (1 + 2.0 * xi / wn / dt) * np.cos(wd * dt)
+            )
+        )
+    )  # noqa: E226,E501
+    D = (
+        1.0
+        / wn**2.0
+        * (
+            1
+            - 2.0 * xi / wn / dt
+            + np.exp(-xi * wn * dt)
+            * (
+                (2.0 * xi**2.0 - 1) / wd / dt * np.sin(wd * dt)
+                + 2.0 * xi / wn / dt * np.cos(wd * dt)
+            )
+        )
+    )  # noqa: E226,E501
 
     # A', B', C', and D' in Table 5.2.1, page 169
-    A_ = -np.exp(-xi*wn*dt)*(wn/np.sqrt(1.-xi**2.)*np.sin(wd*dt))  # noqa: E226,E501
-    B_ = np.exp(-xi*wn*dt)*(np.cos(wd*dt) - xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt))  # noqa: E226,E501
-    C_ = 1./wn**2.*(-1./dt + np.exp(-xi*wn*dt)*((wn/np.sqrt(1.-xi**2.)+xi/dt/np.sqrt(1.-xi**2.))*np.sin(wd*dt)+1./dt*np.cos(wd*dt)))  # noqa: E226,E501,LN001
-    D_ = 1./wn**2./dt*(1 - np.exp(-xi*wn*dt)*(xi/np.sqrt(1.-xi**2.)*np.sin(wd*dt) + np.cos(wd*dt)))  # noqa: E226,E501,LN00
+    A_ = -np.exp(-xi * wn * dt) * (
+        wn / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
+    )  # noqa: E226,E501
+    B_ = np.exp(-xi * wn * dt) * (
+        np.cos(wd * dt) - xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
+    )  # noqa: E226,E501
+    C_ = (
+        1.0
+        / wn**2.0
+        * (
+            -1.0 / dt
+            + np.exp(-xi * wn * dt)
+            * (
+                (
+                    wn / np.sqrt(1.0 - xi**2.0)
+                    + xi / dt / np.sqrt(1.0 - xi**2.0)
+                )
+                * np.sin(wd * dt)
+                + 1.0 / dt * np.cos(wd * dt)
+            )
+        )
+    )  # noqa: E226,E501
+    D_ = (
+        1.0
+        / wn**2.0
+        / dt
+        * (
+            1
+            - np.exp(-xi * wn * dt)
+            * (
+                xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
+                + np.cos(wd * dt)
+            )
+        )
+    )  # noqa: E226,E501
 
     if parallel:
         p = mp.Pool(n_cores)
@@ -562,7 +623,9 @@ def response_spectra(
         result = []
         for i in range(len_wd):
             result.append(
-                _time_stepping((i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a)),
+                _time_stepping(
+                    (i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a)
+                ),
             )
 
     utdd_max, ud_max, u_max, PSA, PSV = zip(*result)  # transpose list of tuples
@@ -612,8 +675,18 @@ def _time_stepping(para):
     u_ = np.zeros(len_a)
     ud_ = np.zeros(len_a)
     for j in range(len_a - 1):
-        u_[j+1] = u_[j]*A[i] + ud_[j]*B[i] + (-1)*a[j]*C[i] + (-1)*a[j+1]*D[i]  # noqa: E226
-        ud_[j+1] = u_[j]*A_[i] + ud_[j]*B_[i] + (-1)*a[j]*C_[i] + (-1)*a[j+1]*D_[i]  # noqa: E226
+        u_[j + 1] = (
+            u_[j] * A[i]
+            + ud_[j] * B[i]
+            + (-1) * a[j] * C[i]
+            + (-1) * a[j + 1] * D[i]
+        )  # noqa: E226
+        ud_[j + 1] = (
+            u_[j] * A_[i]
+            + ud_[j] * B_[i]
+            + (-1) * a[j] * C_[i]
+            + (-1) * a[j + 1] * D_[i]
+        )  # noqa: E226
 
     udd_ = -(2.0 * wn[i] * xi * ud_ + wn[i] ** 2.0 * u_ + a)
     utdd_ = udd_ + a
@@ -812,7 +885,7 @@ def calc_Vs30(profile, option_for_profile_shallower_than_30m=1, verbose=False):
     Vs30 = calc_VsZ(
         profile,
         30.0,
-        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,
+        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,  # noqa: LN001
         verbose=verbose,
     )
     return Vs30
@@ -902,8 +975,12 @@ def plot_Vs_profile(
         ax.set_title(title)
 
     if int(mpl.__version__[0]) <= 1:  # if matplotlib version is earlier than 2.0.0
-        ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(nbins=7, integer=True))
-        ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(nbins=10, integer=True))
+        ax.xaxis.set_major_locator(
+            mpl.ticker.MaxNLocator(nbins=7, integer=True)
+        )
+        ax.yaxis.set_major_locator(
+            mpl.ticker.MaxNLocator(nbins=10, integer=True)
+        )
     else:  # matplotlib version is 2.0.0 or newer
         pass  # because 2.0.0+ can automatically produce nicely spaced ticks
 
@@ -1067,7 +1144,9 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
     h = np.zeros(len(depth_array_starting_from_0))
 
     for i in range(len(h) - 1):
-        h[i] = depth_array_starting_from_0[i + 1] - depth_array_starting_from_0[i]
+        h[i] = (
+            depth_array_starting_from_0[i + 1] - depth_array_starting_from_0[i]
+        )
 
     if include_halfspace:
         return h
@@ -1134,10 +1213,14 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
     vs_star = np.multiply(Vs, np.sqrt(1 + 2 * 1j * xi))
     alpha_star = np.zeros(h_length - 1, dtype=np.complex_)
     for k in range(h_length - 1):
-        alpha_star[k] = float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
+        alpha_star[k] = (
+            float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
+        )
 
     TF_size = int(np.floor_divide(fmax, freq_resolution))  # length of transfer function
-    freq_array = np.linspace(freq_resolution, freq_resolution * TF_size, num=TF_size)
+    freq_array = np.linspace(
+        freq_resolution, freq_resolution * TF_size, num=TF_size
+    )
 
     TF_ro = np.ones(TF_size, dtype=np.complex_)
     TF_in = np.ones(TF_size, dtype=np.complex_)
@@ -1155,10 +1238,18 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
         E[0, 0] = 1
         E[1, 1] = 1
         for j in j_index:
-            D[0, 0, j] = 0.5 * ((1 + alpha_star[j]) * np.exp(1j * k_star[j] * h[j]))
-            D[0, 1, j] = 0.5 * ((1 - alpha_star[j]) * np.exp(-1j * k_star[j] * h[j]))
-            D[1, 0, j] = 0.5 * ((1 - alpha_star[j]) * np.exp(1j * k_star[j] * h[j]))
-            D[1, 1, j] = 0.5 * ((1 + alpha_star[j]) * np.exp(-1j * k_star[j] * h[j]))
+            D[0, 0, j] = 0.5 * (
+                (1 + alpha_star[j]) * np.exp(1j * k_star[j] * h[j])
+            )
+            D[0, 1, j] = 0.5 * (
+                (1 - alpha_star[j]) * np.exp(-1j * k_star[j] * h[j])
+            )
+            D[1, 0, j] = 0.5 * (
+                (1 - alpha_star[j]) * np.exp(1j * k_star[j] * h[j])
+            )
+            D[1, 1, j] = 0.5 * (
+                (1 + alpha_star[j]) * np.exp(-1j * k_star[j] * h[j])
+            )
             E = np.dot(E, D[:, :, j])
 
         TF_ro[i] = 1.0 / (E[0, 0] + E[0, 1])
@@ -1358,7 +1449,7 @@ def amplify_motion(
         i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
         input motion at all.
     """
-    assert type(transfer_function_single_sided) == tuple
+    assert isinstance(transfer_function_single_sided, tuple)
     assert len(transfer_function_single_sided) == 2
 
     f_array, tf_ss = transfer_function_single_sided
@@ -1554,7 +1645,9 @@ def linear_site_resp(
     factor = 1.05  # to ensure f_max of TF >= f_max inferred from `input_motion`
     fmax_ = fmax * factor
     df_ = df * factor  # to ensure consistent length of the output freq array
-    tmp = linear_tf(soil_profile, show_fig=False, fmax=fmax_, freq_resolution=df_)
+    tmp = linear_tf(
+        soil_profile, show_fig=False, fmax=fmax_, freq_resolution=df_
+    )
     if boundary == 'elastic':
         f_array, tf_ss = tmp[0], tmp[2]
     elif boundary == 'rigid':
@@ -1655,7 +1748,9 @@ def _plot_site_amp(
     assert np.allclose(t_in, t_out, atol=1e-4)
     time = t_in
 
-    fig, _ = hlp._process_fig_ax_objects(fig, ax=None, figsize=figsize, dpi=dpi)
+    fig, _ = hlp._process_fig_ax_objects(
+        fig, ax=None, figsize=figsize, dpi=dpi
+    )
     ax = []
 
     blue = '#3182bd'
@@ -1669,7 +1764,9 @@ def _plot_site_amp(
         plt.plot(time, accel_in, c=red, label=input_accel_label, alpha=alpha)
     else:
         plt.plot(time, accel_in, c=red, label=input_accel_label, alpha=alpha_)
-        plt.plot(time, accel_out, c=blue, label=output_accel_label, alpha=alpha_)
+        plt.plot(
+            time, accel_out, c=blue, label=output_accel_label, alpha=alpha_
+        )
 
     plt.grid(ls=':')
     plt.legend(loc='upper right')
@@ -1683,7 +1780,9 @@ def _plot_site_amp(
         ax_ = plt.subplot2grid((2, 3), (1, 0), fig=fig)
         plt.semilogx(freq, amplif_func_1col, c=[0.1] * 3, label='Unsmoothed')
         if amplif_func_1col_smoothed is not None:
-            plt.semilogx(freq, amplif_func_1col_smoothed, c='orange', label='Smoothed')
+            plt.semilogx(
+                freq, amplif_func_1col_smoothed, c='orange', label='Smoothed'
+            )
 
         plt.semilogx(freq, np.ones(len(freq)), '--', c='gray')
         if amplif_func_1col_smoothed is not None:
@@ -1978,7 +2077,9 @@ def calc_damping_from_param(param, strain_in_unit_1, func_stress):
     hlp.assert_1D_numpy_array(strain_in_unit_1)
 
     Tau = func_stress(strain_in_unit_1, **param)
-    damping = calc_damping_from_stress_strain(strain_in_unit_1, Tau, param['Gmax'])
+    damping = calc_damping_from_stress_strain(
+        strain_in_unit_1, Tau, param['Gmax']
+    )
 
     return damping
 
@@ -2016,7 +2117,9 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
         area[i] = area[i - 1] + 0.5 * (
             strain[i - 1] * G_Gmax[i - 1] + strain[i] * G_Gmax[i]
         ) * (strain[i] - strain[i - 1])
-        damping[i] = 2.0 / np.pi * (2 * area[i] / G_Gmax[i] / strain[i] ** 2 - 1)
+        damping[i] = (
+            2.0 / np.pi * (2 * area[i] / G_Gmax[i] / strain[i] ** 2 - 1)
+        )
 
     damping = np.maximum(damping, 0.0)  # make sure all damping values are >= 0
     return damping
@@ -2046,7 +2149,9 @@ def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
     hlp.assert_1D_numpy_array(stress)
 
     if strain_in_unit_1[0] == 0:
-        raise ValueError('`strain_in_unit_1` should start with a non-zero value.')
+        raise ValueError(
+            '`strain_in_unit_1` should start with a non-zero value.'
+        )
 
     if Gmax is None:
         Gmax = stress[0] / strain_in_unit_1[0]
@@ -2472,9 +2577,9 @@ def ga_optimization(
     else:
         import random
 
-        import deap.creator
-        import deap.base
         import deap.algorithms
+        import deap.base
+        import deap.creator
         import deap.tools
 
         def loss_function__(param):  # because DEAP requires (loss, ) as output
@@ -2484,13 +2589,18 @@ def ga_optimization(
             try:
                 return [random.uniform(a, b) for a, b in zip(low, up)]
             except TypeError:
-                return [random.uniform(a, b) for a, b in zip([low] * size, [up] * size)]
+                return [
+                    random.uniform(a, b)
+                    for a, b in zip([low] * size, [up] * size)
+                ]
 
         LB = lower_bound
         UB = upper_bound
 
         deap.creator.create('FitnessMin', deap.base.Fitness, weights=(-1.0,))
-        deap.creator.create('Individual', list, fitness=deap.creator.FitnessMin)
+        deap.creator.create(
+            'Individual', list, fitness=deap.creator.FitnessMin
+        )
 
         toolbox = deap.base.Toolbox()
 
@@ -2501,7 +2611,9 @@ def ga_optimization(
             deap.creator.Individual,
             toolbox.attr_float,
         )
-        toolbox.register('population', deap.tools.initRepeat, list, toolbox.individual)
+        toolbox.register(
+            'population', deap.tools.initRepeat, list, toolbox.individual
+        )
         toolbox.register('evaluate', loss_function__)
         toolbox.register(
             'mate',

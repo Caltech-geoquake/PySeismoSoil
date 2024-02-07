@@ -1,14 +1,13 @@
-import os
 import itertools
 import multiprocessing as mp
-
-from PySeismoSoil.class_simulation import (
-    Linear_Simulation,
-    Equiv_Linear_Simulation,
-    Nonlinear_Simulation,
-)
+import os
 
 from PySeismoSoil import helper_generic as hlp
+from PySeismoSoil.class_simulation import (
+    Equiv_Linear_Simulation,
+    Linear_Simulation,
+    Nonlinear_Simulation,
+)
 
 
 class Batch_Simulation:
@@ -37,7 +36,9 @@ class Batch_Simulation:
             raise TypeError('`list_of_simulations` should be a list.')
 
         if len(list_of_simulations) == 0:
-            raise ValueError('`list_of_simulations` should have at least one element.')
+            raise ValueError(
+                '`list_of_simulations` should have at least one element.'
+            )
 
         sim_0 = list_of_simulations[0]
         if not isinstance(
@@ -61,7 +62,9 @@ class Batch_Simulation:
         self.n_simulations = n_simulations
         self.sim_type = type(sim_0)
 
-    def run(self, parallel=False, n_cores=1, base_output_dir=None, options=None):
+    def run(
+            self, parallel=False, n_cores=1, base_output_dir=None, options=None
+    ):
         """
         Run simulations in batch.
 

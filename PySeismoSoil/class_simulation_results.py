@@ -1,14 +1,14 @@
 import os
-import numpy as np
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-from PySeismoSoil.class_ground_motion import Ground_Motion
-from PySeismoSoil.class_Vs_profile import Vs_Profile
-from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
+import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
+from PySeismoSoil.class_ground_motion import Ground_Motion
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 class Simulation_Results:
@@ -80,17 +80,23 @@ class Simulation_Results:
             raise TypeError('`input_accel` needs to be of Ground_Motion type.')
 
         if not isinstance(accel_on_surface, Ground_Motion):
-            raise TypeError('`accel_on_surface` needs to be of Ground_Motion type.')
+            raise TypeError(
+                '`accel_on_surface` needs to be of Ground_Motion type.'
+            )
 
         if not isinstance(rediscretized_profile, Vs_Profile):
-            raise TypeError('`rediscretized_profile` needs to be of Vs_Profile type.')
+            raise TypeError(
+                '`rediscretized_profile` needs to be of Vs_Profile type.'
+            )
 
         if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
             raise TypeError(
                 '`trans_func` needs to be either None or of Frequency_Spectrum type.',
             )
 
-        if not isinstance(trans_func_smoothed, (Frequency_Spectrum, type(None))):
+        if not isinstance(
+            trans_func_smoothed, (Frequency_Spectrum, type(None))
+        ):
             raise TypeError(
                 '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.',
             )
@@ -99,23 +105,33 @@ class Simulation_Results:
         n_time_pts = accel_on_surface.npts
 
         if time_history_accel is not None:
-            hlp.assert_2D_numpy_array(time_history_accel, '`time_history_accel`')
+            hlp.assert_2D_numpy_array(
+                time_history_accel, '`time_history_accel`'
+            )
             assert time_history_accel.shape == (n_time_pts, n_layer + 1)
 
         if time_history_veloc is not None:
-            hlp.assert_2D_numpy_array(time_history_veloc, '`time_history_veloc`')
+            hlp.assert_2D_numpy_array(
+                time_history_veloc, '`time_history_veloc`'
+            )
             assert time_history_veloc.shape == (n_time_pts, n_layer + 1)
 
         if time_history_displ is not None:
-            hlp.assert_2D_numpy_array(time_history_displ, '`time_history_displ`')
+            hlp.assert_2D_numpy_array(
+                time_history_displ, '`time_history_displ`'
+            )
             assert time_history_displ.shape == (n_time_pts, n_layer + 1)
 
         if time_history_stress is not None:
-            hlp.assert_2D_numpy_array(time_history_stress, '`time_history_stress`')
+            hlp.assert_2D_numpy_array(
+                time_history_stress, '`time_history_stress`'
+            )
             assert time_history_stress.shape == (n_time_pts, n_layer)
 
         if time_history_strain is not None:
-            hlp.assert_2D_numpy_array(time_history_strain, '`time_history_strain`')
+            hlp.assert_2D_numpy_array(
+                time_history_strain, '`time_history_strain`'
+            )
             assert time_history_strain.shape == (n_time_pts, n_layer)
 
         if max_a_v_d is not None and max_strain_stress is not None:
@@ -217,7 +233,9 @@ class Simulation_Results:
             fig2 = plt.figure(figsize=(8.5, 5.5), dpi=dpi)
 
             ax21 = plt.subplot(151)
-            plt.plot(self.max_a_v_d[:, 1], self.max_a_v_d[:, 0], ls='-', marker='.')
+            plt.plot(
+                self.max_a_v_d[:, 1], self.max_a_v_d[:, 0], ls='-', marker='.'
+            )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. accel. [m/s/s]')
             plt.ylabel('Depth [m]')
@@ -228,7 +246,10 @@ class Simulation_Results:
 
             ax22 = plt.subplot(152)
             plt.plot(
-                self.max_a_v_d[:, 2] * 100, self.max_a_v_d[:, 0], ls='-', marker='.',
+                self.max_a_v_d[:, 2] * 100,
+                self.max_a_v_d[:, 0],
+                ls='-',
+                marker='.',
             )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. veloc. [cm/s]')
@@ -240,7 +261,10 @@ class Simulation_Results:
 
             ax23 = plt.subplot(153)
             plt.plot(
-                self.max_a_v_d[:, 3] * 100, self.max_a_v_d[:, 0], ls='-', marker='.',
+                self.max_a_v_d[:, 3] * 100,
+                self.max_a_v_d[:, 0],
+                ls='-',
+                marker='.',
             )
             plt.ylim(max_layer_boundary_depth, 0)
             plt.xlabel('Max. displ. [cm]')
@@ -309,7 +333,9 @@ class Simulation_Results:
 
         return figs, axes
 
-    def to_txt(self, save_full_time_history=True, verbose=False, output_dir=None):
+    def to_txt(
+            self, save_full_time_history=True, verbose=False, output_dir=None
+    ):
         """
         Save simulation results (output time history, transfer function, the
         profile of maximum acceleration/velocity/displacement/stress/train, etc.)
@@ -338,14 +364,24 @@ class Simulation_Results:
         motion_name = self.motion_name
 
         fn_TF_raw = os.path.join(od, '%s_nonlinear_TF_raw.txt' % motion_name)
-        fn_TF_smoothed = os.path.join(od, '%s_nonlinear_TF_smoothed.txt' % motion_name)
-        fn_surface_accel = os.path.join(od, '%s_accel_on_surface.txt' % motion_name)
-        fn_new_profile = os.path.join(od, '%s_re-discretized_profile.txt' % motion_name)
+        fn_TF_smoothed = os.path.join(
+            od, '%s_nonlinear_TF_smoothed.txt' % motion_name
+        )
+        fn_surface_accel = os.path.join(
+            od, '%s_accel_on_surface.txt' % motion_name
+        )
+        fn_new_profile = os.path.join(
+            od, '%s_re-discretized_profile.txt' % motion_name
+        )
         fn_out_a = os.path.join(od, '%s_time_history_accel.txt' % motion_name)
         fn_out_v = os.path.join(od, '%s_time_history_veloc.txt' % motion_name)
         fn_out_d = os.path.join(od, '%s_time_history_displ.txt' % motion_name)
-        fn_out_gamma = os.path.join(od, '%s_time_history_strain.txt' % motion_name)
-        fn_out_tau = os.path.join(od, '%s_time_history_stress.txt' % motion_name)
+        fn_out_gamma = os.path.join(
+            od, '%s_time_history_strain.txt' % motion_name
+        )
+        fn_out_tau = os.path.join(
+            od, '%s_time_history_stress.txt' % motion_name
+        )
         fn_max_avd = os.path.join(od, '%s_max_a_v_d.txt' % motion_name)
         fn_max_gt = os.path.join(od, '%s_max_gamma_tau.txt' % motion_name)
 
@@ -353,7 +389,9 @@ class Simulation_Results:
 
         np.savetxt(fn_surface_accel, self.accel_on_surface.accel, **fmt_dict)
 
-        np.savetxt(fn_new_profile, self.rediscretized_profile.vs_profile, **fmt_dict)
+        np.savetxt(
+            fn_new_profile, self.rediscretized_profile.vs_profile, **fmt_dict
+        )
         if self.max_a_v_d is not None:
             np.savetxt(fn_max_avd, self.max_a_v_d, **fmt_dict)
 
@@ -381,7 +419,9 @@ class Simulation_Results:
 
         if self.trans_func_smoothed is not None:
             np.savetxt(
-                fn_TF_smoothed, self.trans_func_smoothed.amplitude_2col, **fmt_dict,
+                fn_TF_smoothed,
+                self.trans_func_smoothed.amplitude_2col,
+                **fmt_dict,
             )
 
         if verbose:

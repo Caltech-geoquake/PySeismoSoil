@@ -1,13 +1,15 @@
-import numpy as np
-import scipy.signal
-import scipy.fftpack
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.fftpack
+import scipy.signal
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
 
-def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+def lowpass(
+        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
+):
     """
     IIR low pass filter with zero phase distortion.
 
@@ -42,7 +44,9 @@ def lowpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=Non
     )
 
 
-def highpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+def highpass(
+        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
+):
     """
     IIR high pass filter with zero phase distortion.
 
@@ -77,7 +81,9 @@ def highpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
     )
 
 
-def bandpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+def bandpass(
+        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
+):
     """
     IIR band pass filter with zero phase distortion.
 
@@ -112,7 +118,9 @@ def bandpass(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=No
     )
 
 
-def bandstop(orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None):
+def bandstop(
+        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
+):
     """
     IIR band stop filter with zero phase distorsion.
 
@@ -158,17 +166,23 @@ def _filter_kernel(
     if filter_type in ['bandpass', 'bandstop']:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
-            raise TypeError('`cutoff_freq` must be a list, tuple, or numpy array.')
+            raise TypeError(
+                '`cutoff_freq` must be a list, tuple, or numpy array.'
+            )
 
         if len(cutoff_freq) != 2:
             raise ValueError('`cutoff_freq` must have length 2.')
 
         if cutoff_freq[1] <= cutoff_freq[0]:
-            raise ValueError('`cutoff_freq` must be two values from smaller to larger.')
+            raise ValueError(
+                '`cutoff_freq` must be two values from smaller to larger.'
+            )
 
     elif filter_type in ['highpass', 'lowpass']:
         if not isinstance(cutoff_freq, (float, int, np.number)):
-            raise TypeError('`cutoff_freq` must be float, int, or numpy.number.')
+            raise TypeError(
+                '`cutoff_freq` must be float, int, or numpy.number.'
+            )
     else:
         raise ValueError(
             "`filter_type` must be in {'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
@@ -255,7 +269,10 @@ def _filter_kernel(
         freq_orig, spec_orig = fourier_transform(orig_signal).T
         plt.plot(freq_orig, spec_orig)
         ylim = ax.get_ylim()
-        if isinstance(cutoff_freq, (list, np.ndarray)) and len(cutoff_freq) >= 1:
+        if (
+            isinstance(cutoff_freq, (list, np.ndarray))
+            and len(cutoff_freq) >= 1
+        ):
             plt.plot([cutoff_freq[0]] * 2, ylim, c='orange')
             plt.plot([cutoff_freq[1]] * 2, ylim, c='orange')
         else:
@@ -272,7 +289,10 @@ def _filter_kernel(
         freq, spec = fourier_transform(np.column_stack((time, y))).T
         plt.plot(freq, spec)
         ylim = ax.get_ylim()
-        if isinstance(cutoff_freq, (list, np.ndarray)) and len(cutoff_freq) >= 1:
+        if (
+            isinstance(cutoff_freq, (list, np.ndarray))
+            and len(cutoff_freq) >= 1
+        ):
             plt.plot([cutoff_freq[0]] * 2, ylim, c='orange')
             plt.plot([cutoff_freq[1]] * 2, ylim, c='orange')
         else:
@@ -623,12 +643,16 @@ def calc_transfer_function(
     dt_in = input_signal[1, 0] - input_signal[0, 0]
     dt_out = output_signal[1, 0] - output_signal[0, 0]
     if not np.allclose(dt_in, dt_out, atol=1e-6):
-        raise ValueError('Time intervals of the input and output should match.')
+        raise ValueError(
+            'Time intervals of the input and output should match.'
+        )
 
     N_in = input_signal.shape[0]
     N_out = output_signal.shape[0]
     if N_in != N_out:
-        raise ValueError('Length of the input and output signals should match.')
+        raise ValueError(
+            'Length of the input and output signals should match.'
+        )
 
     result_in = fourier_transform(input_signal, real_val=False)
     result_out = fourier_transform(output_signal, real_val=False)
