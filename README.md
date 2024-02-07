@@ -30,7 +30,12 @@ If you already have an older version installed and want to upgrade to the newest
 
 ## Supported Python versions
 
-PySeismoSoil currently supports Python versions from 3.7 to 3.11.
+PySeismoSoil currently support these Python versions:
+
+- 3.8
+- 3.9
+- 3.10
+- 3.11
 
 (Python 3.12 is not fully supported yet.)
 
