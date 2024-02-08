@@ -457,7 +457,7 @@ def response_spectra(
         parallel=False,
         n_cores=None,
         subsample_interval=1,
-):
+) -> tuple[np.ndarray, ...]:
     """
     Single-degree-of-freedom elastic response spectra, using the "exact"
     solution to the equation of motion (Section 5.2, Dynamics of Structures,
@@ -494,7 +494,7 @@ def response_spectra(
 
     Returns
     -------
-    (Tn, SA, PSA, SV, PSV, SD, fn) : tuple of 1D numpy.ndarray
+    (Tn, SA, PSA, SV, PSV, SD, fn) : tuple[np.ndarray, ...]
         Periods, spectral acceleration, pseudo spectral acceleration, spectral
         velocity, pseudo spectral velocity, spectral displacement, and
         frequencies, respectively. Units: SI.
