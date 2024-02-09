@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Literal
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
@@ -8,14 +12,18 @@ from PySeismoSoil import helper_site_response as sr
 
 
 def lowpass(
-        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
-):
+        orig_signal: np.ndarray,
+        cutoff_freq: float,
+        show_fig: bool = False,
+        filter_order: int = 4,
+        padlen: int | None = None,
+) -> np.ndarray:
     """
     IIR low pass filter with zero phase distortion.
 
     Parameters
     ----------
-    orig_signal : numpy.ndarray
+    orig_signal : np.ndarray
         The signal to be filtered (2 columns).
     cutoff_freq : float
         Cut-off frequency, in Hz
@@ -23,14 +31,14 @@ def lowpass(
         Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
-    padlen : int
+    padlen : int | None
         Pad length (the number of elements by which to extend x at both ends
         of axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
-    filtered : numpy.ndarray
+    filtered : np.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
     """
@@ -45,14 +53,18 @@ def lowpass(
 
 
 def highpass(
-        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
-):
+        orig_signal: np.ndarray,
+        cutoff_freq: float,
+        show_fig: bool = False,
+        filter_order: int = 4,
+        padlen: int | None = None,
+) -> np.ndarray:
     """
     IIR high pass filter with zero phase distortion.
 
     Parameters
     ----------
-    orig_signal : numpy.ndarray
+    orig_signal : np.ndarray
         The signal to be filtered (2 columns)
     cutoff_freq : float
         Cut-off frequency, in Hz
@@ -60,14 +72,14 @@ def highpass(
         Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
-    padlen : int
+    padlen : int | None
         Pad length (the number of elements by which to extend x at both ends
         of axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
-    filtered : numpy.ndarray
+    filtered : np.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
     """
@@ -82,29 +94,33 @@ def highpass(
 
 
 def bandpass(
-        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
-):
+        orig_signal: np.ndarray,
+        cutoff_freq: tuple[float, float],
+        show_fig: bool = False,
+        filter_order: int = 4,
+        padlen: int | None = None,
+) -> np.ndarray:
     """
     IIR band pass filter with zero phase distortion.
 
     Parameters
     ----------
-    orig_signal : numpy.ndarray
+    orig_signal : np.ndarray
         The signal to be filtered (2 columns)
-    cutoff_freq : [float, float]
+    cutoff_freq : tuple[float, float]
         Cut-off frequencies, from low to high, in Hz
     show_fig : bool
         Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
-    padlen : int
+    padlen : int | None
         Pad length (the number of elements by which to extend x at both ends
         of axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
-    filtered : numpy.ndarray
+    filtered : np.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
     """
@@ -119,29 +135,33 @@ def bandpass(
 
 
 def bandstop(
-        orig_signal, cutoff_freq, show_fig=False, filter_order=4, padlen=None
-):
+        orig_signal: np.ndarray,
+        cutoff_freq: tuple[float, float],
+        show_fig: bool = False,
+        filter_order: int = 4,
+        padlen: int | None = None,
+) -> np.ndarray:
     """
     IIR band stop filter with zero phase distorsion.
 
     Parameters
     ----------
-    orig_signal : numpy.ndarray
+    orig_signal : np.ndarray
         The signal to be filtered (2 columns)
-    cutoff_freq : [float, float]
+    cutoff_freq : tuple[float, float]
         Cut-off frequencies, from low to high, in Hz
     show_fig : bool
         Whether to show a figure of before/after spectra
     filter_order : int
         Filter order.
-    padlen : int
+    padlen : int | None
         Pad length (the number of elements by which to extend x at both ends
         of axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
     -------
-    filtered : numpy.ndarray
+    filtered : np.ndarray
         Filtered signal, in two columns, where the 0th is the time and the 1st
         is the signal value.
     """
@@ -156,13 +176,13 @@ def bandstop(
 
 
 def _filter_kernel(
-        orig_signal,
-        cutoff_freq,
-        filter_type,
-        show_fig=False,
-        filter_order=4,
-        padlen=None,
-):
+        orig_signal: np.ndarray,
+        cutoff_freq: float,
+        filter_type: str,
+        show_fig: bool = False,
+        filter_order: int = 4,
+        padlen: int | None = None,
+) -> np.ndarray:
     if filter_type in ['bandpass', 'bandstop']:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
@@ -310,13 +330,17 @@ def _filter_kernel(
     return np.column_stack((time, y))
 
 
-def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
+def baseline(
+        orig_signal: np.ndarray,
+        show_fig: bool = False,
+        cutoff_freq: float = 0.20,
+) -> np.ndarray:
     """
     Baseline correction of a time-domain signal using high pass filtering.
 
     Parameters
     ----------
-    orig_signal : numpy.ndarray
+    orig_signal : np.ndarray
         Original signal. Must have two columns.
     show_fig : bool
         Whether to show figures comparing before and after.
@@ -326,7 +350,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
 
     Returns
     -------
-    corrected : numpy.ndarray
+    corrected : np.ndarray
         The corrected signal.
     """
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
@@ -464,7 +488,7 @@ def baseline(orig_signal, show_fig=False, cutoff_freq=0.20):
     return a_new2
 
 
-def _remove_linear_trend(signal):
+def _remove_linear_trend(signal: np.ndarray) -> np.ndarray:
     t = signal[:, 0]
     x = signal[:, 1]
 
@@ -475,18 +499,18 @@ def _remove_linear_trend(signal):
 
 
 def fourier_transform(
-        signal_2_col,
+        signal_2_col: np.ndarray,
         *,
-        real_val=True,
-        double_sided=False,
-        show_fig=False,
-):
+        real_val: bool = True,
+        double_sided: bool = False,
+        show_fig: bool = False,
+) -> np.ndarray:
     """
     Fourier transform using FFT.
 
     Parameters
     ----------
-    signal_2_col : numpy.ndarray
+    signal_2_col : np.ndarray
         Signal in two columns (time array and signal array).
     real_val : bool
         Whether to return the amplitude (or "magnitude") of the complex numbers.
@@ -498,7 +522,7 @@ def fourier_transform(
 
     Returns
     -------
-    spectra : numpy.ndarray
+    spectra : np.ndarray
         A two-column array containing [freq_array, spectrum].
     """
     hlp.check_two_column_format(signal_2_col, '`signal_2_col`')
@@ -555,20 +579,20 @@ def fourier_transform(
     return np.column_stack((freq_array, spectrum))
 
 
-def taper_Tukey(input_signal, width=0.05):
+def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     """
     Taper a time-domain signal on both ends with a Tukey window
 
     Parameters
     ----------
-    input_signal : numpy.ndarray
+    input_signal : np.ndarray
         Signal to be tapered. Can be 1D numpy array or 2D array with 2 columns.
     width : float
         The width of the Tukey window.
 
     Returns
     -------
-    output : numpy.ndarray
+    output : np.ndarray
         The tapered signal.
 
     Raises
@@ -598,12 +622,12 @@ def taper_Tukey(input_signal, width=0.05):
 
 
 def calc_transfer_function(
-        input_signal,
-        output_signal,
+        input_signal: np.ndarray,
+        output_signal: np.ndarray,
         *,
-        amplitude_only=True,
-        smooth_signal=False,
-):
+        amplitude_only: bool = True,
+        smooth_signal: bool = False,
+) -> np.ndarray:
     """
     Calculate transfer function between the output and input time-domain
     signals. The two signals need to have the same time interval and same
@@ -611,9 +635,9 @@ def calc_transfer_function(
 
     Parameters
     ----------
-    input_signal : numpy.ndarray
+    input_signal : np.ndarray
         Input signal in the time domain. Needs to have two columns.
-    output_signal : numpy.ndarray
+    output_signal : np.ndarray
         Output signal in the time domain. Needs to have two columns.
     amplitude_only : bool
         Whether to keep only the amplitude of the transfer function.
@@ -623,7 +647,7 @@ def calc_transfer_function(
 
     Returns
     -------
-    trans_func_2col : numpy.ndarray
+    trans_func_2col : np.ndarray
         The complex-valued or real-valued transfer function with two columns
         (frequency and ratio).
 
@@ -690,33 +714,42 @@ def calc_transfer_function(
 
 
 def log_smooth(
-        signal,
-        win_len=15,
-        window='hanning',
-        lin_space=True,
-        fmin=None,
-        fmax=None,
-        n_pts=None,
-        fix_ends=True,
-        beta1=0.9,
-        beta2=0.9,
-):
+        signal: np.ndarray,
+        win_len: int = 15,
+        window: Literal[
+            'flat',
+            'hanning',
+            'hamming',
+            'bartlett',
+            'blackman',
+        ] = 'hanning',
+        lin_space: bool = True,
+        fmin: float | None = None,
+        fmax: float | None = None,
+        n_pts: int = None,
+        fix_ends: bool = True,
+        beta1: float = 0.9,
+        beta2: float = 0.9,
+) -> np.ndarray:
     """
     Smooth a frequency spectrum with constant window size in logarithmic space.
 
     Parameters
     ----------
-    signal : numpy.ndarray
+    signal : np.ndarray
         The signal to be smoothed. Must be a 1D numpy array.
     win_len : int
         The length of the convolution window.
-    window : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}
+    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
         The name of the window.
     lin_space : bool
         Whether the points of the signal is uniformly spaced linearly.
         If ``False``, the signal is treated as uniformaly spaced logarithmically.
-    fmin, fmax : float
-        Minimum and maximum frequencies (in Hz) that the signal is spaced within.
+    fmin : float | None
+        Minimum frequency (in Hz) that the signal is spaced within.
+        Only effective when ``lin_space`` is ``True``.
+    fmax : float | None
+        Maximum frequency (in Hz) that the signal is spaced within.
         Only effective when ``lin_space`` is ``True``.
     n_pts : int
         The number of points of the logarithmically interpolated the signal.
@@ -735,7 +768,7 @@ def log_smooth(
 
     Returns
     -------
-    smoothed_signal : numpy.ndarray
+    smoothed_signal : np.ndarray
         The smoothed signal which has the same dimension as the original signal.
 
     Raises
@@ -793,7 +826,17 @@ def log_smooth(
     return smoothed_signal
 
 
-def lin_smooth(x, window_len=15, window='hanning'):
+def lin_smooth(
+        x: np.ndarray,
+        window_len: int = 15,
+        window: Literal[
+            'flat',
+            'hanning',
+            'hamming',
+            'bartlett',
+            'blackman',
+        ] = 'hanning',
+) -> np.ndarray:
     """
     Smooth the data using a window with requested size.
 
@@ -804,17 +847,17 @@ def lin_smooth(x, window_len=15, window='hanning'):
 
     Parameters
     ----------
-    x : numpy.ndarray
+    x : np.ndarray
         The input signal. Should be a 1D numpy array
     window_len : int
         The dimension of the smoothing window; should be an odd integer
-    window : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}
+    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
         The type of window. A 'flat' window will produce a moving average
         smoothing.
 
     Returns
     -------
-    smoothed : numpy.ndarray
+    smoothed : np.ndarray
         The smoothed signal (same dimension as `x`)
 
     Example

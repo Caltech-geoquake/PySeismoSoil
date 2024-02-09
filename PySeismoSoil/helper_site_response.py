@@ -1,14 +1,21 @@
+from __future__ import annotations
+
+from typing import Any, Callable, Literal
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from numba import jit
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
 
 
-def calc_z1_from_Vs30(Vs30_in_meter_per_sec):
+def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
     """
     Calculate z1 (basin depth) from Vs30. The correlation used here is
     z1 = 140.511 * exp(-0.00303 * Vs30), where the units of z1 and Vs30 are
@@ -21,7 +28,7 @@ def calc_z1_from_Vs30(Vs30_in_meter_per_sec):
     return z1_in_m
 
 
-def stratify(vs_profile):
+def stratify(vs_profile: np.ndarray) -> np.ndarray:
     """
     Divide layers of a Vs profile as necessary, according to the Vs values
     of each layer: if the layer thickness is more than Vs / 225.0, then divide
@@ -29,12 +36,12 @@ def stratify(vs_profile):
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         The Vs profile. Must be 2D numpy array with two or five columns.
 
     Returns
     -------
-    new_profile : numpy.ndarray
+    new_profile : np.ndarray
         The re-discretized Vs profile with the same number of columns as the
         input profile.
     """
@@ -115,7 +122,9 @@ def stratify(vs_profile):
     return new_profile
 
 
-def query_Vs_at_depth(vs_profile, depth):
+def query_Vs_at_depth(
+        vs_profile: np.ndarray, depth: float | np.ndarray
+) -> tuple[float | np.ndarray, bool, bool, bool]:
     """
     Query Vs values at given ``depth`` values from a Vs profile. If the given
     depth values happen to be at layer interfaces, return the Vs of the
@@ -123,16 +132,16 @@ def query_Vs_at_depth(vs_profile, depth):
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear-wave velocity profile, containing at least two columns:
            (1) thickness of layers
            (2) shear wave velocity of layers
-    depth : float or numpy.ndarray
+    depth : float | np.ndarray
         Value(s) of depths to query the Vs value at. Unit should be m.
 
     Returns
     -------
-    vs_array : float or numpy.ndarray
+    vs_array : float | np.ndarray
         Vs values corresponding to the given depths. Its type depends on
         the type of ``depth``.
     is_scalar : bool
@@ -141,6 +150,11 @@ def query_Vs_at_depth(vs_profile, depth):
         Whether ``depth`` has duplicate values.
     is_sorted : bool
         Whether ``depth`` is sorted (ascending).
+
+    Raises
+    ------
+    TypeError
+        When the type of ``depth`` is incorrect
     """
     # ------------- Check input type, input value, etc. ------------------------
     if isinstance(depth, (int, float, np.number)):
@@ -181,20 +195,25 @@ def query_Vs_at_depth(vs_profile, depth):
     return vs_queried, is_scalar, has_duplicate_values, is_sorted
 
 
-def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
+def query_Vs_given_thk(
+        vs_profile: np.ndarray,
+        thk: float | np.ndarray,
+        n_layers: int | None = None,
+        at_midpoint: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Query Vs values from a thickness array "``thk``". The starting point of
     querying is the ground surface.
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear-wave velocity profile, containing at least two columns:
            (1) thickness of layers
            (2) shear wave velocity of layers
-    thk : float or numpy.ndarray
+    thk : float | np.ndarray
         Thickness array, or a single value that means a constant thickness.
-    n_layers : int or None
+    n_layers : int | None
         Number of layers to query. This parameter has no effect if ``thk``
         is a numpy array (because the number of layers can be inferred
         from ``thk``).
@@ -204,12 +223,17 @@ def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
 
     Return
     ------
-    vs_array : numpy.ndarray
+    vs_array : np.ndarray
         Vs values corresponding to the given depths. Its type depends on
         ``as_profile``.
-    thk_array : numpy.ndarray
+    thk_array : np.ndarray
         The constructed thickness array (if ``thk`` is a scalar), or ``thk``
         itself, if ``thk`` is already an array.
+
+    Raises
+    ------
+    TypeError
+        When the types of input parameters are incorrect
     """
     if not isinstance(thk, (int, float, np.number, np.ndarray)):
         raise TypeError('`thk` needs to be a scalar or a numpy array.')
@@ -234,44 +258,49 @@ def query_Vs_given_thk(vs_profile, thk, n_layers=None, at_midpoint=True):
 
 
 def plot_motion(
-        accel,
-        unit='m',
-        fig=None,
-        ax=None,
-        title=None,
-        figsize=(5, 6),
-        dpi=100,
-):
+        accel: str | np.ndarray,
+        unit: str = 'm',
+        fig: Figure | None = None,
+        ax: Axes | None = None,
+        title: str | None = None,
+        figsize: tuple[float, float] = (5, 6),
+        dpi: float = 100,
+) -> tuple[Figure, tuple[Axes, Axes, Axes]]:
     """
     Plot acceleration, velocity, and displacement time history from a file
     name of acceleration data.
 
     Parameters
     ----------
-    accel : str or numpy.ndarray
+    accel : str | np.ndarray
         Acceleration time history. Can be a file name, or a 2D numpy array with
         two columns (time and accel).
     unit : str
         Unit of acceleration for displaying on the y axis label
-    fig : matplotlib.figure.Figure or ``None``
+    fig : Figure | None
         Figure object. If None, a new figure will be created.
-    ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+    ax : Axes | None
         Axes object. If None, a new axes will be created.
-    figsize: (float, float)
+    title : str | None
+        Title of the figure (optional).
+    figsize: tuple[float, float]
         Figure size in inches, as a tuple of two numbers. The figure
         size of ``fig`` (if not ``None``) will override this parameter.
     dpi : float
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    title : str
-        Title of the figure (optional).
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
+    fig : Figure
         The figure object being created or being passed into this function.
-    (ax1, ax2, ax3) : tuple<matplotlib.axes._subplots.AxesSubplot>
+    (ax1, ax2, ax3) : tuple[Axes, Axes, Axes]
         The axes objects of the three subplots.
+
+    Raises
+    ------
+    TypeError
+        When the types of input parameters are incorrect
     """
     if isinstance(accel, str):
         if not title:
@@ -337,22 +366,22 @@ def plot_motion(
     return fig, (ax1, ax2, ax3)
 
 
-def num_int(accel):
+def num_int(accel: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Perform numerical integration on acceleration to get velocity and
     displacement.
 
     Parameters
     ----------
-    accel : numpy.ndarray
+    accel : np.ndarray
         Acceleration time history. Should have two columns. The 0th column is
         the time array, and the 1st column is the acceleration.
 
     Returns
     -------
-    v : numpy.ndarray
+    v : np.ndarray
         Velocity time history. Same shape as the input.
-    u : numpy.ndarray
+    u : np.ndarray
         Displacement time history. Same shape as the input.
     """
     hlp.check_two_column_format(accel, name='`accel`')
@@ -370,19 +399,19 @@ def num_int(accel):
     return v, u
 
 
-def num_diff(veloc):
+def num_diff(veloc: np.ndarray) -> np.ndarray:
     """
     Perform numerical integration on velocity to get acceleration.
 
     Parameters
     ----------
-    veloc : numpy.ndarray
+    veloc : np.ndarray
         Velocity time history. Should have two columns. The 0th column is
         the time array, and the 1st column is the velocity.
 
     Returns
     -------
-    accel : numpy.ndarray
+    accel : np.ndarray
         Acceleration time history. Same shape as the input.
     """
     hlp.check_two_column_format(veloc, name='`veloc`')
@@ -397,14 +426,14 @@ def num_diff(veloc):
     return accel
 
 
-def find_f0(x):
+def find_f0(x: np.ndarray) -> float:
     """
     Find f_0 in a frequency spectrum (i.e., the frequency corresponding to the
     initial peak).
 
     Parameters
     ----------
-    x : numpy.ndarray
+    x : np.ndarray
         A two-column numpy array. The 0th column is the "reference array", such
         as the frequency array, and the 1st column is the "value array" in
         which the peak is being searched.
@@ -448,15 +477,15 @@ def find_f0(x):
 
 
 def response_spectra(
-        accel,
-        T_min=0.01,
-        T_max=10,
-        n_pts=60,
-        damping=0.05,
-        show_fig=False,
-        parallel=False,
-        n_cores=None,
-        subsample_interval=1,
+        accel: np.ndarray,
+        T_min: float = 0.01,
+        T_max: float = 10,
+        n_pts: int = 60,
+        damping: float = 0.05,
+        show_fig: bool = False,
+        parallel: bool = False,
+        n_cores: int | None = None,
+        subsample_interval: int = 1,
 ) -> tuple[np.ndarray, ...]:
     """
     Single-degree-of-freedom elastic response spectra, using the "exact"
@@ -469,7 +498,7 @@ def response_spectra(
 
     Parameters
     ----------
-    accel : numpy.ndarray
+    accel : np.ndarray
         Input acceleration. Must have exactly two columns (time and accel.).
     T_min : float
         Minimum period value to calculate the response spectra. Unit: sec.
@@ -485,7 +514,7 @@ def response_spectra(
         Whether to show a figure of the response spectra.
     parallel : bool
         Whether to perform the calculation in parallel.
-    n_cores : int or None
+    n_cores : int | None
         Number of cores to use in parallel. Not necessary if not ``parallel``.
     subsample_interval : int
         The interval at which to subsample the input acceleration in the time
@@ -498,6 +527,11 @@ def response_spectra(
         Periods, spectral acceleration, pseudo spectral acceleration, spectral
         velocity, pseudo spectral velocity, spectral displacement, and
         frequencies, respectively. Units: SI.
+
+    Raises
+    ------
+    ValueError
+        When the value of input parameters are incorrect
     """
     import itertools
     import multiprocessing as mp
@@ -668,7 +702,7 @@ def response_spectra(
 
 
 @jit(nopython=True, nogil=True)
-def _time_stepping(para):
+def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
     """Step forward in time to calculate velocity, displacements, etc."""
     i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a = para
 
@@ -700,15 +734,17 @@ def _time_stepping(para):
     return utdd_max, ud_max, u_max, PSA, PSV
 
 
-def get_xi_rho(Vs, formula_type=3):
+def get_xi_rho(
+        Vs: np.ndarray, formula_type: Literal[1, 2, 3] = 3
+) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
     Generate damping (xi) and density (rho) from the given 2-column Vs profile.
 
     Parameters
     ----------
-    Vs : numpy.ndarray
+    Vs : np.ndarray
         1D Vs profile information (i.e., Vs only, no thickness information).
-    formula_type : {1, 2, 3}
+    formula_type : Literal[1, 2, 3]
         Type of formula to determine damping from Vs.
 
         1 - Use this rule:
@@ -730,9 +766,9 @@ def get_xi_rho(Vs, formula_type=3):
 
     Returns
     -------
-    xi : float
+    xi : float | np.ndarray
         Damping ratio, having the same shape as the input Vs. (unit: 1)
-    rho : float
+    rho : float | np.ndarray
         Soil mass density, calculated with this rule:
                   +    Vs < 200 m/s, rho = 1600
                   +  200 <= Vs < 800 m/s, rho = 1800
@@ -791,18 +827,23 @@ def get_xi_rho(Vs, formula_type=3):
     return xi, rho
 
 
-def calc_VsZ(profile, Z, option_for_profile_shallower_than_Z=1, verbose=False):
+def calc_VsZ(
+        profile: np.ndarray,
+        Z: float,
+        option_for_profile_shallower_than_Z: Literal[1, 2] = 1,
+        verbose: bool = False,
+) -> float:
     """
     Calculate VsZ from the given Vs profile, where VsZ is the reciprocal of the
     weighted average travel time from Z meters deep to the ground surface.
 
     Parameters
     ----------
-    profile : numpy.ndarray
+    profile : np.ndarray
         Vs profile, which should have at least two columns.
     Z : float
         The depth from which to calculate the weighted average travel time.
-    option_for_profile_shallower_than_Z : {1, 2}
+    option_for_profile_shallower_than_Z : Literal[1, 2]
         If the provided `profile` has a total depth smaller than Z, then
         1 - assume last layer extends to Z meters
         2 - only use actual total depth
@@ -856,16 +897,20 @@ def calc_VsZ(profile, Z, option_for_profile_shallower_than_Z=1, verbose=False):
     return VsZ
 
 
-def calc_Vs30(profile, option_for_profile_shallower_than_30m=1, verbose=False):
+def calc_Vs30(
+        profile: np.ndarray,
+        option_for_profile_shallower_than_30m: Literal[1, 2] = 1,
+        verbose: bool = False,
+) -> float:
     """
     Calculate Vs30 from the given Vs profile, where Vs30 is the reciprocal of
     the weighted average travel time from Z meters deep to the ground surface.
 
     Parameters
     ----------
-    profile : numpy.ndarray
+    profile : np.ndarray
         Vs profile, which should have at least two columns.
-    option_for_profile_shallower_than_30m : {1, 2}
+    option_for_profile_shallower_than_30m : Literal[1, 2]
         If the provided `profile` has a total depth smaller than 30 m, then
         1 - assume last layer extends to 30 meters
         2 - only use actual total depth
@@ -892,32 +937,32 @@ def calc_Vs30(profile, option_for_profile_shallower_than_30m=1, verbose=False):
 
 
 def plot_Vs_profile(
-        vs_profile,
-        fig=None,
-        ax=None,
-        figsize=(2.6, 3.2),
-        dpi=100,
-        title=None,
-        label=None,
-        c='k',
-        lw=1.75,
-        max_depth=None,
-        **other_kwargs,
-):
+        vs_profile: np.ndarray,
+        fig: Figure | None = None,
+        ax: Axes | None = None,
+        figsize: tuple[float, float] = (2.6, 3.2),
+        dpi: float = 100,
+        title: str = None,
+        label: str | None = None,
+        c: list[float] | str = 'k',
+        lw: float = 1.75,
+        max_depth: float | None = None,
+        **other_kwargs: dict[Any, Any],
+) -> tuple[Figure, Axes, Line2D]:
     """
     Plot a Vs profile from a 2D numpy array.
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear-wave velocity profile, containing at least two columns:
            (1) thickness of layers
            (2) shear wave velocity of layers
-    fig : matplotlib.figure.Figure or ``None``
+    fig : Figure | None
         Figure object. If None, a new figure will be created.
-    ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+    ax : Axes | None
         Axes object. If None, a new axes will be created.
-    figsize: (float, float)
+    figsize: tuple[float, float]
         Figure size in inches, as a tuple of two numbers. The figure
         size of ``fig`` (if not ``None``) will override this parameter.
     dpi : float
@@ -925,27 +970,27 @@ def plot_Vs_profile(
         this parameter.
     title : str
         The title of the figure.
-    label : str
+    label : str | None
         The text label for the legend.
-    c : list<float> or str
+    c : list[float] | str
         Line color.
-    ls : float
+    lw : float
         Line width.
-    max_depth : float or None
+    max_depth : float | None
         Maximum depth of the soil profile. If None, it is automatically
         determined from `vs_profile`. Note that setting max_depth to be smaller
         than the actual depth (determined in `vs_profile`) could make the plot
         look strange.
-    other_kwargs :
+    **other_kwargs : dict[Any, Any]
         Other keyword arguments to be passed to matplotlib.pyplot.plot()
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
+    fig : Figure
         The figure object being created or being passed into this function.
-    ax : matplotlib.axes._subplots.AxesSubplot
+    ax : Axes
         The axes object being created or being passed into this function.
-    h_line : matplotlib.line.Line2D
+    h_line : Line2D
         The line object.
     """
     fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
@@ -987,7 +1032,9 @@ def plot_Vs_profile(
     return fig, ax, h_line  # return figure, axes, and line handles
 
 
-def calc_basin_depth(vs_profile, bedrock_Vs=1000.0):
+def calc_basin_depth(
+        vs_profile: np.ndarray, bedrock_Vs: float = 1000.0
+) -> float:
     """
     Query the depth of the basin as indicated in ``vs_profile``.
     The basin is defined as the material whose Vs is at least `bedrock_Vs`.
@@ -1022,7 +1069,7 @@ def calc_basin_depth(vs_profile, bedrock_Vs=1000.0):
     return basin_depth
 
 
-def calc_z1(vs_profile):
+def calc_z1(vs_profile: np.ndarray) -> float:
     """
     Calculate z1 (the depth to Vs = 1000 m/s) from ``vs_profile``.
 
@@ -1039,24 +1086,26 @@ def calc_z1(vs_profile):
     return calc_basin_depth(vs_profile, bedrock_Vs=1000.0)
 
 
-def _gen_profile_plot_array(thk, vs, zmax):
+def _gen_profile_plot_array(
+        thk: np.ndarray, vs: np.ndarray, zmax: float
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Generate (x, y) for plotting, from Vs profile information.
 
     Parameters
     ----------
-    thk : numpy.ndarray
+    thk : np.ndarray
         Thickness array.
-    vs : numpy.ndarray
+    vs : np.ndarray
         Shear-wave velocity array.
     zmax : float
         Maximum depth desired.
 
     Returns
     -------
-    x : numpy.ndarray
+    x : np.ndarray
         The first array for plotting the Vs profile by ``plt.plot(x, y)``.
-    y : numpy.ndarray
+    y : np.ndarray
         The second array for plotting the Vs profile by ``plt.plot(x, y)``.
     """
     hlp.assert_1D_numpy_array(thk, name='`thk`')
@@ -1078,13 +1127,13 @@ def _gen_profile_plot_array(thk, vs, zmax):
     return x, y
 
 
-def thk2dep(thk, midpoint=False):
+def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:
     """
     Convert a soil layer thickness array into depth array.
 
     Parameters
     ----------
-    thk : numpy.ndarray
+    thk : np.ndarray
         1D numpy array of layer thickness.
     midpoint : bool
         If ``True``, the returned depth values are at the mid points of each
@@ -1092,7 +1141,7 @@ def thk2dep(thk, midpoint=False):
 
     Returns
     -------
-    dep : numpy.ndarray
+    dep : np.ndarray
         Depth array.
     """
     hlp.assert_1D_numpy_array(thk, name='`thk`')
@@ -1116,13 +1165,16 @@ def thk2dep(thk, midpoint=False):
     return z_mid
 
 
-def dep2thk(depth_array_starting_from_0, include_halfspace=True):
+def dep2thk(
+        depth_array_starting_from_0: np.ndarray,
+        include_halfspace: bool = True,
+) -> np.ndarray:
     """
     Convert a soil layer depth array into thickness array.
 
     Parameters
     ----------
-    depth_array_starting_from_0 : numpy.ndarray
+    depth_array_starting_from_0 : np.ndarray
         Needs to be a 1D numpy array.
     include_halfspace : bool
         Whether to include the last layer (i.e., "half space"), which always
@@ -1130,8 +1182,13 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
 
     Returns
     -------
-    h : numpy.ndarray
+    h : np.ndarray
         Thickness array.
+
+    Raises
+    ------
+    ValueError
+        The value of the input parameter is incorrect
     """
     hlp.assert_1D_numpy_array(
         depth_array_starting_from_0,
@@ -1154,13 +1211,28 @@ def dep2thk(depth_array_starting_from_0, include_halfspace=True):
     return h[:-1]
 
 
-def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
+def linear_tf(
+        vs_profile: np.ndarray,
+        show_fig: bool = True,
+        freq_resolution: float = 0.05,
+        fmax: float = 30.0,
+) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    float,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    float,
+]:
     """
     Compute linear elastic transfer function from a given Vs profile.
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear wave velocity profile. Can have 2 or 5 columns. If only 2 columns
         (no damping and density info), then damping and density are calculated
         automatically using ``get_xi_rho()``.
@@ -1173,21 +1245,21 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
 
     Returns
     -------
-    freq_array : numpy.ndarray
+    freq_array : np.ndarray
         Frequency array, in linear scale.
-    AF_ro : numpy.ndarray
+    AF_ro : np.ndarray
         Amplification with respect to rock outcrop.
-    TF_ro : numpy.ndarray
+    TF_ro : np.ndarray
         Transfer function (complex-valued) with respect to rock outcrop.
     f0_ro : float
         Fundamental frequency of rock outcrop amplification.
-    AF_in : numpy.ndarray
+    AF_in : np.ndarray
         Amplification with respect to incident motion.
-    TF_in : numpy.ndarray
+    TF_in : np.ndarray
         Transfer function (complex-valued) with respect to incident motion.
-    AF_bh : numpy.ndarray
+    AF_bh : np.ndarray
         Amplification with respect to borehole motion.
-    TF_bh : numpy.ndarray
+    TF_bh : np.ndarray
         Transfer function (complex-valued) with respect to borehole motion.
     f0_bh : float
         Fundamental frequency of rock outcrop amplification.
@@ -1382,15 +1454,15 @@ def linear_tf(vs_profile, show_fig=True, freq_resolution=0.05, fmax=30.0):
 
 
 def amplify_motion(
-        input_motion,
-        transfer_function_single_sided,
-        taper=False,
-        extrap_tf=True,
-        deconv=False,
-        show_fig=False,
-        dpi=100,
-        return_fig_obj=False,
-):
+        input_motion: np.ndarray,
+        transfer_function_single_sided: tuple[np.ndarray, np.ndarray],
+        taper: bool = False,
+        extrap_tf: bool = True,
+        deconv: bool = False,
+        show_fig: bool = False,
+        dpi: int = 100,
+        return_fig_obj: bool = False,
+) -> tuple[np.ndarray, Figure, Axes]:
     """
     Amplify (or de-amplify) ground motions in the frequency domain. The
     mathematical process behind this function is as follows:
@@ -1401,9 +1473,9 @@ def amplify_motion(
 
     Parameters
     ----------
-    input_motion : numpy.ndarray
-        Input ground motion to be amplficied. 2D numpy array of two columns.
-    transfer_function_single_sided : tuple
+    input_motion : np.ndarray
+        Input ground motion to be amplified. 2D numpy array of two columns.
+    transfer_function_single_sided : tuple[np.ndarray, np.ndarray]
         Complex-valued transfer function in frequency domain. It should be a
         two-element tuple, whose 0-th element is the frequency array, and the
         last element can be one of two options:
@@ -1432,13 +1504,18 @@ def amplify_motion(
 
     Returns
     -------
-    response : numpy.ndarray
+    response : np.ndarray
         The resultant ground motion in time domain. In the same format as
         ``input_motion``.
-    fig : matplotlib.figure.Figure
+    fig : Figure
         The figure object being created or being passed into this function.
-    ax : matplotlib.axes._subplots.AxesSubplot
+    ax : Axes
         The axes object being created or being passed into this function.
+
+    Raises
+    ------
+    TypeError
+        The type/value of the input parameter is incorrect
 
     Note
     ----
@@ -1575,19 +1652,19 @@ def amplify_motion(
 
 
 def linear_site_resp(
-        soil_profile,
-        input_motion,
-        boundary='elastic',
-        show_fig=False,
-        deconv=False,
-):
+        soil_profile: np.ndarray | str,
+        input_motion: np.ndarray | str,
+        boundary: Literal['elastic', 'rigid'] = 'elastic',
+        show_fig: bool = False,
+        deconv: bool = False,
+) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]:
     """
     Perform linear site response analysis.
 
     Parameters
     ----------
-    soil_profile : numpy.ndarray or str
-        1D Vs profile profile. If it is a string, it means the file name that
+    soil_profile : np.ndarray | str
+        1D Vs profile. If it is a string, it means the file name that
         contains the data. If it is a 2D array, it has the following format:
 
          +---------------+----------+---------+------------------+--------------+
@@ -1596,13 +1673,13 @@ def linear_site_resp(
          |      ...      |   ...    |   ...   |       ...        |      ...     |
          +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
-    input_motion : numpy.ndarray or str
+    input_motion : np.ndarray | str
         Input motion in the time domain (with two columns). If it is a string,
         it means the file name that contains the data. It should be the
         "rock outrcop" motion if ``boundary`` is set to ``"elastic"``, and it
         should be the recorded motion at the bottom of the Vs profile (i.e.,
         the "borehole" motion) if ``boundary`` is set to ``"rigid"``.
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
@@ -1615,14 +1692,19 @@ def linear_site_resp(
 
     Returns
     -------
-    response : numpy.ndarray
+    response : np.ndarray
         The resultant ground motion in time domain. In the same format as
         ``input_motion``.
-    transfer_function : tuple<numpy.ndarray>
+    transfer_function : tuple[np.ndarray, np.ndarray]
         The transfer function (complex-valued) that corresponding to the given
         ``soil_profile`` and ``boundary``. It is a tuple of two 1D numpy arrays.
         The 0th array is frequency (real values) and the 1st array is the
         spectrum (complex values).
+
+    Raises
+    ------
+    ValueError
+        The value of the input parameter is incorrect
 
     Notes
     -----
@@ -1631,7 +1713,7 @@ def linear_site_resp(
     you happen to want incident motions, choose "elastic", and then
     manually divide the result by 2.
 
-    (Original version in MATLAB: June, 2013. Translated into Python on 4/5/2018.)
+    (Original version in MATLAB: June 2013. Translated into Python on 4/5/2018.)
     """
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
@@ -1667,21 +1749,21 @@ def linear_site_resp(
 
 
 def _plot_site_amp(
-        accel_in_2col,
-        accel_out_2col,
-        freq,
-        amplif_func_1col,
-        amplif_func_1col_smoothed=None,
-        phase_func_1col=None,
-        fig=None,
-        figsize=(8, 4.5),
-        dpi=100,
-        amplif_func_ylog=True,
-        input_accel_label='Input',
-        output_accel_label='Output',
-        amplification_ylabel='Amplification',
-        phase_shift_ylabel='Phase shift [rad]',
-):
+        accel_in_2col: np.ndarray,
+        accel_out_2col: np.ndarray,
+        freq: np.ndarray,
+        amplif_func_1col: np.ndarray,
+        amplif_func_1col_smoothed: np.ndarray | None = None,
+        phase_func_1col: np.ndarray | None = None,
+        fig: Figure | None = None,
+        figsize: tuple[float, float] = (8, 4.5),
+        dpi: float = 100,
+        amplif_func_ylog: bool = True,
+        input_accel_label: str = 'Input',
+        output_accel_label: str = 'Output',
+        amplification_ylabel: str = 'Amplification',
+        phase_shift_ylabel: str = 'Phase shift [rad]',
+) -> tuple[Figure, Axes]:
     """
     Plot site amplification simulation results: input and output ground
     motions, amplification and phase factors, and Fourier amplitudes of the
@@ -1689,23 +1771,21 @@ def _plot_site_amp(
 
     Parameters
     ----------
-    accel_in_2col : numpy.ndarray
+    accel_in_2col : np.ndarray
         Input acceleration as a two-column numpy array (time and acceleration).
-    accel_out_2col : numpy.ndarray
+    accel_out_2col : np.ndarray
         Output acceleration as a two-column numpy array (time and acceleration).
-    freq : numpy.ndarray
+    freq : np.ndarray
         Frequency array (1D numpy array).
-    amplif_func_1col : numpy.ndarray
+    amplif_func_1col : np.ndarray
         Amplification function (1D numpy array).
-    amplif_func_1col_smoothed : numpy.ndarray
+    amplif_func_1col_smoothed : np.ndarray | None
         Smoothed amplification function (1D numpy array).
-    phase_func_1col : numpy.ndarray
+    phase_func_1col : np.ndarray | None
         Phase function (1D numpy array).
-    fig : matplotlib.figure.Figure or ``None``
+    fig : Figure | None
         Figure object. If None, a new figure will be created.
-    ax : matplotlib.axes._subplots.AxesSubplot or ``None``
-        Axes object. If None, a new axes will be created.
-    figsize: (float, float)
+    figsize: tuple[float, float]
         Figure size in inches, as a tuple of two numbers. The figure
         size of ``fig`` (if not ``None``) will override this parameter.
     dpi : float
@@ -1714,12 +1794,20 @@ def _plot_site_amp(
     amplif_func_ylog : bool
         If ``True``, show the Y axis of the amplification function subplot in
         the logarithmic scale. Otherwise, show that in the linear scale.
+    input_accel_label : str
+        The figure label for the input acceleration
+    output_accel_label : str
+        The figure lable for the output acceleration
+    amplification_ylabel : str
+        The Y label for amplification
+    phase_shift_ylabel : str
+        The Y label for the phase shift
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
+    fig : Figure
         The figure object being created or being passed into this function.
-    ax : matplotlib.axes._subplots.AxesSubplot
+    ax : Axes
         The axes object being created or being passed into this function.
     """
     hlp.check_two_column_format(accel_in_2col, name='`accel_in`')
@@ -1822,23 +1910,23 @@ def _plot_site_amp(
 
 
 def compare_two_accel(
-        input_accel,
-        output_accel,
-        smooth=True,
-        input_accel_label='Input',
-        output_accel_label='Output',
-        amplification_ylabel='Amplification',
-        phase_shift_ylabel='Phase shift [rad]',
-):
+        input_accel: np.ndarray,
+        output_accel: np.ndarray,
+        smooth: bool = True,
+        input_accel_label: str = 'Input',
+        output_accel_label: str = 'Output',
+        amplification_ylabel: str = 'Amplification',
+        phase_shift_ylabel: str = 'Phase shift [rad]',
+) -> tuple[Figure, Axes]:
     """
     Compare two acceleration time histories: plot comparison figures showing
     two time histories and the transfer function between them.
 
     Parameters
     ----------
-    input_accel : numpy.ndarray
+    input_accel : np.ndarray
         Input acceleration. (2 columns: time and acceleration.)
-    output_accel : numpy.ndarray
+    output_accel : np.ndarray
         Output acceleration. (2 columns: time and acceleration.)
     smooth : bool
         In the comparison plot, whether to also show the smoothed
@@ -1847,12 +1935,16 @@ def compare_two_accel(
         The text label for the input acceleration in the figure legend.
     output_accel_label : str
         The text label for the output acceleration in the figure legend.
+    amplification_ylabel : str
+        The Y label for amplification
+    phase_shift_ylabel : str
+        The Y label for the phase shift
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
+    fig : Figure
         The figure object created in this function.
-    ax : matplotlib.axes._subplots.AxesSubplot
+    ax : Axes
         The axes object created in this function.
     """
     hlp.assert_2D_numpy_array(input_accel, name='input_accel')
@@ -1901,7 +1993,7 @@ def compare_two_accel(
     return fig, ax
 
 
-def _align_two_time_arrays(t1, t2):
+def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     hlp.assert_1D_numpy_array(t1)
     hlp.assert_1D_numpy_array(t2)
 
@@ -1923,13 +2015,15 @@ def _align_two_time_arrays(t1, t2):
     return t_output
 
 
-def _get_freq_interval(input_motion):
+def _get_freq_interval(
+        input_motion: np.ndarray,
+) -> tuple[float, float, int, int, np.ndarray]:
     """
     Get frequency interval from a 2-columed input motion.
 
     Parameters
     ----------
-    input_motion : numpy.ndarray
+    input_motion : np.ndarray
         Ground motion in two columns (time, accel).
 
     Returns
@@ -1942,8 +2036,13 @@ def _get_freq_interval(input_motion):
         Length of signal.
     half_n : int
         Length of the frequency array below the Nyquist frequency.
-    f_array : numpy.ndarray
+    f_array : np.ndarray
         Frequency array.
+
+    Raises
+    ------
+    ValueError
+        The value of the input parameter is incorrect
     """
     hlp.check_two_column_format(input_motion, name='`input_motion`')
 
@@ -1972,7 +2071,9 @@ def _get_freq_interval(input_motion):
     return df, fmax, n, half_n, f_array
 
 
-def robust_unwrap(signal, discont=3.141592653589793):
+def robust_unwrap(
+        signal: np.ndarray, discont: float | None = 3.141592653589793
+) -> np.ndarray:
     """
     Unwrap a phase signal in a robust way.
 
@@ -1992,15 +2093,15 @@ def robust_unwrap(signal, discont=3.141592653589793):
 
     Parameters
     ----------
-    signal : numpy.ndarray
+    signal : np.ndarray
         Input array. Only allows 1D arrays.
-    discont : float, optional
+    discont : float | None
         Maximum discontinuity between values, default is pi. Refer to the
         documentation of ``numpy.unwrap()``.
 
     Returns
     -------
-    unwrapped : numpy.ndarray
+    unwrapped : np.ndarray
         Unwrapped array.
 
     Notes
@@ -2053,23 +2154,32 @@ def robust_unwrap(signal, discont=3.141592653589793):
     return unwrapped
 
 
-def calc_damping_from_param(param, strain_in_unit_1, func_stress):
+def calc_damping_from_param(
+        param: dict[str, float],
+        strain_in_unit_1: np.ndarray,
+        func_stress: Callable[[Any, ...], Any],
+) -> np.ndarray:
     """
     Calculate damping values from HH or MKZ parameters.
 
     Parameters
     ----------
-    param : dict
+    param : dict[str, float]
         Soil model parameters.
-    strain_in_unit_1 : numpy.ndarray
+    strain_in_unit_1 : np.ndarray
         An 1D array of strain values. Unit: 1 (not percent).
-    func_stress : Python function
-        The function to calculate stress from ``strain_in_unit_1`` and ``param``.
+    func_stress : Callable[[Any, ...], Any]
+        The function to calculate stress from ``strain_in_unit_1`` and ``param``
 
     Returns
     -------
-    damping : numpy.ndarray
+    damping : np.ndarray
         Damping values corresponding to each strain values, in the unit of "1".
+
+    Raises
+    ------
+    TypeError
+        The type of the input parameter is incorrect
     """
     if not isinstance(param, dict):
         raise TypeError('`para` needs to be a dictionary.')
@@ -2084,15 +2194,17 @@ def calc_damping_from_param(param, strain_in_unit_1, func_stress):
     return damping
 
 
-def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
+def calc_damping_from_stress_strain(
+        strain_in_unit_1: np.ndarray, stress: np.ndarray, Gmax: float
+) -> np.ndarray:
     """
     Calculate the damping curve from the given stress-strain curve.
 
     Parameters
     ----------
-    strain_in_unit_1 : numpy.ndarray
+    strain_in_unit_1 : np.ndarray
         Strain array in the unit of 1. 1D numpy array.
-    stress : numpy.ndarray
+    stress : np.ndarray
         Stress. 1D numpy array
     Gmax : float
         Maximum shear modulus, whose unit needs to be identical to that of the
@@ -2100,7 +2212,7 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
 
     Returns
     -------
-    damping : numpy.ndarray
+    damping : np.ndarray
         A 1D numpy array of damping ratios, in the unit of "1".
     """
     strain = strain_in_unit_1
@@ -2125,25 +2237,34 @@ def calc_damping_from_stress_strain(strain_in_unit_1, stress, Gmax):
     return damping
 
 
-def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
+def calc_GGmax_from_stress_strain(
+        strain_in_unit_1: np.ndarray,
+        stress: np.ndarray,
+        Gmax: float | None = None,
+) -> np.ndarray:
     """
     Calculate G/Gmax curve from stress-strain curve.
 
     Parameters
     ----------
-    strain_in_unit_1 : numpy.ndarray
+    strain_in_unit_1 : np.ndarray
         Strain array (a 1D numpy array). Unit: 1.
-    stress : numpy.ndarray
+    stress : np.ndarray
         Stress array. Its unit can be arbitrary.
-    Gmax : float
+    Gmax : float | None
         Maximum shear modulus, whose unit needs to be identical to that of the
         stress curve. If not provided, it is automatically calculated from the
         stress-strain curve.
 
     Returns
     -------
-    GGmax : numpy.ndarray
+    GGmax : np.ndarray
         A 1D numpy array of G/Gmax.
+
+    Raises
+    ------
+    ValueError
+        The value of the input parameter is incorrect
     """
     hlp.assert_1D_numpy_array(strain_in_unit_1)
     hlp.assert_1D_numpy_array(stress)
@@ -2163,34 +2284,41 @@ def calc_GGmax_from_stress_strain(strain_in_unit_1, stress, Gmax=None):
 
 
 def _plot_damping_curve_fit(
-        damping_data_in_pct,
-        param,
-        func_stress,
-        fig=None,
-        ax=None,
-        min_strain_in_pct=1e-4,
-        max_strain_in_pct=10,
-):
+        damping_data_in_pct: np.ndarray,
+        param: dict[str, float],
+        func_stress: Callable[[Any, ...], Any],
+        fig: Figure | None = None,
+        ax: Axes | None = None,
+        min_strain_in_pct: float = 1e-4,
+        max_strain_in_pct: float = 10,
+) -> tuple[Figure, Axes]:
     """
     Plot damping data and curve-fit results together.
 
     Parameters
     ----------
-    damping_data_in_pct : numpy.ndarray
+    damping_data_in_pct : np.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
-    param : dict
+    param : dict[str, float]
         HH_x parameters.
-    func_stress : Python function
+    func_stress : Callable[[Any, ...], Any]
         The function to calculate stress from strain and model parameters.
-    fig : matplotlib.figure.Figure or ``None``
+    fig : Figure | None
         Figure object. If None, a new figure will be created.
-    ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+    ax : Axes | None
         Axes object. If None, a new axes will be created.
     min_strain_in_pct : float
         Strain limits of the curve-fit result.
     max_strain_in_pct : float
         Strain limits of the curve-fit result.
+
+    Returns
+    -------
+    Figure
+        The figure
+    Axes
+        The axes
     """
     fig, ax = hlp._process_fig_ax_objects(fig, ax)
 
@@ -2223,35 +2351,35 @@ def _plot_damping_curve_fit(
 
 
 def fit_all_damping_curves(
-        curves,
-        func_fit_single_layer,
-        func_stress,
-        use_scipy=True,
-        pop_size=800,
-        n_gen=100,
-        lower_bound_power=-4,
-        upper_bound_power=6,
-        eta=0.1,
-        seed=0,
-        show_fig=False,
-        verbose=False,
-        parallel=False,
-        n_cores=None,
-        save_fig=False,
-        fig_filename=None,
-        dpi=100,
-        save_txt=False,
-        txt_filename=None,
-        sep='\t',
-        func_serialize=None,
-):
+        curves: np.ndarray | list[np.ndarray],
+        func_fit_single_layer: Callable[[Any, ...], Any],
+        func_stress: Callable[[Any, ...], Any],
+        use_scipy: bool = True,
+        pop_size: int = 800,
+        n_gen: int = 100,
+        lower_bound_power: float = -4,
+        upper_bound_power: float = 6,
+        eta: float = 0.1,
+        seed: int = 0,
+        show_fig: bool = False,
+        verbose: bool = False,
+        parallel: bool = False,
+        n_cores: int | None = None,
+        save_fig: bool = False,
+        fig_filename: str | None = None,
+        dpi: float = 100,
+        save_txt: bool = False,
+        txt_filename: str | None = None,
+        sep: str = '\t',
+        func_serialize: Callable[[Any, ...], Any] = None,
+) -> list[dict[str, float]]:
     """
     Perform damping curve fitting for multiple damping curves using the genetic
     algorithm provided in DEAP.
 
     Parameters
     ----------
-    curves : numpy.ndarray or list<numpy.ndarray>
+    curves : np.ndarray | list[np.ndarray]
         Can either be a 2D array in the "curve" format, or a list of individual
         damping curves.
         The "curve" format is as follows:
@@ -2263,11 +2391,11 @@ def fit_all_damping_curves(
 
         The G/Gmax information is redundant for this function.
 
-    func_fit_single_layer : Python function
+    func_fit_single_layer : Callable[[Any, ...], Any]
         A function which fits the model parameters to a single layer in
         ``curves``, such as ``hh.fit_HH_x_single_layer`` or
         ``mkz.fit_H4_x_single_layer``.
-    func_stress : Python function
+    func_stress : Callable[[Any, ...], Any]
         A function to calculate the shear stress from model parameters.
     use_scipy : bool
         Whether to use the "differential_evolution" algorithm in scipy
@@ -2298,29 +2426,34 @@ def fit_all_damping_curves(
     parallel : bool
         Whether to use parallel computing across layers, i.e., calculate
         multiple layers simultaneously.
-    n_cores : int
+    n_cores : int | None
         Number of CPU cores to use. If None, all cores are used. No effects
         if `parallel` is set to False.
     save_fig : bool
         Whether to save damping fitting figures to hard drive.
-    fig_filename : str
+    fig_filename : str | None
         Full file name of the figure.
-    dpi : int
+    dpi : float
         Desired figure resolution. Only effective when ``show_fig`` is ``True``.
     save_txt : bool
         Whether to save the fitted parameters as a text file.
-    txt_filename : str
+    txt_filename : str | None
         The name of the text file to save the parameters to.
     sep : str
         Delimiter to separate columns of data in the output file.
-    func_serialize : Python function
+    func_serialize : Callable[[Any, ...], Any]
         The function to serialize the parameters from a dict into a list.
         Can be hh.serialize_params_to_array or mkz.serialize_params_to_array.
 
     Return
     ------
-    params : list<dict>
+    params : list[dict[str, float]]
         The best parameters for each layer found in the optimization.
+
+    Raises
+    ------
+    TypeError
+        The type of the input parameter is incorrect
     """
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)
@@ -2449,23 +2582,23 @@ def _fit_single_layer_loop(param):
 
 
 def ga_optimization(
-        n_param,
-        lower_bound,
-        upper_bound,
-        loss_function,
-        damping_data,
-        use_scipy=True,
-        pop_size=100,
-        n_gen=100,
-        eta=0.1,
-        seed=0,
-        crossover_prob=0.8,
-        mutation_prob=0.8,
-        suppress_warnings=True,
-        verbose=False,
-        parallel=False,
-        n_cores=None,
-):
+        n_param: int,
+        lower_bound: float,
+        upper_bound: float,
+        loss_function: Callable[[float, ...], float],
+        damping_data: np.ndarray,
+        use_scipy: bool = True,
+        pop_size: int = 100,
+        n_gen: int = 100,
+        eta: float = 0.1,
+        seed: int = 0,
+        crossover_prob: float = 0.8,
+        mutation_prob: float = 0.8,
+        suppress_warnings: bool = True,
+        verbose: bool = False,
+        parallel: bool = False,
+        n_cores: int | None = None,
+) -> list[float] | np.ndarray:
     """
     Perform a genetic algorithm (GA) process to fit the data.
 
@@ -2479,17 +2612,22 @@ def ga_optimization(
     ----------
     n_param : int
         Number of parameters in the model.
-    lower_bound, upper_bound : float
-        Lower and upper bound of the search range (i.e., range in which the
+    lower_bound : float
+        Lower bound of the search range (i.e., range in which the
         evolution of parameter values are constraint). Note that all the
         model parameters share this range. You cannot have a different range
         for each parameter.
-    loss_function : Python function
+    upper_bound : float
+        Upper bound of the search range (i.e., range in which the
+        evolution of parameter values are constraint). Note that all the
+        model parameters share this range. You cannot have a different range
+        for each parameter.
+    loss_function : Callable[[float, ...], float]
         Function to be minimized by the genetic algorithm. It should map a set
         of parameters to a loss value. It takes a tuple/list of all the
         parameters and the damping data as input, and it needs to return a
         single float.
-    damping_data : numpy.ndarray
+    damping_data : np.ndarray
         Damping data for curve fitting. Needs to have two columns (strain and
         damping), and in the unit of 1 (not percent).
     use_scipy : bool
@@ -2523,7 +2661,7 @@ def ga_optimization(
         demographic diversity into the evolutionary process, which could help
         escape the local minima, but at a cost of converging slower.
         (``mutation_prob`` is only effective when ``use_scipy`` is ``False``.)
-    supress_warnings : bool
+    suppress_warnings : bool
         Whether to suppress warning messages.
     verbose : bool
         Whether to display information (statistics of the loss in each
@@ -2536,13 +2674,13 @@ def ga_optimization(
         evolution, you may need more generations to achieve the same
         optimization loss, because the best solution is being updated only once
         per generation.
-    n_cores : int
+    n_cores : int | None
         Number of CPU cores to use. If ``None``, all cores are used. No effects
         if ``parallel`` is set to ``False``.
 
     Returns
     -------
-    opt_result : list or numpy.ndarray
+    opt_result : list[float] | np.ndarray
         The optimization result: an array of parameters that gives the lowest
         loss.
     """
