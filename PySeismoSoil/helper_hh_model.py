@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 from PySeismoSoil import helper_generic as hlp
@@ -5,7 +7,9 @@ from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
 
-def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
+def tau_FKZ(
+        gamma: np.ndarray, *, Gmax: float, mu: float, d: float, Tmax: float
+) -> np.ndarray:
     """
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
     (2017), in Equation (6), and has the following form::
@@ -26,7 +30,7 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
 
     Parameters
     ----------
-    gamma : numpy.ndarray
+    gamma : np.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     Gmax : float
@@ -40,7 +44,7 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
 
     Returns
     -------
-    T_FKZ : numpy.ndarray
+    T_FKZ : np.ndarray
         The shear stress determined by the formula above. Same shape as ``x``,
         and same unit as ``Gmax``.
     """
@@ -52,14 +56,16 @@ def tau_FKZ(gamma, *, Gmax, mu, d, Tmax):
     return T_FKZ
 
 
-def transition_function(gamma, *, a, gamma_t):
+def transition_function(
+        gamma: np.ndarray, *, a: float, gamma_t: float
+) -> np.ndarray:
     """
     Calculate the transition function of the HH model, as defined
     in Equation (7) of Shi & Asimaki (2017).
 
     Parameters
     ----------
-    gamma : numpy.ndarray
+    gamma : np.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     a : float
@@ -69,7 +75,7 @@ def transition_function(gamma, *, a, gamma_t):
 
     Returns
     -------
-    w : numpy.ndarray
+    w : np.ndarray
         The transition function, ranging from 0 to 1. Same shape as ``x``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
@@ -85,13 +91,25 @@ def transition_function(gamma, *, a, gamma_t):
     return w
 
 
-def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
+def tau_HH(
+        gamma: np.ndarray,
+        *,
+        gamma_t: float,
+        a: float,
+        gamma_ref: float,
+        beta: float,
+        s: float,
+        Gmax: float,
+        mu: float,
+        Tmax: float,
+        d: float,
+) -> np.ndarray:
     """
     Calculate the HH shear stress, which is proposed in Shi & Asimaki (2017).
 
     Parameters
     ----------
-    gamma : numpy.ndarray
+    gamma : np.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     gamma_t : float
@@ -115,7 +133,7 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
 
     Returns
     -------
-    T_FKZ : numpy.ndarray
+    T_FKZ : np.ndarray
         The shear stress determined by the HH model. Same shape as ``x``,
         and same unit as ``Gmax``.
     """
@@ -129,28 +147,28 @@ def tau_HH(gamma, *, gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d):
 
 
 def fit_HH_x_single_layer(
-        damping_data_in_pct,
+        damping_data_in_pct: np.ndarray,
         *,
-        use_scipy=True,
-        pop_size=800,
-        n_gen=100,
-        lower_bound_power=-4,
-        upper_bound_power=6,
-        eta=0.1,
-        seed=0,
-        show_fig=False,
-        verbose=False,
-        suppress_warnings=True,
-        parallel=False,
-        n_cores=None,
-):
+        use_scipy: bool = True,
+        pop_size: int = 800,
+        n_gen: int = 100,
+        lower_bound_power: float = -4,
+        upper_bound_power: float = 6,
+        eta: float = 0.1,
+        seed: int = 0,
+        show_fig: bool = False,
+        verbose: bool = False,
+        suppress_warnings: bool = True,
+        parallel: bool = False,
+        n_cores: int | None = None,
+) -> dict[str, float]:
     """
     Perform HH_x curve fitting for one damping curve using the genetic
     algorithm.
 
     Parameters
     ----------
-    damping_data_in_pct : numpy.ndarray
+    damping_data_in_pct : np.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
     use_scipy : bool
@@ -181,16 +199,18 @@ def fit_HH_x_single_layer(
     verbose : bool
         Whether to display information (statistics of the loss in each
         generation) on the console.
-    supress_warnings : bool
+    suppress_warnings : bool
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
     parallel : bool
         Whether to use multiple processors in the calculation. All CPU cores
         will be used if set to ``True``.
+    n_cores : int | None
+        The number of CPU cores to use in the curve fitting
 
     Return
     ------
-    best_param : dict
+    best_param : dict[str, float]
         The best parameters found in the optimization.
     """
     hlp.check_two_column_format(
@@ -253,7 +273,9 @@ def fit_HH_x_single_layer(
     return best_param
 
 
-def _damping_misfit(param, damping_data):
+def _damping_misfit(
+        param: tuple[float, ...], damping_data: np.ndarray
+) -> float:
     """
     Calculate the misfit given a set of HH parameters. Note that the values
     in `param` are actually the 10-based power of the actual HH parameters.
@@ -262,10 +284,10 @@ def _damping_misfit(param, damping_data):
 
     Parameters
     ----------
-    param : tuple<float>
+    param : tuple[float, ...]
         HH model parameters, in the order specified below:
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
-    damping_data : numpy.ndarray
+    damping_data : np.ndarray
         2D numpy array with two columns (strain and damping value). Both
         columns need to use "1" as the unit, not percent.
 
@@ -308,7 +330,7 @@ def _damping_misfit(param, damping_data):
     return error
 
 
-def serialize_params_to_array(param):
+def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
     """
     Convert the HH parameters from a dictionary to an array, according to this
     order:
@@ -316,12 +338,12 @@ def serialize_params_to_array(param):
 
     Parameters
     ----------
-    param : dict
+    param : dict[str, float]
         A dictionary containing the parameters of the HH model.
 
     Returns
     -------
-    param_array : numpy.ndarray
+    param_array : np.ndarray
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
@@ -344,7 +366,7 @@ def serialize_params_to_array(param):
     return np.array(param_array)
 
 
-def deserialize_array_to_params(array):
+def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
     """
     Reconstruct a HH model parameter dictionary from an array of values.
 
@@ -353,13 +375,13 @@ def deserialize_array_to_params(array):
 
     Parameters
     ----------
-    array : numpy.ndarray
+    array : np.ndarray
         A 1D numpy array of HH parameter values in this order: gamma_t, a,
         gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Returns
     -------
-    param : dict
+    param : dict[str, float]
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
