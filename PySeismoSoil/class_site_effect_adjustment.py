@@ -1,4 +1,10 @@
+from __future__ import annotations
+
+from typing import Any, Literal
+
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_ground_motion import Ground_Motion
@@ -12,22 +18,27 @@ class Site_Effect_Adjustment:
 
     Parameters
     ----------
-    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+    input_motion : Ground_Motion
         Input ground motion.
     Vs30_in_meter_per_sec : float
         Vs30 values in SI unit.
-    z1_in_m : float
+    z1_in_m : float | None
         z1 (basin depth) in meters. If ``None``, it will be estimated from
         Vs30 using an empirical correlation (see `calc_z1_from_Vs30()`
         function in `helper_site_response.py`).
-    ampl_method : {'nl_hh', 'eq_hh'}
+    ampl_method : Literal['nl_hh', 'eq_hh']
         Which site response simulation method was used to calculate the
         amplification factors. 'nl_hh' uses the results from nonlinear site
         response simulation, which is recommended.
+    lenient : bool
+        Whether to ensure the given Vs30, z1, and PGA values are within the
+        valid range. If False and the given values fall outside the valid
+        range, the given values (e.g., Vs30 = 170 m/s) will be treated as
+        the closest boundary values (e.g., Vs30 = 175 m/s).
 
     Attributes
     ----------
-    input_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+    input_motion : Ground_Motion
         Input ground motion.
     Vs30 : float
         Vs30 of the site. (Unit: m/s)
@@ -35,16 +46,23 @@ class Site_Effect_Adjustment:
         z1 (basin depth) of the site. (Unit: m/s)
     PGA_in_g : float
         Peak ground acceleration of the input motion. (Unit: g)
+
+    Raise
+    -----
+    TypeError
+        When input arguments do not have correct type
+    ValueError
+        When the value of `ampl_method` is not one of {'nl_hh', 'eq_hh'}
     """
 
     def __init__(
             self,
-            input_motion,
-            Vs30_in_meter_per_sec,
-            z1_in_m=None,
-            ampl_method='nl_hh',
-            lenient=False,
-    ):
+            input_motion: Ground_Motion,
+            Vs30_in_meter_per_sec: float,
+            z1_in_m: float | None = None,
+            ampl_method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
+            lenient: bool = False,
+    ) -> None:
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
 
@@ -81,7 +99,12 @@ class Site_Effect_Adjustment:
         self._lenient = lenient
         self._ampl_method = ampl_method
 
-    def run(self, show_fig=False, return_fig_obj=False, **kwargs_to_plot):
+    def run(
+            self,
+            show_fig: bool = False,
+            return_fig_obj: bool = False,
+            **kwargs_to_plot: dict[Any, Any],
+    ) -> tuple[Ground_Motion, Figure | None, Axes | None]:
         """
         Run the site effect adjustment by querying the SAG19 site factors.
 
@@ -92,18 +115,21 @@ class Site_Effect_Adjustment:
             works.
         return_fig_obj : bool
             Whether to return the figure and axes objects.
-        **kwargs_to_plot :
+        **kwargs_to_plot : dict[Any, Any]
             Keyword arguments to pass to ``matplotlib.pyplot.plot()``.
 
         Returns
         -------
-        output_motion : PySeismoSoil.class_ground_motion.Ground_Motion
+        output_motion : Ground_Motion
             Output ground motion with site effects included.
-        fig : matplotlib.figure.Figure, optional
+        fig : Figure | None
             The figure object.
-        ax : matplotlib.axes._subplots.AxesSubplot, optional
+        ax : Axes | None
             The axes object.
         """
+        fig = None
+        ax = None
+
         sf = self.site_factor
         af = sf.get_amplification(method=self._ampl_method, Fourier=True)
         phf = sf.get_phase_shift(method='eq_hh')  # only `eq_hh` is valid
@@ -163,4 +189,4 @@ class Site_Effect_Adjustment:
 
             return output_motion, fig, ax
 
-        return output_motion
+        return output_motion, None, None

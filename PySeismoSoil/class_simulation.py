@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import glob
 import os
 import shutil
 import stat
 import subprocess
+from typing import Literal
 
 import numpy as np
 import pkg_resources
@@ -14,7 +17,11 @@ from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 from PySeismoSoil.class_ground_motion import Ground_Motion
-from PySeismoSoil.class_parameters import Param_Multi_Layer
+from PySeismoSoil.class_parameters import (
+    HH_Param_Multi_Layer,
+    MKZ_Param_Multi_Layer,
+    Param_Multi_Layer,
+)
 from PySeismoSoil.class_simulation_results import Simulation_Results
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
@@ -25,39 +32,49 @@ class Simulation:
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
-        Input ground motion. It should be the "rock outrcop" motion if
+    input_motion : Ground_Motion
+        Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
-    G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
         Parameters that describe the G/Gmax curves.
-    xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
         Parameters that describe the damping curves.
-    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+    GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None
         G/Gmax and damping curves of every soil layer.
 
     Attributes
     ----------
     Attributes same as the inputs
+
+    Raises
+    ------
+    TypeError
+        When input arguments have incorrect or incompatible types
+    ValueError
+        When input arguments have incorrect or invalid values
     """
 
     def __init__(
             self,
-            soil_profile,
-            input_motion,
+            soil_profile: Vs_Profile,
+            input_motion: Ground_Motion,
             *,
-            boundary='elastic',
-            G_param=None,
-            xi_param=None,
-            GGmax_and_damping_curves=None,
-    ):
+            boundary: Literal['elastic', 'rigid'] = 'elastic',
+            # fmt: off
+            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
+            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,
+
+            # fmt: on
+    ) -> None:
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
 
@@ -111,14 +128,14 @@ class Linear_Simulation(Simulation):
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
+    input_motion : Ground_Motion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
@@ -130,16 +147,16 @@ class Linear_Simulation(Simulation):
 
     def run(
             self,
-            every_layer=True,
-            deconv=False,
-            show_fig=False,
-            save_fig=False,
-            motion_name=None,
-            save_txt=False,
-            save_full_time_history=False,
-            output_dir=None,
-            verbose=True,
-    ):
+            every_layer: bool = True,
+            deconv: bool = False,
+            show_fig: bool = False,
+            save_fig: bool = False,
+            motion_name: str | None = None,
+            save_txt: bool = False,
+            save_full_time_history: bool = False,
+            output_dir: str = None,
+            verbose: bool = True,
+    ) -> Simulation_Results:
         """
         Run linear simulation.
 
@@ -159,7 +176,7 @@ class Linear_Simulation(Simulation):
         save_fig : bool
             Whether to save figures to ``output_dir``. Only effective when
             ``show_fig`` is set to ``True``.
-        motion_name : str or ``None``
+        motion_name : str | None
             Name of the input ground motion. For example, "Northridge". If not
             provided (i.e., ``None``), the current time stamp will be used.
         save_txt : bool
@@ -254,28 +271,33 @@ class Equiv_Linear_Simulation(Simulation):
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
-        Input ground motion. It should be the "rock outrcop" motion if
+    input_motion : Ground_Motion
+        Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+    GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves
         G/Gmax and damping curves of every soil layer.
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
+
+    Raises
+    ------
+    TypeError
+        When ``GGmax_and_damping_curves`` is None
     """
 
     def __init__(
             self,
-            soil_profile,
-            input_motion,
-            GGmax_and_damping_curves,
-            boundary='elastic',
-    ):
+            soil_profile: Vs_Profile,
+            input_motion: Ground_Motion,
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves,
+            boundary: Literal['elastic', 'rigid'] = 'elastic',
+    ) -> None:
         if GGmax_and_damping_curves is None:
             raise TypeError('`GGmax_and_damping_curves` cannot be None.')
 
@@ -292,14 +314,14 @@ class Equiv_Linear_Simulation(Simulation):
 
     def run(
             self,
-            verbose=True,
-            show_fig=False,
-            save_fig=False,
-            motion_name=None,
-            save_txt=False,
-            save_full_time_history=False,
-            output_dir=None,
-    ):
+            verbose: bool = True,
+            show_fig: bool = False,
+            save_fig: bool = False,
+            motion_name: str | None = None,
+            save_txt: bool = False,
+            save_full_time_history: bool = False,
+            output_dir: str | None = None,
+    ) -> Simulation_Results:
         """
         Start equivalent linear simulation.
 
@@ -313,7 +335,7 @@ class Equiv_Linear_Simulation(Simulation):
         save_fig : bool
             Whether to save figures to ``output_dir``. Only effective when
             ``show_fig`` is set to ``True``.
-        motion_name : str or ``None``
+        motion_name : str | None
             Name of the input ground motion. For example, "Northridge". If not
             provided (i.e., ``None``), the current time stamp will be used.
         save_txt : bool
@@ -322,7 +344,7 @@ class Equiv_Linear_Simulation(Simulation):
             When saving simulation results, whether to save the full time
             histories (i.e., every time step, every depth) of the acceleration,
             velocity, displacement, stress, and strain.
-        output_dir : str
+        output_dir : str | None
             Directory for saving the figures and/or result files.
 
         Returns
@@ -392,18 +414,18 @@ class Nonlinear_Simulation(Simulation):
 
     Parameters
     ----------
-    soil_profile : class_Vs_profile.Vs_Profile
+    soil_profile : Vs_Profile
         Soil profile.
-    input_motion : class_ground_motion.Ground_Motion
-        Input ground motion. It should be the "rock outrcop" motion if
+    input_motion : Ground_Motion
+        Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
         Parameters that describe the G/Gmax curves.
-    xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
         Parameters that describe the damping curves.
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
@@ -411,17 +433,22 @@ class Nonlinear_Simulation(Simulation):
     Attributes
     ----------
     Attributes same as the inputs
+
+    Raises
+    ------
+    TypeError
+        When ``G_param`` or ``xi_param`` is ``None``
     """
 
     def __init__(
             self,
-            soil_profile,
-            input_motion,
+            soil_profile: Vs_Profile,
+            input_motion: Ground_Motion,
             *,
-            G_param,
-            xi_param,
-            boundary='elastic',
-    ):
+            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,
+            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,
+            boundary: Literal['elastic', 'rigid'] = 'elastic',
+    ) -> None:
         if G_param is None:
             raise TypeError('`G_param` cannot be None.')
 
@@ -439,24 +466,24 @@ class Nonlinear_Simulation(Simulation):
 
     def run(
             self,
-            sim_dir=None,
-            motion_name=None,
-            save_txt=False,
-            save_full_time_history=True,
-            show_fig=False,
-            save_fig=False,
-            remove_sim_dir=False,
-            verbose=True,
-    ):
+            sim_dir: str | None = None,
+            motion_name: str | None = None,
+            save_txt: bool = False,
+            save_full_time_history: bool = True,
+            show_fig: bool = False,
+            save_fig: bool = False,
+            remove_sim_dir: bool = False,
+            verbose: bool = True,
+    ) -> Simulation_Results:
         """
         Start nonlinear simulation.
 
         Parameters
         ----------
-        sim_dir : str
+        sim_dir : str | None
             Directory for storing temporary input files and storing permenant
             output files/figures.
-        motion_name : str or ``None``
+        motion_name : str | None
             Name of the input ground motion. For example, "Northridge". If not
             provided (i.e., ``None``), the current time stamp will be used.
         save_txt : bool

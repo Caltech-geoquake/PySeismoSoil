@@ -1,13 +1,23 @@
+from __future__ import annotations
+
 import collections
+import json
+from typing import Any, Callable, Type
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
-from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_curves import (
+    Multiple_Damping_Curves,
+    Multiple_GGmax_Curves,
+    Multiple_GGmax_Damping_Curves,
+)
 
 STRAIN_RANGE_PCT = np.logspace(-2, 1)
 
@@ -24,22 +34,36 @@ class Parameter(collections.UserDict):
 
     Parameters
     ----------
-    param_dict : dict
+    param_dict : dict[str, float]
         Name-value pairs of the parameters.
-    allowable_keys : set<str>
+    allowable_keys : set[str] | None
         The allowable parameter names of the constitutive model.
-    func_stress : Python function
+    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None
         A function to calculate shear stress from the parameters.
 
     Attributes
     ----------
-    data : dict
+    data : dict[str, float]
         The original data, stored as a regular dictionary.
-    allowable_keys : set<str>
+    allowable_keys : set[str] | None
         Same as the input parameter.
+
+    Raises
+    ------
+    TypeError
+        When input arguments have invalid types
+    KeyError
+        When keys outside of ``allowable_keys`` exist in ``param_dict``
     """
 
-    def __init__(self, param_dict, *, allowable_keys=None, func_stress=None):
+    def __init__(
+            self,
+            param_dict: dict[str, float],
+            *,
+            allowable_keys: set[str] | None = None,
+            func_stress: Callable[[dict[str, float], ...], np.ndarray]
+            | None = None,
+    ) -> None:
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
 
@@ -58,23 +82,21 @@ class Parameter(collections.UserDict):
         self.func_stress = func_stress
         super().__init__(param_dict)
 
-    def __repr__(self):
-        import json
-
+    def __repr__(self) -> str:
         return json.dumps(self.data, indent=2).replace('"', '')
 
-    def __setitem__(self, key, item):
+    def __setitem__(self, key, item) -> None:
         if key not in self.allowable_keys:
             raise KeyError("The model does not have a '%s' parameter." % key)
 
         self.data[key] = item
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         raise ValueError(
             'Deleting items from the parameter set is not allowed.'
         )
 
-    def serialize(self):
+    def serialize(self) -> np.ndarray:
         """
         Serialize the parameter values into an array of floats. The order of
         the parameters are arbitrary, so any subclass of this class is
@@ -82,7 +104,7 @@ class Parameter(collections.UserDict):
 
         Returns
         -------
-        result : numpy.ndarray
+        result : np.ndarray
             Serialized parameters.
         """
         param_array = []
@@ -91,18 +113,20 @@ class Parameter(collections.UserDict):
 
         return np.array(param_array)
 
-    def get_stress(self, strain_in_pct=STRAIN_RANGE_PCT):
+    def get_stress(
+            self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
+    ) -> np.ndarray | None:
         """
         Get the shear stress array inferred from the set of parameters
 
         Parameters
         ----------
-        strain_in_pct : numpy.ndarray
+        strain_in_pct : np.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        result : numpy.ndarray
+        result : np.ndarray | None
             The shear stress array, with the same shape as the strain array.
             Its unit is identical to the unit of Gmax (one of the HH parameters).
         """
@@ -113,18 +137,20 @@ class Parameter(collections.UserDict):
         hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
         return self.func_stress(strain_in_pct / 100.0, **self.data)
 
-    def get_GGmax(self, strain_in_pct=STRAIN_RANGE_PCT):
+    def get_GGmax(
+            self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
+    ) -> np.ndarray:
         """
         Get the G/Gmax array inferred from the set of parameters
 
         Parameters
         ----------
-        strain_in_pct : numpy.ndarray
+        strain_in_pct : np.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        result : numpy.ndarray
+        result : np.ndarray
             The G/Gmax array, with the same shape as the strain array.
         """
         tau = self.get_stress(strain_in_pct=strain_in_pct)
@@ -137,18 +163,20 @@ class Parameter(collections.UserDict):
         GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
         return GGmax
 
-    def get_damping(self, strain_in_pct=STRAIN_RANGE_PCT):
+    def get_damping(
+            self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
+    ) -> np.ndarray:
         """
         Get the damping array inferred from the set of parameters
 
         Parameters
         ----------
-        strain_in_pct : numpy.ndarray
+        strain_in_pct : np.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        result : numpy.ndarray
+        result : np.ndarray
             The damping array (unit: %), with the same shape as the strain array
         """
         if self.func_stress is None:
@@ -162,25 +190,30 @@ class Parameter(collections.UserDict):
         )
         return damping_in_1 * 100
 
-    def plot_curves(self, figsize=None, dpi=100, **kwargs_to_matplotlib):
+    def plot_curves(
+            self,
+            figsize: tuple[float, float] = None,
+            dpi: float = 100,
+            **kwargs_to_matplotlib: dict[Any, Any],
+    ) -> tuple[Figure, list[Axes]]:
         """
         Plot G/Gmax and damping curves from the model parameters
 
         Parameters
         ----------
-        figsize: (float, float)
+        figsize: tuple[float, float]
             Figure size in inches, as a tuple of two numbers. If ``None``, use
             (3, 6).
         dpi : float
             Figure resolution. If ``None``, use 100.
-        **kwargs_to_matplotlib :
+        **kwargs_to_matplotlib : dict[Any, Any]
             Keyword arguments to be passed to ``matplotlib.pyplot.plot()``.
 
         Returns
         -------
-        fig : matplotlib.figure.Figure
+        fig : Figure
             The figure object.
-        ax : list<matplotlib.axes._subplots.AxesSubplot>
+        ax : list[Axes]
             A list of two axes objects.
         """
         strain = np.logspace(-4, 1)  # unit: percent
@@ -219,19 +252,19 @@ class HH_Param(Parameter):
 
     Parameters
     ----------
-    param_dict : dict
+    param_dict : dict[str, float]
         Values of the HH model parameters. Acceptable key names are:
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Attributes
     ----------
-    data : dict
+    data : dict[str, float]
         HH model parameters with the keys listed above.
-    allowable_keys : set<str>
+    allowable_keys : set[str]
         Valid parameter names of the HH model.
     """
 
-    def __init__(self, param_dict):
+    def __init__(self, param_dict: dict[str, float]) -> None:
         allowable_keys = {
             'gamma_t',
             'a',
@@ -249,7 +282,7 @@ class HH_Param(Parameter):
             allowable_keys=allowable_keys,
         )
 
-    def serialize(self):
+    def serialize(self) -> np.ndarray:
         """
         Return an array of parameter values in the order of:
         {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
@@ -264,19 +297,19 @@ class MKZ_Param(Parameter):
 
     Parameters
     ----------
-    param_dict : dict
+    param_dict : dict[str, float]
         Values of the HH model parameters. Acceptable key names are:
             gamma_ref, s, beta, Gmax
 
     Attributes
     ----------
-    data : dict
+    data : dict[str, float]
         MKZ model parameters with the keys listed above.
-    allowable_keys : set<str>
+    allowable_keys : set[str]
         Valid parameter names of the MKZ model.
     """
 
-    def __init__(self, param_dict):
+    def __init__(self, param_dict: dict[str, float]) -> None:
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
         super().__init__(
             param_dict,
@@ -284,7 +317,7 @@ class MKZ_Param(Parameter):
             allowable_keys=allowable_keys,
         )
 
-    def serialize(self):
+    def serialize(self) -> np.ndarray:
         """
         Return an array of parameter values in the order of:
         {'gamma_ref', 's', 'beta', 'Gmax'}
@@ -310,23 +343,33 @@ class Param_Multi_Layer:
 
     Parameters
     ----------
-    list_of_param_data : list<dict> or list<Param>
+    list_of_param_data : list[dict[str, float]] | list[Parameter]
         List of dict or a list of valid parameter class (such as ``HH_Param``),
         which contain data for parameters of each layer.
-    element_class : PySeismoSoil.class_parameters.HH_Param_Single_Layer et al
+    element_class : Type[Parameter]
         A class name, such as ``HH_Param``. Each element of ``list_of_param_dict``
         will be used to initialize an object of ``element_class``.
 
     Attributes
     ----------
-    param_list : list<``element_class``>
+    param_list : list[Parameter]
         A list of param objects whose type is specified by the user.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
+
+    Raises
+    ------
+    TypeError
+        When an element in ``list_of_param_data`` has invalid type
     """
 
-    def __init__(self, list_of_param_data, *, element_class):
-        param_list = []
+    def __init__(
+            self,
+            list_of_param_data: list[dict[str, float]] | list[Parameter],
+            *,
+            element_class: Type[Parameter],
+    ) -> None:
+        param_list: list[Parameter] = []
         for param_data in list_of_param_data:
             if isinstance(param_data, dict):
                 param_list.append(element_class(param_data))
@@ -340,16 +383,16 @@ class Param_Multi_Layer:
         self.param_list = param_list
         self.n_layer = len(param_list)
 
-    def __contains__(self, item):
+    def __contains__(self, item: Any) -> bool:
         return item in self.param_list
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.n_layer
 
-    def __setitem__(self, i, item):
+    def __setitem__(self, i, item) -> None:
         self.param_list[i] = item
 
-    def __getitem__(self, i):
+    def __getitem__(self, i) -> Parameter | Param_Multi_Layer:
         if isinstance(i, int):
             return self.param_list[i]
 
@@ -358,24 +401,27 @@ class Param_Multi_Layer:
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
-    def __delitem__(self, i):
+    def __delitem__(self, i) -> None:
         del self.param_list[i]
         self.n_layer -= 1
 
-    def construct_curves(self, strain_in_pct=STRAIN_RANGE_PCT):
+    def construct_curves(
+            self,
+            strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
+    ) -> tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]:
         """
         Construct G/Gmax and damping curves from parameter values.
 
         Parameters
         ----------
-        strain_in_pct : numpy.ndarray
+        strain_in_pct : np.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        mgc : PySeismoSoil.class_curves.Multiple_GGmax_Curves
+        mgc : Multiple_GGmax_Curves
             G/Gmax curves for each soil layer.
-        mdc : PySeismoSoil.class_curves.Multiple_Damping_Curves
+        mdc : Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
         curves = None
@@ -395,13 +441,13 @@ class Param_Multi_Layer:
         mgc, mdc = mgdc.get_MGC_MDC_objects()
         return mgc, mdc
 
-    def serialize_to_2D_array(self):
+    def serialize_to_2D_array(self) -> np.ndarray:
         """
-        Serielizes the parameter data to a 2D numpy array.
+        Serialize the parameter data to a 2D numpy array.
 
         Returns
         -------
-        param_2D_array : numpy.ndarray
+        param_2D_array : np.ndarray
             A 2D numpy array whose columns are parameters of each layer.
         """
         output = []
@@ -412,7 +458,13 @@ class Param_Multi_Layer:
         param_2D_array = np.array(output).T
         return param_2D_array
 
-    def save_txt(self, filename, precision='%.5g', sep='\t', **kw_to_savetxt):
+    def save_txt(
+            self,
+            filename: str,
+            precision: str = '%.5g',
+            sep: str = '\t',
+            **kw_to_savetxt: dict[Any, Any],
+    ) -> None:
         """
         Save data as text file.
 
@@ -424,7 +476,7 @@ class Param_Multi_Layer:
             Precision of the numbers to be saved.
         sep : str
             Delimiter identifier.
-        **kw_to_savetxt :
+        **kw_to_savetxt : dict[Any, Any]
             Additional keyword arguments to pass to ``numpy.savetxt()``.
         """
         param_2D_array = self.serialize_to_2D_array()
@@ -451,11 +503,11 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         - setting values: foo[2] = ...
         - length: len(foo)
         - deleting item: del foo[2]
-        - checking existance: bar in foo
+        - checking existence: bar in foo
 
     Parameters
     ----------
-    filename_or_data : str, numpy.ndarray, list<dict>, or list<``HH_Param``>
+    filename_or_data : str | np.ndarray | list[dict[str, float]] | list[HH_Param]
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -480,9 +532,22 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         A list of HH model parameters.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
+
+    Raises
+    ------
+    TypeError
+        When the type of ``filename_or_data`` is not valid
     """
 
-    def __init__(self, filename_or_data, *, sep='\t'):
+    def __init__(
+            self,
+            filename_or_data: str
+            | np.ndarray
+            | list[dict[str, float]]
+            | list[HH_Param],
+            *,
+            sep: str = '\t',
+    ) -> None:
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
@@ -532,7 +597,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : str, numpy.ndarray, list<dict>, or list<``MKZ_Param``>
+    filename_or_data : str | np.ndarray | list[dict[str, float]] | list[HH_Param]
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -557,9 +622,22 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
         A list of MKZ model parameters.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
+
+    Raises
+    ------
+    TypeError
+        When then type of ``filename_or_data`` is not valid
     """
 
-    def __init__(self, filename_or_data, *, sep='\t'):
+    def __init__(
+            self,
+            filename_or_data: str
+            | np.ndarray
+            | list[dict[str, float]]
+            | list[HH_Param],
+            *,
+            sep: str = '\t',
+    ) -> None:
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
