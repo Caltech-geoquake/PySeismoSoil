@@ -425,7 +425,6 @@ class Param_Multi_Layer:
         mdc : Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
-
         # Importing within the method to avoid circular imports
         from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 

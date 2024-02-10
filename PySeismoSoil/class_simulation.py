@@ -70,8 +70,10 @@ class Simulation:
             boundary: Literal['elastic', 'rigid'] = 'elastic',
             # fmt: off
             G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
-            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
+            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,  # noqa: LN001
             GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,
+
+            # noqa: LN001
 
             # fmt: on
     ) -> None:
