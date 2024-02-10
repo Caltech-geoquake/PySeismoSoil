@@ -84,41 +84,41 @@ class Test_Class_Site_Factors(unittest.TestCase):
         z1000_array = [8, 16, 24, 36, 75, 150, 300, 450, 600, 750, 900]
 
         loc = SF._search_sorted(24, z1000_array)
-        self.assertEqual(loc, [1, 2])
+        self.assertEqual(loc, (1, 2))
 
         loc = SF._search_sorted(25, z1000_array)
-        self.assertEqual(loc, [2, 3])
+        self.assertEqual(loc, (2, 3))
 
         loc = SF._search_sorted(60, z1000_array)
-        self.assertEqual(loc, [3, 4])
+        self.assertEqual(loc, (3, 4))
 
         loc = SF._search_sorted(150, z1000_array)
-        self.assertEqual(loc, [4, 5])
+        self.assertEqual(loc, (4, 5))
 
         loc = SF._search_sorted(8, z1000_array)
-        self.assertEqual(loc, [0, 1])
+        self.assertEqual(loc, (0, 1))
 
         loc = SF._search_sorted(900, z1000_array)
-        self.assertEqual(loc, [9, 10])
+        self.assertEqual(loc, (9, 10))
 
     def test_find_neighbors(self):
         Vs30, z1000, PGA = 190, 60, 0.85
         locations = SF._find_neighbors(Vs30, z1000, PGA)
-        self.assertEqual(locations[0], [0, 1])
-        self.assertEqual(locations[1], [3, 4])
-        self.assertEqual(locations[2], [7, 8])
+        self.assertEqual(locations[0], (0, 1))
+        self.assertEqual(locations[1], (3, 4))
+        self.assertEqual(locations[2], (7, 8))
 
         Vs30, z1000, PGA = 175, 900, 0.05
         locations = SF._find_neighbors(Vs30, z1000, PGA)
-        self.assertEqual(locations[0], [0, 1])
-        self.assertEqual(locations[1], [8, 9])
-        self.assertEqual(locations[2], [0, 1])
+        self.assertEqual(locations[0], (0, 1))
+        self.assertEqual(locations[1], (8, 9))
+        self.assertEqual(locations[2], (0, 1))
 
         Vs30, z1000, PGA = 950, 120, 0.01
         locations = SF._find_neighbors(Vs30, z1000, PGA)
-        self.assertEqual(locations[0], [15, 16])
-        self.assertEqual(locations[1], [4, 5])
-        self.assertEqual(locations[2], [0, 1])
+        self.assertEqual(locations[0], (15, 16))
+        self.assertEqual(locations[1], (4, 5))
+        self.assertEqual(locations[2], (0, 1))
 
     def test_interpolate(self):
         import itertools

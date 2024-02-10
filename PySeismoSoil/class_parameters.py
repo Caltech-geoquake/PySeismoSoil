@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import collections
 import json
-from typing import Any, Callable, Type
+from typing import TYPE_CHECKING, Any, Callable, Type
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,11 +13,12 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
-from PySeismoSoil.class_curves import (
-    Multiple_Damping_Curves,
-    Multiple_GGmax_Curves,
-    Multiple_GGmax_Damping_Curves,
-)
+
+if TYPE_CHECKING:  # to avoid circular imports
+    from PySeismoSoil.class_curves import (
+        Multiple_Damping_Curves,
+        Multiple_GGmax_Curves,
+    )
 
 STRAIN_RANGE_PCT = np.logspace(-2, 1)
 
@@ -53,7 +54,7 @@ class Parameter(collections.UserDict):
     TypeError
         When input arguments have invalid types
     KeyError
-        When keys outside of ``allowable_keys`` exist in ``param_dict``
+        When keys outside ``allowable_keys`` exist in ``param_dict``
     """
 
     def __init__(
@@ -408,7 +409,7 @@ class Param_Multi_Layer:
     def construct_curves(
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
-    ) -> tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]:
+    ) -> tuple['Multiple_GGmax_Curves', 'Multiple_Damping_Curves']:
         """
         Construct G/Gmax and damping curves from parameter values.
 
@@ -424,6 +425,10 @@ class Param_Multi_Layer:
         mdc : Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
+
+        # Importing within the method to avoid circular imports
+        from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+
         curves = None
         for param in self.param_list:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)

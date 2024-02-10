@@ -363,7 +363,7 @@ class Damping_Curve(Curve):
             verbose: bool = False,
             parallel: bool = False,
             n_cores: int | None = None,
-    ) -> HH_Param:
+    ) -> 'HH_Param':
         """
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
@@ -414,8 +414,6 @@ class Damping_Curve(Curve):
         HH_x_param : HH_Param
             The best parameters found in the optimization.
         """
-        from PySeismoSoil.class_parameters import HH_Param
-
         HH_x_param = hh.fit_HH_x_single_layer(
             self.raw_data,
             use_scipy=use_scipy,
@@ -498,8 +496,6 @@ class Damping_Curve(Curve):
         H4_x_param : MKZ_Param
             The best parameters found in the optimization.
         """
-        from PySeismoSoil.class_parameters import MKZ_Param
-
         H4_x_param = mkz.fit_H4_x_single_layer(
             self.raw_data,
             use_scipy=use_scipy,
@@ -1150,8 +1146,6 @@ class Multiple_Damping_Curves(Multiple_Curves):
         H4_x_param : MKZ_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
-        from PySeismoSoil.class_parameters import MKZ_Param_Multi_Layer
-
         if save_fig and fig_filename is None:
             fig_filename = self._produce_output_file_name('H4', 'png')
 
