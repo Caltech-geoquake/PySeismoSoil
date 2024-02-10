@@ -73,7 +73,7 @@ class Simulation:
             xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,  # noqa: LN001
             GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,  # noqa: LN001
     ) -> None:
-    # fmt: on
+    # fmt: on  # noqa: E115
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
 
