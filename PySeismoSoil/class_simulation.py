@@ -62,21 +62,18 @@ class Simulation:
         When input arguments have incorrect or invalid values
     """
 
+    # fmt: off
     def __init__(
             self,
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            # fmt: off
             G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
             xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,  # noqa: LN001
-            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,
-
-            # noqa: LN001
-
-            # fmt: on
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,  # noqa: LN001
     ) -> None:
+    # fmt: on
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
 
