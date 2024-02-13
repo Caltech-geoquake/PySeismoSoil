@@ -1462,7 +1462,7 @@ def amplify_motion(
         show_fig: bool = False,
         dpi: int = 100,
         return_fig_obj: bool = False,
-) -> tuple[np.ndarray, Figure, Axes]:
+) -> tuple[np.ndarray, Figure | None, Axes | None]:
     """
     Amplify (or de-amplify) ground motions in the frequency domain. The
     mathematical process behind this function is as follows:
@@ -1646,7 +1646,7 @@ def amplify_motion(
         ax = None
 
     if not return_fig_obj:
-        return response
+        return response, None, None
 
     return response, fig, ax
 
@@ -1743,7 +1743,7 @@ def linear_site_resp(
         transfer_function,
         show_fig=show_fig,
         deconv=deconv,
-    )
+    )[0]
 
     return response, transfer_function
 
@@ -1837,7 +1837,11 @@ def _plot_site_amp(
     time = t_in
 
     fig, _ = hlp._process_fig_ax_objects(
-        fig, ax=None, figsize=figsize, dpi=dpi
+        fig,
+        ax=None,
+        figsize=figsize,
+        dpi=dpi,
+        bypass_ax_creation=True,
     )
     ax = []
 

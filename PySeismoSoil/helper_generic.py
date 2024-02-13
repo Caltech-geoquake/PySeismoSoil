@@ -102,6 +102,7 @@ def _process_fig_ax_objects(
             'polar',
             'rectilinear',
         ] = None,
+        bypass_ax_creation: bool = False,
 ) -> tuple[Figure, Axes]:
     """
     Process figure and axes objects. If ``fig`` and ``ax`` are None, creates
@@ -123,6 +124,8 @@ def _process_fig_ax_objects(
     ax_proj : Literal[None, 'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear']
         The projection type of the axes. The default None results in a
         'rectilinear' projection.
+    bypass_ax_creation : bool
+        If True, do not create an `ax` object if `ax` is `None`
 
     Returns
     -------
@@ -132,12 +135,15 @@ def _process_fig_ax_objects(
         The axes object being created or being passed into this function.
     """
     if fig is None:  # if a figure handle is not provided, create new figure
-        fig = pl.figure(figsize=figsize, dpi=dpi)
+        fig = plt.figure(figsize=figsize, dpi=dpi)
     else:  # if provided, plot to the specified figure
-        pl.figure(fig.number)
+        plt.figure(fig.number)
 
-    if ax is None:  # if ax is not provided
-        ax = plt.axes(projection=ax_proj)  # create new axes and plot lines on it
+    if ax is None and not bypass_ax_creation:
+        if ax_proj is None:
+            ax = fig.add_subplot(1, 1, 1)
+        else:
+            ax = plt.axes(projection=ax_proj)  # create new axes and plot lines on it
     else:
         ax = ax  # plot lines on the provided axes handle
 
