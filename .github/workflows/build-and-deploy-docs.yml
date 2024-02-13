@@ -42,6 +42,7 @@ jobs:
       - name: Sanity check
         run: |
           pwd
+          tree .
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Pages
