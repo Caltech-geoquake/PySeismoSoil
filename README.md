@@ -41,9 +41,7 @@ PySeismoSoil currently support these Python versions:
 
 ## API Documentation
 
-Stable version: https://pyseismosoil.readthedocs.io/en/stable/
-
-(With latest features: https://pyseismosoil.readthedocs.io/en/latest/)
+https://caltech-geoquake.github.io/PySeismoSoil/
 
 ## Examples
 
