@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
@@ -25,57 +29,62 @@ class Simulation_Results:
     rediscretized_profile : Vs_Profile
         Vs profile (the re-discretized version that ensures proper
         representation of wave shapes).
-    max_a_v_d : numpy.ndarray
+    max_a_v_d : np.ndarray | None
         Maximum acceleration, velocity, displacement (during ground shaking)
         at all layer boundaries.
-    max_strain_stress : numpy.ndarray
+    max_strain_stress : np.ndarray | None
         Maximum strain and stress (during ground shaking) at layer midpoints.
-    trans_func : Frequency_Spectrum
+    trans_func : Frequency_Spectrum | None
         Transfer function (between the output and input motions). It can
         be complex-valued or real-valued (i.e., amplitudes only).
-    trans_func_smoothed : Frequency_Spectrum or ``None``
+    trans_func_smoothed : Frequency_Spectrum | None
         The smoothed transfer function (between the output and input motions).
         It is by default real-valued (i.e., amplitudes only).
-    time_history_accel : numpy.ndarray
+    time_history_accel : np.ndarray | None
         Time histories of accelerations of all layers (at layer boundaries).
-    time_history_veloc : numpy.ndarray
+    time_history_veloc : np.ndarray | None
         Time histories of velocities of all layers (at layer boundaries).
-    time_history_displ : numpy.ndarray
+    time_history_displ : np.ndarray | None
         Time histories of displacements of all layers (at layer boundaries).
-    time_history_stress : numpy.ndarray
+    time_history_stress : np.ndarray | None
         Time histories of shear stresses of all layers (at layer midpoints).
-    time_history_strain : numpy.ndarray
+    time_history_strain : np.ndarray | None
         Time histories of shear strains of all layers (at layer midpoints).
-    motion_name : str or ``None``
+    motion_name : str | None
         The name of the input motion to be used as an identifier in the
         file names. If ``None``, the current time stamp will used.
-    output_dir : str or ``None``
+    output_dir : str | None
         Directory to which to save the output files. If ``None``, the current
         time stamp will be used.
 
     Attributes
     ----------
     Attributes same as inputs
+
+    Raises
+    ------
+    TypeError
+        If input arguments have incorrect type
     """
 
     def __init__(
             self,
-            input_accel,
-            accel_on_surface,
-            rediscretized_profile,
+            input_accel: Ground_Motion,
+            accel_on_surface: Ground_Motion,
+            rediscretized_profile: Vs_Profile,
             *,
-            max_a_v_d=None,
-            max_strain_stress=None,
-            trans_func=None,
-            trans_func_smoothed=None,
-            time_history_accel=None,
-            time_history_veloc=None,
-            time_history_displ=None,
-            time_history_stress=None,
-            time_history_strain=None,
-            motion_name=None,
-            output_dir=None,
-    ):
+            max_a_v_d: np.ndarray | None = None,
+            max_strain_stress: np.ndarray | None = None,
+            trans_func: Frequency_Spectrum | None = None,
+            trans_func_smoothed: Frequency_Spectrum | None = None,
+            time_history_accel: np.ndarray | None = None,
+            time_history_veloc: np.ndarray | None = None,
+            time_history_displ: np.ndarray | None = None,
+            time_history_stress: np.ndarray | None = None,
+            time_history_strain: np.ndarray | None = None,
+            motion_name: str | None = None,
+            output_dir: str | None = None,
+    ) -> None:
         if not isinstance(input_accel, Ground_Motion):
             raise TypeError('`input_accel` needs to be of Ground_Motion type.')
 
@@ -165,13 +174,15 @@ class Simulation_Results:
         self.motion_name = motion_name
         self.output_dir = output_dir
 
+    # fmt: off
     def plot(
             self,
-            dpi=100,
-            save_fig=False,
-            amplif_func_ylog=True,
-            output_dir=None,
-    ):
+            dpi: float = 100,
+            save_fig: bool = False,
+            amplif_func_ylog: bool = True,
+            output_dir: str | None = None,
+    ) -> tuple[tuple[Figure, Figure | None], tuple[Axes, tuple[Axes | None, ...]]]:
+        # fmt: on
         """
         Plot simulation results: output vs input motions, transfer functions
         and maximum acceleration, velocity, displacement, strain, and stress
@@ -186,15 +197,15 @@ class Simulation_Results:
         amplif_func_ylog : bool
             Whether to show the Y axis of the amplification function in log
             scale.
-        output_dir : str
+        output_dir : str | None
             The directory to save the plots. This overrides the ``output_dir``
             parameter when constructing the this class.
 
         Returns
         -------
-        figs : list
-            A list of three figure objects.
-        axes : list
+        figs : tuple[Figure, Figure | None]
+            A tuple of two figure objects.
+        axes : tuple[Axes, tuple[Axes | None, ...]]
             A list of axes objects (or axes lists, if multiple subplots).
         """
         # -------- Plot output/input motions and transfer functions ------------
@@ -309,8 +320,8 @@ class Simulation_Results:
             fig2 = None
             ax21, ax22, ax23, ax24, ax25 = None, None, None, None, None
 
-        figs = [fig1, fig2]
-        axes = [axes1, [ax21, ax22, ax23, ax24, ax25]]
+        figs = (fig1, fig2)
+        axes = (axes1, (ax21, ax22, ax23, ax24, ax25))
 
         if save_fig:
             if output_dir is None:
@@ -334,8 +345,11 @@ class Simulation_Results:
         return figs, axes
 
     def to_txt(
-            self, save_full_time_history=True, verbose=False, output_dir=None
-    ):
+            self,
+            save_full_time_history: bool = True,
+            verbose: bool = False,
+            output_dir: str | None = None,
+    ) -> None:
         """
         Save simulation results (output time history, transfer function, the
         profile of maximum acceleration/velocity/displacement/stress/train, etc.)
@@ -350,9 +364,9 @@ class Simulation_Results:
             are not ``None``.
         verbose : bool
             Whether to show on the console where the files are saved to.
-        output_dir : str
+        output_dir : str | None
             The directory to save the files. This overrides the ``output_dir``
-            parameter when constructing the this class.
+            parameter when constructing the class.
         """
         if output_dir is None:
             output_dir = self.output_dir

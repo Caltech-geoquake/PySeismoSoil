@@ -285,7 +285,7 @@ class Test_Helper_Site_Response(unittest.TestCase):
             (freq, (amp, phase)),
             show_fig=True,
             taper=False,
-        )
+        )[0]
 
         # you can calculate the response by hand:
         accel_out_bench = (

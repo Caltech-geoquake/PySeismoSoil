@@ -1,17 +1,27 @@
+from __future__ import annotations
+
+from typing import Any, Literal
+
 import numpy as np
 import scipy.fftpack
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
+from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+from PySeismoSoil.class_parameters import (
+    HH_Param_Multi_Layer,
+    MKZ_Param_Multi_Layer,
+)
+from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 def check_layer_count(
-        vs_profile,
+        vs_profile: Vs_Profile,
         *,
-        GGmax_and_damping_curves=None,
-        G_param=None,
-        xi_param=None,
-):
+        GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves = None,
+        G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer = None,
+        xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer = None,
+) -> None:
     """
     Check that ``G_param`` and ``xi_param`` have enough sets of parameters for
     ``vs_profile``, or ``GGmax_curves`` and ``xi_curves`` have enough sets of
@@ -19,14 +29,19 @@ def check_layer_count(
 
     Parameters
     ----------
-    vs_profile : class_Vs_profile.Vs_Profile
+    vs_profile : Vs_Profile
         Vs profile.
-    GGmax_and_damping_curves : class_curves.Multiple_GGmax_Damping_Curves
+    GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves
         G/Gmax and damping curves.
-    G_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
         HH or MKZ parameters for G/Gmax curves.
-    xi_param : class_parameters.HH_Param_Multi_Layer or MKZ_Param_Multi_Layer
+    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
         HH or MKZ parameters for damping curves.
+
+    Raises
+    ------
+    ValueError
+        When checks fail
     """
     max_mat_num = np.max(vs_profile._material_number)
     if G_param is not None and G_param.n_layer < max_mat_num:
@@ -48,7 +63,11 @@ def check_layer_count(
         )
 
 
-def linear(vs_profile, input_motion, boundary='elastic'):
+def linear(
+        vs_profile: np.ndarray,
+        input_motion: np.ndarray,
+        boundary: Literal['elastic', 'rigid'] = 'elastic',
+) -> tuple[np.ndarray, ...]:
     """
     Linear site response simulation.
 
@@ -63,7 +82,7 @@ def linear(vs_profile, input_motion, boundary='elastic'):
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear-wave velocity profile, as a 2D numpy array. It should have the
         following columns:
 
@@ -74,52 +93,56 @@ def linear(vs_profile, input_motion, boundary='elastic'):
          +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
 
-    input_motion : numpy.ndarray
+    input_motion : np.ndarray
         Input acceleration on rock outcrop (unit: m/s/s). It should have two
         columns (time and acceleration). It should be the "rock outrcop" motion
         if ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
         the recorded motion at the bottom of the Vs profile.
 
     Returns
     -------
-    new_profile : numpy.ndarray
-        Re-discretized Vs profile.
-    freq_array : numpy.ndarray
-        "Single-sided" frequency. Shape: ``(half_N, )`` or ``(half_N - 1, )``.
-    tf : numpy.ndarray
-        Transfer function (complex-valued). Same shape as ``freq_array``.
-    accel_on_surface : numpy.ndarray
-        Simulated acceleration on the ground surface (two-columed).
-    out_a : numpy.ndarray
-        Simulated acceleration time history of every layer.
-        Shape: ``(num_time_step, n_layer)``.
-    out_v : numpy.ndarray
-        Simulated velocity time history of every layer. Same shape as ``out_a``.
-    out_d : numpy.ndarray
-        Simulated displacement time history of every layer. Same shape as
-        ``out_a``.
-    out_gamma : numpy.ndarray
-        Simulated shear strain time history of every layer.
-        Shape: ``(num_time_step, n_layer - 1)``.
-    out_tau : numpy.ndarray
-        Simulated shear stress time history of every layer. Same shape as
-        ``out_gamma``.
-    max_avd : numpy.ndarray
-        Maximum acceleration, velocity, and displacement during the shaking
-        process, of each layer. Shape: ``(n_layer, )``.
-    max_gt : numpy.ndarray
-        Maximum shear strain and shear stress during the shaking process, of
-        each layer. Shape: ``(n_layer - 1, )``.
+    tuple[np.ndarray, ...]
+        A tuple of 11 numpy arrays:
+            new_profile
+                Re-discretized Vs profile.
+            freq_array
+                "Single-sided" frequency. Shape: ``(half_N, )`` or
+                ``(half_N - 1, )``.
+            tf
+                Transfer function (complex-valued). Same shape as ``freq_array``.
+            accel_on_surface
+                Simulated acceleration on the ground surface (two-columed).
+            out_a
+                Simulated acceleration time history of every layer.
+                Shape: ``(num_time_step, n_layer)``.
+            out_v
+                Simulated velocity time history of every layer. Same shape
+                as ``out_a``.
+            out_d
+                Simulated displacement time history of every layer. Same
+                shape as ``out_a``.
+            out_gamma
+                Simulated shear strain time history of every layer.
+                Shape: ``(num_time_step, n_layer - 1)``.
+            out_tau
+                Simulated shear stress time history of every layer. Same
+                shape as ``out_gamma``.
+            max_avd
+                Maximum acceleration, velocity, and displacement during the
+                shaking process, of each layer. Shape: ``(n_layer, )``.
+            max_gt
+                Maximum shear strain and shear stress during the shaking
+                process, of each layer. Shape: ``(n_layer - 1, )``.
     """
     hlp.check_Vs_profile_format(vs_profile)
     hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
 
-    # -------- Part 1: Data preparation -- soil profile and input motion -------
+    # -------- Part 1: Data preparation -- soil profile and input motion -----
     (
         flag,
         N,
@@ -138,7 +161,7 @@ def linear(vs_profile, input_motion, boundary='elastic'):
         ACCEL_IN,
     ) = _prepare_inputs(vs_profile=vs_profile, input_motion=input_motion)
 
-    # -------- Part 2: Start calculation ---------------------------------------
+    # -------- Part 2: Start calculation -------------------------------------
     H, accel_out, veloc, displ, strain, _ = _lin_resp_every_layer(
         dt=dt,
         freq=freq,
@@ -152,12 +175,12 @@ def linear(vs_profile, input_motion, boundary='elastic'):
         ACCEL_IN=ACCEL_IN,
     )
 
-    # --------- Part 3: Calculate stress from strain ---------------------------
+    # --------- Part 3: Calculate stress from strain -------------------------
     stress, half_N = _calc_stress(
         G=G, D=D, strain=strain, N=N, n_layer=n_layer
     )
 
-    # --------- Part 4: Post-processing -----------------------------------------
+    # --------- Part 4: Post-processing ---------------------------------------
     (
         freq_array,
         tf,
@@ -199,21 +222,21 @@ def linear(vs_profile, input_motion, boundary='elastic'):
 
 
 def equiv_linear(
-        vs_profile,
-        input_motion,
-        curve_matrix,
-        boundary='elastic',
-        tol=0.075,
-        R_gamma=0.65,
-        max_iter=10,
-        verbose=True,
-):
+        vs_profile: np.ndarray,
+        input_motion: np.ndarray,
+        curve_matrix: np.ndarray,
+        boundary: Literal['elastic', 'rigid'] = 'elastic',
+        tol: float = 0.075,
+        R_gamma: float = 0.65,
+        max_iter: int = 10,
+        verbose: bool = True,
+) -> tuple[np.ndarray, ...]:
     """
     Equivalent linear site response simulation.
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear-wave velocity profile, as a 2D numpy array. It should have the
         following columns:
 
@@ -224,13 +247,13 @@ def equiv_linear(
          +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
 
-    input_motion : numpy.ndarray
+    input_motion : np.ndarray
         Input acceleration on rock outcrop (unit: m/s/s). It should have two
         columns (time and acceleration). It should be the "rock outrcop" motion
         if ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion)
         if ``boundary`` is set to ``"rigid"``.
-    curve_matrix : numpy.ndarray
+    curve_matrix : np.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
          +------------+--------+------------+-------------+-------------+--------+-----+
@@ -239,7 +262,7 @@ def equiv_linear(
          |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
          +------------+--------+------------+-------------+-------------+--------+-----+
 
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition. 'Elastic' means that the input motion is the
         "rock outcrop" motion, and 'rigid' means that the input motion is
         the recorded motion at the bottom of the Vs profile.
@@ -256,34 +279,38 @@ def equiv_linear(
 
     Returns
     -------
-    new_profile : numpy.ndarray
-        Re-discretized Vs profile.
-    freq_array : numpy.ndarray
-        "Single-sided" frequency. Shape: ``(half_N, )`` or ``(half_N - 1, )``.
-    tf : numpy.ndarray
-        Transfer function (complex-valued). Same shape as ``freq_array``.
-    accel_on_surface : numpy.ndarray
-        Simulated acceleration on the ground surface (two-columed).
-    out_a : numpy.ndarray
-        Simulated acceleration time history of every layer.
-        Shape: ``(num_time_step, n_layer)``.
-    out_v : numpy.ndarray
-        Simulated velocity time history of every layer. Same shape as ``out_a``.
-    out_d : numpy.ndarray
-        Simulated displacement time history of every layer. Same shape as
-        ``out_a``.
-    out_gamma : numpy.ndarray
-        Simulated shear strain time history of every layer.
-        Shape: ``(num_time_step, n_layer - 1)``.
-    out_tau : numpy.ndarray
-        Simulated shear stress time history of every layer. Same shape as
-        ``out_gamma``.
-    max_avd : numpy.ndarray
-        Maximum acceleration, velocity, and displacement during the shaking
-        process, of each layer. Shape: ``(n_layer, )``.
-    max_gt : numpy.ndarray
-        Maximum shear strain and shear stress during the shaking process, of
-        each layer. Shape: ``(n_layer - 1, )``.
+    tuple[np.ndarray, ...]
+        A tuple of 11 numpy arrays:
+            new_profile
+                Re-discretized Vs profile.
+            freq_array
+                "Single-sided" frequency. Shape: ``(half_N, )`` or
+                ``(half_N - 1, )``.
+            tf
+                Transfer function (complex-valued). Same shape as ``freq_array``.
+            accel_on_surface
+                Simulated acceleration on the ground surface (two-columed).
+            out_a
+                Simulated acceleration time history of every layer.
+                Shape: ``(num_time_step, n_layer)``.
+            out_v
+                Simulated velocity time history of every layer. Same shape
+                as ``out_a``.
+            out_d
+                Simulated displacement time history of every layer. Same
+                shape as ``out_a``.
+            out_gamma
+                Simulated shear strain time history of every layer.
+                Shape: ``(num_time_step, n_layer - 1)``.
+            out_tau
+                Simulated shear stress time history of every layer. Same
+                shape as ``out_gamma``.
+            max_avd
+                Maximum acceleration, velocity, and displacement during the
+                shaking process, of each layer. Shape: ``(n_layer, )``.
+            max_gt
+                Maximum shear strain and shear stress during the shaking
+                process, of each layer. Shape: ``(n_layer - 1, )``.
 
     Notes
     -----
@@ -441,51 +468,57 @@ def equiv_linear(
     )
 
 
-def _prepare_inputs(*, vs_profile, input_motion):
+def _prepare_inputs(
+        *, vs_profile: np.ndarray, input_motion: np.ndarray
+) -> tuple[Any, ...]:
     """
     Prepare input variables from ``vs_profile`` and ``input_motion``.
 
     Parameters
     ----------
-    vs_profile : numpy.ndarray
+    vs_profile : np.ndarray
         Shear-wave velocity profile, as a 2D numpy array.
-    input_motion : numpy.ndarray
+    input_motion : np.ndarray
         Input acceleration on rock outcrop (unit: m/s/s). It should have two
         columns (time and acceleration).
 
     Returns
     -------
-    flag : {0, 1}
-        0 if the original input motion length is even; 1 if odd.
-    N : int
-        Length of frequency array, after odd-even adjustment.
-    freq : numpy.ndarray
-        Frequency array.
-    new_profile : numpy.ndarray
-        Re-discretized Vs profile.
-    h : numpy.ndarray
-        Layer thickness.
-    vs : numpy.ndarray
-        Shear-wave velocity of every layer.
-    D : numpy.ndarray
-        Damping ratio of every layer. (Unit: 1)
-    rho : numpy.ndarray
-        Mass density of every layer. (Unit: kg/m^3)
-    mat_nr : numpy.ndarray
-        Material index of every layer. Every index maps a layer to its corresponding
-        material (i.e., G/Gmax and damping).
-    n_layer : int
-        Number of soil layers, including the bedrock at the bottom.
-    Gmax : numpy.ndarray
-        Initial shear modulus of every layer. (Unit: Pa)
-    G : numpy.ndarray
-        Initial shear modulus of every layer (identical to ``Gmax``). (Unit: Pa)
-    t : numpy.ndarray
-        Time array.
-    dt : float
-        Recording time interval
-    ACCEL_IN : numpy.ndarray
-        An array of Fourier spectra (complex values) of the input acceleration.
+    tuple[Any, ...]
+        A tuple of 15 elements:
+            flag : Literal[0, 1]
+                0 if the original input motion length is even; 1 if odd.
+            N : int
+                Length of frequency array, after odd-even adjustment.
+            freq : np.ndarray
+                Frequency array.
+            new_profile : np.ndarray
+                Re-discretized Vs profile.
+            h : np.ndarray
+                Layer thickness.
+            vs : np.ndarray
+                Shear-wave velocity of every layer.
+            D : np.ndarray
+                Damping ratio of every layer. (Unit: 1)
+            rho : np.ndarray
+                Mass density of every layer. (Unit: kg/m^3)
+            mat_nr : np.ndarray
+                Material index of every layer. Every index maps a layer to its
+                corresponding material (i.e., G/Gmax and damping).
+            n_layer : int
+                Number of soil layers, including the bedrock at the bottom.
+            Gmax : np.ndarray
+                Initial shear modulus of every layer. (Unit: Pa)
+            G : np.ndarray
+                Initial shear modulus of every layer (identical to ``Gmax``).
+                (Unit: Pa)
+            t : np.ndarray
+                Time array.
+            dt : float
+                Recording time interval
+            ACCEL_IN : np.ndarray
+                An array of Fourier spectra (complex values) of the input
+                acceleration.
     """
     # ---------- Input motion -------------------------------------
     # On 05/26/2019, confirmed with MATLAB SeismoSoil that this is correct:
@@ -546,18 +579,20 @@ def _prepare_inputs(*, vs_profile, input_motion):
 
 def _lin_resp_every_layer(
         *,
-        dt,
-        freq,
-        N,
-        n_layer,
-        h,
-        G,
-        D,
-        rho,
-        boundary,
-        ACCEL_IN,
-        R_gamma=0.65,
-):
+        dt: float,
+        freq: np.ndarray,
+        N: int,
+        n_layer: int,
+        h: np.ndarray,
+        G: np.ndarray,
+        D: np.ndarray,
+        rho: np.ndarray,
+        boundary: Literal['elastic', 'rigid'],
+        ACCEL_IN: np.ndarray,
+        R_gamma: float = 0.65,
+) -> tuple[
+    np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+]:
     """
     Propagate input motion to get the linear site response of every layer.
 
@@ -565,23 +600,23 @@ def _lin_resp_every_layer(
     ----------
     dt : float
         Recording time interval.
-    freq : numpy.ndarray
+    freq : np.ndarray
         Frequency array.
     N : int
         Length of frequency array, after odd-even adjustment.
     n_layer : int
         Number of soil layers, including the bedrock at the bottom.
-    h : numpy.ndarray
+    h : np.ndarray
         Layer thickness.
-    G : numpy.ndarray
+    G : np.ndarray
         Shear modulus of every layer. (Unit: Pa)
-    D : numpy.ndarray
+    D : np.ndarray
         Damping ratio of every layer. (Unit: 1)
-    rho : numpy.ndarray
+    rho : np.ndarray
         Mass density of every layer. (Unit: kg/m^3)
-    boundary : {'elastic', 'rigid'}
+    boundary : Literal['elastic', 'rigid']
         Boundary condition.
-    ACCEL_IN : numpy.ndarray
+    ACCEL_IN : np.ndarray
         An array of Fourier spectra (complex values) of the input acceleration.
         It should be the "rock outrcop" motion if ``boundary`` is set to
         ``"elastic"``, and it should be the recorded motion at the bottom of
@@ -594,19 +629,19 @@ def _lin_resp_every_layer(
 
     Returns
     -------
-    H : numpy.ndarray
+    H : np.ndarray
         A 2D numpy array of shape ``(N, n_layer)``. Each column of ``H`` is the
         transfer function between the corresponding layer to the bottom layer.
-    accel_out : numpy.ndarray
+    accel_out : np.ndarray
         A 2D numpy array of shape ``(N, n_layer)``. Each column of ``accel_out``
         is the acceleration time history of the corresponding layer.
-    veloc : numpy.ndarray
+    veloc : np.ndarray
         Velocity time history of every layer. Shape: ``(N, n_layer)``.
-    displ : numpy.ndarray
+    displ : np.ndarray
         Displacement time history of every layer. Shape: ``(N, n_layer)``.
-    strain : numpy.ndarray
+    strain : np.ndarray
         Strain time history of every layer. Shape: ``(N, n_layer)``.
-    eff_strain : numpy.ndarray
+    eff_strain : np.ndarray
         The "effective strain level" of every layer. Shape: ``(n_layer, )``.
     """
     # ----- 1: Linear transfer function ---------------------------
@@ -722,26 +757,33 @@ def _lin_resp_every_layer(
     return H, accel_out, veloc, displ, strain, eff_strain
 
 
-def _calc_stress(*, G, D, N, n_layer, strain):
+def _calc_stress(
+        *,
+        G: np.ndarray,
+        D: np.ndarray,
+        N: int,
+        n_layer: int,
+        strain: np.ndarray,
+) -> tuple[np.ndarray, int]:
     """
     Calculate stress time history from strain time history.
 
     Parameters
     ----------
-    G : numpy.ndarray
+    G : np.ndarray
         Shear modulus of every layer. Unit: Pa. Shape: ``(n_layer, )``.
-    D : numpy.ndarray
+    D : np.ndarray
         Damping ratio of every layer. Unit: 1. Shape: ``(n_layer, )``.
     N : int
         Length of frequency array, after odd-even adjustment.
     n_layer : int
         Number of soil layers, including the bedrock at the bottom.
-    strain : numpy.ndarray
+    strain : np.ndarray
         Strain time history of every layer. Shape: ``(N, n_layer)``.
 
     Returns
     -------
-    stress : numpy.ndarray
+    stress : np.ndarray
         Stress time history of every layer. Shape: ``(N, n_layer)``.
     half_N : int
         The length of the "single-sided" frequency spectrum.
@@ -763,76 +805,80 @@ def _calc_stress(*, G, D, N, n_layer, strain):
 
 def _post_processing(
         *,
-        flag,
-        freq,
-        half_N,
-        H,
-        t,
-        accel_out,
-        veloc,
-        displ,
-        strain,
-        stress,
-        h,
-):
+        flag: Literal[0, 1],
+        freq: np.ndarray,
+        half_N: int,
+        H: np.ndarray,
+        t: np.ndarray,
+        accel_out: np.ndarray,
+        veloc: np.ndarray,
+        displ: np.ndarray,
+        strain: np.ndarray,
+        stress: np.ndarray,
+        h: np.ndarray,
+) -> tuple[np.ndarray, ...]:
     """
     Post-process simulation results.
 
     Parameters
     ----------
-    flag : {0, 1}
+    flag : Literal[0, 1]
         0 if the original input motion length is even; 1 if odd.
-    freq : numpy.ndarray
+    freq : np.ndarray
         Frequency array.
     half_N : int
         The length of the "single-sided" frequency spectrum.
-    H : numpy.ndarray
+    H : np.ndarray
         A 2D numpy array of shape ``(N, n_layer)``. Each column of ``H`` is the
         transfer function between the corresponding layer to the bottom layer.
-    t : numpy.ndarray
+    t : np.ndarray
         Time array.
-    accel_out : numpy.ndarray
+    accel_out : np.ndarray
         A 2D numpy array of shape ``(N, n_layer)``. Each column of ``accel_out``
         is the acceleration time history of the corresponding layer.
-    veloc : numpy.ndarray
+    veloc : np.ndarray
         Velocity time history of every layer. Shape: ``(N, n_layer)``.
-    displ : numpy.ndarray
+    displ : np.ndarray
         Displacement time history of every layer. Shape: ``(N, n_layer)``.
-    strain : numpy.ndarray
+    strain : np.ndarray
         Strain time history of every layer. Shape: ``(N, n_layer)``.
-    stress : numpy.ndarray
+    stress : np.ndarray
         Stress time history of every layer. Shape: ``(N, n_layer)``.
-    h : numpy.ndarray
+    h : np.ndarray
         Layer thickness. Shape: ``(n_layer, )``.
 
     Returns
     -------
-    freq_array : numpy.ndarray
-        "Single-sided" frequency. Shape: ``(half_N, )`` or ``(half_N - 1, )``.
-    tf : numpy.ndarray
-        Transfer function (complex-valued). Same shape as ``freq_array``.
-    accel_on_surface : numpy.ndarray
-        Simulated acceleration on the ground surface (two-columed).
-    out_a : numpy.ndarray
-        Simulated acceleration time history of every layer.
-        Shape: ``(num_time_step, n_layer)``.
-    out_v : numpy.ndarray
-        Simulated velocity time history of every layer. Same shape as ``out_a``.
-    out_d : numpy.ndarray
-        Simulated displacement time history of every layer. Same shape as
-        ``out_a``.
-    out_gamma : numpy.ndarray
-        Simulated shear strain time history of every layer.
-        Shape: ``(num_time_step, n_layer - 1)``.
-    out_tau : numpy.ndarray
-        Simulated shear stress time history of every layer. Same shape as
-        ``out_gamma``.
-    max_avd : numpy.ndarray
-        Maximum acceleration, velocity, and displacement during the shaking
-        process, of each layer. Shape: ``(n_layer, )``.
-    max_gt : numpy.ndarray
-        Maximum shear strain and shear stress during the shaking process, of
-        each layer. Shape: ``(n_layer - 1, )``.
+    tuple[np.ndarray, ...]
+        A tuple of 10 numpy arrays
+            freq_array : np.ndarray
+                "Single-sided" frequency. Shape: ``(half_N, )`` or
+                ``(half_N - 1, )``.
+            tf : np.ndarray
+                Transfer function (complex-valued). Same shape as ``freq_array``.
+            accel_on_surface : np.ndarray
+                Simulated acceleration on the ground surface (two-columed).
+            out_a : np.ndarray
+                Simulated acceleration time history of every layer.
+                Shape: ``(num_time_step, n_layer)``.
+            out_v : np.ndarray
+                Simulated velocity time history of every layer. Same shape
+                as ``out_a``.
+            out_d : np.ndarray
+                Simulated displacement time history of every layer. Same
+                shape as ``out_a``.
+            out_gamma : np.ndarray
+                Simulated shear strain time history of every layer.
+                Shape: ``(num_time_step, n_layer - 1)``.
+            out_tau : np.ndarray
+                Simulated shear stress time history of every layer. Same
+                shape as ``out_gamma``.
+            max_avd : np.ndarray
+                Maximum acceleration, velocity, and displacement during the
+                shaking process, of each layer. Shape: ``(n_layer, )``.
+            max_gt : np.ndarray
+                Maximum shear strain and shear stress during the shaking
+                process, of each layer. Shape: ``(n_layer - 1, )``.
     """
     if flag == 0:  # originally the input motion length is even
         freq_array = freq[: half_N - 1]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -5,7 +7,14 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
 
-def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
+def tau_MKZ(
+        gamma: np.ndarray,
+        *,
+        gamma_ref: float,
+        beta: float,
+        s: float,
+        Gmax: float,
+) -> np.ndarray:
     """
     Calculate the MKZ shear stress. The MKZ model is proposed in Matasovic and
     Vucetic (1993), and has the following form::
@@ -24,7 +33,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
 
     Parameters
     ----------
-    gamma : numpy.ndarray
+    gamma : np.ndarray
         The shear strain array. Must be a 1D array. Its unit should be '1',
         rather than '%'.
     gamma_ref : float
@@ -38,7 +47,7 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
 
     Returns
     -------
-    T_MKZ : numpy.ndarray
+    T_MKZ : np.ndarray
         The shear stress determined by the formula above. Same shape as ``x``,
         and same unit as ``Gmax``.
     """
@@ -49,28 +58,28 @@ def tau_MKZ(gamma, *, gamma_ref, beta, s, Gmax):
 
 
 def fit_H4_x_single_layer(
-        damping_data_in_pct,
+        damping_data_in_pct: np.ndarray,
         *,
-        use_scipy=True,
-        pop_size=800,
-        n_gen=100,
-        lower_bound_power=-4,
-        upper_bound_power=6,
-        eta=0.1,
-        seed=0,
-        show_fig=False,
-        verbose=False,
-        suppress_warnings=True,
-        parallel=False,
-        n_cores=None,
-):
+        use_scipy: bool = True,
+        pop_size: int = 800,
+        n_gen: int = 100,
+        lower_bound_power: float = -4,
+        upper_bound_power: float = 6,
+        eta: float = 0.1,
+        seed: int = 0,
+        show_fig: bool = False,
+        verbose: bool = False,
+        suppress_warnings: bool = True,
+        parallel: bool = False,
+        n_cores: int | None = None,
+) -> dict[str, float]:
     """
     Perform H4_x curve fitting for one damping curve using the genetic
     algorithm.
 
     Parameters
     ----------
-    damping_data_in_pct : numpy.ndarray
+    damping_data_in_pct : np.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
     use_scipy : bool
@@ -101,16 +110,18 @@ def fit_H4_x_single_layer(
     verbose : bool
         Whether to display information (statistics of the loss in each
         generation) on the console.
-    supress_warnings : bool
+    suppress_warnings : bool
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
     parallel : bool
         Whether to use multiple processors in the calculation. All CPU cores
         will be used if set to ``True``.
+    n_cores : int | None
+        The number of CPU cores to use in the curve fitting
 
     Return
     ------
-    best_param : dict
+    best_param : dict[str, float]
         The best parameters found in the optimization.
     """
     hlp.check_two_column_format(damping_data_in_pct, ensure_non_negative=True)
@@ -164,7 +175,10 @@ def fit_H4_x_single_layer(
     return best_param
 
 
-def damping_misfit(param_without_Gmax, damping_data):
+def damping_misfit(
+        param_without_Gmax: tuple[float, float, float],
+        damping_data: np.ndarray,
+) -> float:
     """
     Calculate the misfit given a set of MKZ parameters. Note that the values
     in `param` are actually the 10-based power of the actual MKZ parameters.
@@ -173,10 +187,10 @@ def damping_misfit(param_without_Gmax, damping_data):
 
     Parameters
     ----------
-    param_without_Gmax : tuple<float>
+    param_without_Gmax : tuple[float, float, float]
         MKZ model parameters, in the order specified below:
             gamma_ref, s, beta
-    damping_data : numpy.ndarray
+    damping_data : np.ndarray
         2D numpy array with two columns (strain and damping value). Both
         columns need to use "1" as the unit, not percent.
 
@@ -203,7 +217,10 @@ def damping_misfit(param_without_Gmax, damping_data):
     return error
 
 
-def serialize_params_to_array(param, to_files=False):
+def serialize_params_to_array(
+        param: dict[str, float],
+        to_files: bool = False,
+) -> np.ndarray:
     """
     Convert the MKZ parameters from a dictionary to an array, according to this
     order:
@@ -211,7 +228,7 @@ def serialize_params_to_array(param, to_files=False):
 
     Parameters
     ----------
-    param : dict
+    param : dict[str, float]
         A dictionary containing the parameters of the MKZ model.
     to_files : bool
         Whether the result is for writing to files. If so, the last parameter,
@@ -222,7 +239,7 @@ def serialize_params_to_array(param, to_files=False):
 
     Returns
     -------
-    param_array : numpy.ndarray
+    param_array : np.ndarray
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
@@ -238,11 +255,14 @@ def serialize_params_to_array(param, to_files=False):
     return np.array(param_array)
 
 
-def deserialize_array_to_params(array, from_files=False):
+def deserialize_array_to_params(
+        array: np.ndarray,
+        from_files: bool = False,
+) -> dict[str, float]:
     """
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
-    The users needs to ensure the order of values in ``array`` are in this order:
+    The users need to ensure the order of values in ``array`` are in this order:
         gamma_ref, s, beta, Gmax (if ``from_files`` is ``False``)
     or:
         gamma_ref, b, s, beta (if ``from_files`` is ``True``)
@@ -250,7 +270,7 @@ def deserialize_array_to_params(array, from_files=False):
 
     Parameters
     ----------
-    array : numpy.ndarray
+    array : np.ndarray
         A 1D numpy array of MKZ parameter values in this order:
             gamma_ref, s, beta, Gmax
     from_files : bool
@@ -261,7 +281,7 @@ def deserialize_array_to_params(array, from_files=False):
 
     Returns
     -------
-    param : dict
+    param : dict[str, float]
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
@@ -283,13 +303,17 @@ def deserialize_array_to_params(array, from_files=False):
     return param
 
 
-def fit_MKZ(curve_data, show_fig=False, verbose=False):
+def fit_MKZ(
+        curve_data: np.ndarray,
+        show_fig: bool = False,
+        verbose: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Fit MKZ model to G/Gmax curves.
 
     Parameters
     ----------
-    curve_data : numpy.ndarray
+    curve_data : np.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
          +------------+--------+------------+-------------+-------------+--------+-----+
@@ -307,10 +331,10 @@ def fit_MKZ(curve_data, show_fig=False, verbose=False):
 
     Returns
     -------
-    param : numpy.ndarray
+    param : np.ndarray
         The fitted MKZ parameters. Shape: (n_mat, 4), where ``n_mat`` is
         the number of materials implied in ``curve_data``.
-    fitted_curves : numpy.ndarray
+    fitted_curves : np.ndarray
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.
     """

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import numpy as np
+
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_calibration as hhc
 from PySeismoSoil.class_curves import Multiple_GGmax_Curves
@@ -21,29 +25,42 @@ class HH_Calibration:
 
     Parameters
     ----------
-    vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+    vs_profile : Vs_Profile
         The Vs profile of interest.
-    GGmax_curves : PySeismoSoil.class_curves.Multiple_GGmax_Curves or ``None``
+    GGmax_curves : Multiple_GGmax_Curves | None
         The G/Gmax curves of each layer. If ``None``, HH parameters will be
         determined from the Vs profile alone. If the user supplies this
         parameter, it will be used to calibrate the MKZ model, which eventually
         goes into calibrating the HH parameters.
-    Tmax_profile : numpy.ndarray or ``None``
+    Tmax_profile : np.ndarray | None
         The profile of shear strength of each soil layer (not including the
         rock half space at the bottom). If ``None``, it will be determined
         using the empirical formula by Ladd (1991).
 
     Attributes
     ----------
-    vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+    vs_profile : Vs_Profile
         Same as the input parameter.
     GGmax_curves : PySeismoSoil.class_curves.Multiple_GGmax_Curves or ``None``
         Same as the input parameter.
-    Tmax_profile : numpy.ndarray or ``None``
+    Tmax_profile : np.ndarray | None
         Same as the input parameter.
+
+    Raises
+    ------
+    TypeError
+        When input arguments have invalid types
+    ValueError
+        When input arguments have invalid data dimensions etc.
     """
 
-    def __init__(self, vs_profile, *, GGmax_curves=None, Tmax_profile=None):
+    def __init__(
+            self,
+            vs_profile: Vs_Profile,
+            *,
+            GGmax_curves: Multiple_GGmax_Curves | None = None,
+            Tmax_profile: np.ndarray | None = None,
+    ) -> None:
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
 
@@ -75,14 +92,14 @@ class HH_Calibration:
 
     def fit(
             self,
-            show_fig=False,
-            save_fig=False,
-            fig_output_dir=None,
-            save_HH_G_file=False,
-            HH_G_file_dir=None,
-            profile_name=None,
-            verbose=True,
-    ):
+            show_fig: bool = False,
+            save_fig: bool = False,
+            fig_output_dir: str | None = None,
+            save_HH_G_file: bool = False,
+            HH_G_file_dir: str | None = None,
+            profile_name: str | None = None,
+            verbose: bool = True,
+    ) -> HH_Param_Multi_Layer:
         """
         Calculate the HH parameters with the given Vs profile and/or G/Gmax
         curves.
@@ -95,16 +112,16 @@ class HH_Calibration:
         save_fig : bool
             Whether to save the figures to the hard drive. Only effective
             if ``show_fig`` is set to ``True``.
-        fig_output_dir : str
+        fig_output_dir : str | None
             The output directory for the figures. Only effective if ``show_fig``
             and ``save_fig`` are both ``True``.
         save_HH_G_file : bool
             Whether to save the HH parameters to the hard drive (as a
             "HH_G" file).
-        HH_G_file_dir : str
+        HH_G_file_dir : str | None
             The output directory for the "HH_G" file. Only effective if
             ``save_HH_G_file`` is ``True``.
-        profile_name : str or ``None``
+        profile_name : str | None
             The name of the Vs profile, such as "CE.12345". If ``None``, a
             string of current date and time will be used as the profile name.
         verbose : bool
@@ -112,7 +129,7 @@ class HH_Calibration:
 
         Returns
         -------
-        HH_G_param : PySeismoSoil.class_parameters.HH_Param_Multi_Layer
+        HH_G_param : HH_Param_Multi_Layer
             The HH parameters of each layer.
         """
         vs_profile = self.vs_profile.vs_profile

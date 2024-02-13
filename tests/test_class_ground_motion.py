@@ -248,7 +248,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         freq = np.arange(0.01, 50, step=0.01)
         tf = ratio_benchmark * np.ones_like(freq)
         transfer_function = Frequency_Spectrum(np.column_stack((freq, tf)))
-        new_gm = gm.amplify_by_tf(transfer_function, show_fig=False)
+        new_gm = gm.amplify_by_tf(transfer_function, show_fig=False)[0]
         ratio = new_gm.accel[:, 1] / gm.accel[:, 1]
         self.assertTrue(np.allclose(ratio, ratio_benchmark))
 
@@ -256,8 +256,8 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         gm = GM(_join(f_dir, 'sample_accel.txt'), unit='gal')
         vs_prof = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
         tf_RO, tf_BH, _ = vs_prof.get_transfer_function()
-        gm_with_tf_RO = gm.amplify_by_tf(tf_RO)
-        gm_with_tf_BH = gm.amplify_by_tf(tf_BH)
+        gm_with_tf_RO = gm.amplify_by_tf(tf_RO)[0]
+        gm_with_tf_BH = gm.amplify_by_tf(tf_BH)[0]
 
         gm_with_tf_RO_ = gm.amplify(vs_prof, boundary='elastic')
         gm_with_tf_BH_ = gm.amplify(vs_prof, boundary='rigid')

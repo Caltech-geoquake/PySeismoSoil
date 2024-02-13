@@ -1,6 +1,12 @@
+from __future__ import annotations
+
 import time
+from typing import Any
 
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from scipy.optimize import fsolve
 
 from PySeismoSoil import helper_site_response as sr
@@ -19,11 +25,11 @@ class SVM:
     ----------
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
-    z1 : float or ``None``
+    z1 : float | None
         The depth to bedrock (1,000 m/s rock). Unit: m. If ``None``, it will be
         estimated from Vs30 using an empirical correlation (see documentation
         of `helper_site_response.calc_z1_from_Vs30()`).
-    Vs_cap : bool or float
+    Vs_cap : bool | float
         Whether to "cap" the Vs profile or not.
         If True, then the Vs profile is capped at 1000.0 m/s; if specified
         as another real number, Vs profile is capped at that value.
@@ -63,19 +69,24 @@ class SVM:
         chosen as 1,000 m/s, or ``None`` (if ``Vs_cap`` is False).
     has_bedrock_Vs : bool
         Whether the Vs profile has a bedrock Vs value.
+
+    Raises
+    ------
+    ValueError
+        When values of some input arguments are not correct/valid
     """
 
     def __init__(
             self,
-            target_Vs30,
+            target_Vs30: float,
             *,
-            z1=None,
-            Vs_cap=True,
-            eta=0.90,
-            show_fig=False,
-            iterate=False,
-            verbose=False,
-    ):
+            z1: float | None = None,
+            Vs_cap: bool | float = True,
+            eta: float = 0.90,
+            show_fig: bool = False,
+            iterate: bool = False,
+            verbose: bool = False,
+    ) -> None:
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
 
         if (target_Vs30 < 173.1) or (target_Vs30 > 1000):
@@ -161,7 +172,7 @@ class SVM:
                 if iterate is False:
                     iteration_flag = False  # abort while loop after only one run
                 else:
-                    # -------  Check if actual Vs30 matches target Vs30 -----------
+                    # -------  Check if actual Vs30 matches target Vs30 -------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
                     if verbose is True:  # print iteration progress
                         print(
@@ -261,36 +272,43 @@ class SVM:
             self.has_bedrock_Vs = False
             self.bedrock_Vs = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Vs30 = {:.2g} m/s, z1 = {:.2g} m'.format(self.Vs30, self.z1)
 
-    def plot(self, fig=None, ax=None, figsize=(2.6, 3.2), dpi=100, **kwargs):
+    def plot(
+            self,
+            fig: Figure | None = None,
+            ax: Axes | None = None,
+            figsize: tuple[float, float] = (2.6, 3.2),
+            dpi: float = 100,
+            **kwargs: dict[Any, Any],
+    ) -> tuple[Figure, Axes, Line2D]:
         """
         Plot the base profile.
 
         Parameters
         ----------
-        fig : matplotlib.figure.Figure or ``None``
+        fig : Figure | None
             Figure object. If None, a new figure will be created.
-        ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+        ax : Axes | None
             Axes object. If None, a new axes will be created.
-        figsize: (float, float)
+        figsize: tuple[float, float]
             Figure size in inches, as a tuple of two numbers. The figure
             size of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
             Figure resolution. The dpi of ``fig`` (if not ``None``) will override
             this parameter.
-        **kwargs :
+        **kwargs : dict[Any, Any]
             Other keyword arguments to be passed to
             ``helper_site_response.plot_Vs_profile()``.
 
         Returns
         -------
-        fig : matplotlib.figure.Figure
+        fig : Figure
             The figure object being created or being passed into this function.
-        ax : matplotlib.axes._subplots.AxesSubplot
+        ax : Axes
             The axes object being created or being passed into this function.
-        h_line : matplotlib.lines.Line2D
+        h_line : Line2D
             The line object.
         """
         title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
@@ -310,11 +328,11 @@ class SVM:
     def get_discretized_profile(
             self,
             *,
-            fixed_thk=None,
-            Vs_increment=None,
-            at_midpoint=True,
-            show_fig=False,
-    ):
+            fixed_thk: float = None,
+            Vs_increment: float = None,
+            at_midpoint: bool = True,
+            show_fig: bool = False,
+    ) -> Vs_Profile:
         """
         Return the discretized Vs profile (with user-specified layer
         thickness, or Vs increment).
@@ -334,8 +352,13 @@ class SVM:
 
         Returns
         -------
-        discr_prof : PySeismoSoil.class_Vs_profile.Vs_Profile
+        discr_prof : Vs_Profile
             Discretized Vs profile.
+
+        Raises
+        ------
+        ValueError
+            When the values of some input arguments are incorrect/invalid
         """
         if fixed_thk is None and Vs_increment is None:
             msg = 'You need to provide either `fixed_thk` or `Vs_increment`.'
@@ -406,13 +429,15 @@ class SVM:
 
         return discr_prof
 
-    def _plot_additional_profile(self, addtl_profile, label):
+    def _plot_additional_profile(
+            self, addtl_profile: np.ndarray, label: str
+    ) -> None:
         """
         Plot an additional Vs profile on top of the base Vs profile.
 
         Parameters
         ----------
-        addtl_profile : numpy.ndarray
+        addtl_profile : np.ndarray
             Additional Vs profile.
         label : str
             Label of the additional profile, to be shown in the legend.
@@ -435,19 +460,19 @@ class SVM:
 
     def get_randomized_profile(
             self,
-            seed=None,
-            show_fig=False,
-            use_Toros_layering=False,
-            use_Toros_std=False,
-            vs30_z1_compliance=False,
-            verbose=True,
-    ):
+            seed: float | None = None,
+            show_fig: bool = False,
+            use_Toros_layering: bool = False,
+            use_Toros_std: bool = False,
+            vs30_z1_compliance: bool = False,
+            verbose: bool = True,
+    ) -> Vs_Profile:
         """
         Return a randomized a 1D profile.
 
         Parameters
         ----------
-        seed : int
+        seed : float | None
             The seed value for setting the random state. It not set, this
             method automatically uses the current time to generate a seed.
         show_fig : bool
@@ -475,8 +500,13 @@ class SVM:
 
         Returns
         -------
-        Vs_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
-            The randomzed Vs profile.
+        Vs_profile : Vs_Profile
+            The randomized Vs profile.
+
+        Raises
+        ------
+        TypeError
+            If ``seed`` is not a number or not ``None``
         """
         if not isinstance(seed, (type(None), int, float, np.number)):
             raise TypeError('`seed` needs to be a number, or `None`.')
@@ -535,11 +565,11 @@ class SVM:
 
     def _helper_get_rand_profile(
             self,
-            seed=None,
-            show_fig=False,
-            use_Toros_layering=False,
-            use_Toros_std=False,
-    ):
+            seed: int = None,
+            show_fig: bool = False,
+            use_Toros_layering: bool = False,
+            use_Toros_std: bool = False,
+    ) -> np.ndarray:
         """
         Get randomized 1D profile.
 
@@ -561,7 +591,7 @@ class SVM:
         Returns
         -------
         Vs_profile : np.ndarray
-            The randomzed Vs profile.
+            The randomized Vs profile.
         """
         if seed is None:
             cc = time.localtime(time.time())
@@ -754,7 +784,10 @@ class SVM:
         return Vs_profile
 
     @staticmethod
-    def _thk_depth_func(thk, z_top):
+    def _thk_depth_func(
+            thk: np.ndarray | float,
+            z_top: np.ndarray | float,
+    ) -> np.ndarray:
         """
         Given thk (thickness, in meter) and z_top (depth of layer top, in
         meter), returns "right hand side" minus "left hand side".
@@ -771,14 +804,16 @@ class SVM:
         return 1.125 * (z_top + thk / 2.0) ** 0.620 - thk
 
     @staticmethod
-    def _find_index_closest(array, value):
+    def _find_index_closest(
+            array: np.ndarray, value: float
+    ) -> tuple[int, float]:
         """
         Find the index in `array` which contains the closest value to `value`.
-        NaN values within `array` are obmitted implicitly.
+        NaN values within `array` are omitted implicitly.
 
         Parameters
         ----------
-        array : numpy.ndarray
+        array : np.ndarray
             Array from which to query the index. Must be 1D numpy array. It
             does NOT need to be sorted.
         value : float
@@ -790,6 +825,11 @@ class SVM:
             The index within ``array`` where the closest value is found.
         closest_value : float
             The closest value to ``value`` within ``array``.
+
+        Raises
+        ------
+        ValueError
+            When the value of the input argument is incorrect/invalid
         """
         array = np.array(array)
         if len(array) == 0:

@@ -1,7 +1,12 @@
+from __future__ import annotations
+
 import os
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
@@ -18,7 +23,7 @@ class Frequency_Spectrum:
 
     Parameters
     ----------
-    data : str or numpy.ndarray
+    data : str | np.ndarray
         If str: the full file name on the hard drive containing the data.
         If np.ndarray: the numpy array containing the data.
         The data can have one column (which contains the spectrum) or two
@@ -51,29 +56,29 @@ class Frequency_Spectrum:
     ----------
     raw_df : float
         Original frequency interval as entered.
-    raw_data : numpy.ndarray
+    raw_data : np.ndarray
         Raw frequency spectrum (before interpolation) that the user provided.
     n_pts : int
         Same as the input parameter.
-    freq : numpy.ndarray
+    freq : np.ndarray
         The reference frequency array for interpolation.
     fmin : float
         Same as the input parameter.
     fmax : float
         Same as the input parameter.
-    spectrum_2col : numpy.ndarray
+    spectrum_2col : np.ndarray
         A two-column numpy array (frequency and spectrum).
-    spectrum : numpy.ndarray
+    spectrum : np.ndarray
         Just the spectrum values.
-    amplitude : numpy.ndarray
+    amplitude : np.ndarray
         The amplitude (or "magnitude") of ``spectrum``. Note that
         ``spectrum`` can already be all real numbers.
-    amplitude_2col: numpy.ndarray
+    amplitude_2col: np.ndarray
         A two-column numpy array (frequency and amplitude).
-    phase : numpy.ndarray
+    phase : np.ndarray
         The phase angle of ``spectrum``. If ``spectrum`` has all real values,
         ``phase`` is all zeros.
-    phase_2col : numpy.ndarray
+    phase_2col : np.ndarray
         A two-column numpy array (frequency and phase).
     iscomplex : bool
         Is ``spectrum`` complex or already real?
@@ -81,16 +86,16 @@ class Frequency_Spectrum:
 
     def __init__(
             self,
-            data,
+            data: str | np.ndarray,
             *,
-            df=None,
-            interpolate=False,
-            fmin=0.1,
-            fmax=30,
-            n_pts=1000,
-            log_scale=True,
-            sep='\t',
-    ):
+            df: float = None,
+            interpolate: bool = False,
+            fmin: float = 0.1,
+            fmax: float = 30,
+            n_pts: int = 1000,
+            log_scale: bool = True,
+            sep: str = '\t',
+    ) -> None:
         data_, df = hlp.read_two_column_stuff(data, df, sep)
         if isinstance(data, str):  # is a file name
             self._path_name, self._file_name = os.path.split(data)
@@ -128,7 +133,7 @@ class Frequency_Spectrum:
         self.phase_2col = np.column_stack((freq, self.phase))
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' % (
             self.raw_df,
             self.n_pts,
@@ -139,25 +144,25 @@ class Frequency_Spectrum:
 
     def plot(
             self,
-            fig=None,
-            ax=None,
-            figsize=None,
-            dpi=100,
-            logx=True,
-            logy=False,
-            plot_abs=False,
-            **kwargs_plot,
-    ):
+            fig: Figure | None = None,
+            ax: Axes | None = None,
+            figsize: tuple[float, float] = None,
+            dpi: float = 100,
+            logx: bool = True,
+            logy: bool = False,
+            plot_abs: bool = False,
+            **kwargs_plot: dict[Any, Any],
+    ) -> tuple[Figure, Axes]:
         """
         Plot the shape of the interpolated spectrum.
 
         Parameters
         ----------
-        fig : matplotlib.figure.Figure or ``None``
+        fig : Figure | None
             Figure object. If None, a new figure will be created.
-        ax : matplotlib.axes._subplots.AxesSubplot or ``None``
+        ax : Axes | None
             Axes object. If None, a new axes will be created.
-        figsize: (float, float)
+        figsize: tuple[float, float]
             Figure size in inches, as a tuple of two numbers. The figure
             size of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
@@ -169,14 +174,14 @@ class Frequency_Spectrum:
             Whether to show y scale as log.
         plot_abs : bool
             Whether to plot the absolute values of the spectrum.
-        **kwargs_plot :
+        **kwargs_plot : dict[Any, Any]
             Extra keyword arguments are passed to ``matplotlib.pyplot.plot()``.
 
         Returns
         -------
-        fig : matplotlib.figure.Figure
+        fig : Figure
             The figure object being created or being passed into this function.
-        ax : matplotlib.axes._subplots.AxesSubplot
+        ax : Axes
             The axes object being created or being passed into this function.
         """
         fig, ax = hlp._process_fig_ax_objects(
@@ -202,7 +207,14 @@ class Frequency_Spectrum:
 
         return fig, ax
 
-    def get_smoothed(self, win_len=15, show_fig=False, *, log_scale, **kwargs):
+    def get_smoothed(
+            self,
+            win_len: int = 15,
+            show_fig: bool = False,
+            *,
+            log_scale: bool,
+            **kwargs: dict[Any, Any],
+    ) -> tuple[np.ndarray | None, Figure, Axes]:
         """
         Smooth the spectrum by calculating the convolution of the raw
         signal and the smoothing window.
@@ -217,17 +229,17 @@ class Frequency_Spectrum:
             Whether the frequency spacing of this frequency spectrum is in log
             scale (otherwise, linear scale). If this argument is incorrect, it
             could lead to strange smoothing results.
-        **kwargs :
+        **kwargs : dict[Any, Any]
             Extra keyword arguments get passed to the function
             ``helper_signal_processing.log_smooth()``.
 
         Returns
         -------
-        sm : numpy.ndarray (optional, only if ``inplace``)
+        sm : np.ndarray | None
             The smoothed signal. 1D numpy array.
-        fig : matplotlib.figure.Figure
+        fig : Figure
             The figure object being created or being passed into this function.
-        ax : matplotlib.axes._subplots.AxesSubplot
+        ax : Axes
             The axes object being created or being passed into this function.
         """
         sm = sig.log_smooth(
@@ -252,7 +264,7 @@ class Frequency_Spectrum:
 
         return sm, fig, ax
 
-    def get_f0(self):
+    def get_f0(self) -> float:
         """
         Get the "fundamental frequency" of the amplitude spectrum, which is
         the frequency of the first amplitude peak.
@@ -264,7 +276,7 @@ class Frequency_Spectrum:
         """
         return sr.find_f0(self.amplitude_2col)
 
-    def get_unwrapped_phase(self, robust=True):
+    def get_unwrapped_phase(self, robust: bool = True) -> Frequency_Spectrum:
         """
         Unwrpped the phase component of the spectrum.
 
