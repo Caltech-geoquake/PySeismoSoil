@@ -4,7 +4,6 @@ import platform
 from datetime import datetime
 from typing import Any, Literal
 
-import matplotlib.pylab as pl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
