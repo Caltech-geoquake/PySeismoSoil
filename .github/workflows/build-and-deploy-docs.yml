@@ -39,7 +39,9 @@ jobs:
         run: |
           cd docs
           make clean html
-          cd ..
+      - name: Sanity check
+        run: |
+          pwd
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Pages
