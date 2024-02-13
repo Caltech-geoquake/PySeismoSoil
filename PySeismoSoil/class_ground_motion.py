@@ -740,7 +740,7 @@ class Ground_Motion:
             output_accel, fig, ax = result
             return Ground_Motion(output_accel, unit='m'), fig, ax
 
-        output_accel = result
+        output_accel = result[0]
         return Ground_Motion(output_accel, unit='m'), None, None
 
     def amplify(

@@ -180,7 +180,7 @@ class Site_Effect_Adjustment:
             ax[1].set_ylabel('Amplif. factor')
             ax[2].set_ylabel('Phase factor [rad]')
         else:
-            accel_out = result
+            accel_out = result[0]
 
         output_motion = Ground_Motion(accel_out, unit='m')
         if return_fig_obj:
