@@ -78,6 +78,7 @@ class Batch_Simulation:
             parallel: bool = False,
             n_cores: int | None = 1,
             base_output_dir: str | None = None,
+            catch_errors: bool = False,
             options: dict[str, Any] | None = None,
     ) -> list[Simulation_Results]:
         """
@@ -114,7 +115,7 @@ class Batch_Simulation:
             current_time = hlp.get_current_time(for_filename=True)
             base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
 
-        other_params = [n_digits, base_output_dir, options]
+        other_params = [n_digits, base_output_dir, catch_errors, options]
 
         if not parallel:
             sim_results = []
@@ -122,17 +123,25 @@ class Batch_Simulation:
                 sim_results.append(self._run_single_sim([i, other_params]))
             # END FOR
         else:
-            # Because no outputs can be printed to stdout in the parellel pool
-            if options.get('verbose', True):  # default value is `True`
-                print('Parallel computing in progress...', end=' ')
+            sim_results = []
 
+            # Because the user may wish to print batch-related verbosity
+            # but it is unideal for the parallel processes to be printing
+            # their progress simultaneously
+            self_verbose = False
+            if options.get('verbose', True):
+                print('Parallel computing in progress...', end=' ')
+                self_verbose = True
+                options.set('verbose', False)
+                
             p = mp.Pool(n_cores)
             sim_results = p.map(
                 self._run_single_sim,
                 itertools.product(range(N), [other_params]),
             )
-            if options.get('verbose', True):
-                print('done.')
+
+            if self_verbose:
+                print('done.')   
 
             # Because no figures can be plotted in the parallel pool:
             if options.get('show_fig', False):
@@ -153,13 +162,14 @@ class Batch_Simulation:
         all_params : list[Any]
             All the parameters needed for running the simulation. It should
             have the following structure:
-                [i, [n_digits, base_output_dir, options]]
+                [i, [n_digits, base_output_dir, catch_errors, options]]
             where:
                 - ``i`` is the index of the current simulation in the batch.
                 - ``n_digits`` is the number of digits of the length of the
                   batch. (For example, if there are 125 simulations, then
                   ``n_digits`` should be 3.)
                 - ``base_output_dir``: same as in the ``run()`` method
+                - ``catch_errors``: same as in the ``run()`` method
                 - ``options``: same as in the ``run()`` method
 
         Returns
@@ -168,7 +178,7 @@ class Batch_Simulation:
             Simulation results of a single simulation object.
         """
         i, other_params = all_params  # unpack
-        n_digits, base_output_dir, options = other_params  # unpack
+        n_digits, base_output_dir, catch_errors, options = other_params  # unpack
         output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
         if self.sim_type == Nonlinear_Simulation:
             options.update({'sim_dir': output_dir})
@@ -176,5 +186,13 @@ class Batch_Simulation:
             options.update({'output_dir': output_dir})
 
         sim_obj = self.list_of_simulations[i]
-        sim_result = sim_obj.run(**options)
+        if catch_errors:
+            try:
+                sim_result = sim_obj.run(**options)
+            except ValueError as e:
+                sim_result = None
+                print('Warning: ValueError encountered.')
+        else:
+            sim_result = sim_obj.run(**options)
+        
         return sim_result
