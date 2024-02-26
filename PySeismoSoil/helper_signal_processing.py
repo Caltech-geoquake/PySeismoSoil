@@ -267,8 +267,8 @@ def _filter_kernel(
                 padlen=padlen,
             )
 
-    b, a = scipy.signal.butter(filter_order, Wn, btype=filter_type)
-    y = scipy.signal.filtfilt(b, a, x, padlen=padlen)
+    sos = scipy.signal.butter(filter_order, Wn, btype=filter_type, output='sos')
+    y = scipy.signal.sosfilt(sos, x)
 
     if show_fig:
         plt.figure()
