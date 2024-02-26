@@ -409,6 +409,7 @@ class Param_Multi_Layer:
     def construct_curves(
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
+            curve_type: None,
     ) -> tuple['Multiple_GGmax_Curves', 'Multiple_Damping_Curves']:
         """
         Construct G/Gmax and damping curves from parameter values.
@@ -417,6 +418,9 @@ class Param_Multi_Layer:
         ----------
         strain_in_pct : np.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
+        curve_type : str
+            Either "ggmax" or "xi" for option to calculate only one of them.
+            "None" will be returned for the other curve object in this case.
 
         Returns
         -------
@@ -441,8 +445,24 @@ class Param_Multi_Layer:
                     (curves, strain_in_pct, GGmax, strain_in_pct, damping),
                 )
 
-        mgdc = Multiple_GGmax_Damping_Curves(data=curves)
-        mgc, mdc = mgdc.get_MGC_MDC_objects()
+        if curve_type == "ggmax":
+            GGmax_curve_list, _ = hlp.extract_from_curve_format(
+                curves,
+                ensure_non_negative=False,
+                )
+            mgc = Multiple_GGmax_Curves(GGmax_curve_list)
+            mdc = None
+        elif curve_type == "xi":
+            _, damping_curves_list = hlp.extract_from_curve_format(
+                curves,
+                ensure_non_negative=False,
+                )
+            mgc = None
+            mdc = Multiple_Damping_Curves(damping_curves_list)
+        else:
+            mgdc = Multiple_GGmax_Damping_Curves(data=curves)
+            mgc, mdc = mgdc.get_MGC_MDC_objects()
+            
         return mgc, mdc
 
     def serialize_to_2D_array(self) -> np.ndarray:
