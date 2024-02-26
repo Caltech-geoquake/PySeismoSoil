@@ -744,6 +744,8 @@ class Multiple_Curves:
         ax : Axes
             The axes object being created or being passed into this function.
         """
+        fig = plt.figure()
+        ax = plt.axes()
         for curve in self.curves:
             curve.plot(
                 plot_interpolated=plot_interpolated,
