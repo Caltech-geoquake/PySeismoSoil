@@ -409,7 +409,7 @@ class Param_Multi_Layer:
     def construct_curves(
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
-            curve_type: None,
+            curve_type: str | None = None,
     ) -> tuple['Multiple_GGmax_Curves', 'Multiple_Damping_Curves']:
         """
         Construct G/Gmax and damping curves from parameter values.
