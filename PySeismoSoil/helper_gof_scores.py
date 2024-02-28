@@ -6,8 +6,6 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sp
 from PySeismoSoil import helper_site_response as sr
 
-import os
-
 # Modwt imports
 import pdb
 import pywt
