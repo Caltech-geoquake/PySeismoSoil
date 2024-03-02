@@ -7,7 +7,6 @@ from PySeismoSoil import helper_signal_processing as sp
 from PySeismoSoil import helper_site_response as sr
 
 # Modwt imports
-import pdb
 import pywt
 from scipy.ndimage import convolve1d
 
@@ -23,7 +22,7 @@ def S_(meas, simu):
     score = scipy.special.erf(rela_diff*1)*10
     return score
 
-def d_1234(measurement,simulation,fmin,fmax=None,plot_option=True,filter_order=4):
+def d_1234(measurement,simulation,fmin,fmax,show_fig):
     """
     Calculates the first four goodness-of-fit scores in the GoF scheme
     described in Shi & Asimaki (2017)*.
@@ -48,7 +47,7 @@ def d_1234(measurement,simulation,fmin,fmax=None,plot_option=True,filter_order=4
     (c) Jian Shi, 2/17/2015
     Adapted to Python - fx 02/2024
     """
-    
+    filter_order=4
     q = 15
     
     a_m = measurement[q-1:-q,:]
@@ -111,8 +110,13 @@ def d_1234(measurement,simulation,fmin,fmax=None,plot_option=True,filter_order=4
     d2 = np.mean( S_(N_Ie_m[1:], N_Ie_s[1:]) )
     d3 = S_(Ia_m_peak, Ia_s_peak)
     d4 = S_(Ie_m_peak, Ie_s_peak)
+
+    # Plotting
+    if show_fig:
+        0
+        # TODO: PLOTTING
     
-    return d1, d2, d3, d4
+    return (d1, d2, d3, d4)
 
 def calc_AriasIntensity(accel_in_SI_unit):
     """
@@ -147,7 +151,7 @@ def calc_AriasIntensity(accel_in_SI_unit):
 
     return Ia, Ia_peak
 
-def d_567(measurement,simulation,fmin,fmax,plot_option=True,baseline_option=True,filter_order=4):
+def d_567(measurement,simulation,fmin,fmax,show_fig):
     """
     Calculates the 5th, 6th, and 7th goodness-of-fit scores in the GoF scheme
     described in Shi & Asimaki (2017)*.
@@ -175,7 +179,8 @@ def d_567(measurement,simulation,fmin,fmax,plot_option=True,baseline_option=True
       
     (c) Jian Shi, 2/17/2015
     """
-    
+    baseline_option=True
+    filter_order=4
     q = 15
     
     a_m = measurement[q-1:-q,:]
@@ -218,8 +223,13 @@ def d_567(measurement,simulation,fmin,fmax,plot_option=True,baseline_option=True
     d5 = S_(rms_a_m,rms_a_s)
     d6 = S_(rms_v_m,rms_v_s)
     d7 = S_(rms_u_m,rms_u_s)
+
+    # Plotting
+    if show_fig:
+        0
+        # TODO: PLOTTING
     
-    return d5, d6, d7
+    return (d5, d6, d7)
 
 def baseline_wavelet(signal, wavelet_level=6, wavelet_name='dmey', show_fig=False):
     """
@@ -244,18 +254,9 @@ def baseline_wavelet(signal, wavelet_level=6, wavelet_name='dmey', show_fig=Fals
     
     coeffs = modwt(x, filters=wavelet_name, level=wavelet_level)
     mra = modwtmra(coeffs, filters=wavelet_name)
-    
-    # for mm in mra:
-    #     plt.figure()
-    #     plt.plot(mm)
-    
     mra[-1,:] = np.zeros_like(mra[-1,:])
         
     y = np.sum(mra, axis=0)
-    
-    plt.figure()
-    plt.plot(y)
-    
     y = np.column_stack((t, y))
     
     return y
@@ -264,7 +265,7 @@ def calc_rms(x):
     rms = np.sqrt(np.mean(x[:, 1] ** 2.0))
     return rms
 
-def d_89(measurement,simulation,fmin=None,fmax=None,plot_option=True,baseline_option=True):
+def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
     """
     Calculates the last two goodness-of-fit scores in the GoF scheme
     described in Shi & Asimaki (2017)*.
@@ -314,9 +315,8 @@ def d_89(measurement,simulation,fmin=None,fmax=None,plot_option=True,baseline_op
     if fmin >= fmax:
         raise Exception(f'Error: fmax must be larger than fmin. (fmax={fmax}, fmin={fmin})')
     
-    if baseline_option:
-        measurement = sp.baseline(measurement)
-        simulation = sp.baseline(simulation)
+    measurement = sp.baseline(measurement)
+    simulation = sp.baseline(simulation)
         
     # response spectra
     a1 = measurement[:,1]
@@ -350,8 +350,13 @@ def d_89(measurement,simulation,fmin=None,fmax=None,plot_option=True,baseline_op
     # calculate scores
     d8 = np.mean( S_(SA_m[idx1_RS:idx2_RS], SA_s[idx1_RS:idx2_RS]) )
     d9 = np.mean( S_(FS_m[idx1_FS:idx2_FS], FS_s[idx1_FS:idx2_FS]) )
+
+    # Plotting
+    if show_fig:
+        0
+        # TODO: PLOTTING
     
-    return d8, d9
+    return (d8, d9)
 
 ## MODWT FUNCTIONS ##
 # Code from: https://github.com/pistonly/modwtpy
