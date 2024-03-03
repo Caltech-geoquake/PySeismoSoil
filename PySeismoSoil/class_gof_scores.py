@@ -91,8 +91,6 @@ class GOF_Scores:
             
         if fmin >= fmax:
             raise ValueError('fmax must be larger than fmin.')
-        
-        # TODO: one fig for each score group that is getting show_fig
 
         scores = np.array([])
         if score_groups[0]:

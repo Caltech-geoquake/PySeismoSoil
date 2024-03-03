@@ -113,8 +113,54 @@ def d_1234(measurement,simulation,fmin,fmax,show_fig):
 
     # Plotting
     if show_fig:
-        0
-        # TODO: PLOTTING
+        fig, ax = plt.subplots(2, 2, figsize=(10, 7), dpi=100)
+
+        ax[0, 0].plot(tt_array, N_Ia_m, label='Measurement',
+                      color='tab:blue')
+        ax[0, 0].plot(tt_array, N_Ia_s, label='Simulation', 
+                      linestyle='--',
+                      color='tab:orange')
+        ax[0, 0].set_xlabel('Time (s)')
+        ax[0, 0].set_ylabel(r' Normalized Arias Intensity, I$_a$ / I$_{a, peak}$')
+        ax[0, 0].set_xlim((0, np.max(Ia_m[:,0])))
+        ax[0, 0].set_ylim((-0.1, 1.1))
+        ax[0, 0].legend()
+        ax[0, 0].grid(alpha=0.5)
+
+        ax[0, 1].plot(tt_array, N_Ie_m, label='Measurement',
+                      color='tab:blue')
+        ax[0, 1].plot(tt_array, N_Ie_s, label='Simulation', 
+                      linestyle='--',
+                      color='tab:orange')
+        ax[0, 1].set_xlabel('Time (s)')
+        ax[0, 1].set_ylabel(r'Normalized Energy Integral, I$_e$ / I$_{e, peak}$')
+        ax[0, 1].set_xlim((0, np.max(Ie_m[:,0])))
+        ax[0, 1].set_ylim((-0.1, 1.1))
+        ax[0, 1].grid(alpha=0.5)
+
+        ax[1, 0].plot(tt_array, Ia_m[:,1], label='Measurement',
+                      color='tab:blue')
+        ax[1, 0].plot(tt_array, Ia_s[:,1], label='Simulation', 
+                      linestyle='--',
+                      color='tab:orange')
+        ax[1, 0].set_xlabel('Time (s)')
+        ax[1, 0].set_ylabel(r'Arias Intensity, I$_a$')
+        ax[1, 0].set_xlim((0, np.max(Ia_m[:,0])))
+        ax[1, 0].grid(alpha=0.5)
+
+        ax[1, 1].plot(tt_array, Ie_m[:,1], label='Measurement',
+                      color='tab:blue')
+        ax[1, 1].plot(tt_array, Ie_s[:,1], label='Simulation', 
+                      linestyle='--',
+                      color='tab:orange')
+        ax[1, 1].set_xlabel('Time (s)')
+        ax[1, 1].set_ylabel(r'Energy Integral, I$_e$')
+        ax[1, 1].set_xlim((0, np.max(Ie_m[:,0])))
+        ax[1, 1].grid(alpha=0.5)
+
+        fig.suptitle(r'Arias Intensity I$_a$ and Energy Integral I$_e$', fontsize=16)
+
+        plt.tight_layout()
     
     return (d1, d2, d3, d4)
 
@@ -186,9 +232,6 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
     a_m = measurement[q-1:-q,:]
     a_s = simulation[q-1:-q,:]
     
-    a_m0 = a_m
-    a_s0 = a_s
-    
     t1 = a_m[:,0]
     t2 = a_s[:,0]
     n = t1.shape[0]
@@ -199,6 +242,9 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
     else:
         a_m = sp.bandpass(a_m, [fmin, fmax], filter_order=filter_order)
         a_s = sp.bandpass(a_s, [fmin, fmax], filter_order=filter_order)
+
+    pga_m = getAbsPeak(a_m)
+    pga_s = getAbsPeak(a_s)
     
     rms_a_m = calc_rms(a_m)
     rms_a_s = calc_rms(a_s)
@@ -212,9 +258,15 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
     
     rms_v_m = calc_rms(v_m)
     rms_v_s = calc_rms(v_s)
+
+    pgv_m = getAbsPeak(v_m)
+    pgv_s = getAbsPeak(v_s)
     
     u_m = baseline_wavelet(u_m)
     u_s = baseline_wavelet(u_s)
+
+    pgd_m = getAbsPeak(u_m)
+    pgd_s = getAbsPeak(u_s)
     
     rms_u_m = calc_rms(u_m)
     rms_u_s = calc_rms(u_s)
@@ -226,8 +278,59 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
 
     # Plotting
     if show_fig:
-        0
-        # TODO: PLOTTING
+        fig, ax = plt.subplots(3, 1, figsize=(10, 7), dpi=100)
+
+        if pga_m >= pga_s:
+            ax[0].plot(t1, a_m[:,1], label='Measurement', linewidth=0.75)
+            ax[0].plot(t2, a_s[:,1], label='Simulation', linestyle='--', linewidth=0.75)
+        else:
+            ax[0].plot(t2, a_s[:,1], label='Simulation', 
+                       linestyle='--', 
+                       linewidth=0.75,
+                       color='tab:orange')
+            ax[0].plot(t1, a_m[:,1], label='Measurement', 
+                       linewidth=0.75,
+                       color='tab:blue')
+        ax[0].set_ylabel('Acceleration')
+        ax[0].set_xlim((0, np.max([np.max(t1), np.max(t2)])))
+        ax[0].legend()
+        ax[0].grid(alpha=0.5)
+
+        if pgv_m >= pgv_s:
+            ax[1].plot(t1, v_m[:,1], label='Measurement', linewidth=0.75)
+            ax[1].plot(t2, v_s[:,1], label='Simulation', linestyle='--', linewidth=0.75)
+        else:
+            ax[1].plot(t2, v_s[:,1], label='Simulation', 
+                       linestyle='--', 
+                       linewidth=0.75,
+                       color='tab:orange')
+            ax[1].plot(t1, v_m[:,1], label='Measurement', 
+                       linewidth=0.75,
+                       color='tab:blue')
+        ax[1].set_ylabel('Velocity')
+        ax[1].set_xlim((0, np.max([np.max(t1), np.max(t2)])))
+        ax[1].grid(alpha=0.5)
+
+        if pgd_m >= pgd_s:
+            ax[2].plot(t1, u_m[:,1], label='Measurement', linewidth=0.75)
+            ax[2].plot(t2, u_s[:,1], label='Simulation', linestyle='--', linewidth=0.75)
+        else:
+            ax[2].plot(t2, u_s[:,1], label='Simulation', 
+                       linestyle='--', 
+                       linewidth=0.75,
+                       color='tab:orange')
+            ax[2].plot(t1, u_m[:,1], label='Measurement', 
+                       linewidth=0.75,
+                       color='tab:blue')
+        ax[2].set_ylabel('Displacement')
+        ax[2].set_xlabel('Time (s)')
+        ax[2].set_xlim((0, np.max([np.max(t1), np.max(t2)])))
+        ax[2].grid(alpha=0.5)
+        
+
+        fig.suptitle(r'Time Histories', fontsize=16)
+
+        plt.tight_layout()
     
     return (d5, d6, d7)
 
@@ -264,6 +367,16 @@ def baseline_wavelet(signal, wavelet_level=6, wavelet_name='dmey', show_fig=Fals
 def calc_rms(x):
     rms = np.sqrt(np.mean(x[:, 1] ** 2.0))
     return rms
+
+def getAbsPeak(x):
+    if x.shape[1] == 1:
+        peak = np.max(np.abs(x))
+    elif x.shape[1] == 2:
+        peak = np.max(np.abs(x[:,1]))
+    else:
+        raise TypeError('Dimension error.')
+
+    return peak
 
 def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
     """
@@ -325,8 +438,8 @@ def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
     Tmax = 1.0/fmin
     Tmin = 1.0/fmax
     
-    Tn_m, SA_m, _, _, _, _, _ = sr.response_spectra(measurement, T_max=np.max((Tmax, 5.0)), n_pts=100)
-    Tn_s, SA_s, _, _, _, _, _ = sr.response_spectra(simulation, T_max=np.max((Tmax, 5.0)), n_pts=100)
+    Tn_m, SA_m, _, _, _, _, _ = sr.response_spectra(measurement, T_min=np.min((Tmin, 0.01)), T_max=np.max((Tmax, 5.0)), n_pts=150)
+    Tn_s, SA_s, _, _, _, _, _ = sr.response_spectra(simulation, T_min=np.min((Tmin, 0.01)), T_max=np.max((Tmax, 5.0)), n_pts=150)
     
     idx1_RS = np.min(( np.where(Tn_m >= Tmin)[0] ))
     idx2_RS = np.max(( np.where(Tn_m <= Tmax)[0] ))
@@ -353,8 +466,54 @@ def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
 
     # Plotting
     if show_fig:
-        0
-        # TODO: PLOTTING
+        fig, ax = plt.subplots(1, 2, figsize=(10, 7), dpi=100)
+
+        # Spectral acceleration
+        ax[0].fill_between(Tn_m[idx1_RS:idx2_RS], 
+                           np.maximum(SA_m[idx1_RS:idx2_RS], SA_s[idx1_RS:idx2_RS]),
+                           alpha=0.5,
+                           color='silver',
+                           label='Scored Range')
+        ax[0].plot(Tn_m, SA_m, label='Measurement',
+                   color='tab:blue',
+                   linewidth=1.25)
+        ax[0].plot(Tn_s, SA_s, label='Simulation',
+                   linestyle='--',
+                   color='tab:orange',
+                   linewidth=1.25)
+        ax[0].set_xscale('log')
+        ax[0].set_xlim((np.min(Tn_m), np.max(Tn_m)))
+        ax[0].set_ylim(bottom=0.0)
+        ax[0].set_xlabel('Period (s)')
+        ax[0].set_ylabel('Spectral Acceleration')
+        ax[0].grid(alpha=0.5)
+        ax[0].grid(axis='x', which='minor', alpha=0.35, linestyle='--')
+        
+        # Fourier amplitude spectrum
+        ax[1].fill_between(farray_m[idx1_FS:idx2_FS], 
+                           np.maximum(FS_m[idx1_FS:idx2_FS], FS_s[idx1_FS:idx2_FS]),
+                           alpha=0.5,
+                           color='silver',
+                           label='Scored Range')
+        ax[1].plot(farray_m, FS_m, label='Measurement',
+                   color='tab:blue',
+                   linewidth=1.25)
+        ax[1].plot(farray_s, FS_s, label='Simulation',
+                   linestyle='--',
+                   color='tab:orange',
+                   linewidth=1.25)
+        ax[1].set_xscale('log')
+        ax[1].set_xlim((np.min(farray_m), np.max(farray_m)))
+        ax[1].set_ylim(bottom=0.0)
+        ax[1].set_xlabel('Frequency (Hz)')
+        ax[1].set_ylabel('Fourier Amplitude Spectrum')
+        ax[1].grid(alpha=0.5)
+        ax[1].grid(axis='x', which='minor', alpha=0.35, linestyle='--')
+        ax[1].legend()
+
+        fig.suptitle(r'Frequency Content', fontsize=16)
+
+        plt.tight_layout()
     
     return (d8, d9)
 
