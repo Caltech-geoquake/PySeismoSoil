@@ -49,14 +49,53 @@ class GOF_Scores:
         self.measurement = measurement
         self.simulation = simulation
 
-    def score(
+        self.scores = np.full((10), None)
+
+    # TODO: GOF.D_10() FUNCTION
+        
+    def __repr__(self) -> str:
+        """Define a representation of calculated scores."""
+
+        sn = ['Normalized Arias Intensity (S1)', 
+                  'Normalized Energy Integral (S2)',
+                  'Peak Arias Intensity (S3)',
+                  'Peak Energy Integral (S4)',
+                  'RMS Acceleration (S5)',
+                  'RMS Velocity (S6)',
+                  'RMS Displacement (S7)',
+                  'Spectral Acceleration (S8)',
+                  'Fourier Spectra (S9)',
+                  'Cross Correlation (S10)']
+        
+        sum = 0
+        count = 0
+
+        text = '\nGoodness of Fit Scores\n'
+        text += '---------------------------------------\n'
+        for ix, sc in enumerate(self.scores):
+            if sc is not None:
+                text += f'{sn[ix]:>31}: {sc: .3f}\n'
+                sum += sc
+                count += 1
+        text += '---------------------------------------\n'
+        text += f'Average Score: {sum/count:.3f}\n'
+
+        return text
+    
+    def get_scores(self) -> np.ndarray:
+        """
+        Returns entire score array, with 'None' for scores that haven't been calculated.
+        """
+        return self.scores
+
+    def calc_scores(
         self,
         fmin: float | None = None,
         fmax: float | None = None,
         *,
         score_groups: tuple[bool, bool, bool, bool] = (True, True, True, False),
         verbose: bool = True,
-        show_fig: bool = True,
+        show_fig: bool = False,
     ) -> np.ndarray:
         """
         Calculates the goodness-of-fit scores with the given measurement
@@ -95,49 +134,53 @@ class GOF_Scores:
         scores = np.array([])
         if score_groups[0]:
             scores0 = gof.d_1234(self.measurement,self.simulation,fmin,fmax,show_fig)
-            for sc in scores0:
+            for ind, sc in enumerate(scores0):
                 scores = np.append(scores, sc)
+                self.scores[0+ind] = sc
         if score_groups[1]:
             scores1 = gof.d_567(self.measurement,self.simulation,fmin,fmax,show_fig)
-            for sc in scores1:
+            for ind, sc in enumerate(scores1):
                 scores = np.append(scores, sc)
+                self.scores[4+ind] = sc
         if score_groups[2]:
             scores2 = gof.d_89(self.measurement, self.simulation,fmin,fmax,show_fig)
-            for sc in scores2:
+            for ind, sc in enumerate(scores2):
                 scores = np.append(scores, sc)
+                self.scores[7+ind] = sc
         if score_groups[3]:
-            # TODO: gof.d_10() for cross correlation
-            0
+            scores3 = gof.d_10() 
+            scores = np.append(scores, scores3)
+            self.scores[9] = scores3
         
         if verbose:
-            sn = ['Normalized Arias Intensity', 
-                  'Normalized Energy Integral',
-                  'Peak Arias Intensity',
-                  'Peak Energy Integral',
-                  'RMS Acceleration',
-                  'RMS Velocity',
-                  'RMS Displacement',
-                  'Spectral Acceleration',
-                  'Fourier Spectra',
-                  'Cross Correlation']
+            sn = ['Normalized Arias Intensity (S1)', 
+                  'Normalized Energy Integral (S2)',
+                  'Peak Arias Intensity (S3)',
+                  'Peak Energy Integral (S4)',
+                  'RMS Acceleration (S5)',
+                  'RMS Velocity (S6)',
+                  'RMS Displacement (S7)',
+                  'Spectral Acceleration (S8)',
+                  'Fourier Spectra (S9)',
+                  'Cross Correlation (S10)']
 
             print('Goodness of Fit Scores')
-            print('----------------------------------')
+            print('---------------------------------------')
             ind = 0
             if score_groups[0]:
-                [print(f'{sn[ix]:>26}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+4])]
+                [print(f'{sn[ix]:>31}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+4])]
                 ind += 4
             if score_groups[1]:
-                [print(f'{sn[ix+4]:>26}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+3])]
+                [print(f'{sn[ix+4]:>31}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+3])]
                 ind += 3
             if score_groups[2]:
-                [print(f'{sn[ix+7]:>26}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+2])]
+                [print(f'{sn[ix+7]:>31}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+2])]
                 ind += 2
             if score_groups[3]:
-                [print(f'{sn[ix+9]:>26}: {s: .3f}') for ix, s in enumerate(scores[ind])]
-            print('----------------------------------')
+                [print(f'{sn[ix+9]:>31}: {s: .3f}') for ix, s in enumerate(scores[ind])]
+            print('---------------------------------------')
             print(f'Average Score: {np.mean(scores):.3f}')
-        
+
         return scores
 
 """
