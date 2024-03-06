@@ -51,7 +51,7 @@ class GOF_Scores:
         self.measurement = measurement
         self.simulation = simulation
 
-        self.scores = np.full((10), None)
+        self.scores = np.full((10), None, dtype=np.float32)
         
     def __str__(self) -> str:
         """Define a string representation of calculated scores."""
@@ -73,7 +73,7 @@ class GOF_Scores:
         text = '\nGoodness of Fit Scores\n'
         text += '---------------------------------------\n'
         for ix, sc in enumerate(self.scores):
-            if sc is not None:
+            if not np.isnan(sc):
                 text += f'{sn[ix]:>31}: {sc: .3f}\n'
                 sum += sc
                 count += 1
@@ -261,7 +261,7 @@ class Batch_GOF_Scores:
             # Because the user may wish to print batch-related verbosity
             # but it is unideal for the parallel processes to be printing
             # their progress simultaneously
-            print('Parallel computing in progress...', end=' ')
+            # print('Parallel computing in progress...', end=' ')
                 
             p = mp.Pool(n_cores)
             score_results = p.map(
@@ -269,7 +269,7 @@ class Batch_GOF_Scores:
                 itertools.product(range(N), [options]),
             )
 
-            print('done.')   
+            # print('done.')   
         # END IF
             
         return score_results
