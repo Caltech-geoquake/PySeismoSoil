@@ -279,7 +279,7 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
 
     # Plotting
     if show_fig:
-        fig, ax = plt.subplots(3, 1, figsize=(10, 7), dpi=100)
+        fig, ax = plt.subplots(3, 1, figsize=(10, 7), dpi=100, sharex=True)
 
         if pga_m >= pga_s:
             ax[0].plot(t1, a_m[:,1], label='Measurement', linewidth=0.75)
