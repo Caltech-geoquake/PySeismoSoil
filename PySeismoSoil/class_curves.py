@@ -719,9 +719,11 @@ class Multiple_Curves:
         plot_interpolated : bool
             Whether to plot the interpolated curve or the raw data
         fig : Figure | None
-            Figure object. If None, a new figure will be created.
+            Figure object. If None, one new figure will be created.
         ax : Axes | None
-            Axes object. If None, a new axes will be created.
+            Axes object. If None, one new Axes object will be created.
+            If the user provides an Axes object but no Figure object, the
+            user provided Axes object will be overwritten by a new Axes object.
         title : str | None
             Title of plot.
         xlabel : str | None
@@ -744,8 +746,15 @@ class Multiple_Curves:
         ax : Axes
             The axes object being created or being passed into this function.
         """
-        fig = plt.figure()
-        ax = plt.axes()
+        if fig is None: # User provided ax but not fig, or user provided neither
+            fig, ax = hlp._process_fig_ax_objects(
+                fig, None, figsize=figsize, dpi=dpi
+            )
+        elif fig is not None and ax is None: # User provided fig but not ax
+            fig, ax = hlp._process_fig_ax_objects(
+                fig, ax, figsize=figsize, dpi=dpi
+            )
+
         for curve in self.curves:
             curve.plot(
                 plot_interpolated=plot_interpolated,

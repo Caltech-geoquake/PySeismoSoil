@@ -583,7 +583,11 @@ class Nonlinear_Simulation(Simulation):
         nt_out = len(t)
 
         # --------- Create a dummy "curves" for Fortran ------------------------
-        mgc, mdc = self.G_param.construct_curves(strain_in_pct=strain_in_pct)
+        # mgc, mdc = self.G_param.construct_curves(strain_in_pct=strain_in_pct)
+        mgc, _ = self.G_param.construct_curves(strain_in_pct=strain_in_pct,
+                                              curve_type="ggmax")
+        _, mdc = self.xi_param.construct_curves(strain_in_pct=strain_in_pct,
+                                              curve_type="xi")
         mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
         curves = mgdc.get_curve_matrix()
 
@@ -654,7 +658,10 @@ class Nonlinear_Simulation(Simulation):
                 'NLHH.unix',
                 current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
             )
-            subprocess.run('./NLHH.unix', stdout=True)
+            if verbose:
+                subprocess.run('./NLHH.unix', stdout=True)
+            else:
+                subprocess.run('./NLHH.unix', capture_output=True)
         else:
             raise ValueError('Unknown operating system.')
 

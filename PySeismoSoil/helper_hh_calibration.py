@@ -843,7 +843,7 @@ def _calc_rho(h: np.ndarray, Vs: np.ndarray) -> np.ndarray:
        seismic piezocone." Transportation Research Record 1548, National
        Acad. Press, Washington DC, 81-88.
     """
-    z = sr.thk2dep(h, midpoint=False)
+    z = sr.thk2dep(h, midpoint=True)
     z[z == 0] = 0.0001  # avoid error of dividing by zero
     lb = 1.65  # lower bound of density: 1.65 g/cm^3
 
@@ -858,13 +858,13 @@ def _calc_rho(h: np.ndarray, Vs: np.ndarray) -> np.ndarray:
     return rho
 
 
-def _calc_PI(Vs: np.ndarray) -> np.ndarray:
+def _calc_PI(Vs):
     """
     Calculate PI (plasticity index) from Vs values.
 
     Parameters
     ----------
-    Vs : np.ndarray
+    Vs : numpy.ndarray
         The shear-wave velocity for each layer. It needs to be a 1D numpy array.
         Unit: m/s.
 
