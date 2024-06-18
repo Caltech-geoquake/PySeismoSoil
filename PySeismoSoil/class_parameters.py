@@ -430,7 +430,11 @@ class Param_Multi_Layer:
             Damping curves for each soil layer.
         """
         # Importing within the method to avoid circular imports
-        from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+        from PySeismoSoil.class_curves import (
+            Multiple_GGmax_Damping_Curves,
+            Multiple_Damping_Curves,
+            Multiple_GGmax_Curves,
+        )
 
         curves = None
         for param in self.param_list:

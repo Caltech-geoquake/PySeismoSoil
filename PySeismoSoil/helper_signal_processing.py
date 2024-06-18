@@ -907,3 +907,77 @@ def lin_smooth(
 
     y = np.convolve(w / w.sum(), x, mode='same')
     return y
+
+def sine_smooth(
+        signal: np.ndarray,
+        window_span: float = 0.3,
+) -> np.ndarray:
+    """
+    Smooths a frequency spectrum using a sine-shaped window.
+
+    data: two column signal, first column is frequency
+    window_span: width of moving window in hz
+    """
+    x = signal[:,1]
+    sm_signal = np.zeros_like(x)
+
+    nfold = x.shape[0]
+    g = np.zeros_like(x)
+
+    freqs = signal[:,0]
+
+    df = freqs[1]-freqs[0]
+    T = 1/df
+
+    udf = 1.854305 / window_span * df
+
+    lmax = int(np.floor(2/udf) + 1)
+    w = np.zeros((lmax, 1))
+
+    w[0] = 0.75 * udf
+    for l in range(1, lmax):
+        dif = 1.570796 * l * udf
+        w[l] = w[0] * (np.sin(dif)/dif)**4
+
+    g[0] = x[0]**2/T
+    for k in range(1, nfold-1):
+        g[k] = 2 * x[k]**2/T
+    g[nfold-1] = x[nfold-1]**2/T
+
+    ll = lmax*2 - 1
+    ln = ll - 1 + nfold
+    lt = (ll-1) * 2 + nfold
+    le = lt - lmax + 1
+
+    if lt > 4497:
+        g1 = np.zeros((lt, 1))
+        g2 = np.zeros((lt, 1))
+    else:
+        g1 = np.zeros((4497, 1))
+        g2 = np.zeros((4497, 1))
+
+    for k in range(nfold):
+        g1[ll-1+k] = g[k]
+
+    for k in range(lmax-1, le):
+        s = w[0] * g1[k]
+        for l in range(1, lmax):
+            s += w[l] * (g1[k-l] + g1[k+l])
+        g2[k] = s
+
+    for k in range(le, ln+lmax+1):
+        g2[k] = 0.0
+
+    for l in range(1, lmax):
+        g2[ll+l-1] = g2[ll+l-1] + g2[ll-l-2]
+        g2[ln-l-2] = g2[ll-l-2] + g2[ln+l+1]
+
+    for k in range(nfold):
+        g[k] = g2[ll-1+k]
+
+    sm_signal[0] = np.sqrt(g[0]*T)
+    for k in range(1, nfold-1):
+        sm_signal[k] = np.sqrt(g[k]*T/2.0)
+    sm_signal[nfold-1] = np.sqrt(g[nfold-1]*T)
+
+    return sm_signal
