@@ -91,11 +91,11 @@ def transition_function(
         elif -a * intermediateValue < -305:
             w[ix] = 0.0
         else:
-            w = 1 - 1.0 / (
+            w[ix] = 1 - 1.0 / (
                 1
                 + np.power(
                     10,
-                    -a * (np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036)),
+                    -a * intermediateValue,
                 )
             )
             

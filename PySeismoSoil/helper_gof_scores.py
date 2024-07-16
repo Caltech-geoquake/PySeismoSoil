@@ -11,18 +11,26 @@ import pywt
 from scipy.ndimage import convolve1d
 
 def S_(meas, simu):
+    eps2 = 1e-12
     if isinstance(meas, (float, np.float64)):
         meas = np.max((meas, np.finfo(np.float64).eps))
         simu = np.max((simu, np.finfo(np.float64).eps))
+
+        if meas < eps2:
+            rela_diff = (simu-meas)
+        else:
+            rela_diff = (simu-meas)/meas
     else:
         meas[meas < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
         simu[simu < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
     
-    rela_diff = (simu-meas)/meas
+        rela_diff = (simu-meas)/meas
+        rela_diff[meas < eps2] = simu[meas < eps2]-meas[meas < eps2]
+
     score = scipy.special.erf(rela_diff*1)*10
     return score
 
-def d_1234(measurement,simulation,fmin,fmax,show_fig):
+def d_1234(measurement,simulation,fmin,fmax,baseline,show_fig):
     """
     Calculates the first four goodness-of-fit scores in the GoF scheme
     described in Shi & Asimaki (2017)*.
@@ -56,8 +64,9 @@ def d_1234(measurement,simulation,fmin,fmax,show_fig):
     t1 = a_m[:,0]
     t2 = a_s[:,0]
 
-    a_m = sp.baseline(a_m)
-    a_s = sp.baseline(a_s)
+    if baseline:
+        a_m = sp.baseline(a_m)
+        a_s = sp.baseline(a_s)
     
     if fmax == None:
         a_m = sp.highpass(a_m, fmin, filter_order=filter_order)
@@ -198,7 +207,7 @@ def calc_AriasIntensity(accel_in_SI_unit):
 
     return Ia, Ia_peak
 
-def d_567(measurement,simulation,fmin,fmax,show_fig):
+def d_567(measurement,simulation,fmin,fmax,baseline,show_fig):
     """
     Calculates the 5th, 6th, and 7th goodness-of-fit scores in the GoF scheme
     described in Shi & Asimaki (2017)*.
@@ -226,7 +235,6 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
       
     (c) Jian Shi, 2/17/2015
     """
-    baseline_option=True
     filter_order=4
     q = 15
     
@@ -237,12 +245,13 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
     t2 = a_s[:,0]
     n = t1.shape[0]
     
-    if fmax == None:
-        a_m = sp.highpass(a_m, fmin, filter_order=filter_order)
-        a_s = sp.highpass(a_s, fmin, filter_order=filter_order)
-    else:
-        a_m = sp.bandpass(a_m, [fmin, fmax], filter_order=filter_order)
-        a_s = sp.bandpass(a_s, [fmin, fmax], filter_order=filter_order)
+    if baseline:
+        if fmax == None:
+            a_m = sp.highpass(a_m, fmin, filter_order=filter_order)
+            a_s = sp.highpass(a_s, fmin, filter_order=filter_order)
+        else:
+            a_m = sp.bandpass(a_m, [fmin, fmax], filter_order=filter_order)
+            a_s = sp.bandpass(a_s, [fmin, fmax], filter_order=filter_order)
 
     pga_m = getAbsPeak(a_m)
     pga_s = getAbsPeak(a_s)
@@ -250,7 +259,7 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
     rms_a_m = calc_rms(a_m)
     rms_a_s = calc_rms(a_s)
     
-    if baseline_option:
+    if baseline:
         a_m = sp.baseline(a_m)
         a_s = sp.baseline(a_s)
     
@@ -263,8 +272,9 @@ def d_567(measurement,simulation,fmin,fmax,show_fig):
     pgv_m = getAbsPeak(v_m)
     pgv_s = getAbsPeak(v_s)
     
-    u_m = baseline_wavelet(u_m)
-    u_s = baseline_wavelet(u_s)
+    if baseline:
+        u_m = baseline_wavelet(u_m)
+        u_s = baseline_wavelet(u_s)
 
     pgd_m = getAbsPeak(u_m)
     pgd_s = getAbsPeak(u_s)
@@ -377,7 +387,7 @@ def getAbsPeak(x):
 
     return peak
 
-def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
+def d_89(measurement,simulation,fmin=None,fmax=None,baseline=True,show_fig=False):
     """
     Calculates the last two goodness-of-fit scores in the GoF scheme
     described in Shi & Asimaki (2017)*.
@@ -408,8 +418,9 @@ def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
       
     (c) Jian Shi, 2/17/2015
     """
-    measurement = sp.baseline(measurement)
-    simulation = sp.baseline(simulation)
+    if baseline:
+        measurement = sp.baseline(measurement)
+        simulation = sp.baseline(simulation)
     
     t1 = measurement[:, 0]
     t2 = simulation[:, 0]
@@ -427,10 +438,11 @@ def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
     if fmax == None:
         fmax = np.min(fs1, fs2)/2.0
     if fmin >= fmax:
-        raise Exception(f'Error: fmax must be larger than fmin. (fmax={fmax}, fmin={fmin})')
+        raise ValueError(f'Error: fmax must be larger than fmin. (fmax={fmax}, fmin={fmin})')
     
-    measurement = sp.baseline(measurement)
-    simulation = sp.baseline(simulation)
+    if baseline:
+        measurement = sp.baseline(measurement)
+        simulation = sp.baseline(simulation)
         
     # response spectra    
     Tmax = 1.0/fmin
@@ -517,6 +529,68 @@ def d_89(measurement,simulation,fmin=None,fmax=None,show_fig=False):
         plt.tight_layout()
     
     return (d8, d9)
+
+def d_10(measurement,simulation,fmin=None,fmax=None,baseline=True,show_fig=False):
+    """
+    Cross-correlation measure of goodness-of-fit, as described in:
+    Anderson (2004) - Quantitative measure of the goodness-of-fit 
+    of synthetic seismograms
+    """
+    if baseline:
+        measurement = sp.baseline(measurement)
+        simulation = sp.baseline(simulation)
+    
+    t1 = measurement[:, 0]
+    a1 = measurement[:, 1]
+
+    t2 = simulation[:, 0]
+    a2 = simulation[:, 1]
+
+    dt1 = t1[1]-t1[0]
+    fs1 = 1.0/dt1
+    n1 = measurement.shape[0]
+
+    dt2 = t2[1]-t2[0]
+    fs2 = 1.0/dt2
+    n2 = simulation.shape[0]
+
+    if fmin == None:
+        fmin = np.max(fs1/n1, fs2/n2)
+    if fmax == None:
+        fmax = np.min(fs1, fs2)/2.0
+    if fmin >= fmax:
+        raise ValueError(f'Error: fmax must be larger than fmin. (fmax={fmax}, fmin={fmin})')
+    if n1 != n2:
+        raise TypeError('Length of measurement and simulation must be the same.')
+
+    numerator = np.sum(a1*a2)*dt1
+
+    a1_sqr_int = np.sum(a1*a1)*dt1
+    a2_sqr_int = np.sum(a2*a2)*dt2
+    denominator = np.sqrt(a1_sqr_int) * np.sqrt(a2_sqr_int)
+
+    d10 = 1/(10*np.abs(numerator/denominator))
+
+    # Plotting
+    if show_fig:
+        fig, ax = plt.subplots(1, 1, figsize=(10, 7), dpi=100, sharex=True)
+
+        ax.plot(t2, simulation[:,1], label='Simulation',  
+                    linewidth=0.75,
+                    color='tab:orange')
+        ax.plot(t1, measurement[:,1], label='Measurement', 
+                    linewidth=0.75,
+                    color='tab:blue')
+        ax.set_ylabel('Acceleration')
+        ax.set_xlim((0, np.max([np.max(t1), np.max(t2)])))
+        ax.legend()
+        ax.grid(alpha=0.5)
+
+        fig.suptitle(r'Time Histories', fontsize=16)
+
+        plt.tight_layout()
+
+    return (d10)
 
 ## MODWT FUNCTIONS ##
 # Code from: https://github.com/pistonly/modwtpy
