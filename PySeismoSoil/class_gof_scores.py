@@ -108,7 +108,8 @@ class GOF_Scores:
         score_arias: bool = True,
         score_rms: bool = True,
         score_spectra: bool = True,
-        score_cross_correl: bool = False,
+        score_cross_correlation: bool = False,
+        baseline: bool = True,
         verbose: bool = False,
         show_fig: bool = False,
     ) -> np.ndarray:
@@ -150,22 +151,22 @@ class GOF_Scores:
 
         scores = np.array([])
         if score_arias:
-            scores0 = gof.d_1234(self.measurement,self.simulation,fmin,fmax,show_fig)
+            scores0 = gof.d_1234(self.measurement,self.simulation,fmin,fmax,baseline,show_fig)
             for ind, sc in enumerate(scores0):
                 scores = np.append(scores, sc)
                 self.scores[0+ind] = sc
         if score_rms:
-            scores1 = gof.d_567(self.measurement,self.simulation,fmin,fmax,show_fig)
+            scores1 = gof.d_567(self.measurement,self.simulation,fmin,fmax,baseline,show_fig)
             for ind, sc in enumerate(scores1):
                 scores = np.append(scores, sc)
                 self.scores[4+ind] = sc
         if score_spectra:
-            scores2 = gof.d_89(self.measurement, self.simulation,fmin,fmax,show_fig)
+            scores2 = gof.d_89(self.measurement, self.simulation,fmin,fmax,baseline,show_fig)
             for ind, sc in enumerate(scores2):
                 scores = np.append(scores, sc)
                 self.scores[7+ind] = sc
-        if score_cross_correl:
-            scores3 = gof.d_10() # TODO: GOF.D_10() FUNCTION
+        if score_cross_correlation:
+            scores3 = gof.d_10(self.measurement, self.simulation,fmin,fmax,baseline,show_fig)
             scores = np.append(scores, scores3)
             self.scores[9] = scores3
         
@@ -193,8 +194,8 @@ class GOF_Scores:
             if score_spectra:
                 [print(f'{sn[ix+7]:>31}: {s: .3f}') for ix, s in enumerate(scores[ind:ind+2])]
                 ind += 2
-            if score_cross_correl:
-                [print(f'{sn[ix+9]:>31}: {s: .3f}') for ix, s in enumerate(scores[ind])]
+            if score_cross_correlation:
+                print(f'{sn[9]:>31}: {self.scores[9]: .3f}')
             print('---------------------------------------')
             print(f'Average Score: {np.mean(scores):.3f}')
 
