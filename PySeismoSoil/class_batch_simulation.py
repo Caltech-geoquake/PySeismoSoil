@@ -13,7 +13,6 @@ from PySeismoSoil.class_simulation import (
 )
 from PySeismoSoil.class_simulation_results import Simulation_Results
 
-
 class Batch_Simulation:
     """
     Run site response simulations in batch.
@@ -42,7 +41,9 @@ class Batch_Simulation:
         When ``list_of_simulations`` has length 0
     """
 
-    def __init__(self, list_of_simulations: list[Simulation_Results]) -> None:
+    def __init__(self, 
+                 list_of_simulations: list[Simulation_Results], 
+                 use_ctx: bool = False) -> None:
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
 
@@ -73,12 +74,21 @@ class Batch_Simulation:
         self.n_simulations = n_simulations
         self.sim_type = type(sim_0)
 
+        self.use_ctx = use_ctx
+        if use_ctx:
+            self.ctx = mp.get_context('forkserver')
+            self.ctx.set_forkserver_preload(['PySeismoSoil.class_Vs_profile',
+                                'PySeismoSoil.class_ground_motion',
+                                'PySeismoSoil.class_simulation',
+                                'PySeismoSoil.class_batch_simulation'])
+
     def run(
             self,
             parallel: bool = False,
             n_cores: int | None = 1,
             base_output_dir: str | None = None,
             catch_errors: bool = False,
+            verbose: bool = True,
             options: dict[str, Any] | None = None,
     ) -> list[Simulation_Results]:
         """
@@ -94,6 +104,8 @@ class Batch_Simulation:
         base_output_dir : str | None
             The parent directory for saving the output files/figures of the
             current batch.
+        verbose : bool
+            Whether to print the parallel computing progress info.
         options : dict[str, Any] | None
             Options to be passed to the ``run()`` methods of the relevant
             simulation classes (linear, equivalent linear, or nonlinear). Check
@@ -124,23 +136,25 @@ class Batch_Simulation:
             # END FOR
         else:
             sim_results = []
+            
+            if self.use_ctx:
+                if verbose:
+                    print('Parallel computing in progress using forkserver...', end=' ')
+                with self.ctx.Pool(processes=n_cores) as p:
+                    sim_results = p.map(
+                        self._run_single_sim,
+                        itertools.product(range(N), [other_params]),
+                    )
+            else:
+                if verbose:
+                    print('Parallel computing in progress...', end=' ')
+                with mp.Pool(n_cores) as p:
+                    sim_results = p.map(
+                        self._run_single_sim,
+                        itertools.product(range(N), [other_params]),
+                    )
 
-            # Because the user may wish to print batch-related verbosity
-            # but it is unideal for the parallel processes to be printing
-            # their progress simultaneously
-            self_verbose = False
-            if options.get('verbose', True):
-                print('Parallel computing in progress...', end=' ')
-                self_verbose = True
-                options.set('verbose', False)
-                
-            p = mp.Pool(n_cores)
-            sim_results = p.map(
-                self._run_single_sim,
-                itertools.product(range(N), [other_params]),
-            )
-
-            if self_verbose:
+            if verbose:
                 print('done.')   
 
             # Because no figures can be plotted in the parallel pool:
