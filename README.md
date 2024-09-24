@@ -1,7 +1,7 @@
 # PySeismoSoil
 
 [![PyPI](https://img.shields.io/pypi/v/pyseismosoil)](https://pypi.org/project/PySeismoSoil/)
-[![Documentation Status](https://caltech-geoquake.github.io/PySeismoSoil/badge/?version=stable)](https://caltech-geoquake.github.io/PySeismoSoil/?badge=stable)
+[![Docs](https://github.com/Caltech-geoquake/PySeismoSoil/actions/workflows/build-and-deploy-docs.yml/badge.svg?branch=main)](https://github.com/Caltech-geoquake/PySeismoSoil/actions/workflows/build-and-deploy-docs.yml)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil)](https://pepy.tech/project/pyseismosoil)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil/month)](https://pepy.tech/project/pyseismosoil)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil/week)](https://pepy.tech/project/pyseismosoil)
