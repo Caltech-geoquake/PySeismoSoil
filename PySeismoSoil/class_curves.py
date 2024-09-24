@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from typing import Any, Literal, Type
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -746,11 +745,11 @@ class Multiple_Curves:
         ax : Axes
             The axes object being created or being passed into this function.
         """
-        if fig is None: # User provided ax but not fig, or user provided neither
+        if fig is None:  # User provided ax but not fig, or user provided neither
             fig, ax = hlp._process_fig_ax_objects(
                 fig, None, figsize=figsize, dpi=dpi
             )
-        elif fig is not None and ax is None: # User provided fig but not ax
+        elif fig is not None and ax is None:  # User provided fig but not ax
             fig, ax = hlp._process_fig_ax_objects(
                 fig, ax, figsize=figsize, dpi=dpi
             )

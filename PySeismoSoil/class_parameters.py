@@ -431,9 +431,9 @@ class Param_Multi_Layer:
         """
         # Importing within the method to avoid circular imports
         from PySeismoSoil.class_curves import (
-            Multiple_GGmax_Damping_Curves,
             Multiple_Damping_Curves,
             Multiple_GGmax_Curves,
+            Multiple_GGmax_Damping_Curves,
         )
 
         curves = None
@@ -449,24 +449,24 @@ class Param_Multi_Layer:
                     (curves, strain_in_pct, GGmax, strain_in_pct, damping),
                 )
 
-        if curve_type == "ggmax":
+        if curve_type == 'ggmax':
             GGmax_curve_list, _ = hlp.extract_from_curve_format(
                 curves,
                 ensure_non_negative=False,
-                )
+            )
             mgc = Multiple_GGmax_Curves(GGmax_curve_list)
             mdc = None
-        elif curve_type == "xi":
+        elif curve_type == 'xi':
             _, damping_curves_list = hlp.extract_from_curve_format(
                 curves,
                 ensure_non_negative=False,
-                )
+            )
             mgc = None
             mdc = Multiple_Damping_Curves(damping_curves_list)
         else:
             mgdc = Multiple_GGmax_Damping_Curves(data=curves)
             mgc, mdc = mgdc.get_MGC_MDC_objects()
-            
+
         return mgc, mdc
 
     def serialize_to_2D_array(self) -> np.ndarray:

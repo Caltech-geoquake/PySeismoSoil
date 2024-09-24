@@ -1283,7 +1283,7 @@ def linear_tf(
     h_length = len(h)
 
     vs_star = np.multiply(Vs, np.sqrt(1 + 2 * 1j * xi))
-    alpha_star = np.zeros(h_length - 1, dtype=np.complex_)
+    alpha_star = np.zeros(h_length - 1, dtype=np.complex128)
     for k in range(h_length - 1):
         alpha_star[k] = (
             float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
@@ -1294,9 +1294,9 @@ def linear_tf(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
 
-    TF_ro = np.ones(TF_size, dtype=np.complex_)
-    TF_in = np.ones(TF_size, dtype=np.complex_)
-    TF_bh = np.ones(TF_size, dtype=np.complex_)
+    TF_ro = np.ones(TF_size, dtype=np.complex128)
+    TF_in = np.ones(TF_size, dtype=np.complex128)
+    TF_bh = np.ones(TF_size, dtype=np.complex128)
     j_index = np.arange(h_length - 2, -1, -1)
 
     for i, f in enumerate(freq_array):
@@ -1304,9 +1304,9 @@ def linear_tf(
         k_star = np.divide(omega, vs_star)
         D = np.zeros(
             2 * 2 * (h_length - 1),
-            dtype=np.complex_,
+            dtype=np.complex128,
         ).reshape(2, 2, h_length - 1)
-        E = np.zeros(4, dtype=np.complex_).reshape(2, 2)
+        E = np.zeros(4, dtype=np.complex128).reshape(2, 2)
         E[0, 0] = 1
         E[1, 1] = 1
         for j in j_index:

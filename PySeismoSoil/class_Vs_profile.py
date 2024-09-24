@@ -32,7 +32,7 @@ class Vs_Profile:
          |      ...      |   ...    |   ...   |   ...   |      ...        |
          +---------------+----------+---------+---------+-----------------+
 
-        Note that the surface layer is recommended to have a thickness of at 
+        Note that the surface layer is recommended to have a thickness of at
         least 1.0 meter, to ensure realistic overburden pressure.
 
         (The "material numbers" are integer indices that map each layer to
@@ -127,9 +127,9 @@ class Vs_Profile:
             # If surface layer has a thickness less than 1.0 meter
             if thk[0] < 1.0:
                 print(
-                        'Warning in initializing Vs_Profile: surface layer '
-                        f'thickness lower than 1.0 m (user provided = {thk[0]}).',
-                        'May result in unrealistic surface layer overburden pressure.',
+                    'Warning in initializing Vs_Profile: surface layer '
+                    f'thickness lower than 1.0 m (user provided = {thk[0]}).',
+                    'May result in unrealistic surface layer overburden pressure.',
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))

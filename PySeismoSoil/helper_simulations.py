@@ -416,7 +416,11 @@ def equiv_linear(
             )
 
         # --------- Check convergence ------------------------------------------
-        if np.max(G_relative_diff) < tol and np.max(D_relative_diff) < tol:
+        if (
+            np.max(G_relative_diff) < tol
+            and np.max(D_relative_diff) < tol
+            and verbose
+        ):
             print('---------- Convergence achieved ---------------')
             break
         # END IF
@@ -657,7 +661,7 @@ def _lin_resp_every_layer(
     half_N = int(N / 2 + 0.5)
 
     # (2) Complex impedance ratio between each layer
-    alpha = np.zeros(n_layer - 1, dtype=np.complex_)
+    alpha = np.zeros(n_layer - 1, dtype=np.complex128)
     for j in range(n_layer - 1):  # layer by layer
         alpha[j] = (rho[j] * np.sqrt(G[j] * (1 + 2 * 1j * D[j]) / rho[j])) / (
             rho[j + 1]
@@ -677,8 +681,8 @@ def _lin_resp_every_layer(
     assert k_star.shape == (half_N, n_layer)
 
     # (5) Compute A and B (Kramer's book, page 269)
-    A = np.zeros((half_N, n_layer), dtype=np.complex_)
-    B = np.zeros((half_N, n_layer), dtype=np.complex_)
+    A = np.zeros((half_N, n_layer), dtype=np.complex128)
+    B = np.zeros((half_N, n_layer), dtype=np.complex128)
     A[:, 0] = 1
     B[:, 0] = 1
     for k in range(n_layer - 1):  # layer by layer
@@ -694,8 +698,8 @@ def _lin_resp_every_layer(
         )  # left half
 
     # (6) Compute linear transfer function
-    H_ss = np.zeros((half_N, n_layer), dtype=np.complex_)  # single-sided transfer function
-    H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex_)  # the other half
+    H_ss = np.zeros((half_N, n_layer), dtype=np.complex128)  # single-sided transfer function
+    H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex128)  # the other half
     for k in range(n_layer):
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
         H_ss[0, k] = np.real(H_ss[0, k])  # see Note (1) below
@@ -788,7 +792,7 @@ def _calc_stress(
     half_N : int
         The length of the "single-sided" frequency spectrum.
     """
-    stress_fft = np.zeros((N, n_layer - 1), dtype=np.complex_)
+    stress_fft = np.zeros((N, n_layer - 1), dtype=np.complex128)
 
     strain_fft = scipy.fftpack.fft(strain, axis=0)
     modulus = (G * (1 + 2 * 1j * D))[:-1]
