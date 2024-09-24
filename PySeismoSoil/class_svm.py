@@ -167,7 +167,7 @@ class SVM:
                 array2 = np.column_stack((th_array_analyt, Vs_analyt))
 
                 # stack the homogeneous layer on top
-                temp_Vs_profile = np.row_stack((array1, array2))
+                temp_Vs_profile = np.vstack((array1, array2))
 
                 if iterate is False:
                     iteration_flag = False  # abort while loop after only one run
@@ -206,7 +206,7 @@ class SVM:
             array2 = np.column_stack((th_array_analyt, Vs_analyt))
 
             # stack the homogeneous layer on top
-            temp_Vs_profile = np.row_stack((array1, array2))
+            temp_Vs_profile = np.vstack((array1, array2))
 
             # ---------   Prepare output variables  ---------------
             if Vs_cap is not False:  # if we need to "cap" the Vs profile somehow
@@ -246,7 +246,7 @@ class SVM:
                 array5 = np.column_stack((array3, array4))
 
                 # stack additional layer on top
-                vs_profile = np.row_stack((array1, array5))
+                vs_profile = np.vstack((array1, array5))
             else:  # if Vs profile is not to be capped
                 vs_profile = np.copy(temp_Vs_profile)
             # END OF VS_CAP TRUE/FALSE CHECKING
@@ -775,7 +775,7 @@ class SVM:
         #     1000 m/s layer at the very bottom.  '''
         Vs_profile = np.column_stack((thk, Vs_hat))
         if Vs_profile[-1, 1] < 1000:
-            Vs_profile = np.row_stack((Vs_profile, [0, 1000]))
+            Vs_profile = np.vstack((Vs_profile, [0, 1000]))
 
         # -------------  Part 5: Plot Vs profile (optional) ---------------
         if show_fig is True:

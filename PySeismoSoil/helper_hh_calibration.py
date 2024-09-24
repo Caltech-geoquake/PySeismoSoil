@@ -858,13 +858,13 @@ def _calc_rho(h: np.ndarray, Vs: np.ndarray) -> np.ndarray:
     return rho
 
 
-def _calc_PI(Vs):
+def _calc_PI(Vs: np.ndarray) -> np.ndarray:
     """
     Calculate PI (plasticity index) from Vs values.
 
     Parameters
     ----------
-    Vs : numpy.ndarray
+    Vs : np.ndarray
         The shear-wave velocity for each layer. It needs to be a 1D numpy array.
         Unit: m/s.
 

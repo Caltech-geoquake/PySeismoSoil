@@ -706,7 +706,7 @@ def _lin_resp_every_layer(
         H_append[:, k] = np.conj(np.flipud(H_ss[1:, k]))
     # END FOR
 
-    H = np.row_stack((H_ss, H_append))
+    H = np.vstack((H_ss, H_append))
 
     H = H[::freq_oversample_factor, :]  # down-sample back to original resolution
     freq = freq[::freq_oversample_factor]

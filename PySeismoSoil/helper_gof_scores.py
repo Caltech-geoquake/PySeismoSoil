@@ -1,6 +1,4 @@
 import numpy as np
-
-# Modwt imports
 import pywt
 import scipy
 from matplotlib import pyplot as plt
@@ -15,12 +13,7 @@ def S_(
         meas: float | np.ndarray, simu: float | np.ndarray
 ) -> float | np.ndarray:
     """
-    Score the provided elements as described in Shi & Asimaki (2017)*.
-
-    * J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
-      and validation of a hybrid hyperbolic nonlinear soil model for site-
-      response analyses." Bulletin of the Seismological Society of America.
-      Vol. 107, No. 3, 1336-1355.
+    Score the provided elements as described in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -34,6 +27,15 @@ def S_(
     score : float | np.ndarray
         The computed score between `meas` and `simu`.
 
+    References
+    ----------
+    1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
+       and validation of a hybrid hyperbolic nonlinear soil model for site-
+       response analyses." Bulletin of the Seismological Society of America.
+       Vol. 107, No. 3, 1336-1355.
+
+    Notes
+    -----
     Original Matlab code (c) Jian Shi, 2/17/2015
     Ported to Python by Flora Xia, 02/2024
     """
@@ -67,12 +69,7 @@ def d_1234(
 ) -> tuple[float, float, float, float]:
     """
     Calculate the first four goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017)*.
-
-    * J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
-      and validation of a hybrid hyperbolic nonlinear soil model for site-
-      response analyses." Bulletin of the Seismological Society of America.
-      Vol. 107, No. 3, 1336-1355.
+    described in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -102,6 +99,15 @@ def d_1234(
     d4 : float
         Peak energy integral score.
 
+    References
+    ----------
+    1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
+       and validation of a hybrid hyperbolic nonlinear soil model for site-
+       response analyses." Bulletin of the Seismological Society of America.
+       Vol. 107, No. 3, 1336-1355.
+
+    Notes
+    -----
     Original Matlab code (c) Jian Shi, 2/17/2015
     Ported to Python by Flora Xia, 02/2024
     """
@@ -267,6 +273,8 @@ def calc_AriasIntensity(
         The maximum value of the Ia duration, which is also
         the value of the last element in the Ia duration array.
 
+    Notes
+    -----
     Original Matlab code (c) Jian Shi, 2/17/2015
     Ported to Python by Flora Xia, 02/2024
     """
@@ -299,12 +307,7 @@ def d_567(
 ) -> tuple[float, float, float]:
     """
     Calculate the 5th, 6th, and 7th goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017)*.
-
-    * J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
-      and validation of a hybrid hyperbolic nonlinear soil model for site-
-      response analyses." Bulletin of the Seismological Society of America.
-      Vol. 107, No. 3, 1336-1355.
+    described in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -332,6 +335,15 @@ def d_567(
     d7 : float
         RMS displacement score.
 
+    References
+    ----------
+    1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
+       and validation of a hybrid hyperbolic nonlinear soil model for site-
+       response analyses." Bulletin of the Seismological Society of America.
+       Vol. 107, No. 3, 1336-1355.
+
+    Notes
+    -----
     Original Matlab code (c) Jian Shi, 2/17/2015
     Ported to Python by Flora Xia, 02/2024
     """
@@ -506,6 +518,8 @@ def baseline_wavelet(
     y : np.ndarray
         The baseline corrected signal. Also has two columns.
 
+    Notes
+    -----
     Original Matlab code (c) Jian Shi, 2/17/2015
     Ported to Python by Flora Xia, 02/2024
     """
@@ -555,6 +569,11 @@ def getAbsPeak(x: np.ndarray) -> float:
     -------
     peak : float
         The peak value of the absolute value of `x`.
+
+    Raises
+    ------
+    TypeError
+        If the size of the second dimension of `x` is not one or two
     """
     if x.shape[1] == 1:
         peak = np.max(np.abs(x))
@@ -576,12 +595,7 @@ def d_89(
 ) -> tuple[float, float]:
     """
     Calculate the last two goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017)*.
-
-    * J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
-      and validation of a hybrid hyperbolic nonlinear soil model for site-
-      response analyses." Bulletin of the Seismological Society of America.
-      Vol. 107, No. 3, 1336-1355.
+    described in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -607,6 +621,20 @@ def d_89(
     d9 : float
         Fourier spectra score.
 
+    Raises
+    ------
+    ValueError
+        If fmin is greater than fmax
+
+    References
+    ----------
+    1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
+       and validation of a hybrid hyperbolic nonlinear soil model for site-
+       response analyses." Bulletin of the Seismological Society of America.
+       Vol. 107, No. 3, 1336-1355.
+
+    Notes
+    -----
     Original Matlab code (c) Jian Shi, 2/17/2015
     Ported to Python by Flora Xia, 02/2024
     """
@@ -753,22 +781,16 @@ def d_89(
 
 
 def d_10(
-        measurement,
-        simulation,
-        fmin=None,
-        fmax=None,
-        baseline=True,
-        show_fig=False,
-):
+        measurement: np.ndarray,
+        simulation: np.ndarray,
+        fmin: float | None = None,
+        fmax: float | None = None,
+        baseline: bool = True,
+        show_fig: bool = False,
+) -> float:
     """
     Cross-correlation measure of goodness-of-fit, as described in:
-    Anderson (2004)*.
-
-    * Anderson, J. G. (2004, August). Quantitative measure of the
-    goodness-of-fit of synthetic seismograms. In Proceedings of the
-    13th world conference on earthquake engineering (Vol. 243, p. 243).
-    Vancouver, BC, Canada: International Association for Earthquake
-    Engineering.
+    Anderson (2004).
 
     Parameters
     ----------
@@ -791,6 +813,21 @@ def d_10(
     -------
     d10 : float
         Cross correlation score.
+
+    Raises
+    ------
+    ValueError
+        If fmin is greater than fmax
+    TypeError
+        If measurement is not the same length as simulation
+
+    References
+    ----------
+    1. Anderson, J. G. (2004, August). Quantitative measure of the
+       goodness-of-fit of synthetic seismograms. In Proceedings of the
+       13th world conference on earthquake engineering (Vol. 243, p. 243).
+       Vancouver, BC, Canada: International Association for Earthquake
+       Engineering.
     """
     if baseline:
         measurement = sp.baseline(measurement)
@@ -940,7 +977,8 @@ def modwt(x, filters, level):
 
 
 def modwtmra(w, filters):
-    """Multiresolution analysis based on MODWT
+    """
+    Multiresolution analysis based on MODWT
     Code from: https://github.com/pistonly/modwtpy
     """
     # filter

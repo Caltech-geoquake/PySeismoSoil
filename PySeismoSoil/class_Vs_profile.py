@@ -172,7 +172,7 @@ class Vs_Profile:
             half_space = last_row.copy()
             half_space[0] = 0  # set thickness to 0 meters
             half_space[4] = 0  # set material number to 0
-            full_data = np.row_stack((full_data, half_space))
+            full_data = np.vstack((full_data, half_space))
             thk, vs, xi, rho, material_number = full_data.T
 
         self._thk = thk

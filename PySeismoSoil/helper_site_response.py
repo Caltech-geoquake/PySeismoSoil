@@ -155,6 +155,8 @@ def query_Vs_at_depth(
     ------
     TypeError
         When the type of ``depth`` is incorrect
+    ValueError
+        When there are negative `depth`` values.
     """
     # ------------- Check input type, input value, etc. ------------------------
     if isinstance(depth, (int, float, np.number)):
@@ -234,6 +236,8 @@ def query_Vs_given_thk(
     ------
     TypeError
         When the types of input parameters are incorrect
+    ValueError
+        When `n_layers` is not positive
     """
     if not isinstance(thk, (int, float, np.number, np.ndarray)):
         raise TypeError('`thk` needs to be a scalar or a numpy array.')
@@ -301,6 +305,8 @@ def plot_motion(
     ------
     TypeError
         When the types of input parameters are incorrect
+    ValueError
+        When unit is not "m" or "cm"
     """
     if isinstance(accel, str):
         if not title:
@@ -774,6 +780,7 @@ def get_xi_rho(
                   +  200 <= Vs < 800 m/s, rho = 1800
                   +    Vs >= 800 m/s, rho = 2000
                (Unit of rho: kg/m3)
+
     """
     hlp.assert_1D_numpy_array(Vs, '`Vs`')
 
@@ -1507,15 +1514,17 @@ def amplify_motion(
     response : np.ndarray
         The resultant ground motion in time domain. In the same format as
         ``input_motion``.
-    fig : Figure
+    fig : Figure | None
         The figure object being created or being passed into this function.
-    ax : Axes
+    ax : Axes | None
         The axes object being created or being passed into this function.
 
     Raises
     ------
     TypeError
         The type/value of the input parameter is incorrect
+    ValueError
+        Incorrect frequency range
 
     Note
     ----
@@ -2458,6 +2467,8 @@ def fit_all_damping_curves(
     ------
     TypeError
         The type of the input parameter is incorrect
+    ValueError
+        No function for serialization
     """
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)
