@@ -843,7 +843,7 @@ def _calc_rho(h: np.ndarray, Vs: np.ndarray) -> np.ndarray:
        seismic piezocone." Transportation Research Record 1548, National
        Acad. Press, Washington DC, 81-88.
     """
-    z = sr.thk2dep(h, midpoint=False)
+    z = sr.thk2dep(h, midpoint=True)
     z[z == 0] = 0.0001  # avoid error of dividing by zero
     lb = 1.65  # lower bound of density: 1.65 g/cm^3
 

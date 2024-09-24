@@ -14,7 +14,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         h = np.array([2, 3, 4, 5])
         Vs = np.array([200, 300, 400, 500])
         rho = hhc._calc_rho(h, Vs)
-        expected_rho = np.array([1.6500, 2.1272, 2.1399, 2.1702]) * 1000
+        expected_rho = np.array([2.0691, 2.0699, 2.1127, 2.1533]) * 1000
         self.assertTrue(np.allclose(rho, expected_rho, rtol=0.001, atol=0.0))
 
     def test_calc_Gmax(self):

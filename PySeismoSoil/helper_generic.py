@@ -190,6 +190,8 @@ def read_two_column_stuff(
     ------
     TypeError
         When ``data`` is not a file name or a numpy array
+    ValueError
+        When 'delta' such as dt or df is not provided for one-column data
     """
     if isinstance(data, str):  # "data" is a file name
         data_ = np.genfromtxt(data, delimiter=sep, **kwargs_to_genfromtxt)

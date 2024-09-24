@@ -32,6 +32,9 @@ class Vs_Profile:
          |      ...      |   ...    |   ...   |   ...   |      ...        |
          +---------------+----------+---------+---------+-----------------+
 
+        Note that the surface layer is recommended to have a thickness of at
+        least 1.0 meter, to ensure realistic overburden pressure.
+
         (The "material numbers" are integer indices that map each layer to
         their G/Gmax and damping curves.)
 
@@ -121,6 +124,14 @@ class Vs_Profile:
             else:
                 material_number = np.arange(1, n_layer_tmp + 1)
 
+            # If surface layer has a thickness less than 1.0 meter
+            if thk[0] < 1.0:
+                print(
+                    'Warning in initializing Vs_Profile: surface layer '
+                    f'thickness lower than 1.0 m (user provided = {thk[0]}).',
+                    'May result in unrealistic surface layer overburden pressure.',
+                )
+
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
         elif n_col == 5:
             xi = data_[:, 2]
@@ -161,7 +172,7 @@ class Vs_Profile:
             half_space = last_row.copy()
             half_space[0] = 0  # set thickness to 0 meters
             half_space[4] = 0  # set material number to 0
-            full_data = np.row_stack((full_data, half_space))
+            full_data = np.vstack((full_data, half_space))
             thk, vs, xi, rho, material_number = full_data.T
 
         self._thk = thk

@@ -155,6 +155,8 @@ def query_Vs_at_depth(
     ------
     TypeError
         When the type of ``depth`` is incorrect
+    ValueError
+        When there are negative `depth`` values.
     """
     # ------------- Check input type, input value, etc. ------------------------
     if isinstance(depth, (int, float, np.number)):
@@ -234,6 +236,8 @@ def query_Vs_given_thk(
     ------
     TypeError
         When the types of input parameters are incorrect
+    ValueError
+        When `n_layers` is not positive
     """
     if not isinstance(thk, (int, float, np.number, np.ndarray)):
         raise TypeError('`thk` needs to be a scalar or a numpy array.')
@@ -301,6 +305,8 @@ def plot_motion(
     ------
     TypeError
         When the types of input parameters are incorrect
+    ValueError
+        When unit is not "m" or "cm"
     """
     if isinstance(accel, str):
         if not title:
@@ -774,6 +780,7 @@ def get_xi_rho(
                   +  200 <= Vs < 800 m/s, rho = 1800
                   +    Vs >= 800 m/s, rho = 2000
                (Unit of rho: kg/m3)
+
     """
     hlp.assert_1D_numpy_array(Vs, '`Vs`')
 
@@ -1283,7 +1290,7 @@ def linear_tf(
     h_length = len(h)
 
     vs_star = np.multiply(Vs, np.sqrt(1 + 2 * 1j * xi))
-    alpha_star = np.zeros(h_length - 1, dtype=np.complex_)
+    alpha_star = np.zeros(h_length - 1, dtype=np.complex128)
     for k in range(h_length - 1):
         alpha_star[k] = (
             float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
@@ -1294,9 +1301,9 @@ def linear_tf(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
 
-    TF_ro = np.ones(TF_size, dtype=np.complex_)
-    TF_in = np.ones(TF_size, dtype=np.complex_)
-    TF_bh = np.ones(TF_size, dtype=np.complex_)
+    TF_ro = np.ones(TF_size, dtype=np.complex128)
+    TF_in = np.ones(TF_size, dtype=np.complex128)
+    TF_bh = np.ones(TF_size, dtype=np.complex128)
     j_index = np.arange(h_length - 2, -1, -1)
 
     for i, f in enumerate(freq_array):
@@ -1304,9 +1311,9 @@ def linear_tf(
         k_star = np.divide(omega, vs_star)
         D = np.zeros(
             2 * 2 * (h_length - 1),
-            dtype=np.complex_,
+            dtype=np.complex128,
         ).reshape(2, 2, h_length - 1)
-        E = np.zeros(4, dtype=np.complex_).reshape(2, 2)
+        E = np.zeros(4, dtype=np.complex128).reshape(2, 2)
         E[0, 0] = 1
         E[1, 1] = 1
         for j in j_index:
@@ -1507,15 +1514,17 @@ def amplify_motion(
     response : np.ndarray
         The resultant ground motion in time domain. In the same format as
         ``input_motion``.
-    fig : Figure
+    fig : Figure | None
         The figure object being created or being passed into this function.
-    ax : Axes
+    ax : Axes | None
         The axes object being created or being passed into this function.
 
     Raises
     ------
     TypeError
         The type/value of the input parameter is incorrect
+    ValueError
+        Incorrect frequency range
 
     Note
     ----
@@ -2458,6 +2467,8 @@ def fit_all_damping_curves(
     ------
     TypeError
         The type of the input parameter is incorrect
+    ValueError
+        No function for serialization
     """
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)

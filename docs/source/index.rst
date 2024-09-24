@@ -12,15 +12,15 @@ PySeismoSoil is a Python library for performing 1D seismic site response analysi
 Copyright and license
 ---------------------
 
-Copyright |copy| 2019, California Institute of Technology, based on research supported by the National Science Foundation (NSF) Cooperative Agreement EAR-1033462 and the U.S. Geological Survey (USGS) Cooperative Agreement G12AC20038. All rights reserved.
+Copyright |copy| 2024, California Institute of Technology, based on research supported by the National Science Foundation (NSF) Cooperative Agreement EAR-1033462 and the U.S. Geological Survey (USGS) Cooperative Agreement G12AC20038. All rights reserved.
 
-Please carefully read the license `here <https://github.com/jsh9/PySeismoSoil/blob/master/LICENSE>`_ for the terms and conditions of using this library.
+Please carefully read the license `here <https://github.com/Caltech-geoquake/PySeismoSoil/blob/master/LICENSE>`_ for the terms and conditions of using this library.
 
 
 Authors
 -------
 
-The authors of this library are the current and past members of the `Geoquake Research Group <http://asimaki.caltech.edu/>`_ of the `California Institute of Technology <https://www.caltech.edu/>`_: Jian Shi, Domniki Asimaki, and Wei Li.
+The authors of this library are the current and past members of the `Geoquake Research Group <http://asimaki.caltech.edu/>`_ of the `California Institute of Technology <https://www.caltech.edu/>`_: Jian Shi, Domniki Asimaki, Wei Li, and Flora Xia.
 
 
 Knowledge base
@@ -50,7 +50,7 @@ Or, install with latest changes (may contain features ahead of the stable versio
 
 .. code-block:: bash
 
-    pip install git+https://github.com/jsh9/PySeismoSoil
+    pip install git+https://github.com/Caltech-geoquake/PySeismoSoil
 
 
 Full API documentation
@@ -65,15 +65,15 @@ Full API documentation
 GitHub homepage
 ---------------
 
-https://github.com/jsh9/PySeismoSoil
+https://github.com/Caltech-geoquake/PySeismoSoil
 
-To report bugs and submit suggestions, please use the `"Issues" section <https://github.com/jsh9/PySeismoSoil/issues>`_ of the GitHub repository.
+To report bugs and submit suggestions, please use the `"Issues" section <https://github.com/Caltech-geoquake/PySeismoSoil/issues>`_ of the GitHub repository.
 
 
 Current version
 ---------------
 
-* v0.5.4
+* v0.6.0
 
 
 Indices and tables

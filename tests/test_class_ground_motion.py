@@ -123,7 +123,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
         gm = GM(veloc_, unit='m/s', motion_type='veloc')
         displ = gm.displ[:, 1]
         displ_cumtrapz = np.append(
-            0, sp.integrate.cumtrapz(veloc_[:, 1], dx=gm.dt)
+            0, sp.integrate.cumulative_trapezoid(veloc_[:, 1], dx=gm.dt)
         )
         r = np.corrcoef(displ_cumtrapz, displ)[1, 1]  # cross-correlation
         self.assertTrue(r >= 0.999)

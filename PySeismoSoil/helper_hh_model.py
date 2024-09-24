@@ -80,13 +80,26 @@ def transition_function(
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     assert gamma_t > 0
-    w = 1 - 1.0 / (
-        1
-        + np.power(
-            10,
-            -a * (np.log10(np.abs(gamma) / gamma_t) - 4.039 * a ** (-1.036)),
+
+    # We have to manually handle the edge cases where we may have
+    # 1e(a very large number) or 1e(a very small number)
+    w = np.zeros(gamma.shape)
+    for ix, g in enumerate(gamma):
+        intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (
+            -1.036
         )
-    )
+        if -a * intermediateValue > 305:
+            w[ix] = 1.0
+        elif -a * intermediateValue < -305:
+            w[ix] = 0.0
+        else:
+            w[ix] = 1 - 1.0 / (
+                1
+                + np.power(
+                    10,
+                    -a * intermediateValue,
+                )
+            )
 
     return w
 

@@ -24,6 +24,12 @@ class Batch_Simulation:
         A list of simulation objects. Valid simulation objects include objects
         from these classes: ``Linear_Simulation``, ``Equiv_Linear_Simulation``,
         and ``Nonlinear_Simulation``.
+    use_ctx : bool
+        For unix systems, provides the option to use the forkserver context for spawning
+        subprocesses when running simulations in batch. The forkserver context is recommended
+        to avoid slowdowns when PySeismoSoil is being run in batch as part of a code that
+        contains additional non-PySeismoSoil variables and module imports. If use_ctx is
+        set to True, the top-level code must be guarded under `if __name__ == "__main__":`.
 
     Attributes
     ----------
@@ -42,7 +48,11 @@ class Batch_Simulation:
         When ``list_of_simulations`` has length 0
     """
 
-    def __init__(self, list_of_simulations: list[Simulation_Results]) -> None:
+    def __init__(
+            self,
+            list_of_simulations: list[Simulation_Results],
+            use_ctx: bool = False,
+    ) -> None:
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
 
@@ -73,11 +83,23 @@ class Batch_Simulation:
         self.n_simulations = n_simulations
         self.sim_type = type(sim_0)
 
+        self.use_ctx = use_ctx
+        if use_ctx:
+            self.ctx = mp.get_context('forkserver')
+            self.ctx.set_forkserver_preload([
+                'PySeismoSoil.class_Vs_profile',
+                'PySeismoSoil.class_ground_motion',
+                'PySeismoSoil.class_simulation',
+                'PySeismoSoil.class_batch_simulation',
+            ])
+
     def run(
             self,
             parallel: bool = False,
             n_cores: int | None = 1,
             base_output_dir: str | None = None,
+            catch_errors: bool = False,
+            verbose: bool = True,
             options: dict[str, Any] | None = None,
     ) -> list[Simulation_Results]:
         """
@@ -93,6 +115,13 @@ class Batch_Simulation:
         base_output_dir : str | None
             The parent directory for saving the output files/figures of the
             current batch.
+        catch_errors : bool
+            Optionally allows for ValueErrors to be caught during batch simulation,
+            so a single error simulation doesn't interrupt the running of others in the
+            batch. Simulations that have caught errors will be replaced by `None` in the
+            results list.
+        verbose : bool
+            Whether to print the parallel computing progress info.
         options : dict[str, Any] | None
             Options to be passed to the ``run()`` methods of the relevant
             simulation classes (linear, equivalent linear, or nonlinear). Check
@@ -114,7 +143,7 @@ class Batch_Simulation:
             current_time = hlp.get_current_time(for_filename=True)
             base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
 
-        other_params = [n_digits, base_output_dir, options]
+        other_params = [n_digits, base_output_dir, catch_errors, options]
 
         if not parallel:
             sim_results = []
@@ -122,16 +151,32 @@ class Batch_Simulation:
                 sim_results.append(self._run_single_sim([i, other_params]))
             # END FOR
         else:
-            # Because no outputs can be printed to stdout in the parellel pool
-            if options.get('verbose', True):  # default value is `True`
-                print('Parallel computing in progress...', end=' ')
+            sim_results = []
 
-            p = mp.Pool(n_cores)
-            sim_results = p.map(
-                self._run_single_sim,
-                itertools.product(range(N), [other_params]),
-            )
-            if options.get('verbose', True):
+            if self.use_ctx:
+                if verbose:
+                    print(
+                        'Parallel computing in progress using forkserver...',
+                        end=' ',
+                    )
+
+                with self.ctx.Pool(processes=n_cores) as p:
+                    sim_results = p.map(
+                        self._run_single_sim,
+                        itertools.product(range(N), [other_params]),
+                    )
+
+            else:
+                if verbose:
+                    print('Parallel computing in progress...', end=' ')
+
+                with mp.Pool(n_cores) as p:
+                    sim_results = p.map(
+                        self._run_single_sim,
+                        itertools.product(range(N), [other_params]),
+                    )
+
+            if verbose:
                 print('done.')
 
             # Because no figures can be plotted in the parallel pool:
@@ -153,13 +198,14 @@ class Batch_Simulation:
         all_params : list[Any]
             All the parameters needed for running the simulation. It should
             have the following structure:
-                [i, [n_digits, base_output_dir, options]]
+                [i, [n_digits, base_output_dir, catch_errors, options]]
             where:
                 - ``i`` is the index of the current simulation in the batch.
                 - ``n_digits`` is the number of digits of the length of the
                   batch. (For example, if there are 125 simulations, then
                   ``n_digits`` should be 3.)
                 - ``base_output_dir``: same as in the ``run()`` method
+                - ``catch_errors``: same as in the ``run()`` method
                 - ``options``: same as in the ``run()`` method
 
         Returns
@@ -168,7 +214,7 @@ class Batch_Simulation:
             Simulation results of a single simulation object.
         """
         i, other_params = all_params  # unpack
-        n_digits, base_output_dir, options = other_params  # unpack
+        n_digits, base_output_dir, catch_errors, options = other_params  # unpack
         output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
         if self.sim_type == Nonlinear_Simulation:
             options.update({'sim_dir': output_dir})
@@ -176,5 +222,13 @@ class Batch_Simulation:
             options.update({'output_dir': output_dir})
 
         sim_obj = self.list_of_simulations[i]
-        sim_result = sim_obj.run(**options)
+        if catch_errors:
+            try:
+                sim_result = sim_obj.run(**options)
+            except ValueError:
+                sim_result = None
+                print('Warning: ValueError encountered.')
+        else:
+            sim_result = sim_obj.run(**options)
+
         return sim_result

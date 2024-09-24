@@ -20,11 +20,11 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'PySeismoSoil'
-copyright = '2019, California Institute of Technology'
+copyright = '2024, California Institute of Technology'
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.5.4'
+release = 'v0.6.0'
 
 
 # -- General configuration ---------------------------------------------------
