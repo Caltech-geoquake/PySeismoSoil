@@ -1,7 +1,7 @@
 # PySeismoSoil
 
 [![PyPI](https://img.shields.io/pypi/v/pyseismosoil)](https://pypi.org/project/PySeismoSoil/)
-[![Documentation Status](https://readthedocs.org/projects/pyseismosoil/badge/?version=stable)](https://pyseismosoil.readthedocs.io/en/stable/?badge=stable)
+[![Documentation Status](https://caltech-geoquake.github.io/PySeismoSoil/badge/?version=stable)](https://caltech-geoquake.github.io/PySeismoSoil/?badge=stable)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil)](https://pepy.tech/project/pyseismosoil)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil/month)](https://pepy.tech/project/pyseismosoil)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil/week)](https://pepy.tech/project/pyseismosoil)
@@ -10,13 +10,13 @@ PySeismoSoil is a Python library for performing 1D seismic site response analysi
 
 ## Copyright and license
 
-Copyright (c) 2019, California Institute of Technology, based on research supported by the National Science Foundation (NSF) Cooperative Agreement EAR-1033462 and the U.S. Geological Survey (USGS) Cooperative Agreement G12AC20038. All rights reserved.
+Copyright (c) 2024, California Institute of Technology, based on research supported by the National Science Foundation (NSF) Cooperative Agreement EAR-1033462 and the U.S. Geological Survey (USGS) Cooperative Agreement G12AC20038. All rights reserved.
 
-Please carefully read the license [here](https://github.com/jsh9/PySeismoSoil/blob/master/LICENSE) for the terms and conditions of using this library.
+Please carefully read the license [here](https://caltech-geoquake.github.io/PySeismoSoil/blob/master/LICENSE) for the terms and conditions of using this library.
 
 ## Authors
 
-The authors of this library are the current and past members of the [Geoquake Research Group](http://asimaki.caltech.edu/) of the [California Institute of Technology](https://www.caltech.edu/): Jian Shi, Domniki Asimaki, and Wei Li.
+The authors of this library are the current and past members of the [Geoquake Research Group](http://asimaki.caltech.edu/) of the [California Institute of Technology](https://www.caltech.edu/): Jian Shi, Domniki Asimaki, Wei Li, and Flora Xia.
 
 ## Installation
 
@@ -71,4 +71,4 @@ To cite this library, please include this DOI in your publication: [![DOI](https
 
 ## How to contribute to this library
 
-Please read the [contributing instructions](https://github.com/jsh9/PySeismoSoil/blob/master/CONTRIBUTING.md) to get started.
+Please read the [contributing instructions](https://caltech-geoquake.github.io/PySeismoSoil/blob/master/CONTRIBUTING.md) to get started.
