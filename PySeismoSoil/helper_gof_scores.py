@@ -424,7 +424,8 @@ def d_567(
 
         ax[0].set_ylabel('Acceleration')
         ax[0].set_title(
-            f'RMS Acceleration (S5): {d5:.2f}, RMS Velocity (S6): {d6:.2f}, RMS Displacement (S7): {d7:.2f}'
+            f'RMS Acceleration (S5): {d5:.2f}, RMS Velocity (S6): {d6:.2f},'
+            f' RMS Displacement (S7): {d7:.2f}'
         )
         ax[0].set_xlim((0, np.max([np.max(t1), np.max(t2)])))
         ax[0].legend()

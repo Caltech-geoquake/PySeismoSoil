@@ -34,7 +34,22 @@ class Site_Factors:
 
     Attributes
     ----------
-    Attributes same as the inputs
+    Vs30_array : list[int]
+        Valid Vs30 values (class attribute).
+    z1_array : list[int]
+        Valid z1 values (class attribute).
+    PGA_array : list[float]
+        Valid PGA values (class attribute).
+    Vs30 : float
+        Same as the input parameter ``Vs30_in_meter_per_sec``.
+    z1 : float
+        Same as the input parameter ``z1_in_m``.
+    PGA : float
+        Same as the input parameter ``PGA_in_g``.
+    dir_amplif : str
+        Directory path for amplification data files.
+    dir_phase : str
+        Directory path for phase data files.
 
     Raises
     ------
@@ -42,7 +57,7 @@ class Site_Factors:
         When the combination of Vs30 and z1 values is invalid
     """
 
-    Vs30_array = [
+    Vs30_array: list[int] = [
         175,
         200,
         250,
@@ -61,8 +76,26 @@ class Site_Factors:
         900,
         950,
     ]
-    z1_array = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
-    PGA_array = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
+    z1_array: list[int] = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
+    PGA_array: list[float] = [
+        0.01,
+        0.05,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.75,
+        1.0,
+        1.25,
+        1.5,
+    ]
+
+    Vs30: float
+    z1: float
+    PGA: float
+    dir_amplif: str
+    dir_phase: str
 
     def __init__(
             self,

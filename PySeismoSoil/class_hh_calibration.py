@@ -41,7 +41,7 @@ class HH_Calibration:
     ----------
     vs_profile : Vs_Profile
         Same as the input parameter.
-    GGmax_curves : PySeismoSoil.class_curves.Multiple_GGmax_Curves or ``None``
+    GGmax_curves : Multiple_GGmax_Curves | None
         Same as the input parameter.
     Tmax_profile : np.ndarray | None
         Same as the input parameter.
@@ -53,6 +53,10 @@ class HH_Calibration:
     ValueError
         When input arguments have invalid data dimensions etc.
     """
+
+    vs_profile: Vs_Profile
+    GGmax_curves: Multiple_GGmax_Curves | None
+    Tmax_profile: np.ndarray | None
 
     def __init__(
             self,

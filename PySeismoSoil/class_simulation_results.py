@@ -59,13 +59,55 @@ class Simulation_Results:
 
     Attributes
     ----------
-    Attributes same as inputs
+    input_accel : Ground_Motion
+        Same as the input parameter ``input_accel``.
+    accel_on_surface : Ground_Motion
+        Same as the input parameter ``accel_on_surface``.
+    rediscretized_profile : Vs_Profile
+        Same as the input parameter ``rediscretized_profile``.
+    max_a_v_d : np.ndarray | None
+        Same as the input parameter ``max_a_v_d``.
+    max_strain_stress : np.ndarray | None
+        Same as the input parameter ``max_strain_stress``.
+    trans_func : Frequency_Spectrum | None
+        Same as the input parameter ``trans_func``.
+    trans_func_smoothed : Frequency_Spectrum | None
+        Same as the input parameter ``trans_func_smoothed``.
+    time_history_accel : np.ndarray | None
+        Same as the input parameter ``time_history_accel``.
+    time_history_veloc : np.ndarray | None
+        Same as the input parameter ``time_history_veloc``.
+    time_history_displ : np.ndarray | None
+        Same as the input parameter ``time_history_displ``.
+    time_history_stress : np.ndarray | None
+        Same as the input parameter ``time_history_stress``.
+    time_history_strain : np.ndarray | None
+        Same as the input parameter ``time_history_strain``.
+    motion_name : str
+        The motion name (derived from input parameter or timestamp).
+    output_dir : str
+        The output directory (derived from input parameter or timestamp).
 
     Raises
     ------
     TypeError
         If input arguments have incorrect type
     """
+
+    input_accel: Ground_Motion
+    accel_on_surface: Ground_Motion
+    rediscretized_profile: Vs_Profile
+    max_a_v_d: np.ndarray | None
+    max_strain_stress: np.ndarray | None
+    trans_func: Frequency_Spectrum | None
+    trans_func_smoothed: Frequency_Spectrum | None
+    time_history_accel: np.ndarray | None
+    time_history_veloc: np.ndarray | None
+    time_history_displ: np.ndarray | None
+    time_history_stress: np.ndarray | None
+    time_history_strain: np.ndarray | None
+    motion_name: str
+    output_dir: str
 
     def __init__(
             self,

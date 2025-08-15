@@ -71,6 +71,10 @@ class Curve:
         When ``strain_unit`` is not '1' nor '%'
     """
 
+    raw_data: np.ndarray
+    strain: np.ndarray
+    values: np.ndarray
+
     def __init__(
             self,
             data: np.ndarray,
@@ -220,6 +224,8 @@ class GGmax_Curve(Curve):
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
+    values : np.ndarray
+        The interpolated values; same shape as ``strain`` (inherited from Curve).
     GGmax : np.ndarray
         The interpolated G/Gmax values; same shape as ``strain``.
 
@@ -228,6 +234,11 @@ class GGmax_Curve(Curve):
     ValueError
         When the provided G/Gmax values are not within [0, 1]
     """
+
+    raw_data: np.ndarray
+    strain: np.ndarray
+    values: np.ndarray
+    GGmax: np.ndarray
 
     def __init__(
             self,
@@ -301,6 +312,8 @@ class Damping_Curve(Curve):
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
+    values : np.ndarray
+        The interpolated values; same shape as ``strain`` (inherited from Curve).
     damping : np.ndarray
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
@@ -310,6 +323,11 @@ class Damping_Curve(Curve):
     ValueError
         When the provided damping values are not within [0, 100]
     """
+
+    raw_data: np.ndarray
+    strain: np.ndarray
+    values: np.ndarray
+    damping: np.ndarray
 
     def __init__(
             self,
@@ -559,6 +577,10 @@ class Stress_Curve(Curve):
         When ``stress_unit`` is not one of ['Pa', 'kPa', 'MPa', 'GPa']
     """
 
+    raw_data: np.ndarray
+    strain: np.ndarray
+    stress: np.ndarray
+
     def __init__(
             self,
             data: np.ndarray,
@@ -636,6 +658,10 @@ class Multiple_Curves:
     TypeError
         When any element in ``list_of_curves`` has invalid type
     """
+
+    element_class: Type[Curve]
+    curves: list[Type[Curve]]
+    n_layer: int
 
     def __init__(
             self,
@@ -807,6 +833,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
     TypeError
         When ``filename_or_list_of_curves`` has unrecognizable type
     """
+
+    curves: list[Damping_Curve]
+    n_layer: int
 
     def __init__(
             self,
@@ -1274,6 +1303,9 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         When the type of ``filename_or_list_of_curves`` is not recognizable
     """
 
+    curves: list[GGmax_Curve]
+    n_layer: int
+
     def __init__(
             self,
             filename_or_list_of_curves: str | list[np.ndarray],
@@ -1468,6 +1500,11 @@ class Multiple_GGmax_Damping_Curves:
     ValueError
         When both input arguments are ``None``, or neither of them are ``None``
     """
+
+    mgc: Multiple_GGmax_Curves
+    mdc: Multiple_Damping_Curves
+    data: np.ndarray
+    n_layer: int
 
     def __init__(
             self,

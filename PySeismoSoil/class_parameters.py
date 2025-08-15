@@ -48,6 +48,8 @@ class Parameter(collections.UserDict):
         The original data, stored as a regular dictionary.
     allowable_keys : set[str] | None
         Same as the input parameter.
+    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None
+        A function to calculate shear stress from the parameters.
 
     Raises
     ------
@@ -56,6 +58,10 @@ class Parameter(collections.UserDict):
     KeyError
         When keys outside ``allowable_keys`` exist in ``param_dict``
     """
+
+    data: dict[str, float]
+    allowable_keys: set[str] | None
+    func_stress: Callable[[dict[str, float], ...], np.ndarray] | None
 
     def __init__(
             self,
@@ -265,6 +271,9 @@ class HH_Param(Parameter):
         Valid parameter names of the HH model.
     """
 
+    data: dict[str, float]
+    allowable_keys: set[str]
+
     def __init__(self, param_dict: dict[str, float]) -> None:
         allowable_keys = {
             'gamma_t',
@@ -309,6 +318,9 @@ class MKZ_Param(Parameter):
     allowable_keys : set[str]
         Valid parameter names of the MKZ model.
     """
+
+    data: dict[str, float]
+    allowable_keys: set[str]
 
     def __init__(self, param_dict: dict[str, float]) -> None:
         allowable_keys = {'gamma_ref', 's', 'beta', 'Gmax'}
@@ -364,6 +376,9 @@ class Param_Multi_Layer:
         When an element in ``list_of_param_data`` has invalid type
     """
 
+    param_list: list[Parameter]
+    n_layer: int
+
     def __init__(
             self,
             list_of_param_data: list[dict[str, float]] | list[Parameter],
@@ -418,7 +433,7 @@ class Param_Multi_Layer:
         ----------
         strain_in_pct : np.ndarray
             Strain array. Must be a 1D numpy array. Unit: %
-        curve_type : str
+        curve_type : str | None
             Either "ggmax" or "xi" for option to calculate only one of them.
             "None" will be returned for the other curve object in this case.
 
@@ -556,7 +571,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     Attributes
     ----------
-    param_list : list<``HH_Param``>
+    param_list : list[HH_Param]
         A list of HH model parameters.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
@@ -566,6 +581,9 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     TypeError
         When the type of ``filename_or_data`` is not valid
     """
+
+    param_list: list[HH_Param]
+    n_layer: int
 
     def __init__(
             self,
@@ -646,7 +664,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Attributes
     ----------
-    param_list : list<``MKZ_Param``>
+    param_list : list[MKZ_Param]
         A list of MKZ model parameters.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
@@ -656,6 +674,9 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     TypeError
         When then type of ``filename_or_data`` is not valid
     """
+
+    param_list: list[MKZ_Param]
+    n_layer: int
 
     def __init__(
             self,

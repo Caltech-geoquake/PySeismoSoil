@@ -52,7 +52,18 @@ class Simulation:
 
     Attributes
     ----------
-    Attributes same as the inputs
+    soil_profile : Vs_Profile
+        Same as the input parameter ``soil_profile``.
+    input_motion : Ground_Motion
+        Same as the input parameter ``input_motion``.
+    boundary : Literal['elastic', 'rigid']
+        Same as the input parameter ``boundary``.
+    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+        Same as the input parameter ``G_param``.
+    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+        Same as the input parameter ``xi_param``.
+    GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None
+        Same as the input parameter ``GGmax_and_damping_curves``.
 
     Raises
     ------
@@ -61,6 +72,13 @@ class Simulation:
     ValueError
         When input arguments have incorrect or invalid values
     """
+
+    soil_profile: Vs_Profile
+    input_motion: Ground_Motion
+    boundary: Literal['elastic', 'rigid']
+    G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None
 
     # fmt: off
     def __init__(
@@ -141,8 +159,17 @@ class Linear_Simulation(Simulation):
 
     Attributes
     ----------
-    Attributes same as the inputs
+    soil_profile : Vs_Profile
+        Same as the input parameter ``soil_profile``.
+    input_motion : Ground_Motion
+        Same as the input parameter ``input_motion``.
+    boundary : Literal['elastic', 'rigid']
+        Same as the input parameter ``boundary``.
     """
+
+    soil_profile: Vs_Profile
+    input_motion: Ground_Motion
+    boundary: Literal['elastic', 'rigid']
 
     def run(
             self,
@@ -431,13 +458,28 @@ class Nonlinear_Simulation(Simulation):
 
     Attributes
     ----------
-    Attributes same as the inputs
+    soil_profile : Vs_Profile
+        Same as the input parameter ``soil_profile``.
+    input_motion : Ground_Motion
+        Same as the input parameter ``input_motion``.
+    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+        Same as the input parameter ``G_param``.
+    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+        Same as the input parameter ``xi_param``.
+    boundary : Literal['elastic', 'rigid']
+        Same as the input parameter ``boundary``.
 
     Raises
     ------
     TypeError
         When ``G_param`` or ``xi_param`` is ``None``
     """
+
+    soil_profile: Vs_Profile
+    input_motion: Ground_Motion
+    G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    boundary: Literal['elastic', 'rigid']
 
     def __init__(
             self,

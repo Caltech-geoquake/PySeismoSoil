@@ -84,6 +84,20 @@ class Frequency_Spectrum:
         Is ``spectrum`` complex or already real?
     """
 
+    raw_df: float
+    raw_data: np.ndarray
+    n_pts: int
+    freq: np.ndarray
+    fmin: float
+    fmax: float
+    spectrum_2col: np.ndarray
+    spectrum: np.ndarray
+    amplitude: np.ndarray
+    amplitude_2col: np.ndarray
+    phase: np.ndarray
+    phase_2col: np.ndarray
+    iscomplex: bool
+
     def __init__(
             self,
             data: str | np.ndarray,

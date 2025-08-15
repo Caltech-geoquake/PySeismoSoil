@@ -78,9 +78,18 @@ class Vs_Profile:
 
     Raises
     ------
+    TypeError
+        When the value of ``data`` is not a string or numpy array
     ValueError
         When the value of input arguments is incorrect or invalid
     """
+
+    vs_profile: np.ndarray
+    vs30: float
+    damping_unit: str
+    density_unit: str
+    z_max: float
+    n_layer: int
 
     def __init__(
             self,

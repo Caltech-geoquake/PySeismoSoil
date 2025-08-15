@@ -65,10 +65,22 @@ class Ground_Motion:
     displ : np.ndarray
         A numpy array of two columns, whose first column is identical to "time",
         and second column is the displacement in SI unit.
-    pga, pgv, pgd : float
-        Peak ground acceleration, velocity, and displacement in SI unit.
-    pga_in_gal, pga_in_g, pgv_in_cm_s, pgd_in_cm : <float>
-        PGA, PGV, and PGD in other common units.
+    npts : int
+        Number of time points in the motion.
+    pga : float
+        Peak ground acceleration in SI unit.
+    pgv : float
+        Peak ground velocity in SI unit.
+    pgd : float
+        Peak ground displacement in SI unit.
+    pga_in_gal : float
+        Peak ground acceleration in gal units.
+    pga_in_g : float
+        Peak ground acceleration in g units.
+    pgv_in_cm_s : float
+        Peak ground velocity in cm/s units.
+    pgd_in_cm : float
+        Peak ground displacement in cm units.
     Arias_Intensity : np.ndarray
         A numpy array of two columns, whose first column is identical to "time",
         and second column is the Arias intensity.
@@ -80,16 +92,39 @@ class Ground_Motion:
     T5_95 : float
         The time interval (in seconds) between 5% of peak Arias intensity
         to 95% of peak Arias intensity.
-    rms_accel, rms_veloc, rms_displ : float
-        Root-mean-square acceleration, velocity, and displacement of the motion.
-    _path_name, _file_name : str
-        Names of the directory and file of the input data, if a file name.
+    rms_accel : float
+        Root-mean-square acceleration of the ground motion.
+    rms_veloc : float
+        Root-mean-square velocity of the ground motion.
+    rms_displ : float
+        Root-mean-square displacement of the ground motion.
 
     Raises
     ------
     ValueError
         When ``motion_type`` has invalid values
     """
+
+    dt: float
+    time: np.ndarray
+    accel: np.ndarray
+    veloc: np.ndarray
+    displ: np.ndarray
+    npts: int
+    pga: float
+    pgv: float
+    pgd: float
+    pga_in_gal: float
+    pga_in_g: float
+    pgv_in_cm_s: float
+    pgd_in_cm: float
+    Arias_Intensity: np.ndarray
+    Arias_Intensity_normalized: np.ndarray
+    peak_Arias_Intensity: float
+    T5_95: float
+    rms_accel: float
+    rms_veloc: float
+    rms_displ: float
 
     def __init__(
             self,
@@ -770,7 +805,8 @@ class Ground_Motion:
 
         Raises
         ------
-        When the type of ``soil_profile`` is not valid
+        TypeError
+            When the type of ``soil_profile`` is not valid
         """
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of type `Vs_Profile`.')

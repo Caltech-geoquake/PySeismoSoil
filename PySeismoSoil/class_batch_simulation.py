@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import multiprocessing as mp
 import os
-from typing import Any
+from typing import Any, Literal
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil.class_simulation import (
@@ -37,7 +37,7 @@ class Batch_Simulation:
         Same as the input parameter `list_of_simulations`.
     n_simulations : int
         Number of simulations in the list.
-    sim_type : {``Linear_Simulation``, ``Equiv_Linear_Simulation``, ``Nonlinear_Simulation``}
+    sim_type : Literal['Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation']
         The object type of the site response simulations.
 
     Raises
@@ -47,6 +47,12 @@ class Batch_Simulation:
     ValueError
         When ``list_of_simulations`` has length 0
     """
+
+    list_of_simulations: list[Simulation_Results]
+    n_simulations: int
+    sim_type: Literal[
+        'Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation'
+    ]
 
     def __init__(
             self,

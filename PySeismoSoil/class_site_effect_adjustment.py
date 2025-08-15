@@ -39,13 +39,15 @@ class Site_Effect_Adjustment:
     Attributes
     ----------
     input_motion : Ground_Motion
-        Input ground motion.
+        Same as the input parameter ``input_motion``.
     Vs30 : float
-        Vs30 of the site. (Unit: m/s)
+        Vs30 of the site (Unit: m/s).
     z1 : float
-        z1 (basin depth) of the site. (Unit: m/s)
+        z1 (basin depth) of the site (Unit: m).
     PGA_in_g : float
-        Peak ground acceleration of the input motion. (Unit: g)
+        Peak ground acceleration of the input motion (Unit: g).
+    site_factor : Site_Factors
+        Site factors object for the given Vs30, z1, and PGA values.
 
     Raise
     -----
@@ -54,6 +56,12 @@ class Site_Effect_Adjustment:
     ValueError
         When the value of `ampl_method` is not one of {'nl_hh', 'eq_hh'}
     """
+
+    input_motion: Ground_Motion
+    Vs30: float
+    z1: float
+    PGA_in_g: float
+    site_factor: Site_Factors
 
     def __init__(
             self,

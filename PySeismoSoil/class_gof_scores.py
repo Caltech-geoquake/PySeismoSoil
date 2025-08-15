@@ -37,6 +37,10 @@ class GOF_Scores:
         When measurement and simulation time series are not the same length.
     """
 
+    measurement: np.ndarray
+    simulation: np.ndarray
+    scores: np.ndarray
+
     def __init__(
             self,
             measurement: np.ndarray,
@@ -150,7 +154,7 @@ class GOF_Scores:
             returned array.
 
         Raises
-        -------
+        ------
         ValueError
             If fmax is larger than fmin.
         """

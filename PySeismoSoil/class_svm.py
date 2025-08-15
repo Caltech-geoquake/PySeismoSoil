@@ -62,7 +62,7 @@ class SVM:
         The target Vs30 value, in m/s.
     z1 : float
         The basin depth, in meters.
-    base_profile : PySeismoSoil.class_Vs_profile.Vs_Profile
+    base_profile : Vs_Profile
         The base Vs profile associated with the given ``Vs30`` and ``z1``.
     bedrock_Vs : float
         Bedrock Vs, either user-specified (via ``Vs_cap``), or automatically
@@ -75,6 +75,12 @@ class SVM:
     ValueError
         When values of some input arguments are not correct/valid
     """
+
+    Vs30: float
+    z1: float
+    base_profile: Vs_Profile
+    bedrock_Vs: float
+    has_bedrock_Vs: bool
 
     def __init__(
             self,
