@@ -8,7 +8,7 @@ import subprocess
 from typing import Literal
 
 import numpy as np
-import pkg_resources
+import importlib.resources
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
@@ -644,10 +644,9 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        dir_exec_files = pkg_resources.resource_filename(
-            'PySeismoSoil',
-            'exec_files',
-        )
+        import PySeismoSoil
+        package_path = importlib.resources.files(PySeismoSoil)
+        dir_exec_files = str(package_path / 'exec_files')
         shutil.copy(
             os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir
         )
