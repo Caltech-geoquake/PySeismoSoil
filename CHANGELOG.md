@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.3] - 2025-08-17
+
 ### Added
 
 - Python 3.12 and 3.13 support
@@ -25,3 +27,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - Python 3.12 pipeline issues
+- GitHub Pages deployment workflow permissions by adding environment configuration

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PySeismoSoil"
-version = "0.6.2"
+version = "0.6.3"
 description = "A Python library for performing 1D seismic site response analysis"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
