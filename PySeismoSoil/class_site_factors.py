@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import importlib.resources
 import itertools
 import os
 from typing import Literal
 
 import numpy as np
-import importlib.resources
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from scipy.interpolate import griddata
@@ -105,6 +105,7 @@ class Site_Factors:
             lenient: bool = False,
     ) -> None:
         import PySeismoSoil
+
         package_path = importlib.resources.files(PySeismoSoil)
         self.dir_amplif = str(package_path / 'data' / 'amplification')
         self.dir_phase = str(package_path / 'data' / 'phase')
