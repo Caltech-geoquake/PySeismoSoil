@@ -706,7 +706,7 @@ def _calc_shear_strength(
     for j in range(len(Vs)):
         # for softer soils, calculate undrained shear strength
         if Vs[j] <= 760:
-            # Ladd (1991)
+            # From Ladd (1991)
             Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]
         else:  # stiffer soils: Mohr-Coulomb criterion
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
@@ -1271,7 +1271,7 @@ def __calc_area(
         d = range_d[j]
         T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
 
-        # unit: 1
+        # unit of gamma: 1
         range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
 
         # "copt" = cross-over point

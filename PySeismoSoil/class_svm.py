@@ -127,9 +127,9 @@ class SVM:
         p2 = 0.5182
         p3 = 69.452
 
-        # q1 = 8.4562e-09  # noqa: E800
-        # q2 = 2.9981  # noqa: E800
-        # q3 = 0.03073  # noqa: E800
+        # q1 = 8.4562e-09  # noqa: ERA001
+        # q2 = 2.9981  # noqa: ERA001
+        # q3 = 0.03073  # noqa: ERA001
 
         # updated on 2018/1/2: improved curve fitting accuracy for k_
         r1 = -59.67
