@@ -96,7 +96,9 @@ class Vs_Profile:
             data: str | np.ndarray,
             *,
             damping_unit: Literal['1', '%'] = '1',
-            density_unit: Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'] = 'kg/m^3',  # fmt: skip
+            density_unit: Literal[
+                'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'
+            ] = 'kg/m^3',
             sep: str = '\t',
             add_halfspace: bool = False,
             xi_rho_formula: Literal[1, 2, 3] = 3,
