@@ -2483,7 +2483,7 @@ def fit_all_damping_curves(
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
                 curve,
-                name='Damping curve for layer #%d' % j,
+                name=f'Damping curve for layer #{j}',
                 ensure_non_negative=True,
             )
 

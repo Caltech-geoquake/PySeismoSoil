@@ -656,7 +656,7 @@ def produce_HH_G_param(
                 fig.savefig(
                     os.path.join(
                         fig_output_dir,
-                        'Stress_GGmax_of_Layer_#%d.png' % (j + 1),
+                        f'Stress_GGmax_of_Layer_#{j + 1}.png',
                     ),
                 )
             # END

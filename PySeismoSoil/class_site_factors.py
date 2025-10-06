@@ -415,14 +415,14 @@ class Site_Factors:
 
         if amplif_or_phase == 'amplif':
             if Fourier:
-                y_filename = '%d_%03d_af_fs_%s_avg.csv' % (Vs30, z1, method)
-                x_filename = '%d_%03d_freq.csv' % (Vs30, z1)
+                y_filename = f'{Vs30}_{z1:03d}_af_fs_{method}_avg.csv'
+                x_filename = f'{Vs30}_{z1:03d}_freq.csv'
             else:  # response spectra
-                y_filename = '%d_%03d_af_rs_%s_avg.csv' % (Vs30, z1, method)
-                x_filename = '%d_%03d_period.csv' % (Vs30, z1)
+                y_filename = f'{Vs30}_{z1:03d}_af_rs_{method}_avg.csv'
+                x_filename = f'{Vs30}_{z1:03d}_period.csv'
         else:  # phase shift
-            y_filename = '%d_%03d_phase_shift_%s_avg.csv' % (Vs30, z1, method)
-            x_filename = '%d_%03d_freq.csv' % (Vs30, z1)
+            y_filename = f'{Vs30}_{z1:03d}_phase_shift_{method}_avg.csv'
+            x_filename = f'{Vs30}_{z1:03d}_freq.csv'
 
         y = np.genfromtxt(os.path.join(data_dir, y_filename), delimiter=',')
         x = np.genfromtxt(os.path.join(data_dir, x_filename), delimiter=',')
@@ -632,7 +632,9 @@ class Site_Factors:
             ax = plt.axes()
 
         for j, ref_point in enumerate(ref_points):
-            label = '%d m/s, %d m, %.2gg' % ref_point
+            label = (
+                f'{ref_point[0]} m/s, {ref_point[1]} m, {ref_point[2]:.2g}g'
+            )
             if phase_flag:
                 ax1.semilogx(T_or_freq, amps[j], alpha=alpha)
                 ax2.semilogx(T_or_freq, phases[j], alpha=alpha, label=label)
@@ -669,7 +671,8 @@ class Site_Factors:
             )
 
         fig.suptitle(
-            '$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point
+            f'$V_{{S30}}$ = {query_point[0]} m/s, $z_1$ = {query_point[1]} m,'
+            f' PGA = {query_point[2]:.2g}$g$'
         )
 
         bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)

@@ -685,7 +685,7 @@ class Multiple_Curves:
         self.n_layer = len(curves)
 
     def __repr__(self) -> str:
-        return 'n_layers = %d, type: %s' % (self.n_layer, type(self.curves[0]))
+        return f'n_layers = {self.n_layer}, type: {type(self.curves[0])}'
 
     def __contains__(self, item) -> bool:
         return item in self.curves
@@ -1570,9 +1570,9 @@ class Multiple_GGmax_Damping_Curves:
             hlp.assert_2D_numpy_array(data, name='`data`')
             if data.shape[1] % 4 != 0:
                 raise ValueError(
-                    'The number of columns of `data` needs '
-                    'to be a multiple of 4. However, your '
-                    '`data` has %d columns.' % data.shape[1],
+                    'The number of columns of `data` needs'
+                    ' to be a multiple of 4. However, your'
+                    f' `data` has {data.shape[1]} columns.',
                 )
 
             self.data = data

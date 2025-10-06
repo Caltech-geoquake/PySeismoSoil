@@ -362,7 +362,7 @@ def equiv_linear(
 
     for i_iter in range(max_iter):
         if verbose:
-            print('Iteration No.%d.' % (i_iter + 1), end='')
+            print(f'Iteration No.{i_iter + 1}.', end='')
 
         H, accel_out, veloc, displ, strain, eff_strain = _lin_resp_every_layer(
             dt=dt,

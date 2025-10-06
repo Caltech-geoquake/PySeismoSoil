@@ -367,11 +367,11 @@ def fit_MKZ(
         return 1.0 / (1 + beta * (x / gamma_ref) ** s)
 
     if verbose:
-        print('Fitting MKZ model to G/Gmax data. Total: %d layers.' % n_ma)
+        print(f'Fitting MKZ model to G/Gmax data. Total: {n_ma} layers.')
 
     for j in range(n_ma):
         if verbose:
-            print('  Layer #%d' % j)
+            print(f'  Layer #{j}')
 
         x_data = gamma[:, j]
         y_data = GGmax[:, j]

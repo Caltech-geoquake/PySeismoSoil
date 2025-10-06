@@ -148,11 +148,9 @@ class Frequency_Spectrum:
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
     def __repr__(self) -> str:
-        text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' % (
-            self.raw_df,
-            self.n_pts,
-            self.fmin,
-            self.fmax,
+        text = (
+            f'df = {self.raw_df:.2f} Hz, n_pts = {self.n_pts},'
+            f' f_min = {self.fmin:.2f} Hz, f_max = {self.fmax:.2f} Hz'
         )
         return text
 

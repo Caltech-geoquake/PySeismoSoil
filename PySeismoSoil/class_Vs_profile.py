@@ -207,7 +207,7 @@ class Vs_Profile:
             text += '{:^10}|'.format(f'{self.vs_profile[j, 1]:.1f}')
             text += '{:^13}|'.format('%.3f' % (self.vs_profile[j, 2] * 100.0))
             text += '{:^18}|'.format(f'{self.vs_profile[j, 3]:.1f}')
-            text += '{:^14}'.format('%d' % self.vs_profile[j, 4])
+            text += '{:^14}'.format(f'{self.vs_profile[j, 4]:.0f}')
             text += '\n'
 
         text += '----------+----------+-------------+------------------+--------------\n'

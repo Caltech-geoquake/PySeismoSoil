@@ -271,8 +271,7 @@ def assert_array_length(
     assert_1D_numpy_array(something, name=name)
     if len(something) != length:
         raise ValueError(
-            '%s must have length %d, but not %d.'
-            % (name, length, len(something)),
+            f'{name} must have length {length}, but not {len(something)}.',
         )
 
 
@@ -694,12 +693,12 @@ def extract_from_curve_format(
         damping = curves[:, j * 4 + 2 : j * 4 + 4]
         check_two_column_format(
             GGmax,
-            name='G/Gmax curve for layer #%d' % j,
+            name=f'G/Gmax curve for layer #{j}',
             ensure_non_negative=ensure_non_negative,
         )
         check_two_column_format(
             damping,
-            name='Damping curve for layer #%d' % j,
+            name=f'Damping curve for layer #{j}',
             ensure_non_negative=ensure_non_negative,
         )
         GGmax_curves_list.append(GGmax)
@@ -791,16 +790,16 @@ def merge_curve_matrices(
     assert_2D_numpy_array(xi_matrix, name='`xi_matrix`')
     if GGmax_matrix.shape[1] % 4 != 0:
         raise ValueError(
-            'The number of columns of `GGmax_matrix` needs '
-            'to be a multiple of 4. However, your '
-            '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1],
+            'The number of columns of `GGmax_matrix` needs'
+            ' to be a multiple of 4. However, your'
+            f' `GGmax_matrix` has {GGmax_matrix.shape[1]} columns.',
         )
 
     if xi_matrix.shape[1] % 4 != 0:
         raise ValueError(
-            'The number of columns of `xi_matrix` needs '
-            'to be a multiple of 4. However, your '
-            '`xi_matrix` has %d columns.' % xi_matrix.shape[1],
+            f'The number of columns of `xi_matrix` needs'
+            f' to be a multiple of 4. However, your'
+            f' `xi_matrix` has {xi_matrix.shape[1]} columns.',
         )
 
     if GGmax_matrix.shape[1] != xi_matrix.shape[1]:
