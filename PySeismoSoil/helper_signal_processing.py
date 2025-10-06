@@ -864,11 +864,11 @@ def lin_smooth(
 
     Example
     -------
-    >>> t = linspace(-2,2,0.1)
-    >>> x = sin(t)+randn(len(t))*0.1
+    >>> t = linspace(-2, 2, 0.1)
+    >>> x = sin(t) + randn(len(t)) * 0.1
     >>> y = lin_smooth(x)
 
-    See also
+    See Also
     --------
     numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
     scipy.signal.lfilter

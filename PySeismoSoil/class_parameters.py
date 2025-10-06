@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import collections
 import json
-from typing import TYPE_CHECKING, Any, Callable, Type
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -383,7 +384,7 @@ class Param_Multi_Layer:
             self,
             list_of_param_data: list[dict[str, float]] | list[Parameter],
             *,
-            element_class: Type[Parameter],
+            element_class: type[Parameter],
     ) -> None:
         param_list: list[Parameter] = []
         for param_data in list_of_param_data:
@@ -413,7 +414,8 @@ class Param_Multi_Layer:
             return self.param_list[i]
 
         if isinstance(i, slice):  # return an object of the same class
-            return self.__class__(self.param_list[i])  # filled with the sliced data
+            # filled with the sliced data
+            return self.__class__(self.param_list[i])
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
@@ -425,7 +427,7 @@ class Param_Multi_Layer:
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
             curve_type: str | None = None,
-    ) -> tuple['Multiple_GGmax_Curves', 'Multiple_Damping_Curves']:
+    ) -> tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]:
         """
         Construct G/Gmax and damping curves from parameter values.
 
@@ -456,9 +458,12 @@ class Param_Multi_Layer:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
-                curves = np.column_stack(
-                    (strain_in_pct, GGmax, strain_in_pct, damping)
-                )
+                curves = np.column_stack((
+                    strain_in_pct,
+                    GGmax,
+                    strain_in_pct,
+                    damping,
+                ))
             else:
                 curves = np.column_stack(
                     (curves, strain_in_pct, GGmax, strain_in_pct, damping),

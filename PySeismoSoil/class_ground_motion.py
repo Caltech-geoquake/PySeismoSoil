@@ -158,11 +158,10 @@ class Ground_Motion:
                 raise ValueError(
                     "Please use '/s/s' instead of 's^2' in `unit`."
                 )
-            else:
-                raise ValueError(
-                    'Invalid `unit` name. Valid names are: %s'
-                    % valid_unit_name,
-                )
+
+            raise ValueError(
+                'Invalid `unit` name. Valid names are: %s' % valid_unit_name,
+            )
 
         if motion_type not in ['accel', 'veloc', 'displ']:
             raise ValueError(

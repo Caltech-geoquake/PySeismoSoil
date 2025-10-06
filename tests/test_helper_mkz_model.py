@@ -75,7 +75,12 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
     def test_serialize_params_to_array__only_one_key_name_is_wrong(self):
         with self.assertRaisesRegex(KeyError, ''):
             mkz.serialize_params_to_array(
-                {'gamma_ref': 1, 's': 1, 'beta': 1, 'Gmax__': 1},  # should be "Gmax"
+                {
+                    'gamma_ref': 1,
+                    's': 1,
+                    'beta': 1,
+                    'Gmax__': 1,  # should be "Gmax"
+                },
             )
 
     def test_deserialize_array_to_params__success(self):
@@ -88,7 +93,8 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
 
     def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
         with self.assertRaisesRegex(AssertionError, ''):
-            mkz.deserialize_array_to_params(np.array([1, 2, 3, 4, 5]))  # should be 4
+            # should be 4
+            mkz.deserialize_array_to_params(np.array([1, 2, 3, 4, 5]))
 
     def test_fit_MKZ(self):
         strain_in_1 = np.geomspace(1e-6, 0.1, num=50)  # unit: 1

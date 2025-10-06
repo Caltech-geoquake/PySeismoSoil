@@ -96,10 +96,7 @@ class Vs_Profile:
             data: str | np.ndarray,
             *,
             damping_unit: Literal['1', '%'] = '1',
-            # fmt: off
-            density_unit: Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'] = 'kg/m^3',
-
-            # fmt: on
+            density_unit: Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'] = 'kg/m^3',  # fmt: skip
             sep: str = '\t',
             add_halfspace: bool = False,
             xi_rho_formula: Literal[1, 2, 3] = 3,
@@ -426,7 +423,8 @@ class Vs_Profile:
             total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
-            profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
+            # Extend to `depth`:
+            profile_[-1][0] = depth + last_thk - total_depth
 
         xi, rho = sr.get_xi_rho(np.array([Vs]))
         if isinstance(xi, np.ndarray):  # xi and rho are 1D numpy arrays
@@ -437,8 +435,9 @@ class Vs_Profile:
         profile_.append(bedrock)  # add half space whose Vs is `Vs`
         profile_ = np.array(profile_)
 
-        if profile_[-2, -1] == 0:  # last "material number" before appending is 0
-            profile_[-2, -1] = np.max(profile_[:, -1]) + 1  # require add'l material
+        if profile_[-2, -1] == 0:  # last "material num" before appending is 0
+            # require add'l material
+            profile_[-2, -1] = np.max(profile_[:, -1]) + 1
 
         return Vs_Profile(profile_)
 

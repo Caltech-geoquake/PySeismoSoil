@@ -86,7 +86,7 @@ class GOF_Scores:
                 count += 1
 
         text += '---------------------------------------\n'
-        text += f'Average Score: {sum/count:.3f}\n'
+        text += f'Average Score: {sum / count:.3f}\n'
 
         return text
 
@@ -251,7 +251,7 @@ class GOF_Scores:
 
             if score_rms:
                 [
-                    print(f'{sn[ix+4]:>31}: {s: .3f}')
+                    print(f'{sn[ix + 4]:>31}: {s: .3f}')
                     for ix, s in enumerate(scores[ind : ind + 3])
                 ]
 
@@ -259,7 +259,7 @@ class GOF_Scores:
 
             if score_spectra:
                 [
-                    print(f'{sn[ix+7]:>31}: {s: .3f}')
+                    print(f'{sn[ix + 7]:>31}: {s: .3f}')
                     for ix, s in enumerate(scores[ind : ind + 2])
                 ]
 

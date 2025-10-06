@@ -1,0 +1,48 @@
+# Docs: https://docs.astral.sh/ruff/configuration
+
+line-length = 79
+exclude = ["tests/test_data"]
+
+target-version = "py310"
+
+[format]
+quote-style = "single"
+docstring-code-format = true
+preview = true
+
+[lint]
+extend-select = [
+    "F",   # pyflakes
+    "E",
+    "I",   # isort
+    "UP",  # pyupgrade
+    "D",   # pydocstyle
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "ERA", # flake8-eradicate
+    "Q",   # flake8-quotes
+    "T10", # flake8-debugger
+    "ISC", # flake8-implicit-str-concat
+    "RET", # flake8-return
+    "W505",
+]
+ignore = [
+    "D100",
+    "D104",
+    "D105",
+    "D107",
+    "D200",
+    "D205",
+    "D400",
+]
+preview = true
+
+[lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+
+[lint.per-file-ignores]
+"tests/*" = ["D102", "D103"]  # No need for docstrings in tests
+
+[lint.pydocstyle]
+convention = "numpy"

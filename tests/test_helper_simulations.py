@@ -104,7 +104,9 @@ class Test_Helper_Simulations(unittest.TestCase):
             ),
         )
         r_2 = np.corrcoef(result_2[:, 1], result_2_[:, 1])
-        self.assertTrue(r_2[0, 1] >= 0.97)  # rigid cases can lead to higher errors
+
+        # Rigid cases can lead to higher errors, so we set threshold to 0.97
+        self.assertTrue(r_2[0, 1] >= 0.97)
 
         import matplotlib.pyplot as plt
 

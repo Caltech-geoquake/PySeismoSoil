@@ -106,7 +106,8 @@ class SVM:
         if eta <= 0 or eta > 1:
             raise ValueError('`eta` must be between (0, 1].')
 
-        thk_addl_layer = 2.5 - thk  # thickness of "additional" layer to be added on top
+        # thickness of "additional" layer to be added on top
+        thk_addl_layer = 2.5 - thk
 
         # Note 1: The first layer of Vs_analyt (before adding any new layers on
         #         top) is Vs0. The final Vs profile should have a homogeneous Vs
@@ -130,7 +131,8 @@ class SVM:
         # q2 = 2.9981  # noqa: E800
         # q3 = 0.03073  # noqa: E800
 
-        r1 = -59.67  # updated on 2018/1/2: improved curve fitting accuracy for k_
+        # updated on 2018/1/2: improved curve fitting accuracy for k_
+        r1 = -59.67
         r2 = -0.2722
         r3 = 11.132
 
@@ -144,7 +146,7 @@ class SVM:
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
             Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
-            vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])  # just one layer
+            vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])  # just 1 layer
         else:  # this is most of the cases...
             Vs30 = target_Vs30
             iteration_flag = True
@@ -154,11 +156,13 @@ class SVM:
                 Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
 
                 k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
-                n_ = np.max(
-                    [1.0, s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30)]
-                )
+                n_ = np.max([
+                    1.0,
+                    s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30),
+                ])
 
-                z_array_analyt = np.arange(0.0, z1 - thk_addl_layer, thk)  # depth array
+                # depth array
+                z_array_analyt = np.arange(0.0, z1 - thk_addl_layer, thk)
 
                 # thickness array (for analytical Vs)
                 th_array_analyt = sr.dep2thk(z_array_analyt)
@@ -176,7 +180,7 @@ class SVM:
                 temp_Vs_profile = np.vstack((array1, array2))
 
                 if iterate is False:
-                    iteration_flag = False  # abort while loop after only one run
+                    iteration_flag = False  # abort while loop after only 1 run
                 else:
                     # -------  Check if actual Vs30 matches target Vs30 -------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
@@ -215,7 +219,7 @@ class SVM:
             temp_Vs_profile = np.vstack((array1, array2))
 
             # ---------   Prepare output variables  ---------------
-            if Vs_cap is not False:  # if we need to "cap" the Vs profile somehow
+            if Vs_cap is not False:  # if we need to "cap" Vs profile somehow
                 # if Vs_cap value not specified (i.e., user inputs "True")
                 if Vs_cap is True:
                     Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap
@@ -225,7 +229,7 @@ class SVM:
                     # find the index from which Vs_analyt exceeds Vs_cap
                     index_Vs_cap = np.where(Vs_analyt > Vs_cap)[0][0]
                 else:
-                    index_Vs_cap = np.nan  # use NaN to denote the alternative situation
+                    index_Vs_cap = np.nan  # use NaN for alternative situation
 
                 # total number of layers in the smooth profile (i.e., Vs_analyt)
                 end_index = len(Vs_analyt)
@@ -279,7 +283,7 @@ class SVM:
             self.bedrock_Vs = None
 
     def __repr__(self) -> str:
-        return 'Vs30 = {:.2g} m/s, z1 = {:.2g} m'.format(self.Vs30, self.z1)
+        return f'Vs30 = {self.Vs30:.2g} m/s, z1 = {self.z1:.2g} m'
 
     def plot(
             self,
@@ -317,9 +321,7 @@ class SVM:
         h_line : Line2D
             The line object.
         """
-        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
-            self.Vs30, self.z1
-        )
+        title = f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_{{1}}$={self.z1:.1f}m'
         fig, ax, h_line = sr.plot_Vs_profile(
             self._base_profile,
             title=title,
@@ -448,9 +450,7 @@ class SVM:
         label : str
             Label of the additional profile, to be shown in the legend.
         """
-        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
-            self.Vs30, self.z1
-        )
+        title = f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_{{1}}$={self.z1:.1f}m'
         fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='Smooth')
         sr.plot_Vs_profile(
             addtl_profile,
@@ -614,7 +614,8 @@ class SVM:
 
         while len(z_bot) == 0 or z_bot[-1] < self.z1:
             if use_Toros_layering:
-                rate = 1.98 * (z_top[-1] + 10.86) ** (-0.89)  # Eq (2) of Toro (1995)
+                # Eq (2) of Toro (1995)
+                rate = 1.98 * (z_top[-1] + 10.86) ** (-0.89)
 
                 # The parameter for the Poisson process equals to 1/rate, because
                 # Toro (1995) says the unit of `rate` is 1/m, and also as written
@@ -630,7 +631,7 @@ class SVM:
                 func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
-                    while ier != 1:  # keeps trying until fsolve() properly converges
+                    while ier != 1:  # keep trying until fsolve() converges
                         mean_thk, info, ier, msg = fsolve(
                             func,
                             z_top[-1] + 4.0,
@@ -639,7 +640,7 @@ class SVM:
                     # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
-                    while ier != 1:  # keeps trying until fzero() properly converges
+                    while ier != 1:  # keep trying until fzero() converges
                         mean_thk, info, ier, msg = fsolve(
                             func,
                             z_top[-1] + 4.0,
@@ -653,7 +654,9 @@ class SVM:
                 mean_thk = mean_thk[0]
 
                 z_mid_temp = z_top[-1] + mean_thk / 2.0
-                std_thk = 0.951 * z_mid_temp**0.628  # Eq (8) of Shi & Asimaki (2018)
+
+                # Eq (8) of Shi & Asimaki (2018)
+                std_thk = 0.951 * z_mid_temp**0.628
 
                 # randomized thickness based on mean and std
                 thk_rand = np.random.normal(mean_thk, std_thk)
@@ -750,7 +753,7 @@ class SVM:
         # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
-        np.random.seed([2 * seed])  # specify seed value to random number generator
+        np.random.seed([2 * seed])  # specify seed val to random num generator
 
         for i in range(0, len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])

@@ -179,7 +179,7 @@ def d_1234(
         tt_array = t1
 
     # Calculate scores
-    d1 = np.mean(S_(N_Ia_m[1:], N_Ia_s[1:]))  # because first element of meas is 0
+    d1 = np.mean(S_(N_Ia_m[1:], N_Ia_s[1:]))  # b/c 1st element of meas is 0
     d2 = np.mean(S_(N_Ie_m[1:], N_Ie_s[1:]))
     d3 = S_(Ia_m_peak, Ia_s_peak)
     d4 = S_(Ie_m_peak, Ie_s_peak)

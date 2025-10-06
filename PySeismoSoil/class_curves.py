@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Literal, Type
+from typing import Any, Literal
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -114,7 +114,7 @@ class Curve:
         self.values = values
 
     def __repr__(self) -> str:
-        return '{} object:\n{}'.format(self.__class__, str(self.raw_data))
+        return f'{self.__class__} object:\n{str(self.raw_data)}'
 
     def plot(
             self,
@@ -380,7 +380,7 @@ class Damping_Curve(Curve):
             verbose: bool = False,
             parallel: bool = False,
             n_cores: int | None = None,
-    ) -> 'HH_Param':
+    ) -> HH_Param:
         """
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
@@ -659,15 +659,15 @@ class Multiple_Curves:
         When any element in ``list_of_curves`` has invalid type
     """
 
-    element_class: Type[Curve]
-    curves: list[Type[Curve]]
+    element_class: type[Curve]
+    curves: list[type[Curve]]
     n_layer: int
 
     def __init__(
             self,
             list_of_curves: list[np.ndarray] | list[Curve],
             *,
-            element_class: Type[Curve] = Curve,
+            element_class: type[Curve] = Curve,
     ) -> None:
         curves = []
         for curve in list_of_curves:
@@ -706,7 +706,7 @@ class Multiple_Curves:
             return self.curves[i]
 
         if isinstance(i, slice):  # return an object of the same class
-            return self.__class__(self.curves[i])  # filled with the sliced data
+            return self.__class__(self.curves[i])  # filled with sliced data
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
@@ -771,7 +771,8 @@ class Multiple_Curves:
         ax : Axes
             The axes object being created or being passed into this function.
         """
-        if fig is None:  # User provided ax but not fig, or user provided neither
+        # User provided ax but not fig, or user provided neither
+        if fig is None:
             fig, ax = hlp._process_fig_ax_objects(
                 fig, None, figsize=figsize, dpi=dpi
             )
@@ -1259,7 +1260,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         else:
             site_name = file_name_
 
-        new_file_name = '{}_x_{}.{}'.format(prefix, site_name, extension)
+        new_file_name = f'{prefix}_x_{site_name}.{extension}'
 
         return new_file_name
 

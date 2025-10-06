@@ -429,7 +429,7 @@ def produce_HH_G_param(
             phi=phi,
             strain_in_pct=strain_,
         )
-        strain = np.tile(strain_, (n_layer, 1)).T  # strain matrix for all layers
+        strain = np.tile(strain_, (n_layer, 1)).T  # strain matrix, all layers
         beta = np.ones(n_layer)
         s = 0.9190 * np.ones(n_layer)
     else:  # user provides own curves
@@ -476,11 +476,13 @@ def produce_HH_G_param(
 
     mu = np.zeros_like(OCR)
     for j in range(n_layer):
-        if Vs[j] <= 760:  # softer soil: use Vardanega & Bolton (2011) CGJ formula
+        if Vs[j] <= 760:  # softer soil: Vardanega & Bolton (2011) CGJ formula
             mu[j] = 1.0 / (
                 0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
             )  # noqa: E226
-            if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
+
+            # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
+            if mu[j] <= 0.02:
                 # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
                 mu[j] = mu[j] * 10.0 ** (0.236 * 3)
             elif mu[j] <= 0.03:
@@ -702,12 +704,14 @@ def _calc_shear_strength(
 
     Tmax = np.zeros(len(Vs))
     for j in range(len(Vs)):
-        if Vs[j] <= 760:  # for softer soils, calculate undrained shear strength
-            Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]  # Ladd (1991)
+        # for softer soils, calculate undrained shear strength
+        if Vs[j] <= 760:
+            # Ladd (1991)
+            Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]
         else:  # stiffer soils: Mohr-Coulomb criterion
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
-            sigma_1 = np.max([sigma_v0[j], sigma_h0])  # largest principal stress
-            sigma_3 = np.min([sigma_v0[j], sigma_h0])  # smallest principal stress
+            sigma_1 = np.max([sigma_v0[j], sigma_h0])  # max principal stress
+            sigma_3 = np.min([sigma_v0[j], sigma_h0])  # min principal stress
 
             # normal effective stress on the slip plane
             sigma_n = (sigma_1 + sigma_3) / 2.0 - (
@@ -766,7 +770,9 @@ def _calc_OCR(
     OCR : np.ndarray
         1D array of OCR value, for each soil layer. (Unitless.)
     """
-    sigma_p0 = 0.106 * Vs**1.47  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from seismic piezocone tests"  # noqa: E501,E226
+    # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from
+    # seismic piezocone tests"
+    sigma_p0 = 0.106 * Vs**1.47
     sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
     OCR = np.minimum(
@@ -992,7 +998,7 @@ def produce_Darendeli_curves(
     phi12 = -0.0057
     a = phi5
 
-    c1 = -1.1143 * a**2 + 1.8618 * a + 0.2523  # from Darendeli (2001), page 226
+    c1 = -1.1143 * a**2 + 1.8618 * a + 0.2523  # from Darendeli (2001), pg. 226
     c2 = 0.0805 * a**2 - 0.0710 * a - 0.0095
     c3 = -0.0005 * a**2 + 0.0002 * a + 0.0003
     b = phi11 + phi12 * np.log(N)  # Darendeli (2001) Eq 9.1d
@@ -1008,7 +1014,9 @@ def produce_Darendeli_curves(
     GGmax = np.zeros((n_strain_pts, n_layer))
     xi = np.zeros_like(GGmax)
     for i in range(n_layer):
-        GGmax[:, i] = 1.0 / (1 + (gamma / gamma_r[i]) ** a)  # G of i-th layer (Eq 9.2a)
+        # G of i-th layer (Eq 9.2a)
+        GGmax[:, i] = 1.0 / (1 + (gamma / gamma_r[i]) ** a)
+
         D_masing_1 = (100.0 / np.pi) * (  # unit: % (page 226)
             4
             * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
@@ -1023,7 +1031,9 @@ def produce_Darendeli_curves(
             * sigma_0[i] ** phi9
             * (1 + phi10 * np.log(frq))
         )  # Eq 9.1c (page 221)  # noqa: E501, LN001
-        xi[:, i] = b * GGmax[:, i] ** 0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
+
+        # Eq 9.2b (page 224). Unit: percent
+        xi[:, i] = b * GGmax[:, i] ** 0.1 * D_masing + D_min
 
     xi /= 100.0
     gamma_r /= 100.0
@@ -1108,7 +1118,9 @@ def _optimization_kernel(
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
         gamma_t_LB = 0.005  # for very deep layers, tau_MKZ may be larger than tau_f at gamma_t_LB
 
-    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)  # do it again
+    # do it again
+    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)
+
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
         gamma_t_LB = 0.001
 
@@ -1258,9 +1270,12 @@ def __calc_area(
     for j in range(len(range_d)):
         d = range_d[j]
         T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
-        range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0  # unit: 1
 
-        copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)  # "copt" = cross-over point
+        # unit: 1
+        range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
+
+        # "copt" = cross-over point
+        copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)
         gamma_t = x[copt]
         if (gamma_t >= range_gamma_t[0]) and (gamma_t <= range_gamma_t[-1]):
             diff_T = np.abs(T_MKZ[: copt + 1] - T_FKZ[: copt + 1])

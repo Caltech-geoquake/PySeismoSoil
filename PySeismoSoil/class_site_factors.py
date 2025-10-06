@@ -132,7 +132,8 @@ class Site_Factors:
 
             PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
 
-        if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
+        # TODO: think about whether to add leniency
+        if 'Invalid Vs30-z1 combination' in status:
             raise ValueError(
                 'Vs30 and z1 combination not valid. (The `lenient` '
                 'option does not apply to this type of issue.)',
@@ -193,7 +194,8 @@ class Site_Factors:
             result = np.column_stack((freq, amplif))
         else:  # response spectra
             freq = 1.0 / period_or_freq
-            result = np.column_stack((freq, amplif))[::-1, :]  # so that freq increases
+            # reverse the order so that freq increases
+            result = np.column_stack((freq, amplif))[::-1, :]
 
         return Frequency_Spectrum(result)
 

@@ -733,7 +733,8 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        max_a = np.max(np.abs(out_a), axis=0).T  # max of every column (i.e., layer)
+        # max of every column (i.e., layer)
+        max_a = np.max(np.abs(out_a), axis=0).T
         max_v = np.max(np.abs(out_v), axis=0).T
         max_d = np.max(np.abs(out_d), axis=0).T
         max_gamma = np.max(np.abs(out_gamma), axis=0).T

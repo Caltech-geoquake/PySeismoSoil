@@ -50,7 +50,9 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
             self.assertTrue(
                 np.allclose(gamma, strain_in_pct, atol=1e-5, rtol=0.0)
             )
-            self.assertGreaterEqual(xi[-1], 1.0)  # last element of each damping curve
+
+            # last element of each damping curve
+            self.assertGreaterEqual(xi[-1], 1.0)
 
     def test_get_damping_curves__check_use_Darendeli_Dmin_correct(self):
         vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
@@ -72,7 +74,8 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
         curve_matrix_ = mdc_.get_curve_matrix()
         for i in range(mdc_.n_layer):
             xi = curve_matrix[:, i * 4 + 3]  # damping with Darendeli's D_min
-            xi_ = curve_matrix_[:, i * 4 + 3]  # damping specified in `vs_profile`
+            # damping specified in `vs_profile`:
+            xi_ = curve_matrix_[:, i * 4 + 3]
             self.assertTrue(
                 np.allclose(
                     xi_[0],

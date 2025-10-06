@@ -59,7 +59,8 @@ class Damping_Calibration:
         Vs = self.vs_profile.vs_profile[:-1, 1]
         n_layer = len(Vs)
 
-        if self.vs_profile.vs_profile.shape[1] == 5:  # there can only be 5 or 2 columns
+        # there can only be 5 or 2 columns
+        if self.vs_profile.vs_profile.shape[1] == 5:
             rho = self.vs_profile.vs_profile[:-1, 3]
         else:  # only 2 columns
             rho = hhc._calc_rho(h, Vs)

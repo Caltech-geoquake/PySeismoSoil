@@ -142,7 +142,8 @@ def _process_fig_ax_objects(
         if ax_proj is None:
             ax = fig.add_subplot(1, 1, 1)
         else:
-            ax = plt.axes(projection=ax_proj)  # create new axes and plot lines on it
+            # create new axes and plot lines on it
+            ax = plt.axes(projection=ax_proj)
     else:
         ax = ax  # plot lines on the provided axes handle
 
@@ -277,7 +278,7 @@ def assert_array_length(
 
 def extend_scalar(
         scalar: float | int | np.number,
-        length: int,
+        length: int | None,
 ) -> np.ndarray:
     """
     "Extend" a scalar (float, int, or numpy.number type) into a 1D numpy array
@@ -287,7 +288,7 @@ def extend_scalar(
     ----------
     scalar : float | int | np.number
         A single number.
-    length : int
+    length : int | None
         The length of the desired output.
 
     Returns
@@ -305,8 +306,10 @@ def extend_scalar(
             '`scalar` must be a float, int, or a numpy.number type.'
         )
 
-    array = scalar * np.ones(length)
-    return array
+    if length is None:
+        return np.array(scalar)
+
+    return scalar * np.ones(length)
 
 
 def check_length_or_extend_to_array(
