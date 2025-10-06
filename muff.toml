@@ -23,7 +23,6 @@ extend-select = [
     "Q",   # flake8-quotes
     "T10", # flake8-debugger
     "ISC", # flake8-implicit-str-concat
-    "RET", # flake8-return
     "W505",
 ]
 ignore = [
@@ -42,7 +41,7 @@ docstring-quotes = "double"
 inline-quotes = "single"
 
 [lint.per-file-ignores]
-"tests/*" = ["D102", "D103"]  # No need for docstrings in tests
+"tests/*" = ["D101", "D102", "D103"]  # No need for docstrings in tests
 
 [lint.pydocstyle]
 convention = "numpy"
