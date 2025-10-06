@@ -243,7 +243,7 @@ def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     if not isinstance(something, np.ndarray) or something.ndim != 1:
         name = '`something`' if name is None else name
-        raise TypeError('%s must be a 1D numpy array.' % name)
+        raise TypeError(f'{name} must be a 1D numpy array.')
 
 
 def assert_array_length(
@@ -364,7 +364,7 @@ def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     if not isinstance(something, np.ndarray) or something.ndim != 2:
         name = '`something`' if name is None else name
-        raise TypeError('%s must be a 2D numpy array.' % name)
+        raise TypeError(f'{name} must be a 2D numpy array.')
 
 
 def check_two_column_format(
@@ -400,26 +400,26 @@ def check_two_column_format(
         name = '`something`'
 
     if not isinstance(something, np.ndarray):
-        raise TypeError('%s should be a numpy array.' % name)
+        raise TypeError(f'{name} should be a numpy array.')
 
     if something.ndim != 2:
-        raise TypeError('%s should be a 2D numpy array.' % name)
+        raise TypeError(f'{name} should be a 2D numpy array.')
 
     if not at_least_two_columns and something.shape[1] != 2:
-        raise TypeError('%s should have two columns.' % name)
+        raise TypeError(f'{name} should have two columns.')
 
     if at_least_two_columns and something.shape[1] < 2:
-        raise TypeError('%s should have >= 2 columns.' % name)
+        raise TypeError(f'{name} should have >= 2 columns.')
 
     check_status = check_numbers_valid(something)
     if check_status == -1:
-        raise ValueError('%s should only contain numeric elements.' % name)
+        raise ValueError(f'{name} should only contain numeric elements.')
 
     if check_status == -2:
-        raise ValueError('%s should contain no NaN values.' % name)
+        raise ValueError(f'{name} should contain no NaN values.')
 
     if ensure_non_negative and check_status == -3:
-        raise ValueError('%s should have all non-negative values.' % name)
+        raise ValueError(f'{name} should have all non-negative values.')
 
 
 def check_Vs_profile_format(data: Any) -> None:

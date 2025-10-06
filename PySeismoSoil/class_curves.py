@@ -696,7 +696,7 @@ class Multiple_Curves:
     def __setitem__(self, i, item) -> None:
         if not isinstance(item, self.element_class):
             raise TypeError(
-                'The new `item` must be of type %s.' % self.element_class
+                f'The new `item` must be of type {self.element_class}.'
             )
 
         self.curves[i] = item
@@ -708,7 +708,7 @@ class Multiple_Curves:
         if isinstance(i, slice):  # return an object of the same class
             return self.__class__(self.curves[i])  # filled with sliced data
 
-        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+        raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
     def __delitem__(self, i) -> None:
         del self.curves[i]
@@ -718,7 +718,7 @@ class Multiple_Curves:
         """Append another curve item to the curves."""
         if not isinstance(item, self.element_class):
             raise TypeError(
-                'The new `item` must be of type %s.' % self.element_class
+                f'The new `item` must be of type {self.element_class}.'
             )
 
         self.curves.append(item)

@@ -572,7 +572,7 @@ class Nonlinear_Simulation(Simulation):
 
         if sim_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            sim_dir = './nonlinear_sim_%s' % current_time
+            sim_dir = f'./nonlinear_sim_{current_time}'
 
         if os.path.exists(sim_dir):
             sim_dir += '_'
@@ -649,25 +649,16 @@ class Nonlinear_Simulation(Simulation):
         package_path = importlib.resources.files(PySeismoSoil)
         dir_exec_files = str(package_path / 'exec_files')
         shutil.copy(
-            os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir
+            os.path.join(dir_exec_files, f'NLHH.{exec_ext}'), sim_dir
         )
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
         # -------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
             fp.write(
-                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
-                % (
-                    f_max,
-                    ppw,
-                    n_dt,
-                    n_bound,
-                    n_layer,
-                    nt_out,
-                    n_ma,
-                    N_spr,
-                    N_obs,
-                ),
+                f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f}'
+                f' {n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f}'
+                f' {N_obs:6.0f}',
             )
 
         # -------- Write data to files for the Fortran kernel to read ----------
@@ -791,6 +782,6 @@ class Nonlinear_Simulation(Simulation):
         if not save_txt and not save_fig and remove_sim_dir:
             os.removedirs(sim_dir)
             if verbose:
-                print('`sim_dir` (%s) removed.' % sim_dir)
+                print(f'`sim_dir` ({sim_dir}) removed.')
 
         return sim_results

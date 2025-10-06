@@ -160,7 +160,7 @@ class Ground_Motion:
                 )
 
             raise ValueError(
-                'Invalid `unit` name. Valid names are: %s' % valid_unit_name,
+                f'Invalid `unit` name. Valid names are: {valid_unit_name}',
             )
 
         if motion_type not in ['accel', 'veloc', 'displ']:

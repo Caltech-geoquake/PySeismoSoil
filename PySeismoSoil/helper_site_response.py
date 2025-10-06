@@ -348,7 +348,7 @@ def plot_motion(
     ax1.plot(t, a, 'b', linewidth=lw)
     ax1.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
     t_ = t[int(np.min((pga_index + np.round(np.size(t) / 40.0), np.size(t))))]
-    ax1.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
+    ax1.text(t_, a[pga_index], f'PGA = {PGA:.3g} ' + accel_unit, va=vl)
     ax1.grid(ls=':')
     ax1.set_xlim(np.min(t), np.max(t))
     ax1.set_ylabel('Acceleration [' + accel_unit + ']')
@@ -358,14 +358,14 @@ def plot_motion(
     ax2.plot(t, v[:, 1], 'b', linewidth=lw)
     ax2.grid(ls=':')
     ax2.set_xlim(np.min(t), np.max(t))
-    ax2.set_ylabel('Velocity [%s]' % veloc_unit)
+    ax2.set_ylabel(f'Velocity [{veloc_unit}]')
 
     ax3 = fig.add_subplot(313)
     ax3.plot(t, u[:, 1], 'b', linewidth=lw)
     ax3.set_xlabel('Time [sec]')
     ax3.grid(ls=':')
     ax3.set_xlim(np.min(t), np.max(t))
-    ax3.set_ylabel('Displacement [%s]' % displ_unit)
+    ax3.set_ylabel(f'Displacement [{displ_unit}]')
 
     fig.tight_layout(pad=0.3)
 
@@ -1362,7 +1362,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_ro,
+            rf'$\mathregular{{f_0}}$ = {f0_ro:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1376,7 +1376,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_in,
+            rf'$\mathregular{{f_0}}$ = {f0_in:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1391,7 +1391,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$= %.2f Hz' % f0_bh,
+            rf'$\mathregular{{f_0}}$= {f0_bh:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -2726,7 +2726,7 @@ def ga_optimization(
         )
         if verbose:
             status = 'successful' if result.success else 'not successful'
-            print('\nOptimization status: %s.' % status)
+            print(f'\nOptimization status: {status}.')
 
         opt_result = result.x
 

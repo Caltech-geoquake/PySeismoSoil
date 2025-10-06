@@ -401,14 +401,14 @@ class Site_Factors:
         """
         if Vs30 not in Site_Factors.Vs30_array:
             raise ValueError(
-                '`Vs30` should be in %s.' % Site_Factors.Vs30_array
+                f'`Vs30` should be in {Site_Factors.Vs30_array}.'
             )
 
         if z1 not in Site_Factors.z1_array:
-            raise ValueError('`z1` should be in %s.' % Site_Factors.z1_array)
+            raise ValueError(f'`z1` should be in {Site_Factors.z1_array}.')
 
         if PGA not in Site_Factors.PGA_array:
-            raise ValueError('`PGA` should be in %s.' % Site_Factors.PGA_array)
+            raise ValueError(f'`PGA` should be in {Site_Factors.PGA_array}.')
 
         if method not in ['nl_hh', 'eq_kz', 'eq_hh']:
             raise ValueError(

@@ -83,7 +83,7 @@ class Parameter(collections.UserDict):
         if param_dict.keys() != allowable_keys:
             raise KeyError(
                 'Invalid keys exist in your input data. We only '
-                'allow %s.' % allowable_keys,
+                f'allow {allowable_keys}.',
             )
 
         self.allowable_keys = allowable_keys
@@ -95,7 +95,7 @@ class Parameter(collections.UserDict):
 
     def __setitem__(self, key, item) -> None:
         if key not in self.allowable_keys:
-            raise KeyError("The model does not have a '%s' parameter." % key)
+            raise KeyError(f"The model does not have a '{key}' parameter.")
 
         self.data[key] = item
 
@@ -417,7 +417,7 @@ class Param_Multi_Layer:
             # filled with the sliced data
             return self.__class__(self.param_list[i])
 
-        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+        raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
     def __delitem__(self, i) -> None:
         del self.param_list[i]

@@ -408,11 +408,8 @@ def equiv_linear(
         D_matrix[:, i_iter + 1] = D_new
         if verbose:
             print(
-                '  G_diff = %7.2f%%, D_diff = %7.2f%%'
-                % (
-                    np.max(G_relative_diff) * 100,
-                    np.max(D_relative_diff) * 100,
-                ),
+                f'  G_diff = {np.max(G_relative_diff) * 100:7.2f}%,'
+                f' D_diff = {np.max(D_relative_diff) * 100:7.2f}%',
             )
 
         # --------- Check convergence ------------------------------------------

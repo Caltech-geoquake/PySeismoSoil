@@ -155,7 +155,7 @@ def hh_param_from_profile(
             profile_name = hlp.get_current_time(for_filename=True)
 
         np.savetxt(
-            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            os.path.join(HH_G_file_dir, f'HH_G_{profile_name}.txt'),
             HH_G_param,
             delimiter='\t',
             fmt='%.6g',
@@ -299,7 +299,7 @@ def hh_param_from_curves(
             profile_name = hlp.get_current_time(for_filename=True)
 
         np.savetxt(
-            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            os.path.join(HH_G_file_dir, f'HH_G_{profile_name}.txt'),
             HH_G_param,
             delimiter='\t',
             fmt='%.6g',
@@ -642,9 +642,9 @@ def produce_HH_G_param(
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
-                '$\\mu$ = %.3f, a = %.1f, $\\gamma_{\\mathrm{t}}$ = %.4f%%\n'
-                r"d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
-                % (mu[j], a, gamma_t * 100, d, p0[j]),
+                f'$\\mu$ = {mu[j]:.3f}, a = {a:.1f},'
+                rf' $\\gamma_{{\\mathrm{{t}}}}$ = {gamma_t * 100:.4f}%\n'
+                rf"d = {d:.4f}, $p'_{{\mathrm{{m0}}}}$ = {p0[j]:.2f} kPa",
             )
 
             fig.tight_layout(pad=0.5, h_pad=1.2, w_pad=0.3)

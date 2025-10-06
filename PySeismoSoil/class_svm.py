@@ -386,8 +386,8 @@ class SVM:
             max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
                 raise ValueError(
-                    '`Vs_increment` needs to < %.2g m/s (the '
-                    'max Vs of the smooth profile)' % max_Vs,
+                    f'`Vs_increment` needs to < {max_Vs:.2g} m/s (the '
+                    'max Vs of the smooth profile)',
                 )
 
             n_layers = self._base_profile.shape[0]

@@ -201,15 +201,15 @@ class Vs_Profile:
 
         n_layer_all, _ = self.vs_profile.shape
         for j in range(n_layer_all):
-            text += '{:^10}|'.format('%.2f' % self.vs_profile[j, 0])
-            text += '{:^10}|'.format('%.1f' % self.vs_profile[j, 1])
+            text += '{:^10}|'.format(f'{self.vs_profile[j, 0]:.2f}')
+            text += '{:^10}|'.format(f'{self.vs_profile[j, 1]:.1f}')
             text += '{:^13}|'.format('%.3f' % (self.vs_profile[j, 2] * 100.0))
-            text += '{:^18}|'.format('%.1f' % self.vs_profile[j, 3])
+            text += '{:^18}|'.format(f'{self.vs_profile[j, 3]:.1f}')
             text += '{:^14}'.format('%d' % self.vs_profile[j, 4])
             text += '\n'
 
         text += '----------+----------+-------------+------------------+--------------\n'
-        text += '\n(Vs30 = %.1f m/s)\n' % self.vs30
+        text += f'\n(Vs30 = {self.vs30:.1f} m/s)\n'
 
         return text
 

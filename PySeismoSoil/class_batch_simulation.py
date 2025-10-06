@@ -147,7 +147,7 @@ class Batch_Simulation:
 
         if base_output_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
+            base_output_dir = os.path.join('./', f'batch_sim_{current_time}')
 
         other_params = [n_digits, base_output_dir, catch_errors, options]
 
