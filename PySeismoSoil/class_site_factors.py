@@ -400,9 +400,7 @@ class Site_Factors:
             When values of some input arguments are not correct
         """
         if Vs30 not in Site_Factors.Vs30_array:
-            raise ValueError(
-                f'`Vs30` should be in {Site_Factors.Vs30_array}.'
-            )
+            raise ValueError(f'`Vs30` should be in {Site_Factors.Vs30_array}.')
 
         if z1 not in Site_Factors.z1_array:
             raise ValueError(f'`z1` should be in {Site_Factors.z1_array}.')

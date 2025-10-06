@@ -648,9 +648,7 @@ class Nonlinear_Simulation(Simulation):
 
         package_path = importlib.resources.files(PySeismoSoil)
         dir_exec_files = str(package_path / 'exec_files')
-        shutil.copy(
-            os.path.join(dir_exec_files, f'NLHH.{exec_ext}'), sim_dir
-        )
+        shutil.copy(os.path.join(dir_exec_files, f'NLHH.{exec_ext}'), sim_dir)
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
         # -------- Prepare control.dat file ------------------------------------
