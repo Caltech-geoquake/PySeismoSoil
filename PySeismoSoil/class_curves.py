@@ -640,15 +640,15 @@ class Multiple_Curves:
     list_of_curves : list[np.ndarray] | list[Curve]
         List of 2-column numpy arrays, which are in (strain [%], curve_value)
         format. Or list of a valid Curve-like type (such as ``GGmax_Curve``).
-    element_class : Type[Curve]
+    element_class : type[Curve]
         A class name. Each element of ``list_of_curve`` will be used to
         initialize an object of ``element_class``.
 
     Attributes
     ----------
-    element_class : Type[Curve]
+    element_class : type[Curve]
         Same as the input parameter.
-    curves : list[Type[Curve]]
+    curves : list[Curve]
         A list of curve objects whose type is specified by the user.
     n_layer : int
         The number of soil layers (i.e., the length of the list).
@@ -660,7 +660,7 @@ class Multiple_Curves:
     """
 
     element_class: type[Curve]
-    curves: list[type[Curve]]
+    curves: list[Curve]
     n_layer: int
 
     def __init__(

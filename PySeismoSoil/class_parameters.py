@@ -360,7 +360,7 @@ class Param_Multi_Layer:
     list_of_param_data : list[dict[str, float]] | list[Parameter]
         List of dict or a list of valid parameter class (such as ``HH_Param``),
         which contain data for parameters of each layer.
-    element_class : Type[Parameter]
+    element_class : type[Parameter]
         A class name, such as ``HH_Param``. Each element of ``list_of_param_dict``
         will be used to initialize an object of ``element_class``.
 
