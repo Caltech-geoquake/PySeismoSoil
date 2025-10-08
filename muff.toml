@@ -26,6 +26,7 @@ extend-select = [
     "W505",
 ]
 ignore = [
+    "E501",
     "D100",
     "D104",
     "D105",

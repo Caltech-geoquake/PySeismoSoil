@@ -40,3 +40,9 @@ repos:
     rev: 0.0.10
     hooks:
       - id: markdown-toc-creator
+  - repo: https://github.com/jsh9/format-docstring
+    rev: 0.1.1
+    hooks:
+      - id: format-docstring
+        name: Format docstrings in .py files
+        args: [--line-length=79]
