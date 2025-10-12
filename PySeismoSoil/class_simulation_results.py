@@ -30,13 +30,13 @@ class Simulation_Results:
         Vs profile (the re-discretized version that ensures proper
         representation of wave shapes).
     max_a_v_d : np.ndarray | None
-        Maximum acceleration, velocity, displacement (during ground shaking)
-        at all layer boundaries.
+        Maximum acceleration, velocity, displacement (during ground shaking) at
+        all layer boundaries.
     max_strain_stress : np.ndarray | None
         Maximum strain and stress (during ground shaking) at layer midpoints.
     trans_func : Frequency_Spectrum | None
-        Transfer function (between the output and input motions). It can
-        be complex-valued or real-valued (i.e., amplitudes only).
+        Transfer function (between the output and input motions). It can be
+        complex-valued or real-valued (i.e., amplitudes only).
     trans_func_smoothed : Frequency_Spectrum | None
         The smoothed transfer function (between the output and input motions).
         It is by default real-valued (i.e., amplitudes only).
@@ -51,8 +51,8 @@ class Simulation_Results:
     time_history_strain : np.ndarray | None
         Time histories of shear strains of all layers (at layer midpoints).
     motion_name : str | None
-        The name of the input motion to be used as an identifier in the
-        file names. If ``None``, the current time stamp will used.
+        The name of the input motion to be used as an identifier in the file
+        names. If ``None``, the current time stamp will used.
     output_dir : str | None
         Directory to which to save the output files. If ``None``, the current
         time stamp will be used.
@@ -394,16 +394,16 @@ class Simulation_Results:
     ) -> None:
         """
         Save simulation results (output time history, transfer function, the
-        profile of maximum acceleration/velocity/displacement/stress/train, etc.)
-        as text files to the hard drive.
+        profile of maximum acceleration/velocity/displacement/stress/train,
+        etc.) as text files to the hard drive.
 
         Parameters
         ----------
         save_full_time_history : bool
             Whether to save full time histories (every time step, every layer)
-            of accel/veloc/displ/strain/stress to hard drive. They can take
-            a lot of disk space. Only effective if the full time histories
-            are not ``None``.
+            of accel/veloc/displ/strain/stress to hard drive. They can take a
+            lot of disk space. Only effective if the full time histories are
+            not ``None``.
         verbose : bool
             Whether to show on the console where the files are saved to.
         output_dir : str | None

@@ -12,16 +12,15 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 class HH_Calibration:
     """
     Class implementation of the "HH calibration procedure" (HHC procedure). The
-    HHC procedure generates parameters of each soil layer for the HH model.
-    The users can provide only a shear-wave velocity (Vs) profile, or they can
-    also provide pre-defined G/Gmax curves for the soil layers, if they have
-    such laboratory measurements.
+    HHC procedure generates parameters of each soil layer for the HH model. The
+    users can provide only a shear-wave velocity (Vs) profile, or they can also
+    provide pre-defined G/Gmax curves for the soil layers, if they have such
+    laboratory measurements.
 
-    For more information, refer to the following paper:
-        J. Shi and D. Asimaki (2017) "From stiffness to strength: Formulation
-        and validation of a hybrid hyperbolic nonlinear soil model for
-        site‐response analyses." Bulletin of the Seismological Society of
-        America. 107 (3), 1336-1355.
+    For more information, refer to the following paper: J. Shi and D. Asimaki
+    (2017) "From stiffness to strength: Formulation and validation of a hybrid
+    hyperbolic nonlinear soil model for site-response analyses." Bulletin of
+    the Seismological Society of America. 107 (3), 1336-1355.
 
     Parameters
     ----------
@@ -111,17 +110,17 @@ class HH_Calibration:
         Parameters
         ----------
         show_fig : bool
-            Whether to show figures G/Gmax and stress-strain curves of
-            MKZ, FKZ, and HH for each layer.
+            Whether to show figures G/Gmax and stress-strain curves of MKZ,
+            FKZ, and HH for each layer.
         save_fig : bool
-            Whether to save the figures to the hard drive. Only effective
-            if ``show_fig`` is set to ``True``.
+            Whether to save the figures to the hard drive. Only effective if
+            ``show_fig`` is set to ``True``.
         fig_output_dir : str | None
-            The output directory for the figures. Only effective if ``show_fig``
-            and ``save_fig`` are both ``True``.
+            The output directory for the figures. Only effective if
+            ``show_fig`` and ``save_fig`` are both ``True``.
         save_HH_G_file : bool
-            Whether to save the HH parameters to the hard drive (as a
-            "HH_G" file).
+            Whether to save the HH parameters to the hard drive (as a "HH_G"
+            file).
         HH_G_file_dir : str | None
             The output directory for the "HH_G" file. Only effective if
             ``save_HH_G_file`` is ``True``.

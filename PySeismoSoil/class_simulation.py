@@ -37,8 +37,8 @@ class Simulation:
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -150,8 +150,8 @@ class Linear_Simulation(Simulation):
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -193,10 +193,10 @@ class Linear_Simulation(Simulation):
             histories of every soil layer. If ``False``, use a simpler and
             faster algorithm to produce the motion on the ground surface only.
         deconv : bool
-            Whether this operation is deconvolution. If ``True``, it means
-            that the ``input_motion`` will be propagated downwards, and the
-            motion at the bottom will be collected. Only effective if
-            ``every_layer`` is set to ``False``.
+            Whether this operation is deconvolution. If ``True``, it means that
+            the ``input_motion`` will be propagated downwards, and the motion
+            at the bottom will be collected. Only effective if ``every_layer``
+            is set to ``False``.
         show_fig : bool
             Whether to show figures of the simulation results.
         save_fig : bool
@@ -302,8 +302,8 @@ class Equiv_Linear_Simulation(Simulation):
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves
         G/Gmax and damping curves of every soil layer.
     boundary : Literal['elastic', 'rigid']
@@ -356,8 +356,8 @@ class Equiv_Linear_Simulation(Simulation):
         verbose : bool
             Whether to print iteration progress on the console.
         show_fig : bool
-            Whether to show figures of the simulation results (input and
-            output motions, maximum accel/veloc/displ/strain/stress profiles)
+            Whether to show figures of the simulation results (input and output
+            motions, maximum accel/veloc/displ/strain/stress profiles)
         save_fig : bool
             Whether to save figures to ``output_dir``. Only effective when
             ``show_fig`` is set to ``True``.
@@ -445,8 +445,8 @@ class Nonlinear_Simulation(Simulation):
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
         Parameters that describe the G/Gmax curves.
     xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
@@ -528,21 +528,22 @@ class Nonlinear_Simulation(Simulation):
             Name of the input ground motion. For example, "Northridge". If not
             provided (i.e., ``None``), the current time stamp will be used.
         save_txt : bool
-            Whether to save the simulation results as text files to ``sim_dir``.
+            Whether to save the simulation results as text files to
+            ``sim_dir``.
         save_full_time_history : bool
             When saving simulation results, whether to save the full time
             histories (i.e., every time step, every depth) of the acceleration,
             velocity, displacement, stress, and strain.
         show_fig : bool
-            Whether to show figures of the simulation results (input and
-            output motions, maximum accel/veloc/displ/strain/stress profiles)
+            Whether to show figures of the simulation results (input and output
+            motions, maximum accel/veloc/displ/strain/stress profiles)
         save_fig : bool
             Whether to save figures to ``sim_dir``. Only effective when
             ``show_fig`` is set to ``True``.
         remove_sim_dir : bool
-            Whether to remove ``sim_dir`` from the hard drive after simulations,
-            only effective when ``save_txt`` and ``save_fig`` are both set to
-            ``False``.
+            Whether to remove ``sim_dir`` from the hard drive after
+            simulations, only effective when ``save_txt`` and ``save_fig`` are
+            both set to ``False``.
         verbose : bool
             Whether to show simulation progress on the console.
 

@@ -136,7 +136,8 @@ class Parameter(collections.UserDict):
         -------
         result : np.ndarray | None
             The shear stress array, with the same shape as the strain array.
-            Its unit is identical to the unit of Gmax (one of the HH parameters).
+            Its unit is identical to the unit of Gmax (one of the HH
+            parameters).
         """
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
@@ -185,7 +186,8 @@ class Parameter(collections.UserDict):
         Returns
         -------
         result : np.ndarray
-            The damping array (unit: %), with the same shape as the strain array
+            The damping array (unit: %), with the same shape as the strain
+            array
         """
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
@@ -209,7 +211,7 @@ class Parameter(collections.UserDict):
 
         Parameters
         ----------
-        figsize: tuple[float, float]
+        figsize : tuple[float, float]
             Figure size in inches, as a tuple of two numbers. If ``None``, use
             (3, 6).
         dpi : float
@@ -261,7 +263,8 @@ class HH_Param(Parameter):
     Parameters
     ----------
     param_dict : dict[str, float]
-        Values of the HH model parameters. Acceptable key names are:
+        Values of the HH model parameters. Acceptable key names are::
+
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Attributes
@@ -295,7 +298,8 @@ class HH_Param(Parameter):
 
     def serialize(self) -> np.ndarray:
         """
-        Return an array of parameter values in the order of:
+        Return an array of parameter values in the order of::
+
         {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
         """
         return hh.serialize_params_to_array(self.data)
@@ -309,7 +313,8 @@ class MKZ_Param(Parameter):
     Parameters
     ----------
     param_dict : dict[str, float]
-        Values of the HH model parameters. Acceptable key names are:
+        Values of the HH model parameters. Acceptable key names are::
+
             gamma_ref, s, beta, Gmax
 
     Attributes
@@ -333,8 +338,9 @@ class MKZ_Param(Parameter):
 
     def serialize(self) -> np.ndarray:
         """
-        Return an array of parameter values in the order of:
-        {'gamma_ref', 's', 'beta', 'Gmax'}
+        Return an array of parameter values in the order of::
+
+            {'gamma_ref', 's', 'beta', 'Gmax'}
         """
         return mkz.serialize_params_to_array(self.data)
 
@@ -343,9 +349,8 @@ class Param_Multi_Layer:
     """
     Class implementation of multiple curves.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., ``element_class``.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., ``element_class``.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -361,8 +366,9 @@ class Param_Multi_Layer:
         List of dict or a list of valid parameter class (such as ``HH_Param``),
         which contain data for parameters of each layer.
     element_class : type[Parameter]
-        A class name, such as ``HH_Param``. Each element of ``list_of_param_dict``
-        will be used to initialize an object of ``element_class``.
+        A class name, such as ``HH_Param``. Each element of
+        ``list_of_param_dict`` will be used to initialize an object of
+        ``element_class``.
 
     Attributes
     ----------
@@ -541,9 +547,8 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     """
     Class implementation of multiple sets of HH parameters for multiple layers.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., HH_Param.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., HH_Param.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -568,11 +573,11 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
             |      ...       |      ...        |      ...        | ... |
             +----------------+-----------------+-----------------+-----+
 
-        or a 2D numpy array containing the data of the format above, or a
-        list containing HH parameter data.
+        or a 2D numpy array containing the data of the format above, or a list
+        containing HH parameter data.
     sep : str
-        Delimiter of the file to be imported. If ``filename_or_data`` is not
-        a file name, ``sep`` has no effect.
+        Delimiter of the file to be imported. If ``filename_or_data`` is not a
+        file name, ``sep`` has no effect.
 
     Attributes
     ----------
@@ -632,11 +637,11 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
 class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     """
-    Class implementation of multiple sets of MKZ parameters for multiple layers.
+    Class implementation of multiple sets of MKZ parameters for multiple
+    layers.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., MKZ_Param.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., MKZ_Param.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -661,11 +666,11 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             |      ...       |      ...        |      ...        | ... |
             +----------------+-----------------+-----------------+-----+
 
-        or a 2D numpy array containing the data of the format above, or a
-        list containing MKZ parameter data.
+        or a 2D numpy array containing the data of the format above, or a list
+        containing MKZ parameter data.
     sep : str
-        Delimiter of the file to be imported. If ``filename_or_data`` is not
-        a file name, ``sep`` has no effect.
+        Delimiter of the file to be imported. If ``filename_or_data`` is not a
+        file name, ``sep`` has no effect.
 
     Attributes
     ----------

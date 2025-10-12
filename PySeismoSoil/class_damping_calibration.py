@@ -42,9 +42,9 @@ class Damping_Calibration:
             Strain array. Must be a 1D numpy array. Unit: %
         use_Darendeli_Dmin : bool
             If ``True``, use the D_min values estimated by the empirical
-            formulas in Darendeli (2001) as the small-strain damping ratios
-            of each soil layer. If ``False``, use the damping ratio provided
-            in ``vs_profile`` (or estimated using PySeismoSoil's built-in
+            formulas in Darendeli (2001) as the small-strain damping ratios of
+            each soil layer. If ``False``, use the damping ratio provided in
+            ``vs_profile`` (or estimated using PySeismoSoil's built-in
             Vs-damping correlation).
         show_fig : bool
             Whether to show a figure of the damping curves of each layer.
@@ -104,16 +104,16 @@ class Damping_Calibration:
 
     def get_HH_x_param(self, **kwargs: dict[Any, Any]) -> HH_Param_Multi_Layer:
         """
-        Obtain HH_x parameters for each layer (i.e., HH model parameters
-        that best fit given damping values, for each layer).
+        Obtain HH_x parameters for each layer (i.e., HH model parameters that
+        best fit given damping values, for each layer).
 
         Parameters
         ----------
         **kwargs : dict[Any, Any]
             Keyword arguments to be passed to this method:
-                PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params().
+            PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params().
             Check its documentation for details:
-                https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_curves.html#PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params
+            https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_curves.html#PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_HH_x_params
 
         Returns
         -------
@@ -131,16 +131,16 @@ class Damping_Calibration:
             self, **kwargs: dict[Any, Any]
     ) -> MKZ_Param_Multi_Layer:
         """
-        Obtain H4_x parameters for each layer (i.e., MKZ model parameters
-        that best fit given damping values, for each layer).
+        Obtain H4_x parameters for each layer (i.e., MKZ model parameters that
+        best fit given damping values, for each layer).
 
         Parameters
         ----------
         **kwargs : dict[Any, Any]
             Keyword arguments to be passed to this method:
-                PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params().
+            PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params().
             Check its documentation for details:
-                https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_curves.html#PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params
+            https://pyseismosoil.readthedocs.io/en/stable/api_docs/class_curves.html#PySeismoSoil.class_curves.Multiple_Damping_Curves.get_all_H4_x_params
 
         Returns
         -------

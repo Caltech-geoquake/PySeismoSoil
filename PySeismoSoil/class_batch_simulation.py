@@ -25,11 +25,13 @@ class Batch_Simulation:
         from these classes: ``Linear_Simulation``, ``Equiv_Linear_Simulation``,
         and ``Nonlinear_Simulation``.
     use_ctx : bool
-        For unix systems, provides the option to use the forkserver context for spawning
-        subprocesses when running simulations in batch. The forkserver context is recommended
-        to avoid slowdowns when PySeismoSoil is being run in batch as part of a code that
-        contains additional non-PySeismoSoil variables and module imports. If use_ctx is
-        set to True, the top-level code must be guarded under `if __name__ == "__main__":`.
+        For unix systems, provides the option to use the forkserver context for
+        spawning subprocesses when running simulations in batch. The forkserver
+        context is recommended to avoid slowdowns when PySeismoSoil is being
+        run in batch as part of a code that contains additional
+        non-PySeismoSoil variables and module imports. If use_ctx is set to
+        True, the top-level code must be guarded under `if __name__ ==
+        "__main__":`.
 
     Attributes
     ----------
@@ -122,10 +124,10 @@ class Batch_Simulation:
             The parent directory for saving the output files/figures of the
             current batch.
         catch_errors : bool
-            Optionally allows for ValueErrors to be caught during batch simulation,
-            so a single error simulation doesn't interrupt the running of others in the
-            batch. Simulations that have caught errors will be replaced by `None` in the
-            results list.
+            Optionally allows for ValueErrors to be caught during batch
+            simulation, so a single error simulation doesn't interrupt the
+            running of others in the batch. Simulations that have caught errors
+            will be replaced by `None` in the results list.
         verbose : bool
             Whether to print the parallel computing progress info.
         options : dict[str, Any] | None
@@ -203,9 +205,8 @@ class Batch_Simulation:
         ----------
         all_params : list[Any]
             All the parameters needed for running the simulation. It should
-            have the following structure:
-                [i, [n_digits, base_output_dir, catch_errors, options]]
-            where:
+            have the following structure: [i, [n_digits, base_output_dir,
+            catch_errors, options]], where:
                 - ``i`` is the index of the current simulation in the batch.
                 - ``n_digits`` is the number of digits of the length of the
                   batch. (For example, if there are 125 simulations, then

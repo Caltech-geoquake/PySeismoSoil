@@ -22,8 +22,8 @@ from PySeismoSoil.class_parameters import (
 class Curve:
     """
     Class implementation of a strain-dependent curve. It can be a stress-strain
-    curve, a G/Gmax curve as a function of strain, or a damping curve as
-    a function of strain.
+    curve, a G/Gmax curve as a function of strain, or a damping curve as a
+    function of strain.
 
     Parameters
     ----------
@@ -38,9 +38,9 @@ class Curve:
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
-        Minimum strain value of the strain array. If ``interpolate`` is ``True``,
-        the raw ``data`` will be internally interpolated at a strain array
-        defined by ``min_strain``, ``max_strain``, and ``n_pts``.
+        Minimum strain value of the strain array. If ``interpolate`` is
+        ``True``, the raw ``data`` will be internally interpolated at a strain
+        array defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float
         Maximum strain value of the strain array. Only effective when
         ``interpolate`` is set to ``True``.
@@ -146,8 +146,8 @@ class Curve:
         ylabel : str | None
             Y label of plot.
         figsize : tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
             Figure resolution. The dpi of ``fig`` (if not ``None``) will
             override this parameter.
@@ -200,9 +200,9 @@ class GGmax_Curve(Curve):
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
-        Minimum strain value of the strain array. If ``interpolate`` is ``True``,
-        the raw ``data`` will be internally interpolated at a strain array
-        defined by ``min_strain``, ``max_strain``, and ``n_pts``.
+        Minimum strain value of the strain array. If ``interpolate`` is
+        ``True``, the raw ``data`` will be internally interpolated at a strain
+        array defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float
         Maximum strain value of the strain array. Only effective when
         ``interpolate`` is set to ``True``.
@@ -225,7 +225,8 @@ class GGmax_Curve(Curve):
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
     values : np.ndarray
-        The interpolated values; same shape as ``strain`` (inherited from Curve).
+        The interpolated values; same shape as ``strain`` (inherited from
+        Curve).
     GGmax : np.ndarray
         The interpolated G/Gmax values; same shape as ``strain``.
 
@@ -288,9 +289,9 @@ class Damping_Curve(Curve):
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float
-        Minimum strain value of the strain array. If ``interpolate`` is ``True``,
-        the raw ``data`` will be internally interpolated at a strain array
-        defined by ``min_strain``, ``max_strain``, and ``n_pts``.
+        Minimum strain value of the strain array. If ``interpolate`` is
+        ``True``, the raw ``data`` will be internally interpolated at a strain
+        array defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float
         Maximum strain value of the strain array. Only effective when
         ``interpolate`` is set to ``True``.
@@ -301,8 +302,8 @@ class Damping_Curve(Curve):
         Whether the strain array for interpolation is in log scale (or linear
         scale). Only effective when ``interpolate`` is set to ``True``.
     check_values : bool
-        Whether to automatically check the validity of the damping values (i.e.,
-        between 0 and 1).
+        Whether to automatically check the validity of the damping values
+        (i.e., between 0 and 1).
 
     Attributes
     ----------
@@ -313,7 +314,8 @@ class Damping_Curve(Curve):
         shape (``n_pts``, ). The unit is percent (unit conversion happens
         internally if applicable).
     values : np.ndarray
-        The interpolated values; same shape as ``strain`` (inherited from Curve).
+        The interpolated values; same shape as ``strain`` (inherited from
+        Curve).
     damping : np.ndarray
         The interpolated damping values; same shape as ``strain``. The unit is
         percent (unit conversion happens internally if applicable).
@@ -399,14 +401,14 @@ class Damping_Curve(Curve):
             Number of generations that the evolution lasts.
         lower_bound_power : float
             The 10-based power of the lower bound of all the 9 parameters. For
-            example, if your desired lower bound is 0.26, then set this parameter
-            to be numpy.log10(0.26).
+            example, if your desired lower bound is 0.26, then set this
+            parameter to be numpy.log10(0.26).
         upper_bound_power : float
             The 10-based power of the upper bound of all the 9 parameters.
         eta : float
-            Crowding degree of the mutation or crossover. A high ``eta`` will produce
-            children resembling to their parents, while a low ``eta`` will produce
-            solutions much more different.
+            Crowding degree of the mutation or crossover. A high ``eta`` will
+            produce children resembling to their parents, while a low ``eta``
+            will produce solutions much more different.
         seed : float
             Seed value for the random number generator.
         show_fig : bool
@@ -415,19 +417,19 @@ class Damping_Curve(Curve):
             Whether to display information (statistics of the loss in each
             generation) on the console.
         parallel : bool
-            Whether to use parallel computing to simultaneously evaluate different
-            individuals in a population. Note that different generations still
-            evolve one after another. Only effective for the differential evolution
-            for now. Also note that if using parallelization in differential
-            evolution, you may need more generations to achieve the same
-            optimization loss, because the best solution is being updated only once
-            per generation.
+            Whether to use parallel computing to simultaneously evaluate
+            different individuals in a population. Note that different
+            generations still evolve one after another. Only effective for the
+            differential evolution for now. Also note that if using
+            parallelization in differential evolution, you may need more
+            generations to achieve the same optimization loss, because the best
+            solution is being updated only once per generation.
         n_cores : int | None
             Number of CPU cores to use. If ``None``, all cores are used. No
             effects if ``parallel`` is set to ``False``.
 
-        Return
-        ------
+        Returns
+        -------
         HH_x_param : HH_Param
             The best parameters found in the optimization.
         """
@@ -481,14 +483,14 @@ class Damping_Curve(Curve):
             Number of generations that the evolution lasts
         lower_bound_power : float
             The 10-based power of the lower bound of all the 9 parameters. For
-            example, if your desired lower bound is 0.26, then set this parameter
-            to be numpy.log10(0.26)
+            example, if your desired lower bound is 0.26, then set this
+            parameter to be numpy.log10(0.26)
         upper_bound_power : float
             The 10-based power of the upper bound of all the 9 parameters.
         eta : float
-            Crowding degree of the mutation or crossover. A high ``eta`` will produce
-            children resembling to their parents, while a low ``eta`` will produce
-            solutions much more different.
+            Crowding degree of the mutation or crossover. A high ``eta`` will
+            produce children resembling to their parents, while a low ``eta``
+            will produce solutions much more different.
         seed : float
             Seed value for the random number generator.
         show_fig : bool
@@ -497,19 +499,19 @@ class Damping_Curve(Curve):
             Whether to display information (statistics of the loss in each
             generation) on the console.
         parallel : bool
-            Whether to use parallel computing to simultaneously evaluate different
-            individuals in a population. Note that different generations still
-            evolve one after another. Only effective for the differential evolution
-            for now. Also note that if using parallelization in differential
-            evolution, you may need more generations to achieve the same
-            optimization loss, because the best solution is being updated only once
-            per generation.
+            Whether to use parallel computing to simultaneously evaluate
+            different individuals in a population. Note that different
+            generations still evolve one after another. Only effective for the
+            differential evolution for now. Also note that if using
+            parallelization in differential evolution, you may need more
+            generations to achieve the same optimization loss, because the best
+            solution is being updated only once per generation.
         n_cores : int | None
             Number of CPU cores to use. If ``None``, all cores are used. No
             effects if ``parallel`` is set to ``False``.
 
-        Return
-        ------
+        Returns
+        -------
         H4_x_param : MKZ_Param
             The best parameters found in the optimization.
         """
@@ -746,21 +748,21 @@ class Multiple_Curves:
         fig : Figure | None
             Figure object. If None, one new figure will be created.
         ax : Axes | None
-            Axes object. If None, one new Axes object will be created.
-            If the user provides an Axes object but no Figure object, the
-            user provided Axes object will be overwritten by a new Axes object.
+            Axes object. If None, one new Axes object will be created. If the
+            user provides an Axes object but no Figure object, the user
+            provided Axes object will be overwritten by a new Axes object.
         title : str | None
             Title of plot.
         xlabel : str | None
             X label of plot.
         ylabel : str | None
             Y label of plot.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+        figsize : tuple[float, float]
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs_to_matplotlib : dict[Any, Any]
             Keyword arguments to be passed to ``matplotlib.pyplot.plot()``.
 
@@ -800,9 +802,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
     """
     Class implementation of multiple damping curves.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., Damping_Curve.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., Damping_Curve.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -892,12 +893,12 @@ class Multiple_Damping_Curves(Multiple_Curves):
             X label of plot.
         ylabel : str | None
             Y label of plot.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+        figsize : tuple[float, float]
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs_to_matplotlib : dict[Any, Any]
             Keyword arguments to be passed to ``matplotlib.pyplot.plot()``.
 
@@ -939,8 +940,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
             |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
             +------------+--------+------------+-------------+-------------+--------+-----+
 
-        Since this class only defines damping curves, not G/Gmax curves,
-        G/Gmax will be filled with some dummy values.
+        Since this class only defines damping curves, not G/Gmax curves, G/Gmax
+        will be filled with some dummy values.
 
         Parameters
         ----------
@@ -1023,14 +1024,14 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Number of generations that the evolution lasts.
         lower_bound_power : float
             The 10-based power of the lower bound of all the 9 parameters. For
-            example, if your desired lower bound is 0.26, then set this parameter
-            to be numpy.log10(0.26).
+            example, if your desired lower bound is 0.26, then set this
+            parameter to be numpy.log10(0.26).
         upper_bound_power : float
             The 10-based power of the upper bound of all the 9 parameters.
         eta : float
-            Crowding degree of the mutation or crossover. A high ``eta`` will produce
-            children resembling to their parents, while a low ``eta`` will produce
-            solutions much more different.
+            Crowding degree of the mutation or crossover. A high ``eta`` will
+            produce children resembling to their parents, while a low ``eta``
+            will produce solutions much more different.
         seed : float
             Seed value for the random number generator.
         show_fig : bool
@@ -1056,13 +1057,13 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Whether to save damping fitting figures to hard drive.
         fig_filename : str | None
             Full file name of the figure. If the object is created via a
-            "curve" text file, then `fig_filename` can be None, and the
-            output figure name will be determined automatically.
+            "curve" text file, then `fig_filename` can be None, and the output
+            figure name will be determined automatically.
         dpi : float
             Figure resolution.
 
-        Return
-        ------
+        Returns
+        -------
         HH_x_param : HH_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
@@ -1141,14 +1142,14 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Number of generations that the evolution lasts.
         lower_bound_power : float
             The 10-based power of the lower bound of all the 9 parameters. For
-            example, if your desired lower bound is 0.26, then set this parameter
-            to be numpy.log10(0.26).
+            example, if your desired lower bound is 0.26, then set this
+            parameter to be numpy.log10(0.26).
         upper_bound_power : float
             The 10-based power of the upper bound of all the 9 parameters.
         eta : float
-            Crowding degree of the mutation or crossover. A high ``eta`` will produce
-            children resembling to their parents, while a low ``eta`` will produce
-            solutions much more different.
+            Crowding degree of the mutation or crossover. A high ``eta`` will
+            produce children resembling to their parents, while a low ``eta``
+            will produce solutions much more different.
         seed : float
             Seed value for the random number generator.
         show_fig : bool
@@ -1166,8 +1167,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Whether to save the results as a "HH_x_STATION_NAME.txt" file.
         txt_filename : str | None
             File name of the text file to save HH parameters. If the object is
-            created via a "curve" text file, then `txt_filename` can be ``None``
-            and the output filename will be determined automatically.
+            created via a "curve" text file, then `txt_filename` can be
+            ``None`` and the output filename will be determined automatically.
         sep : str | None
             Delimiter to separate columns of data in the output file.
         save_fig : bool
@@ -1179,8 +1180,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
         dpi : float
             Figure resolution
 
-        Return
-        ------
+        Returns
+        -------
         H4_x_param : MKZ_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
@@ -1269,9 +1270,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):
     """
     Class implementation of multiple G/Gmax curves.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., GGmax_Curve.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., GGmax_Curve.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -1362,11 +1362,11 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         ylabel : str | None
             Y label of plot.
         figsize : tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs_to_matplotlib : dict[Any, Any]
             Keyword arguments to be passed to ``matplotlib.pyplot.plot()``.
 
@@ -1460,16 +1460,16 @@ class Multiple_GGmax_Damping_Curves:
     A "parent" class that holds both G/Gmax curves and damping curves
     information. The user can EITHER initialize this class by providing
     instances of ``Multiple_GGmax_Curves`` and ``Multiple_Damping_Curves``
-    classes, OR by providing a numpy array containing the curves. (The user
-    can provide one and only one input parameter, and leave the other parameter
-    to ``None``.)
+    classes, OR by providing a numpy array containing the curves. (The user can
+    provide one and only one input parameter, and leave the other parameter to
+    ``None``.)
 
     Parameters
     ----------
     mgc_and_mdc : tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves] | None
-        A tuple of two elements, which are the G/Gmax curve information and
-        the damping curve information, respectively. The two objects needs to
-        have the same ``n_layer`` attribute.
+        A tuple of two elements, which are the G/Gmax curve information and the
+        damping curve information, respectively. The two objects needs to have
+        the same ``n_layer`` attribute.
     data : np.ndarray | str | None
         A 2D numpy array of the following format:
             +------------+--------+------------+-------------+-------------+--------+-----+
