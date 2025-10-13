@@ -58,8 +58,8 @@ def transition_function(
         gamma: np.ndarray, *, a: float, gamma_t: float
 ) -> np.ndarray:
     """
-    Calculate the transition function of the HH model, as defined
-    in Equation (7) of Shi & Asimaki (2017).
+    Calculate the transition function of the HH model, as defined in Equation
+    (7) of Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -145,8 +145,8 @@ def tau_HH(
     Returns
     -------
     T_FKZ : np.ndarray
-        The shear stress determined by the HH model. Same shape as ``x``,
-        and same unit as ``Gmax``.
+        The shear stress determined by the HH model. Same shape as ``x``, and
+        same unit as ``Gmax``.
     """
     w = transition_function(gamma, a=a, gamma_t=gamma_t)
     T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
@@ -200,9 +200,9 @@ def fit_HH_x_single_layer(
     upper_bound_power : float
         The 10-based power of the upper bound of all the 9 parameters.
     eta : float
-        Crowding degree of the mutation or crossover. A high ``eta`` will produce
-        children resembling to their parents, while a low ``eta`` will produce
-        solutions much more different.
+        Crowding degree of the mutation or crossover. A high ``eta`` will
+        produce children resembling to their parents, while a low ``eta`` will
+        produce solutions much more different.
     seed : int
         Seed value for the random number generator.
     show_fig : bool
@@ -219,8 +219,8 @@ def fit_HH_x_single_layer(
     n_cores : int | None
         The number of CPU cores to use in the curve fitting
 
-    Return
-    ------
+    Returns
+    -------
     best_param : dict[str, float]
         The best parameters found in the optimization.
     """
@@ -288,15 +288,16 @@ def _damping_misfit(
         param: tuple[float, ...], damping_data: np.ndarray
 ) -> float:
     """
-    Calculate the misfit given a set of HH parameters. Note that the values
-    in `param` are actually the 10-based power of the actual HH parameters.
-    Using the powers in the genetic algorithm searching turns out to work
-    much better for this particular problem.
+    Calculate the misfit given a set of HH parameters. Note that the values in
+    `param` are actually the 10-based power of the actual HH parameters. Using
+    the powers in the genetic algorithm searching turns out to work much better
+    for this particular problem.
 
     Parameters
     ----------
     param : tuple[float, ...]
-        HH model parameters, in the order specified below:
+        HH model parameters, in the order specified below::
+
             gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
     damping_data : np.ndarray
         2D numpy array with two columns (strain and damping value). Both
@@ -344,7 +345,8 @@ def _damping_misfit(
 def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
     """
     Convert the HH parameters from a dictionary to an array, according to this
-    order:
+    order::
+
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters
@@ -381,7 +383,9 @@ def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
     """
     Reconstruct a HH model parameter dictionary from an array of values.
 
-    The users need to ensure the order of values in ``array`` are in this order:
+    The users need to ensure the order of values in ``array`` are in this
+    order::
+
         gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters

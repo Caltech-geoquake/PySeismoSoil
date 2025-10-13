@@ -32,8 +32,8 @@ def lowpass(
     filter_order : int
         Filter order.
     padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value.
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -73,8 +73,8 @@ def highpass(
     filter_order : int
         Filter order.
     padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value.
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -114,8 +114,8 @@ def bandpass(
     filter_order : int
         Filter order.
     padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -155,8 +155,8 @@ def bandstop(
     filter_order : int
         Filter order.
     padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -515,7 +515,8 @@ def fourier_transform(
     signal_2_col : np.ndarray
         Signal in two columns (time array and signal array).
     real_val : bool
-        Whether to return the amplitude (or "magnitude") of the complex numbers.
+        Whether to return the amplitude (or "magnitude") of the complex
+        numbers.
     double_sided : bool
         Whether to return the second half of the spectrum (i.e. beyond the
         Nyquist frequency).
@@ -644,8 +645,8 @@ def calc_transfer_function(
     amplitude_only : bool
         Whether to keep only the amplitude of the transfer function.
     smooth_signal : bool
-        Whether to smooth the amplitude spectrum. If ``smooth`` is ``True``
-        and ``amplitude_only`` is ``False``, an error will be raised.
+        Whether to smooth the amplitude spectrum. If ``smooth`` is ``True`` and
+        ``amplitude_only`` is ``False``, an error will be raised.
 
     Returns
     -------
@@ -745,21 +746,21 @@ def log_smooth(
     window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
         The name of the window.
     lin_space : bool
-        Whether the points of the signal is uniformly spaced linearly.
-        If ``False``, the signal is treated as uniformaly spaced logarithmically.
+        Whether the points of the signal is uniformly spaced linearly. If
+        ``False``, the signal is treated as uniformaly spaced logarithmically.
     fmin : float | None
-        Minimum frequency (in Hz) that the signal is spaced within.
-        Only effective when ``lin_space`` is ``True``.
+        Minimum frequency (in Hz) that the signal is spaced within. Only
+        effective when ``lin_space`` is ``True``.
     fmax : float | None
-        Maximum frequency (in Hz) that the signal is spaced within.
-        Only effective when ``lin_space`` is ``True``.
+        Maximum frequency (in Hz) that the signal is spaced within. Only
+        effective when ``lin_space`` is ``True``.
     n_pts : int
         The number of points of the logarithmically interpolated the signal.
         Only effective when ``lin_space`` is ``True``.
     fix_ends : bool
-        Whether to fix the two ends of the smoothed signal, so that
-        the "boundary effect" from convolution can be corrected. If ``True``,
-        the first and last n points will be adjusted using the exponentially
+        Whether to fix the two ends of the smoothed signal, so that the
+        "boundary effect" from convolution can be corrected. If ``True``, the
+        first and last n points will be adjusted using the exponentially
         weighted averaging method. (n is half of ``win_len``.)
     beta1 : float
         The "strength" of exponentially weighted averaging. For the head and
@@ -771,7 +772,8 @@ def log_smooth(
     Returns
     -------
     smoothed_signal : np.ndarray
-        The smoothed signal which has the same dimension as the original signal.
+        The smoothed signal which has the same dimension as the original
+        signal.
 
     Raises
     ------
@@ -843,9 +845,9 @@ def lin_smooth(
     Smooth the data using a window with requested size.
 
     This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal
-    (with the window size) in both ends so that transient parts are minimized
-    in the begining and end part of the output signal.
+    The signal is prepared by introducing reflected copies of the signal (with
+    the window size) in both ends so that transient parts are minimized in the
+    begining and end part of the output signal.
 
     Parameters
     ----------
@@ -862,20 +864,21 @@ def lin_smooth(
     smoothed : np.ndarray
         The smoothed signal (same dimension as `x`)
 
-    Example
-    -------
+    Examples
+    --------
     >>> t = linspace(-2, 2, 0.1)
     >>> x = sin(t) + randn(len(t)) * 0.1
     >>> y = lin_smooth(x)
 
     See Also
     --------
-    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
-    scipy.signal.lfilter
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman,
+    numpy.convolve, scipy.signal.lfilter
 
     TO-DO
     -----
-    The window parameter could be the window itself if an array instead of a string
+    The window parameter could be the window itself if an array instead of a
+    string
 
     Notes
     -----
@@ -918,8 +921,12 @@ def sine_smooth(
     """
     Smooths a frequency spectrum using a sine-shaped window.
 
-    data: two column signal, first column is frequency
-    window_span: width of moving window in hz
+    Parameters
+    ----------
+    signal : np.ndarray
+        Two-column signal; first column is frequency
+    window_span : float
+        Width of moving window in hz
     """
     x = signal[:, 1]
     sm_signal = np.zeros_like(x)

@@ -37,11 +37,11 @@ repos:
         args: [--wrap, '79', --number]
         additional_dependencies: [mdformat-tables]
   - repo: https://github.com/jsh9/markdown-toc-creator
-    rev: 0.0.10
+    rev: 0.0.11
     hooks:
       - id: markdown-toc-creator
   - repo: https://github.com/jsh9/format-docstring
-    rev: 0.1.2
+    rev: 0.1.4
     hooks:
       - id: format-docstring
         name: Format docstrings in .py files

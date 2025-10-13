@@ -100,9 +100,9 @@ def fit_H4_x_single_layer(
     upper_bound_power : float
         The 10-based power of the upper bound of all the 9 parameters.
     eta : float
-        Crowding degree of the mutation or crossover. A high ``eta`` will produce
-        children resembling to their parents, while a low ``eta`` will produce
-        solutions much more different.
+        Crowding degree of the mutation or crossover. A high ``eta`` will
+        produce children resembling to their parents, while a low ``eta`` will
+        produce solutions much more different.
     seed : int
         Seed value for the random number generator.
     show_fig : bool
@@ -119,8 +119,8 @@ def fit_H4_x_single_layer(
     n_cores : int | None
         The number of CPU cores to use in the curve fitting
 
-    Return
-    ------
+    Returns
+    -------
     best_param : dict[str, float]
         The best parameters found in the optimization.
     """
@@ -180,15 +180,16 @@ def damping_misfit(
         damping_data: np.ndarray,
 ) -> float:
     """
-    Calculate the misfit given a set of MKZ parameters. Note that the values
-    in `param` are actually the 10-based power of the actual MKZ parameters.
-    Using the powers in the genetic algorithm searching turns out to work
-    much better for this particular problem.
+    Calculate the misfit given a set of MKZ parameters. Note that the values in
+    `param` are actually the 10-based power of the actual MKZ parameters. Using
+    the powers in the genetic algorithm searching turns out to work much better
+    for this particular problem.
 
     Parameters
     ----------
     param_without_Gmax : tuple[float, float, float]
-        MKZ model parameters, in the order specified below:
+        MKZ model parameters, in the order specified below::
+
             gamma_ref, s, beta
     damping_data : np.ndarray
         2D numpy array with two columns (strain and damping value). Both
@@ -223,7 +224,8 @@ def serialize_params_to_array(
 ) -> np.ndarray:
     """
     Convert the MKZ parameters from a dictionary to an array, according to this
-    order:
+    order::
+
         gamma_ref, s, beta, Gmax
 
     Parameters
@@ -262,16 +264,20 @@ def deserialize_array_to_params(
     """
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
-    The users need to ensure the order of values in ``array`` are in this order:
+    The users need to ensure the order of values in ``array`` are in this
+    order::
+
         gamma_ref, s, beta, Gmax (if ``from_files`` is ``False``)
-    or:
-        gamma_ref, b, s, beta (if ``from_files`` is ``True``)
-    (b is always 0, for historical reasons)
+    or::
+
+        gamma_ref, b, s, beta (if ``from_files`` is ``True``) (b is always 0,
+        for historical reasons)
 
     Parameters
     ----------
     array : np.ndarray
-        A 1D numpy array of MKZ parameter values in this order:
+        A 1D numpy array of MKZ parameter values in this order::
+
             gamma_ref, s, beta, Gmax
     from_files : bool
         Whether the array was directly imported from a "H4_x_SITE_NAME.txt"
@@ -332,8 +338,8 @@ def fit_MKZ(
     Returns
     -------
     param : np.ndarray
-        The fitted MKZ parameters. Shape: (n_mat, 4), where ``n_mat`` is
-        the number of materials implied in ``curve_data``.
+        The fitted MKZ parameters. Shape: (n_mat, 4), where ``n_mat`` is the
+        number of materials implied in ``curve_data``.
     fitted_curves : np.ndarray
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.

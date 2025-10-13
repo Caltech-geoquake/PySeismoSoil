@@ -36,8 +36,8 @@ def S_(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    Original Matlab code (c) Jian Shi, 2/17/2015. Ported to Python by Flora
+    Xia, 02/2024.
     """
     eps2 = 1e-12
     if isinstance(meas, (float, np.float64)):
@@ -68,8 +68,8 @@ def d_1234(
         show_fig: bool = False,
 ) -> tuple[float, float, float, float]:
     """
-    Calculate the first four goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017).
+    Calculate the first four goodness-of-fit scores in the GoF scheme described
+    in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -78,11 +78,11 @@ def d_1234(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
     fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
     baseline : bool
         Whether or not to perform baseline correction of the time series.
     show_fig : bool
@@ -108,8 +108,8 @@ def d_1234(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    Original Matlab code (c) Jian Shi, 2/17/2015. Ported to Python by Flora
+    Xia, 02/2024.
     """
     filter_order = 4
     q = 15
@@ -259,24 +259,23 @@ def calc_AriasIntensity(
     Parameters
     ----------
     accel_in_SI_unit : np.ndarray
-        Acceleration in SI unit (i.e., m/s^2). It needs
-        to be in two columns, with the first column
-        being time array, and the second column being
+        Acceleration in SI unit (i.e., m/s^2). It needs to be in two columns,
+        with the first column being time array, and the second column being
         acceleration.
 
     Returns
     -------
     Ia : np.ndarray
-        Arias intensity duration as a function of time
-                    (unit: m/s^2) It also has two columns.
+        Arias intensity duration as a function of time (unit: m/s^2). It also
+        has two columns.
     Ia_peak : float
-        The maximum value of the Ia duration, which is also
-        the value of the last element in the Ia duration array.
+        The maximum value of the Ia duration, which is also the value of the
+        last element in the Ia duration array.
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    Original Matlab code (c) Jian Shi, 2/17/2015. Ported to Python by Flora
+    Xia, 02/2024.
     """
     g = 9.81
 
@@ -316,11 +315,11 @@ def d_567(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
     fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
     baseline : bool
         Whether or not to perform baseline correction of the time series.
     show_fig : bool
@@ -344,8 +343,8 @@ def d_567(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    Original Matlab code (c) Jian Shi, 2/17/2015. Ported to Python by Flora
+    Xia, 02/2024.
     """
     filter_order = 4
     q = 15
@@ -506,12 +505,12 @@ def baseline_wavelet(
 
     Parameters
     ----------
-    signal: np.ndarray
-        The signal to be corrected. Must have two columns, with the first
-        being time and the second containing the data.
-    wavelet_level: int
+    signal : np.ndarray
+        The signal to be corrected. Must have two columns, with the first being
+        time and the second containing the data.
+    wavelet_level : int
         Wavelet level.
-    wavelet_name: str
+    wavelet_name : str
         Type of wavelet to use.
 
     Returns
@@ -521,8 +520,8 @@ def baseline_wavelet(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    Original Matlab code (c) Jian Shi, 2/17/2015. Ported to Python by Flora
+    Xia, 02/2024.
     """
     t = signal[:, 0]
     x = signal[:, 1]
@@ -544,8 +543,8 @@ def calc_rms(x: np.ndarray) -> float:
     Parameters
     ----------
     x : np.ndarray
-        Assumed to be a two-column array, with the time in the first
-        column and the data in the second.
+        Assumed to be a two-column array, with the time in the first column and
+        the data in the second.
 
     Returns
     -------
@@ -563,8 +562,8 @@ def getAbsPeak(x: np.ndarray) -> float:
     Parameters
     ----------
     x : np.ndarray
-        Assumed to be a two-column array, with the time in the first
-        column and the data in the second.
+        Assumed to be a two-column array, with the time in the first column and
+        the data in the second.
 
     Returns
     -------
@@ -595,8 +594,8 @@ def d_89(
         show_fig: bool = False,
 ) -> tuple[float, float]:
     """
-    Calculate the last two goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017).
+    Calculate the last two goodness-of-fit scores in the GoF scheme described
+    in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -605,11 +604,11 @@ def d_89(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
     fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
     baseline : bool
         Whether or not to perform baseline correction of the time series.
     show_fig : bool
@@ -636,8 +635,8 @@ def d_89(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    Original Matlab code (c) Jian Shi, 2/17/2015. Ported to Python by Flora
+    Xia, 02/2024.
     """
     if baseline:
         measurement = sp.baseline(measurement)
@@ -790,8 +789,8 @@ def d_10(
         show_fig: bool = False,
 ) -> float:
     """
-    Cross-correlation measure of goodness-of-fit, as described in:
-    Anderson (2004).
+    Cross-correlation measure of goodness-of-fit, as described in: Anderson
+    (2004).
 
     Parameters
     ----------
@@ -800,11 +799,11 @@ def d_10(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
     fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
     baseline : bool
         Whether or not to perform baseline correction of the time series.
     show_fig : bool
@@ -956,9 +955,8 @@ def circular_convolve_d(h_t, v_j_1, j):
 
 def modwt(x, filters, level):
     """
-    Code from: https://github.com/pistonly/modwtpy
-    filters: 'db1', 'db2', 'haar', ...
-    return: see matlab
+    Code from: https://github.com/pistonly/modwtpy. Valid values for
+    ``filters``: 'db1', 'db2', 'haar', ... Return value: see matlab
     """
     # filter
     wavelet = pywt.Wavelet(filters)
@@ -979,8 +977,8 @@ def modwt(x, filters, level):
 
 def modwtmra(w, filters):
     """
-    Multiresolution analysis based on MODWT
-    Code from: https://github.com/pistonly/modwtpy
+    Multiresolution analysis based on MODWT Code from:
+    https://github.com/pistonly/modwtpy
     """
     # filter
     wavelet = pywt.Wavelet(filters)

@@ -29,8 +29,8 @@ def get_current_time(for_filename: bool = True) -> str:
     Parameters
     ----------
     for_filename : bool
-        Whether the returned string is for filenames or not. If so, colons
-        are substituted with dashes, and the space is substituted with an
+        Whether the returned string is for filenames or not. If so, colons are
+        substituted with dashes, and the space is substituted with an
         underscore.
 
     Returns
@@ -49,8 +49,8 @@ def find_closest_index(
         value: float,
 ) -> tuple[int | None, float | None]:
     """
-    Find the index in ``array`` corresponding to the value closest to the
-    given ``value``.
+    Find the index in ``array`` corresponding to the value closest to the given
+    ``value``.
 
     Parameters
     ----------
@@ -114,9 +114,9 @@ def _process_fig_ax_objects(
         Figure object. If None, a new figure will be created.
     ax : Axes | None
         Axes object. If None, a new axes will be created.
-    figsize: tuple[float, float] | None
-        Figure size in inches, as a tuple of two numbers. The figure
-        size of ``fig`` (if not ``None``) will override this parameter.
+    figsize : tuple[float, float] | None
+        Figure size in inches, as a tuple of two numbers. The figure size of
+        ``fig`` (if not ``None``) will override this parameter.
     dpi : float | None
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
@@ -162,12 +162,12 @@ def read_two_column_stuff(
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the data.
+        If str: the full file name on the hard drive containing the data. If
+        np.ndarray: the numpy array containing the data.
 
-        The data can have one column (which contains the motion/spectrum) or two
-        columns (1st column: time/freq; 2nd column: motion/spectrum). If only
-        one column is supplied, another input parameter "d_" must also be
+        The data can have one column (which contains the motion/spectrum) or
+        two columns (1st column: time/freq; 2nd column: motion/spectrum). If
+        only one column is supplied, another input parameter "d_" must also be
         supplied.
     delta : float | None
         The time or frequency interval. If data is a file name, this parameter
@@ -234,7 +234,8 @@ def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     something : Any
         Any Python object.
     name : str | None
-        The name of ``something`` to be displayed in the potential error message.
+        The name of ``something`` to be displayed in the potential error
+        message.
 
     Raises
     ------
@@ -261,7 +262,8 @@ def assert_array_length(
     length : int | None
         The length that ``something`` must have.
     name : str
-        The name of ``something`` for displaying the error message, if necessary.
+        The name of ``something`` for displaying the error message, if
+        necessary.
 
     Raises
     ------
@@ -293,7 +295,8 @@ def extend_scalar(
     Returns
     -------
     array : np.ndarray
-        A 1D numpy array with length ``length`` and elements of value ``scalar``.
+        A 1D numpy array with length ``length`` and elements of value
+        ``scalar``.
 
     Raises
     ------
@@ -317,9 +320,9 @@ def check_length_or_extend_to_array(
         name: str = '`something`',
 ) -> np.ndarray:
     """
-    Check that ``something`` is a 1D numpy array with length ``length``, or
-    if ``something`` is a single value, extend it to a 1D numpy array whose
-    length is ``length`` and elements are all ``something``.
+    Check that ``something`` is a 1D numpy array with length ``length``, or if
+    ``something`` is a single value, extend it to a 1D numpy array whose length
+    is ``length`` and elements are all ``something``.
 
     Parameters
     ----------
@@ -328,7 +331,8 @@ def check_length_or_extend_to_array(
     length : int
         The desired length of array.
     name : str
-        The name of ``something`` for displaying the error message, if necessary.
+        The name of ``something`` for displaying the error message, if
+        necessary.
 
     Returns
     -------
@@ -354,7 +358,8 @@ def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
     something : Any
         Any Python object.
     name : str | None
-        The name of ``something`` to be displayed in the potential error message.
+        The name of ``something`` to be displayed in the potential error
+        message.
 
     Raises
     ------
@@ -381,7 +386,8 @@ def check_two_column_format(
     something : Any
         Any Python object.
     name : str | None
-        The name of ``something`` to be displayed in the potential error message.
+        The name of ``something`` to be displayed in the potential error
+        message.
     ensure_non_negative : bool
         Whether to ensure that all values in ``something`` >= 0.
     at_least_two_columns : bool
@@ -585,8 +591,8 @@ def interpolate(
     Returns
     -------
     x_query_array : np.ndarray
-        A 1D numpy array constructed from ``x_query_min``, ``x_query_max``,
-        and ``n_pts``.
+        A 1D numpy array constructed from ``x_query_min``, ``x_query_max``, and
+        ``n_pts``.
     y_query_array : np.ndarray
         The interpolation result. Same shape as ``x_query_array``.
     """
@@ -732,8 +738,8 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
     Returns
     -------
     param_list : list[np.ndarray]
-        The parsed parameters for each layer. Each element of `param_list` is
-        a 1D numpy array with length N, where N is the number of parameters for
+        The parsed parameters for each layer. Each element of `param_list` is a
+        1D numpy array with length N, where N is the number of parameters for
         the particular soil constitutive model.
 
     Raises

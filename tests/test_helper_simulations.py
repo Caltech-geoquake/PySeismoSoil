@@ -41,8 +41,8 @@ class Test_Helper_Simulations(unittest.TestCase):
 
     def test_linear__elastic_boundary(self):
         """
-        Test that ``helper_simulations.linear()`` produces identical results
-        to ``helper_site_response.linear_site_resp()``.
+        Test that ``helper_simulations.linear()`` produces identical results to
+        ``helper_site_response.linear_site_resp()``.
         """
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
         accel_in = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
@@ -85,8 +85,8 @@ class Test_Helper_Simulations(unittest.TestCase):
 
     def test_linear__rigid_boundary(self):
         """
-        Test that ``helper_simulations.linear()`` produces identical results
-        to ``helper_site_response.linear_site_resp()``.
+        Test that ``helper_simulations.linear()`` produces identical results to
+        ``helper_site_response.linear_site_resp()``.
         """
         vs_profile = np.genfromtxt(_join(f_dir, 'profile_FKSH14.txt'))
         accel_in = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))

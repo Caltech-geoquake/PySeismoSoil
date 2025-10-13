@@ -29,8 +29,8 @@ class Site_Factors:
     lenient : bool
         Whether to ensure the given Vs30, z1, and PGA values are within the
         valid range. If False and the given values fall outside the valid
-        range, the given values (e.g., Vs30 = 170 m/s) will be treated as
-        the closest boundary values (e.g., Vs30 = 175 m/s).
+        range, the given values (e.g., Vs30 = 170 m/s) will be treated as the
+        closest boundary values (e.g., Vs30 = 175 m/s).
 
     Attributes
     ----------
@@ -159,8 +159,8 @@ class Site_Factors:
             amplification factors. 'nl_hh' uses the results from nonlinear site
             response simulation, which is recommended.
         Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (``False``).
+            Whether to return Fourier-spectra-based amplification factors
+            (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
             curves".
@@ -168,11 +168,11 @@ class Site_Factors:
         Returns
         -------
         amplif : Frequency_Spectrum
-            Amplification factors as a function of frequency.
-            (Note: Even if ``Fourier`` is set to ``False``, i.e., the user is
-            querying response spectral amplification, the returned result
-            is still (freq, amplif). The user can take the reciprocal of
-            frequency to get period.)
+            Amplification factors as a function of frequency. (Note: Even if
+            ``Fourier`` is set to ``False``, i.e., the user is querying
+            response spectral amplification, the returned result is still
+            (freq, amplif). The user can take the reciprocal of frequency to
+            get period.)
 
         Raises
         ------
@@ -292,8 +292,8 @@ class Site_Factors:
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
         Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (``False``).
+            Whether to return Fourier-spectra-based amplification factors
+            (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
             curves".
@@ -362,9 +362,9 @@ class Site_Factors:
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Query amplification or phase factors from pre-computed .csv files. The
-        given Vs30, z1_in_m, and PGA_in_g values need to match the
-        pre-defined values (see `Vs30_array`, `z1_array`, and `PGA_array`
-        at the top of this file).
+        given Vs30, z1_in_m, and PGA_in_g values need to match the pre-defined
+        values (see `Vs30_array`, `z1_array`, and `PGA_array` at the top of
+        this file).
 
         Parameters
         ----------
@@ -377,8 +377,8 @@ class Site_Factors:
         PGA : float
             Peak ground acceleration. Unit: g.
         Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors or response-spectra based factors.
+            Whether to return Fourier-spectra-based amplification factors or
+            response-spectra based factors.
         method : Literal['nl_hh', 'eq_hh', 'eq_kz']
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
@@ -454,9 +454,9 @@ class Site_Factors:
             Vs30_in_mps: float, z1_in_m: float, PGA_in_g: float
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         """
-        Find the indices of Vs30, z1, and PGA that surround the provided values.
-        If the provided values fall onto the "reference" Vs30, z1, or PGA values,
-        two indices are still returned.
+        Find the indices of Vs30, z1, and PGA that surround the provided
+        values. If the provided values fall onto the "reference" Vs30, z1, or
+        PGA values, two indices are still returned.
 
         The three inputs need to already within the correct range.
         """
@@ -477,15 +477,16 @@ class Site_Factors:
         """
         Search for the location of `value` within `array`.
 
-        Example behaviors:
-            In: _search_sorted(3, [0, 1, 2, 3, 4, 5])
-            Out: (2, 3)
+        Examples
+        --------
+        >>> In: _search_sorted(3, [0, 1, 2, 3, 4, 5])
+        >>> Out: (2, 3)
 
-            In: _search_sorted(1, [0, 1, 2, 3, 4, 5])
-            Out: (0, 1)
+        >>> In: _search_sorted(1, [0, 1, 2, 3, 4, 5])
+        >>> Out: (0, 1)
 
-            In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
-            Out: (0, 1)
+        >>> In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
+        >>> Out: (0, 1)
         """
         if value < array[0] or value > array[-1]:
             raise ValueError(
@@ -520,9 +521,10 @@ class Site_Factors:
             `values`. Each element of ``ref_points`` is the coordinate of a
             point as a tuple.
         values : list[list[float]]
-            Values of interest corresponding to each reference point. There can be
-            different versions of values at the reference points (for example, at
-            different frequencies, the reference points take on different voltages).
+            Values of interest corresponding to each reference point. There can
+            be different versions of values at the reference points (for
+            example, at different frequencies, the reference points take on
+            different voltages).
 
             So the structure of ``values`` shall look like this::
 
@@ -603,11 +605,11 @@ class Site_Factors:
         phase_interp : np.ndarray | None
             Interpolated phase shift factor at ``query_point``.
         Fourier : bool
-            Whether the amplification factors passed in are the
-            Fourier-based factors.
+            Whether the amplification factors passed in are the Fourier-based
+            factors.
 
-        Return
-        ------
+        Returns
+        -------
         tuple[Figure, Axes, Axes | None]
             (fig, ax1, ax2) or (fig, ax, None). If the user also passes in the
             phase factors, then two subplots are produced, and ``ax1`` and
@@ -690,8 +692,8 @@ class Site_Factors:
             PGA_in_g: float,
     ) -> list[str]:
         """
-        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within
-        the pre-computed range.
+        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within the
+        pre-computed range.
 
         The return value (``status``) indicates the kind(s) of errors
         associated with the given input parameters.

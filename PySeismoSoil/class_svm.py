@@ -17,9 +17,9 @@ class SVM:
     """
     Class implementation for the Sediment Velocity Model (SVM).
 
-    Original paper:
-        Shi & Asimaki (2018) "A generic velocity profile for basin sediments in
-        California conditioned on Vs30". Seismological Research Letters, 89(4)
+    Original paper: Shi & Asimaki (2018) "A generic velocity profile for basin
+    sediments in California conditioned on Vs30". Seismological Research
+    Letters, 89(4)
 
     Parameters
     ----------
@@ -30,31 +30,30 @@ class SVM:
         estimated from Vs30 using an empirical correlation (see documentation
         of `helper_site_response.calc_z1_from_Vs30()`).
     Vs_cap : bool | float
-        Whether to "cap" the Vs profile or not.
-        If True, then the Vs profile is capped at 1000.0 m/s; if specified
-        as another real number, Vs profile is capped at that value.
-        If the resultant Vs profile does not reach ``Vs_cap`` at ``z1``, it
-        will be "glued" to ``Vs_cap``, resulting in a velocity impedance at
-        ``z1``. If the Vs profile exceeds ``Vs_cap`` at a depth shallower
-        than ``z1``, then the smooth Vs profile is truncated at a depth where
-        ``Vs = eta * Vs_cap``, then filled down to ``z1`` with linearly
-        increasing Vs values.
+        Whether to "cap" the Vs profile or not. If True, then the Vs profile is
+        capped at 1000.0 m/s; if specified as another real number, Vs profile
+        is capped at that value. If the resultant Vs profile does not reach
+        ``Vs_cap`` at ``z1``, it will be "glued" to ``Vs_cap``, resulting in a
+        velocity impedance at ``z1``. If the Vs profile exceeds ``Vs_cap`` at a
+        depth shallower than ``z1``, then the smooth Vs profile is truncated at
+        a depth where ``Vs = eta * Vs_cap``, then filled down to ``z1`` with
+        linearly increasing Vs values.
     eta : float
         If Vs will reach ``Vs_cap`` (usually 1000 m/s) before the depth of
-        ``z1``, the SVM Vs profile will stop at ``Vs = eta * Vs_cap``, and
-        then a linear Vs gradation will be filled from ``eta * Vs_cap`` to
-        ``Vs_cap``. Do not change this parameter, unless you know what you
-        are doing.
+        ``z1``, the SVM Vs profile will stop at ``Vs = eta * Vs_cap``, and then
+        a linear Vs gradation will be filled from ``eta * Vs_cap`` to
+        ``Vs_cap``. Do not change this parameter, unless you know what you are
+        doing.
     show_fig : bool
         Whether to plot the generated Vs profile.
     iterate : bool
-        Whether to iteratively adjust the input Vs30 so that the actual
-        Vs30 (calculated from the resultant Vs profile) falls within 10 m/s
-        of the ``target_Vs30``. (There is usually no need to do this.)
+        Whether to iteratively adjust the input Vs30 so that the actual Vs30
+        (calculated from the resultant Vs profile) falls within 10 m/s of the
+        ``target_Vs30``. (There is usually no need to do this.)
     verbose : bool
-        Whether to print iteration progress (trial Vs30 value and
-        calculated Vs30 value) on the terminal. It has no effects if ``iterate``
-        is ``False``.
+        Whether to print iteration progress (trial Vs30 value and calculated
+        Vs30 value) on the terminal. It has no effects if ``iterate`` is
+        ``False``.
 
     Attributes
     ----------
@@ -302,12 +301,12 @@ class SVM:
             Figure object. If None, a new figure will be created.
         ax : Axes | None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+        figsize : tuple[float, float]
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs : dict[Any, Any]
             Other keyword arguments to be passed to
             ``helper_site_response.plot_Vs_profile()``.
@@ -342,8 +341,8 @@ class SVM:
             show_fig: bool = False,
     ) -> Vs_Profile:
         """
-        Return the discretized Vs profile (with user-specified layer
-        thickness, or Vs increment).
+        Return the discretized Vs profile (with user-specified layer thickness,
+        or Vs increment).
 
         Parameters
         ----------
@@ -352,9 +351,9 @@ class SVM:
         Vs_increment : float
             The Vs increment between adjacent layers.
         at_midpoint : bool
-            Whether to return Vs values queried at the top of each layer
-            depth. It is strongly recommended that you use `True`. Using
-            `False` will produce biased Vs profiles.
+            Whether to return Vs values queried at the top of each layer depth.
+            It is strongly recommended that you use `True`. Using `False` will
+            produce biased Vs profiles.
         show_fig : bool
             Whether to show the figure of smooth and discretized profiles.
 
@@ -484,15 +483,15 @@ class SVM:
         show_fig : bool
             Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
-            Whether to use the layering relation in Toro (1995) instead
-            of Eq (7) of Shi & Asimaki (2018).
+            Whether to use the layering relation in Toro (1995) instead of Eq
+            (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
-            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
-            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
+            Whether to use the standard deviation (i.e., sigma(ln(Vs))) in Toro
+            (1995) instead of Eq (9) of Shi & Asimaki (2018).
         vs30_z1_compliance : bool
-            Whether to ensure that the resultant Vs30 and z1 of the
-            randomized profile are compliant with the user-specified Vs30 and z1
-            values. The criteria for "compliance" are:
+            Whether to ensure that the resultant Vs30 and z1 of the randomized
+            profile are compliant with the user-specified Vs30 and z1 values.
+            The criteria for "compliance" are:
                 1. The absolute difference between the randomized and target
                    Vs30 is < 25 m/s;
                 2. The relative difference (between the randomized profile and
@@ -500,9 +499,9 @@ class SVM:
                 3. The relative difference of the randomized and target z1 is
                    < 20%.
         verbose : bool
-            Whether to show the progress of iteratively searching for
-            compliant randomized Vs profile. Only effective if
-            ``vs30_z1_compliance`` is ``True``.
+            Whether to show the progress of iteratively searching for compliant
+            randomized Vs profile. Only effective if ``vs30_z1_compliance`` is
+            ``True``.
 
         Returns
         -------
@@ -583,16 +582,16 @@ class SVM:
         ----------
         seed : int
             The seed value for setting the random state. It not set, this
-            method automatically uses the current time to generate a seed.
-            Not effective if ``vs30_z1_compliance`` is set to ``True``.
+            method automatically uses the current time to generate a seed. Not
+            effective if ``vs30_z1_compliance`` is set to ``True``.
         show_fig : bool
             Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool
-            Whether to use the layering relation in Toro (1995) instead
-            of Eq (7) of Shi & Asimaki (2018).
+            Whether to use the layering relation in Toro (1995) instead of Eq
+            (7) of Shi & Asimaki (2018).
         use_Toros_std : bool
-            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
-            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
+            Whether to use the standard deviation (i.e., sigma(ln(Vs))) in Toro
+            (1995) instead of Eq (9) of Shi & Asimaki (2018).
 
         Returns
         -------
