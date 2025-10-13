@@ -1089,9 +1089,10 @@ class Ground_Motion:
         filter_order : int
             Filter order.
         padlen : int
-        Pad length (the number of elements by which to extend x at both ends of
-        axis before applying the filter). If None, use the default value
-        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
+            Pad length (the number of elements by which to extend x at both
+            ends of axis before applying the filter). If None, use the default
+            value
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
         -------

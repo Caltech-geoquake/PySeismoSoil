@@ -473,9 +473,29 @@ class Site_Factors:
         return Vs30_loc, z1_loc, PGA_loc
 
     @staticmethod
-    def _search_sorted(value, array) -> tuple[int, int]:
+    def _search_sorted(
+            value: float,
+            array: np.ndarray,
+    ) -> tuple[int, int]:
         """
         Search for the location of `value` within `array`.
+
+        Parameters
+        ----------
+        value : float
+            The value to search for
+        array : np.ndarray
+            The array to search in
+
+        Returns
+        -------
+        tuple[int, int]
+            A tuple of two integers representing the lower and upper indices
+
+        Raises
+        ------
+        ValueError
+            If the value is outside the range of the array
 
         Examples
         --------

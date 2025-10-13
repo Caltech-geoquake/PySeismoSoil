@@ -927,6 +927,11 @@ def sine_smooth(
         Two-column signal; first column is frequency
     window_span : float
         Width of moving window in hz
+
+    Returns
+    -------
+    np.ndarray
+        Smoothed signal
     """
     x = signal[:, 1]
     sm_signal = np.zeros_like(x)
