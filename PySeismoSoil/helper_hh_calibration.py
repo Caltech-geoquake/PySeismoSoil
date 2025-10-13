@@ -469,8 +469,6 @@ def produce_HH_G_param(
         sigma[0, j] = 0
         for k in range(1, GGmax.shape[0]):
             sigma[k, j] = GGmax[k, j] * Gmax[j] * strain[k, j] / 100.0
-        # END FOR
-    # END FOR
 
     # ========== Estimate mu using empirical correlations =====================
     p0 = p0 / 1000.0  # unit: Pa --> kPa
@@ -490,11 +488,8 @@ def produce_HH_G_param(
                 mu[j] = mu[j] * 10.0 ** (0.236 * 2)
             elif mu[j] <= 0.04:
                 mu[j] = mu[j] * 10.0 ** (0.236 * 1)
-            # END IF
         else:  # stiffer soils: set mu to 1 for lack of better information
             mu[j] = 1.0
-        # END IF
-    # END FOR
 
     # ========== Start FKZ optimization =======================================
     if verbose:
@@ -1168,9 +1163,6 @@ def _optimization_kernel(
             else:
                 d = 1.03
                 gamma_t = 1e-3 / 100.0  # further ralax to 0.001%
-            # END IF
-        # END IF
-    # END IF
 
     a = 100.0  # always use a fast transition
     return a, gamma_t, d
@@ -1285,6 +1277,5 @@ def __calc_area(
             area[j] = np.linalg.norm(diff_T) / (copt + 1.0)
         else:
             area[j] = np.inf
-        # END IF
-    # END FOR
+
     return area

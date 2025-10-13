@@ -399,7 +399,7 @@ def equiv_linear(
             #            the shear modulus values would get smaller and smaller
             #            and eventually to 0.
             D_new[k] = np.interp(eff_strain[k], strain_D_, D_vector_)
-        # END FOR
+
         G_relative_diff = np.abs(G[:-1] - G_new) / G_new
         D_relative_diff = np.abs(D[:-1] - D_new) / D_new
         G[:-1] = G_new
@@ -420,8 +420,6 @@ def equiv_linear(
         ):
             print('---------- Convergence achieved ---------------')
             break
-        # END IF
-    # END FOR
 
     # --------- Part 3: Calculate stress from strain ---------------------------
     stress, half_N = _calc_stress(
@@ -538,7 +536,6 @@ def _prepare_inputs(
         n += 1
     else:
         flag = 1
-    # END IF
 
     ACCEL_IN = scipy.fftpack.fft(accel_in)
     N = len(ACCEL_IN)
@@ -703,7 +700,6 @@ def _lin_resp_every_layer(
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
         H_ss[0, k] = np.real(H_ss[0, k])  # see Note (1) below
         H_append[:, k] = np.conj(np.flipud(H_ss[1:, k]))
-    # END FOR
 
     H = np.vstack((H_ss, H_append))
 
@@ -755,7 +751,6 @@ def _lin_resp_every_layer(
     for k in range(n_layer - 1):  # layer by layer
         strain[:, k] = (displ[:, k] - displ[:, k + 1]) / h[k]  # unit: 1
         eff_strain[k] = R_gamma * np.max(np.abs(strain[:, k]))  # unit: 1
-    # END FOR
 
     return H, accel_out, veloc, displ, strain, eff_strain
 

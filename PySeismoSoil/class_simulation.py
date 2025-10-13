@@ -264,7 +264,6 @@ class Linear_Simulation(Simulation):
             )
             if show_fig:
                 sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
-            # END IF
         else:  # `every_layer` is `False`
             response, tf = sr.linear_site_resp(
                 self.soil_profile.vs_profile,
@@ -283,7 +282,6 @@ class Linear_Simulation(Simulation):
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history)
-        # END IF
 
         if verbose:
             print('done.')

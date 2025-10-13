@@ -857,7 +857,6 @@ class Ground_Motion:
             raise TypeError(
                 '`another_ground_motion` must be a `Ground_Motion`.'
             )
-        # END IF
 
         if this_ground_motion_as_input:
             accel_in = self.accel
@@ -865,7 +864,6 @@ class Ground_Motion:
         else:
             accel_in = another_ground_motion.accel
             accel_out = self.accel
-        # END IF-ELSE
 
         amp_ylabel = (
             f'Amplification\n({input_accel_label} ➡ {output_accel_label})'

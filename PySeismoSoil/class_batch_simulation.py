@@ -157,7 +157,6 @@ class Batch_Simulation:
             sim_results = []
             for i in range(self.n_simulations):
                 sim_results.append(self._run_single_sim([i, other_params]))
-            # END FOR
         else:
             sim_results = []
 
@@ -191,9 +190,6 @@ class Batch_Simulation:
             if options.get('show_fig', False):
                 for sim_result in sim_results:
                     sim_result.plot(save_fig=options.get('save_fig', False))
-                # END FOR
-            # END IF
-        # END IF
 
         return sim_results
 

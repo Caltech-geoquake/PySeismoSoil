@@ -560,11 +560,9 @@ class SVM:
                     counter += 1
                     if verbose:
                         print('.', end='\n' if counter % 80 == 0 else '')
-                # END IF
-            # END WHILE
+
             if show_fig:
                 self._plot_additional_profile(Vs_profile, 'Stochastic')
-        # END IF
 
         return Vs_Profile(Vs_profile)
 
@@ -659,7 +657,6 @@ class SVM:
 
                 # randomized thickness based on mean and std
                 thk_rand = np.random.normal(mean_thk, std_thk)
-            # END IF
 
             # make sure each layer is at least 2 meters thick; too thin layers are not realistic
             thk_rand = np.max([thk_rand, 2.0])
@@ -672,7 +669,6 @@ class SVM:
             z_mid.append(z_top[-1] + thk_rand / 2.0)
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
-        # END WHILE
 
         # adjust thickness of last layer so that sum(thk) = z1
         thk[-1] = self.z1 - np.sum(thk[:-1])

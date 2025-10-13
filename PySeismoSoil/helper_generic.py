@@ -834,5 +834,5 @@ def merge_curve_matrices(
                 xi_matrix[:, k * 4 + 2 : k * 4 + 4],
             ),
         )
-    # END FOR
+
     return merged

@@ -975,15 +975,14 @@ class Multiple_Damping_Curves(Multiple_Curves):
                     np.min(strain), np.max(strain), max_length
                 )
                 damping_ = np.interp(strain_, strain, curve_.damping)
-            # END IF
+
             GGmax = np.ones_like(strain_) * GGmax_filler_value
             tmp_matrix = np.column_stack((strain_, GGmax, strain_, damping_))
             if curve_matrix is None:
                 curve_matrix = tmp_matrix
             else:
                 curve_matrix = np.column_stack((curve_matrix, tmp_matrix))
-            # END IF
-        # END FOR
+
         return curve_matrix
 
     def get_all_HH_x_params(
@@ -1443,15 +1442,14 @@ class Multiple_GGmax_Curves(Multiple_Curves):
                     np.min(strain), np.max(strain), max_length
                 )
                 GGmax_ = np.interp(strain_, strain, curve_.GGmax)
-            # END IF
+
             damping = np.ones_like(strain_) * damping_filler_value
             tmp_matrix = np.column_stack((strain_, GGmax_, strain_, damping))
             if curve_matrix is None:
                 curve_matrix = tmp_matrix
             else:
                 curve_matrix = np.column_stack((curve_matrix, tmp_matrix))
-            # END IF
-        # END FOR
+
         return curve_matrix
 
 

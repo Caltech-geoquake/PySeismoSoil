@@ -1990,7 +1990,6 @@ def compare_two_accel(
         amp_func_smoothed = sig.log_smooth(amp_func, lin_space=False)
     else:
         amp_func_smoothed = None
-    # END IF-ELSE
 
     fig, ax = _plot_site_amp(
         a_in_2col,
@@ -2014,7 +2013,6 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
 
     if len(t1) < 2 or len(t2) < 2:
         raise ValueError('Both time arrays need to have at least 2 elements.')
-    # END IF
 
     dt1 = t1[1] - t1[0]
     dt2 = t2[1] - t2[0]
