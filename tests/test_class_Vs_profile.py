@@ -280,16 +280,18 @@ class Test_Class_Vs_Profile(unittest.TestCase):
         data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
         prof = Vs_Profile(data)
         new_prof = prof.truncate(depth=30, Vs=2000)
-        benchmark = np.array(
-            [[5, 4, 3, 2, 16, 0], [200, 500, 700, 1000, 1200, 2000]]
-        ).T
+        benchmark = np.array([
+            [5, 4, 3, 2, 16, 0],
+            [200, 500, 700, 1000, 1200, 2000],
+        ]).T
         self.assertTrue(np.allclose(new_prof.vs_profile[:, :2], benchmark))
 
     def test_truncate__case_3b(self):
         # Case 3b: Truncation beyond the total depth of original profile
-        data_ = np.array(
-            [[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1500]]
-        ).T
+        data_ = np.array([
+            [5, 4, 3, 2, 1, 0],
+            [200, 500, 700, 1000, 1200, 1500],
+        ]).T
         prof = Vs_Profile(data_)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(
@@ -299,9 +301,10 @@ class Test_Class_Vs_Profile(unittest.TestCase):
 
     def test_truncate__case_3c(self):
         # Case 3c: Truncation beyond the total depth of original profile
-        data_ = np.array(
-            [[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1200]]
-        ).T
+        data_ = np.array([
+            [5, 4, 3, 2, 1, 0],
+            [200, 500, 700, 1000, 1200, 1200],
+        ]).T
         prof = Vs_Profile(data_)
         new_prof = prof.truncate(depth=30, Vs=2000)
         benchmark = np.array(

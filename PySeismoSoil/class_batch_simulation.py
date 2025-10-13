@@ -25,11 +25,13 @@ class Batch_Simulation:
         from these classes: ``Linear_Simulation``, ``Equiv_Linear_Simulation``,
         and ``Nonlinear_Simulation``.
     use_ctx : bool
-        For unix systems, provides the option to use the forkserver context for spawning
-        subprocesses when running simulations in batch. The forkserver context is recommended
-        to avoid slowdowns when PySeismoSoil is being run in batch as part of a code that
-        contains additional non-PySeismoSoil variables and module imports. If use_ctx is
-        set to True, the top-level code must be guarded under `if __name__ == "__main__":`.
+        For unix systems, provides the option to use the forkserver context for
+        spawning subprocesses when running simulations in batch. The forkserver
+        context is recommended to avoid slowdowns when PySeismoSoil is being
+        run in batch as part of a code that contains additional
+        non-PySeismoSoil variables and module imports. If use_ctx is set to
+        True, the top-level code must be guarded under `if __name__ ==
+        "__main__":`.
 
     Attributes
     ----------
@@ -122,10 +124,10 @@ class Batch_Simulation:
             The parent directory for saving the output files/figures of the
             current batch.
         catch_errors : bool
-            Optionally allows for ValueErrors to be caught during batch simulation,
-            so a single error simulation doesn't interrupt the running of others in the
-            batch. Simulations that have caught errors will be replaced by `None` in the
-            results list.
+            Optionally allows for ValueErrors to be caught during batch
+            simulation, so a single error simulation doesn't interrupt the
+            running of others in the batch. Simulations that have caught errors
+            will be replaced by `None` in the results list.
         verbose : bool
             Whether to print the parallel computing progress info.
         options : dict[str, Any] | None
@@ -147,7 +149,7 @@ class Batch_Simulation:
 
         if base_output_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
+            base_output_dir = os.path.join('./', f'batch_sim_{current_time}')
 
         other_params = [n_digits, base_output_dir, catch_errors, options]
 
@@ -155,7 +157,6 @@ class Batch_Simulation:
             sim_results = []
             for i in range(self.n_simulations):
                 sim_results.append(self._run_single_sim([i, other_params]))
-            # END FOR
         else:
             sim_results = []
 
@@ -189,9 +190,6 @@ class Batch_Simulation:
             if options.get('show_fig', False):
                 for sim_result in sim_results:
                     sim_result.plot(save_fig=options.get('save_fig', False))
-                # END FOR
-            # END IF
-        # END IF
 
         return sim_results
 
@@ -203,9 +201,8 @@ class Batch_Simulation:
         ----------
         all_params : list[Any]
             All the parameters needed for running the simulation. It should
-            have the following structure:
-                [i, [n_digits, base_output_dir, catch_errors, options]]
-            where:
+            have the following structure: [i, [n_digits, base_output_dir,
+            catch_errors, options]], where:
                 - ``i`` is the index of the current simulation in the batch.
                 - ``n_digits`` is the number of digits of the length of the
                   batch. (For example, if there are 125 simulations, then
@@ -220,7 +217,7 @@ class Batch_Simulation:
             Simulation results of a single simulation object.
         """
         i, other_params = all_params  # unpack
-        n_digits, base_output_dir, catch_errors, options = other_params  # unpack
+        n_digits, base_output_dir, catch_errors, options = other_params
         output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
         if self.sim_type == Nonlinear_Simulation:
             options.update({'sim_dir': output_dir})

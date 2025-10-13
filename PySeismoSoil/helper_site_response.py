@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
@@ -17,12 +17,12 @@ from PySeismoSoil import helper_signal_processing as sig
 
 def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
     """
-    Calculate z1 (basin depth) from Vs30. The correlation used here is
-    z1 = 140.511 * exp(-0.00303 * Vs30), where the units of z1 and Vs30 are
-    both SI units. This formula is documented in Section 2.5 (page 30) of the
-    following PhD thesis:
-        Shi, Jian (2019) "Improving Site Response Analysis for Earthquake
-        Ground Motion Modeling." PhD thesis, California Institute of Technology
+    Calculate z1 (basin depth) from Vs30. The correlation used here is z1 =
+    140.511 * exp(-0.00303 * Vs30), where the units of z1 and Vs30 are both SI
+    units. This formula is documented in Section 2.5 (page 30) of the following
+    PhD thesis: Shi, Jian (2019) "Improving Site Response Analysis for
+    Earthquake Ground Motion Modeling." PhD thesis, California Institute of
+    Technology
     """
     z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
     return z1_in_m
@@ -30,9 +30,9 @@ def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
 
 def stratify(vs_profile: np.ndarray) -> np.ndarray:
     """
-    Divide layers of a Vs profile as necessary, according to the Vs values
-    of each layer: if the layer thickness is more than Vs / 225.0, then divide
-    the layer into more sublayers.
+    Divide layers of a Vs profile as necessary, according to the Vs values of
+    each layer: if the layer thickness is more than Vs / 225.0, then divide the
+    layer into more sublayers.
 
     Parameters
     ----------
@@ -127,8 +127,8 @@ def query_Vs_at_depth(
 ) -> tuple[float | np.ndarray, bool, bool, bool]:
     """
     Query Vs values at given ``depth`` values from a Vs profile. If the given
-    depth values happen to be at layer interfaces, return the Vs of the
-    layer *below* the interface.
+    depth values happen to be at layer interfaces, return the Vs of the layer
+    *below* the interface.
 
     Parameters
     ----------
@@ -142,8 +142,8 @@ def query_Vs_at_depth(
     Returns
     -------
     vs_array : float | np.ndarray
-        Vs values corresponding to the given depths. Its type depends on
-        the type of ``depth``.
+        Vs values corresponding to the given depths. Its type depends on the
+        type of ``depth``.
     is_scalar : bool
         Whether the given ``depth`` is a scalar or not.
     has_duplicate_values : bool
@@ -216,15 +216,15 @@ def query_Vs_given_thk(
     thk : float | np.ndarray
         Thickness array, or a single value that means a constant thickness.
     n_layers : int | None
-        Number of layers to query. This parameter has no effect if ``thk``
-        is a numpy array (because the number of layers can be inferred
-        from ``thk``).
+        Number of layers to query. This parameter has no effect if ``thk`` is a
+        numpy array (because the number of layers can be inferred from
+        ``thk``).
     at_midpoint : bool
-        If ``True``, the Vs values are queried at the mid-point depths of
-        each layer. If ``False``, at the top of each layer.
+        If ``True``, the Vs values are queried at the mid-point depths of each
+        layer. If ``False``, at the top of each layer.
 
-    Return
-    ------
+    Returns
+    -------
     vs_array : np.ndarray
         Vs values corresponding to the given depths. Its type depends on
         ``as_profile``.
@@ -271,8 +271,8 @@ def plot_motion(
         dpi: float = 100,
 ) -> tuple[Figure, tuple[Axes, Axes, Axes]]:
     """
-    Plot acceleration, velocity, and displacement time history from a file
-    name of acceleration data.
+    Plot acceleration, velocity, and displacement time history from a file name
+    of acceleration data.
 
     Parameters
     ----------
@@ -287,9 +287,9 @@ def plot_motion(
         Axes object. If None, a new axes will be created.
     title : str | None
         Title of the figure (optional).
-    figsize: tuple[float, float]
-        Figure size in inches, as a tuple of two numbers. The figure
-        size of ``fig`` (if not ``None``) will override this parameter.
+    figsize : tuple[float, float]
+        Figure size in inches, as a tuple of two numbers. The figure size of
+        ``fig`` (if not ``None``) will override this parameter.
     dpi : float
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
@@ -348,7 +348,7 @@ def plot_motion(
     ax1.plot(t, a, 'b', linewidth=lw)
     ax1.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
     t_ = t[int(np.min((pga_index + np.round(np.size(t) / 40.0), np.size(t))))]
-    ax1.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
+    ax1.text(t_, a[pga_index], f'PGA = {PGA:.3g} ' + accel_unit, va=vl)
     ax1.grid(ls=':')
     ax1.set_xlim(np.min(t), np.max(t))
     ax1.set_ylabel('Acceleration [' + accel_unit + ']')
@@ -358,14 +358,14 @@ def plot_motion(
     ax2.plot(t, v[:, 1], 'b', linewidth=lw)
     ax2.grid(ls=':')
     ax2.set_xlim(np.min(t), np.max(t))
-    ax2.set_ylabel('Velocity [%s]' % veloc_unit)
+    ax2.set_ylabel(f'Velocity [{veloc_unit}]')
 
     ax3 = fig.add_subplot(313)
     ax3.plot(t, u[:, 1], 'b', linewidth=lw)
     ax3.set_xlabel('Time [sec]')
     ax3.grid(ls=':')
     ax3.set_xlim(np.min(t), np.max(t))
-    ax3.set_ylabel('Displacement [%s]' % displ_unit)
+    ax3.set_ylabel(f'Displacement [{displ_unit}]')
 
     fig.tight_layout(pad=0.3)
 
@@ -412,8 +412,8 @@ def num_diff(veloc: np.ndarray) -> np.ndarray:
     Parameters
     ----------
     veloc : np.ndarray
-        Velocity time history. Should have two columns. The 0th column is
-        the time array, and the 1st column is the velocity.
+        Velocity time history. Should have two columns. The 0th column is the
+        time array, and the 1st column is the velocity.
 
     Returns
     -------
@@ -578,10 +578,7 @@ def response_spectra(
             2.0 * xi / wn / dt
             + np.exp(-xi * wn * dt)
             * (
-                (
-                    (1.0 - 2.0 * xi**2.0) / wd / dt
-                    - xi / np.sqrt(1.0 - xi**2.0)
-                )
+                ((1.0 - 2.0 * xi**2.0) / wd / dt - xi / np.sqrt(1.0 - xi**2.0))
                 * np.sin(wd * dt)
                 - (1 + 2.0 * xi / wn / dt) * np.cos(wd * dt)
             )
@@ -631,10 +628,7 @@ def response_spectra(
         * (
             1
             - np.exp(-xi * wn * dt)
-            * (
-                xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
-                + np.cos(wd * dt)
-            )
+            * (xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt))
         )
     )  # noqa: E226,E501
 
@@ -663,12 +657,26 @@ def response_spectra(
         result = []
         for i in range(len_wd):
             result.append(
-                _time_stepping(
-                    (i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a)
-                ),
+                _time_stepping((
+                    i,
+                    len_a,
+                    A,
+                    B,
+                    C,
+                    D,
+                    A_,
+                    B_,
+                    C_,
+                    D_,
+                    wn,
+                    wd,
+                    xi,
+                    a,
+                )),
             )
 
-    utdd_max, ud_max, u_max, PSA, PSV = zip(*result)  # transpose list of tuples
+    # transpose list of tuples
+    utdd_max, ud_max, u_max, PSA, PSV = zip(*result, strict=False)
 
     SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration
     SV = np.array(ud_max)  # (Relative) spectral velocity
@@ -757,12 +765,13 @@ def get_xi_rho(
                 + Vs < 250 m/s, xi = 5%;
                 + 250 <= Vs < 750 m/s, xi = 2%;
                 + Vs >= 750 m/s, xi = 1%;
-        2 - Use the formula proposed in Taborda & Bielak (2013):
+
+        2 - Use the formula proposed in Taborda & Bielak (2013)::
 
                  Qs = 10.5-16Vs+153Vs^2-103Vs^3+34.7Vs^4-5.29Vs^5+0.31Vs^6
                            (unit of Vs: km/s)
-        3 - Use the rule by Archuleta and Liu (2004) USGS report:
 
+        3 - Use the rule by Archuleta and Liu (2004) USGS report:
                 + Qs = 0.06Vs (Vs <= 1000 m/s)
                 + Qs = 0.14Vs (1000 < Vs <= 2000 m/s)
                 + Qs = 0.16Vs (Vs > 2000 m/s)
@@ -780,7 +789,6 @@ def get_xi_rho(
                   +  200 <= Vs < 800 m/s, rho = 1800
                   +    Vs >= 800 m/s, rho = 2000
                (Unit of rho: kg/m3)
-
     """
     hlp.assert_1D_numpy_array(Vs, '`Vs`')
 
@@ -851,12 +859,11 @@ def calc_VsZ(
     Z : float
         The depth from which to calculate the weighted average travel time.
     option_for_profile_shallower_than_Z : Literal[1, 2]
-        If the provided `profile` has a total depth smaller than Z, then
-        1 - assume last layer extends to Z meters
-        2 - only use actual total depth
+        If the provided `profile` has a total depth smaller than Z, then 1 -
+        assume last layer extends to Z meters 2 - only use actual total depth
     verbose : bool
-        Whether to show a warning message when the Vs profile is shallower
-        than 30 m.
+        Whether to show a warning message when the Vs profile is shallower than
+        30 m.
 
     Returns
     -------
@@ -885,7 +892,8 @@ def calc_VsZ(
             cumul_sl = cumul_sl + sl[i] * (thick[i] - (depth[i + 1] - Z))
             break
 
-    if option_for_profile_shallower_than_Z == 1:  # assume last Vs extends to Z m
+    # assume last Vs extends to Z meters
+    if option_for_profile_shallower_than_Z == 1:
         if total_thickness < Z:
             if verbose is True:
                 print(
@@ -899,7 +907,7 @@ def calc_VsZ(
             VsZ = float(Z) / cumul_sl
 
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth
-        VsZ = np.min([total_thickness, Z]) / float(cumul_sl)  # use actual depth
+        VsZ = np.min([total_thickness, Z]) / float(cumul_sl)  # use actual dep.
 
     return VsZ
 
@@ -918,12 +926,11 @@ def calc_Vs30(
     profile : np.ndarray
         Vs profile, which should have at least two columns.
     option_for_profile_shallower_than_30m : Literal[1, 2]
-        If the provided `profile` has a total depth smaller than 30 m, then
-        1 - assume last layer extends to 30 meters
-        2 - only use actual total depth
+        If the provided `profile` has a total depth smaller than 30 m, then 1 -
+        assume last layer extends to 30 meters 2 - only use actual total depth
     verbose : bool
-        Whether to show a warning message when the Vs profile is shallower
-        than 30 m.
+        Whether to show a warning message when the Vs profile is shallower than
+        30 m.
 
     Returns
     -------
@@ -969,9 +976,9 @@ def plot_Vs_profile(
         Figure object. If None, a new figure will be created.
     ax : Axes | None
         Axes object. If None, a new axes will be created.
-    figsize: tuple[float, float]
-        Figure size in inches, as a tuple of two numbers. The figure
-        size of ``fig`` (if not ``None``) will override this parameter.
+    figsize : tuple[float, float]
+        Figure size in inches, as a tuple of two numbers. The figure size of
+        ``fig`` (if not ``None``) will override this parameter.
     dpi : float
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
@@ -1026,16 +1033,6 @@ def plot_Vs_profile(
     if title:
         ax.set_title(title)
 
-    if int(mpl.__version__[0]) <= 1:  # if matplotlib version is earlier than 2.0.0
-        ax.xaxis.set_major_locator(
-            mpl.ticker.MaxNLocator(nbins=7, integer=True)
-        )
-        ax.yaxis.set_major_locator(
-            mpl.ticker.MaxNLocator(nbins=10, integer=True)
-        )
-    else:  # matplotlib version is 2.0.0 or newer
-        pass  # because 2.0.0+ can automatically produce nicely spaced ticks
-
     return fig, ax, h_line  # return figure, axes, and line handles
 
 
@@ -1043,8 +1040,8 @@ def calc_basin_depth(
         vs_profile: np.ndarray, bedrock_Vs: float = 1000.0
 ) -> float:
     """
-    Query the depth of the basin as indicated in ``vs_profile``.
-    The basin is defined as the material whose Vs is at least `bedrock_Vs`.
+    Query the depth of the basin as indicated in ``vs_profile``. The basin is
+    defined as the material whose Vs is at least `bedrock_Vs`.
 
     Parameters
     ----------
@@ -1056,8 +1053,8 @@ def calc_basin_depth(
     Returns
     -------
     basin_depth : float
-        The basin depth. If no Vs values in the profile reaches
-        ``bedrock_Vs``, return total depth (bottom) of the profile.
+        The basin depth. If no Vs values in the profile reaches ``bedrock_Vs``,
+        return total depth (bottom) of the profile.
     """
     thk = vs_profile[:, 0]
     vs = vs_profile[:, 1]
@@ -1157,9 +1154,12 @@ def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:
     z_top = np.zeros(L)  # create an array with same length as h
     z_mid = np.zeros(L)
 
-    for i in range(1, L):  # the first element of 'z_top' remains zero
-        z_top[i] = z_top[i - 1] + thk[i - 1]  # the last element of 'thk' is not used at all
-        z_mid[i - 1] = z_top[i - 1] + thk[i - 1] / 2.0  # the last element of 'z_mid' is NaN
+    for i in range(1, L):  # first element of 'z_top' remains zero
+        # last element of 'thk' is not used at all
+        z_top[i] = z_top[i - 1] + thk[i - 1]
+
+        # last element of 'z_mid' is NaN
+        z_mid[i - 1] = z_top[i - 1] + thk[i - 1] / 2.0
 
     if thk[-1] == 0:  # if the last layer thickness is unknown
         z_mid = z_mid[:-1]
@@ -1284,7 +1284,8 @@ def linear_tf(
     try:
         xi = vs_profile[:, 2]  # damping ratio (unit: 1, not percent)
         rho = vs_profile[:, 3]  # mass density (unit: kg/m/m/m)
-    except IndexError:  # if index 2/3 out of bounds, i.e., vs_profile only has 2 columns
+    except IndexError:
+        # if index 2/3 out of bounds, i.e., vs_profile only has 2 columns
         xi, rho = get_xi_rho(Vs)  # calculate xi and rho
 
     h_length = len(h)
@@ -1296,7 +1297,7 @@ def linear_tf(
             float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
         )
 
-    TF_size = int(np.floor_divide(fmax, freq_resolution))  # length of transfer function
+    TF_size = int(np.floor_divide(fmax, freq_resolution))  # trans func length
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
@@ -1359,7 +1360,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_ro,
+            rf'$\mathregular{{f_0}}$ = {f0_ro:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1373,7 +1374,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_in,
+            rf'$\mathregular{{f_0}}$ = {f0_in:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1388,7 +1389,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$= %.2f Hz' % f0_bh,
+            rf'$\mathregular{{f_0}}$= {f0_bh:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1499,10 +1500,10 @@ def amplify_motion(
         does not reach the frequency range implied by the input motion.
     deconv : bool
         If `False`, a regular amplification is performed; otherwise, the
-        transfer function is "deducted" from the input motion ("deconvolution").
+        transfer function is "deducted" from the input motion
+        ("deconvolution").
     show_fig : bool
-        Whether to show an illustration of how the calculation is
-        carried out.
+        Whether to show an illustration of how the calculation is carried out.
     dpi : int
         Desired DPI for the figures; only effective when ``show_fig`` is
         ``True``.
@@ -1526,14 +1527,13 @@ def amplify_motion(
     ValueError
         Incorrect frequency range
 
-    Note
-    ----
-    "Single sided":
-        For example, the sampling time interval of `input_motion` is 0.01 sec,
-        then the Nyquist frequency is 50 Hz. Therefore, the transfer function
-        needs to contain information at least up to the Nyquist frequency,
-        i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the
-        input motion at all.
+    Notes
+    -----
+    "Single sided": For example, the sampling time interval of `input_motion`
+    is 0.01 sec, then the Nyquist frequency is 50 Hz. Therefore, the transfer
+    function needs to contain information at least up to the Nyquist frequency,
+    i.e., at least 0-50 Hz, and anything above 50 Hz will not affect the input
+    motion at all.
     """
     assert isinstance(transfer_function_single_sided, tuple)
     assert len(transfer_function_single_sided) == 2
@@ -1634,7 +1634,7 @@ def amplify_motion(
         RESP = A / tf_ds
 
     # ---------Inverse Fourier transform to get the response time history------
-    resp = scipy.fftpack.ifft(RESP).real  # truncate imaginary part (very small)
+    resp = scipy.fftpack.ifft(RESP).real  # truncate very small imaginary part
     response = np.column_stack((t, resp))
 
     # ---------Plot comparisons-------------------
@@ -1673,8 +1673,8 @@ def linear_site_resp(
     Parameters
     ----------
     soil_profile : np.ndarray | str
-        1D Vs profile. If it is a string, it means the file name that
-        contains the data. If it is a 2D array, it has the following format:
+        1D Vs profile. If it is a string, it means the file name that contains
+        the data. If it is a 2D array, it has the following format:
 
          +---------------+----------+---------+------------------+--------------+
          | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
@@ -1684,10 +1684,10 @@ def linear_site_resp(
         (Damping unit: 1)
     input_motion : np.ndarray | str
         Input motion in the time domain (with two columns). If it is a string,
-        it means the file name that contains the data. It should be the
-        "rock outrcop" motion if ``boundary`` is set to ``"elastic"``, and it
-        should be the recorded motion at the bottom of the Vs profile (i.e.,
-        the "borehole" motion) if ``boundary`` is set to ``"rigid"``.
+        it means the file name that contains the data. It should be the "rock
+        outrcop" motion if ``boundary`` is set to ``"elastic"``, and it should
+        be the recorded motion at the bottom of the Vs profile (i.e., the
+        "borehole" motion) if ``boundary`` is set to ``"rigid"``.
     boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -1706,9 +1706,9 @@ def linear_site_resp(
         ``input_motion``.
     transfer_function : tuple[np.ndarray, np.ndarray]
         The transfer function (complex-valued) that corresponding to the given
-        ``soil_profile`` and ``boundary``. It is a tuple of two 1D numpy arrays.
-        The 0th array is frequency (real values) and the 1st array is the
-        spectrum (complex values).
+        ``soil_profile`` and ``boundary``. It is a tuple of two 1D numpy
+        arrays. The 0th array is frequency (real values) and the 1st array is
+        the spectrum (complex values).
 
     Raises
     ------
@@ -1717,12 +1717,13 @@ def linear_site_resp(
 
     Notes
     -----
-    If you want to get rock-outcrop motions, choose "elastic"; if you
-    want to get bedrock motions (or "total" motions), choose "rigid". If
-    you happen to want incident motions, choose "elastic", and then
-    manually divide the result by 2.
+    If you want to get rock-outcrop motions, choose "elastic"; if you want to
+    get bedrock motions (or "total" motions), choose "rigid". If you happen to
+    want incident motions, choose "elastic", and then manually divide the
+    result by 2.
 
-    (Original version in MATLAB: June 2013. Translated into Python on 4/5/2018.)
+    (Original version in MATLAB: June 2013. Translated into Python on
+    4/5/2018.)
     """
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
@@ -1733,7 +1734,7 @@ def linear_site_resp(
     df, fmax, _, _, _ = _get_freq_interval(input_motion)
 
     # ---------Get linear transfer function (complex valued)--------------
-    factor = 1.05  # to ensure f_max of TF >= f_max inferred from `input_motion`
+    factor = 1.05  # to ensure f_max of TF >= f_max inferred from input_motion
     fmax_ = fmax * factor
     df_ = df * factor  # to ensure consistent length of the output freq array
     tmp = linear_tf(
@@ -1783,7 +1784,8 @@ def _plot_site_amp(
     accel_in_2col : np.ndarray
         Input acceleration as a two-column numpy array (time and acceleration).
     accel_out_2col : np.ndarray
-        Output acceleration as a two-column numpy array (time and acceleration).
+        Output acceleration as a two-column numpy array (time and
+        acceleration).
     freq : np.ndarray
         Frequency array (1D numpy array).
     amplif_func_1col : np.ndarray
@@ -1794,9 +1796,9 @@ def _plot_site_amp(
         Phase function (1D numpy array).
     fig : Figure | None
         Figure object. If None, a new figure will be created.
-    figsize: tuple[float, float]
-        Figure size in inches, as a tuple of two numbers. The figure
-        size of ``fig`` (if not ``None``) will override this parameter.
+    figsize : tuple[float, float]
+        Figure size in inches, as a tuple of two numbers. The figure size of
+        ``fig`` (if not ``None``) will override this parameter.
     dpi : float
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
@@ -1942,8 +1944,8 @@ def compare_two_accel(
     output_accel : np.ndarray
         Output acceleration. (2 columns: time and acceleration.)
     smooth : bool
-        In the comparison plot, whether to also show the smoothed
-        amplification factor.
+        In the comparison plot, whether to also show the smoothed amplification
+        factor.
     input_accel_label : str
         The text label for the input acceleration in the figure legend.
     output_accel_label : str
@@ -1979,7 +1981,7 @@ def compare_two_accel(
     fs_in = sig.fourier_transform(a_in_2col, real_val=False)
     fs_out = sig.fourier_transform(a_out_2col, real_val=False)
 
-    freq = np.real(fs_in[:, 0])  # values in fs_in[:, 0] all look like: 1.23 + 0j
+    freq = np.real(fs_in[:, 0])  # values in fs_in[:,0] all look like: 1.23+0j
     tf = fs_out[:, 1] / fs_in[:, 1]
     amp_func = np.abs(tf)
     phase_shift = np.angle(tf)
@@ -1988,7 +1990,6 @@ def compare_two_accel(
         amp_func_smoothed = sig.log_smooth(amp_func, lin_space=False)
     else:
         amp_func_smoothed = None
-    # END IF-ELSE
 
     fig, ax = _plot_site_amp(
         a_in_2col,
@@ -2012,7 +2013,6 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
 
     if len(t1) < 2 or len(t2) < 2:
         raise ValueError('Both time arrays need to have at least 2 elements.')
-    # END IF
 
     dt1 = t1[1] - t1[0]
     dt2 = t2[1] - t2[0]
@@ -2182,7 +2182,8 @@ def calc_damping_from_param(
     strain_in_unit_1 : np.ndarray
         An 1D array of strain values. Unit: 1 (not percent).
     func_stress : Callable[[Any, ...], Any]
-        The function to calculate stress from ``strain_in_unit_1`` and ``param``
+        The function to calculate stress from ``strain_in_unit_1`` and
+        ``param``
 
     Returns
     -------
@@ -2394,8 +2395,7 @@ def fit_all_damping_curves(
     ----------
     curves : np.ndarray | list[np.ndarray]
         Can either be a 2D array in the "curve" format, or a list of individual
-        damping curves.
-        The "curve" format is as follows:
+        damping curves. The "curve" format is as follows:
          +------------+--------+------------+-------------+-------------+--------+-----+
          | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
          +============+========+============+=============+=============+========+=====+
@@ -2426,9 +2426,9 @@ def fit_all_damping_curves(
     upper_bound_power : float
         The 10-based power of the upper bound of all the 9 parameters.
     eta : float
-        Crowding degree of the mutation or crossover. A high ``eta`` will produce
-        children resembling to their parents, while a low ``eta`` will produce
-        solutions much more different.
+        Crowding degree of the mutation or crossover. A high ``eta`` will
+        produce children resembling to their parents, while a low ``eta`` will
+        produce solutions much more different.
     seed : int
         Seed value for the random number generator.
     show_fig : bool
@@ -2440,14 +2440,15 @@ def fit_all_damping_curves(
         Whether to use parallel computing across layers, i.e., calculate
         multiple layers simultaneously.
     n_cores : int | None
-        Number of CPU cores to use. If None, all cores are used. No effects
-        if `parallel` is set to False.
+        Number of CPU cores to use. If None, all cores are used. No effects if
+        `parallel` is set to False.
     save_fig : bool
         Whether to save damping fitting figures to hard drive.
     fig_filename : str | None
         Full file name of the figure.
     dpi : float
-        Desired figure resolution. Only effective when ``show_fig`` is ``True``.
+        Desired figure resolution. Only effective when ``show_fig`` is
+        ``True``.
     save_txt : bool
         Whether to save the fitted parameters as a text file.
     txt_filename : str | None
@@ -2455,11 +2456,11 @@ def fit_all_damping_curves(
     sep : str
         Delimiter to separate columns of data in the output file.
     func_serialize : Callable[[Any, ...], Any]
-        The function to serialize the parameters from a dict into a list.
-        Can be hh.serialize_params_to_array or mkz.serialize_params_to_array.
+        The function to serialize the parameters from a dict into a list. Can
+        be hh.serialize_params_to_array or mkz.serialize_params_to_array.
 
-    Return
-    ------
+    Returns
+    -------
     params : list[dict[str, float]]
         The best parameters for each layer found in the optimization.
 
@@ -2480,7 +2481,7 @@ def fit_all_damping_curves(
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
                 curve,
-                name='Damping curve for layer #%d' % j,
+                name=f'Damping curve for layer #{j}',
                 ensure_non_negative=True,
             )
 
@@ -2620,23 +2621,21 @@ def ga_optimization(
     It supports any loss function (not even differentiable or parametric), as
     long as the loss function can map the model parameters to a loss value.
 
-    The evolutionary process that this function can generate is a mutation
-    and crossover within the specified bounds in a uniform fashion.
+    The evolutionary process that this function can generate is a mutation and
+    crossover within the specified bounds in a uniform fashion.
 
     Parameters
     ----------
     n_param : int
         Number of parameters in the model.
     lower_bound : float
-        Lower bound of the search range (i.e., range in which the
-        evolution of parameter values are constraint). Note that all the
-        model parameters share this range. You cannot have a different range
-        for each parameter.
+        Lower bound of the search range (i.e., range in which the evolution of
+        parameter values are constraint). Note that all the model parameters
+        share this range. You cannot have a different range for each parameter.
     upper_bound : float
-        Upper bound of the search range (i.e., range in which the
-        evolution of parameter values are constraint). Note that all the
-        model parameters share this range. You cannot have a different range
-        for each parameter.
+        Upper bound of the search range (i.e., range in which the evolution of
+        parameter values are constraint). Note that all the model parameters
+        share this range. You cannot have a different range for each parameter.
     loss_function : Callable[[float, ...], float]
         Function to be minimized by the genetic algorithm. It should map a set
         of parameters to a loss value. It takes a tuple/list of all the
@@ -2648,34 +2647,35 @@ def ga_optimization(
     use_scipy : bool
         Whether to use the "differential_evolution" algorithm implemented in
         scipy (https://docs.scipy.org/doc/scipy/reference/generated/
-        scipy.optimize.differential_evolution.html) to perform the optimization.
-        If False, use the algorithm implemented in the DEAP package.
+        scipy.optimize.differential_evolution.html) to perform the
+        optimization. If False, use the algorithm implemented in the DEAP
+        package.
     pop_size : int
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
     n_gen : int
         Number of generations that the evolution lasts. A larger number leads
-        to potentially better curve-fitting, but a longer computing time.
-        If ``use_scipy`` is True (using "differential evolution"), ``n_gen``
-        means the maximum number of generations, i.e., the evolution could end
-        early if no loss reduction is found.
+        to potentially better curve-fitting, but a longer computing time. If
+        ``use_scipy`` is True (using "differential evolution"), ``n_gen`` means
+        the maximum number of generations, i.e., the evolution could end early
+        if no loss reduction is found.
     eta : float
-        Crowding degree of the mutation or crossover. A high ``eta`` will produce
-        children resembling to their parents, while a low ``eta`` will produce
-        solutions much more different. (Only effective if ``use_scipy`` is
-        ``False``.)
+        Crowding degree of the mutation or crossover. A high ``eta`` will
+        produce children resembling to their parents, while a low ``eta`` will
+        produce solutions much more different. (Only effective if ``use_scipy``
+        is ``False``.)
     seed : int
         Seed value for the random number generator.
     crossover_prob : float
-        Probability of cross-over. "Cross-over" means producing offsprings
-        from more than one parent. Larger values introduce more demographic
+        Probability of cross-over. "Cross-over" means producing offsprings from
+        more than one parent. Larger values introduce more demographic
         diversity into the evolutionary process, which chould help escape the
         local minima, but at a cost of converging slower.
     mutation_prob : float
-        Probability of mutation. Larger values introduce more
-        demographic diversity into the evolutionary process, which could help
-        escape the local minima, but at a cost of converging slower.
-        (``mutation_prob`` is only effective when ``use_scipy`` is ``False``.)
+        Probability of mutation. Larger values introduce more demographic
+        diversity into the evolutionary process, which could help escape the
+        local minima, but at a cost of converging slower. (``mutation_prob`` is
+        only effective when ``use_scipy`` is ``False``.)
     suppress_warnings : bool
         Whether to suppress warning messages.
     verbose : bool
@@ -2723,7 +2723,7 @@ def ga_optimization(
         )
         if verbose:
             status = 'successful' if result.success else 'not successful'
-            print('\nOptimization status: %s.' % status)
+            print(f'\nOptimization status: {status}.')
 
         opt_result = result.x
 
@@ -2740,11 +2740,13 @@ def ga_optimization(
 
         def uniform(low, up, size=None):
             try:
-                return [random.uniform(a, b) for a, b in zip(low, up)]
+                return [
+                    random.uniform(a, b) for a, b in zip(low, up, strict=False)
+                ]
             except TypeError:
                 return [
                     random.uniform(a, b)
-                    for a, b in zip([low] * size, [up] * size)
+                    for a, b in zip([low] * size, [up] * size, strict=False)
                 ]
 
         LB = lower_bound
@@ -2806,6 +2808,6 @@ def ga_optimization(
             verbose=verbose,
         )
 
-        opt_result = list(hof[0])  # 0th element of "hall of fame" --> best param
+        opt_result = list(hof[0])  # 0th element of "hall of fame": best param
 
     return opt_result

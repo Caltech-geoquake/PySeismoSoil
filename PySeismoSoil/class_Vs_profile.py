@@ -20,9 +20,9 @@ class Vs_Profile:
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the Vs profile data.
-        The provided data needs to have either 2 or 5 columns.
+        If str: the full file name on the hard drive containing the data. If
+        np.ndarray: the numpy array containing the Vs profile data. The
+        provided data needs to have either 2 or 5 columns.
 
         The correct format for a Vs profile should be:
 
@@ -43,8 +43,8 @@ class Vs_Profile:
     density_unit : Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3']
         The unit for the mass density of soils.
     sep : str
-        Delimiter character for reading the text file. If `data` is
-        supplied as a numpy array, this parameter is ignored.
+        Delimiter character for reading the text file. If `data` is supplied as
+        a numpy array, this parameter is ignored.
     add_halfspace : bool
         If ``True``, add a "half space" (represented by a layer of 0 m
         thickness) at the bottom of the profile, if such a layer does not
@@ -96,10 +96,9 @@ class Vs_Profile:
             data: str | np.ndarray,
             *,
             damping_unit: Literal['1', '%'] = '1',
-            # fmt: off
-            density_unit: Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'] = 'kg/m^3',
-
-            # fmt: on
+            density_unit: Literal[
+                'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'
+            ] = 'kg/m^3',
             sep: str = '\t',
             add_halfspace: bool = False,
             xi_rho_formula: Literal[1, 2, 3] = 3,
@@ -204,15 +203,15 @@ class Vs_Profile:
 
         n_layer_all, _ = self.vs_profile.shape
         for j in range(n_layer_all):
-            text += '{:^10}|'.format('%.2f' % self.vs_profile[j, 0])
-            text += '{:^10}|'.format('%.1f' % self.vs_profile[j, 1])
+            text += '{:^10}|'.format(f'{self.vs_profile[j, 0]:.2f}')
+            text += '{:^10}|'.format(f'{self.vs_profile[j, 1]:.1f}')
             text += '{:^13}|'.format('%.3f' % (self.vs_profile[j, 2] * 100.0))
-            text += '{:^18}|'.format('%.1f' % self.vs_profile[j, 3])
-            text += '{:^14}'.format('%d' % self.vs_profile[j, 4])
+            text += '{:^18}|'.format(f'{self.vs_profile[j, 3]:.1f}')
+            text += '{:^14}'.format(f'{self.vs_profile[j, 4]:.0f}')
             text += '\n'
 
         text += '----------+----------+-------------+------------------+--------------\n'
-        text += '\n(Vs30 = %.1f m/s)\n' % self.vs30
+        text += f'\n(Vs30 = {self.vs30:.1f} m/s)\n'
 
         return text
 
@@ -233,12 +232,12 @@ class Vs_Profile:
             Figure object. If None, a new figure will be created.
         ax : Axes | None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+        figsize : tuple[float, float]
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs : dict[Any, Any]
             Extra keyword arguments to be passed to the function
             ``helper_site_response.plot_Vs_profile()``.
@@ -391,8 +390,8 @@ class Vs_Profile:
         Parameters
         ----------
         depth : float | None
-            The depth at which to truncate the original Vs profile. It can
-            be deeper than z_max (total depth).
+            The depth at which to truncate the original Vs profile. It can be
+            deeper than z_max (total depth).
         Vs : float
             The velocity of the bedrock.
 
@@ -426,7 +425,8 @@ class Vs_Profile:
             total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
-            profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
+            # Extend to `depth`:
+            profile_[-1][0] = depth + last_thk - total_depth
 
         xi, rho = sr.get_xi_rho(np.array([Vs]))
         if isinstance(xi, np.ndarray):  # xi and rho are 1D numpy arrays
@@ -437,8 +437,9 @@ class Vs_Profile:
         profile_.append(bedrock)  # add half space whose Vs is `Vs`
         profile_ = np.array(profile_)
 
-        if profile_[-2, -1] == 0:  # last "material number" before appending is 0
-            profile_[-2, -1] = np.max(profile_[:, -1]) + 1  # require add'l material
+        if profile_[-2, -1] == 0:  # last "material num" before appending is 0
+            # require add'l material
+            profile_[-2, -1] = np.max(profile_[:, -1]) + 1
 
         return Vs_Profile(profile_)
 
@@ -540,24 +541,23 @@ class Vs_Profile:
             Thickness array, or a single value that means a constant thickness.
         n_layers : int | None
             Number of layers to query. This parameter has no effect if ``thk``
-            is a numpy array (because the number of layers can be inferred
-            from ``thk``). If ``None``, it is automatically inferred from
-            ``thk`` and the maximum depth of the profile.
+            is a numpy array (because the number of layers can be inferred from
+            ``thk``). If ``None``, it is automatically inferred from ``thk``
+            and the maximum depth of the profile.
         as_profile : bool
-            If ``True``, return a Vs profile object. If ``False``, only
-            return the array of Vs.
+            If ``True``, return a Vs profile object. If ``False``, only return
+            the array of Vs.
         at_midpoint : bool
             If ``True``, the Vs values are queried at the mid-point depths of
             each layer. If ``False``, at the top of each layer.
         add_halfspace : bool
             If ``True``, add a "half space" (represented by a layer of 0 m
-            thickness) at the bottom, if such a layer does not already
-            exist.
+            thickness) at the bottom, if such a layer does not already exist.
         show_fig : bool
             Whether to show a figure
 
-        Return
-        ------
+        Returns
+        -------
         vs_array : np.ndarray | Vs_Profile
             Vs values corresponding to the given depths. Its type depends on
             ``as_profile``.
@@ -597,7 +597,7 @@ class Vs_Profile:
 
         Parameters
         ----------
-        vs_queried: float | np.ndarray
+        vs_queried : float | np.ndarray
             Queried Vs values.
         depth : float | np.ndarray
             Depth.
@@ -612,8 +612,8 @@ class Vs_Profile:
 
     def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:
         """
-        Query the depth of the basin as indicated in the Vs profile data.
-        The basin is defined as the material whose Vs is at least `bedrock_Vs`.
+        Query the depth of the basin as indicated in the Vs profile data. The
+        basin is defined as the material whose Vs is at least `bedrock_Vs`.
 
         Parameters
         ----------
@@ -695,8 +695,8 @@ class Vs_Profile:
         sep : str
             Delimiter for the output file.
         precision : tuple[str, str, str, str, str]
-            A list of precision specifiers, each for the five columns of the
-            Vs profile.
+            A list of precision specifiers, each for the five columns of the Vs
+            profile.
 
         Raises
         ------

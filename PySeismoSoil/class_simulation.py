@@ -37,8 +37,8 @@ class Simulation:
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -150,8 +150,8 @@ class Linear_Simulation(Simulation):
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outrcop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     boundary : Literal['elastic', 'rigid']
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -193,10 +193,10 @@ class Linear_Simulation(Simulation):
             histories of every soil layer. If ``False``, use a simpler and
             faster algorithm to produce the motion on the ground surface only.
         deconv : bool
-            Whether this operation is deconvolution. If ``True``, it means
-            that the ``input_motion`` will be propagated downwards, and the
-            motion at the bottom will be collected. Only effective if
-            ``every_layer`` is set to ``False``.
+            Whether this operation is deconvolution. If ``True``, it means that
+            the ``input_motion`` will be propagated downwards, and the motion
+            at the bottom will be collected. Only effective if ``every_layer``
+            is set to ``False``.
         show_fig : bool
             Whether to show figures of the simulation results.
         save_fig : bool
@@ -264,7 +264,6 @@ class Linear_Simulation(Simulation):
             )
             if show_fig:
                 sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
-            # END IF
         else:  # `every_layer` is `False`
             response, tf = sr.linear_site_resp(
                 self.soil_profile.vs_profile,
@@ -283,7 +282,6 @@ class Linear_Simulation(Simulation):
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history)
-        # END IF
 
         if verbose:
             print('done.')
@@ -302,8 +300,8 @@ class Equiv_Linear_Simulation(Simulation):
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves
         G/Gmax and damping curves of every soil layer.
     boundary : Literal['elastic', 'rigid']
@@ -356,8 +354,8 @@ class Equiv_Linear_Simulation(Simulation):
         verbose : bool
             Whether to print iteration progress on the console.
         show_fig : bool
-            Whether to show figures of the simulation results (input and
-            output motions, maximum accel/veloc/displ/strain/stress profiles)
+            Whether to show figures of the simulation results (input and output
+            motions, maximum accel/veloc/displ/strain/stress profiles)
         save_fig : bool
             Whether to save figures to ``output_dir``. Only effective when
             ``show_fig`` is set to ``True``.
@@ -445,8 +443,8 @@ class Nonlinear_Simulation(Simulation):
     input_motion : Ground_Motion
         Input ground motion. It should be the "rock outcrop" motion if
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
-        motion at the bottom of the Vs profile (i.e., the "borehole" motion)
-        if ``boundary`` is set to ``"rigid"``.
+        motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
+        ``boundary`` is set to ``"rigid"``.
     G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
         Parameters that describe the G/Gmax curves.
     xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
@@ -528,21 +526,22 @@ class Nonlinear_Simulation(Simulation):
             Name of the input ground motion. For example, "Northridge". If not
             provided (i.e., ``None``), the current time stamp will be used.
         save_txt : bool
-            Whether to save the simulation results as text files to ``sim_dir``.
+            Whether to save the simulation results as text files to
+            ``sim_dir``.
         save_full_time_history : bool
             When saving simulation results, whether to save the full time
             histories (i.e., every time step, every depth) of the acceleration,
             velocity, displacement, stress, and strain.
         show_fig : bool
-            Whether to show figures of the simulation results (input and
-            output motions, maximum accel/veloc/displ/strain/stress profiles)
+            Whether to show figures of the simulation results (input and output
+            motions, maximum accel/veloc/displ/strain/stress profiles)
         save_fig : bool
             Whether to save figures to ``sim_dir``. Only effective when
             ``show_fig`` is set to ``True``.
         remove_sim_dir : bool
-            Whether to remove ``sim_dir`` from the hard drive after simulations,
-            only effective when ``save_txt`` and ``save_fig`` are both set to
-            ``False``.
+            Whether to remove ``sim_dir`` from the hard drive after
+            simulations, only effective when ``save_txt`` and ``save_fig`` are
+            both set to ``False``.
         verbose : bool
             Whether to show simulation progress on the console.
 
@@ -572,7 +571,7 @@ class Nonlinear_Simulation(Simulation):
 
         if sim_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            sim_dir = './nonlinear_sim_%s' % current_time
+            sim_dir = f'./nonlinear_sim_{current_time}'
 
         if os.path.exists(sim_dir):
             sim_dir += '_'
@@ -648,26 +647,15 @@ class Nonlinear_Simulation(Simulation):
 
         package_path = importlib.resources.files(PySeismoSoil)
         dir_exec_files = str(package_path / 'exec_files')
-        shutil.copy(
-            os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir
-        )
+        shutil.copy(os.path.join(dir_exec_files, f'NLHH.{exec_ext}'), sim_dir)
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
         # -------- Prepare control.dat file ------------------------------------
         with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
             fp.write(
-                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
-                % (
-                    f_max,
-                    ppw,
-                    n_dt,
-                    n_bound,
-                    n_layer,
-                    nt_out,
-                    n_ma,
-                    N_spr,
-                    N_obs,
-                ),
+                f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f}'
+                f' {n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f}'
+                f' {N_obs:6.0f}',
             )
 
         # -------- Write data to files for the Fortran kernel to read ----------
@@ -733,7 +721,8 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        max_a = np.max(np.abs(out_a), axis=0).T  # max of every column (i.e., layer)
+        # max of every column (i.e., layer)
+        max_a = np.max(np.abs(out_a), axis=0).T
         max_v = np.max(np.abs(out_v), axis=0).T
         max_d = np.max(np.abs(out_d), axis=0).T
         max_gamma = np.max(np.abs(out_gamma), axis=0).T
@@ -790,6 +779,6 @@ class Nonlinear_Simulation(Simulation):
         if not save_txt and not save_fig and remove_sim_dir:
             os.removedirs(sim_dir)
             if verbose:
-                print('`sim_dir` (%s) removed.' % sim_dir)
+                print(f'`sim_dir` ({sim_dir}) removed.')
 
         return sim_results

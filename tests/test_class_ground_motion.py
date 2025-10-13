@@ -61,9 +61,10 @@ class Test_Class_Ground_Motion(unittest.TestCase):
             GM(np.array([1, 2, 3, 4, 5]), unit='m/s^2', dt=0.1)
 
     def test_differentiation(self):
-        veloc = np.array(
-            [[0.1, 0.2, 0.3, 0.4, 0.5, 0.6], [1, 3, 7, -1, -3, 5]]
-        ).T
+        veloc = np.array([
+            [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+            [1, 3, 7, -1, -3, 5],
+        ]).T
         gm = GM(veloc, unit='m', motion_type='veloc')
         accel_benchmark = np.array(
             [[0.1, 0.2, 0.3, 0.4, 0.5, 0.6], [0, 20, 40, -80, -20, 80]],

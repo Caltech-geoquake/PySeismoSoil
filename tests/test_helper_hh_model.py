@@ -166,7 +166,8 @@ class Test_Helper_HH_Model(unittest.TestCase):
 
     def test_deserialize_array_to_params__incorrect_number_of_parameters(self):
         with self.assertRaisesRegex(AssertionError, ''):
-            hh.deserialize_array_to_params(np.arange(8))  # should have 9 parameters
+            # should have 9 parameters
+            hh.deserialize_array_to_params(np.arange(8))
 
 
 if __name__ == '__main__':

@@ -29,8 +29,8 @@ class Site_Factors:
     lenient : bool
         Whether to ensure the given Vs30, z1, and PGA values are within the
         valid range. If False and the given values fall outside the valid
-        range, the given values (e.g., Vs30 = 170 m/s) will be treated as
-        the closest boundary values (e.g., Vs30 = 175 m/s).
+        range, the given values (e.g., Vs30 = 170 m/s) will be treated as the
+        closest boundary values (e.g., Vs30 = 175 m/s).
 
     Attributes
     ----------
@@ -132,7 +132,8 @@ class Site_Factors:
 
             PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
 
-        if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
+        # TODO: think about whether to add leniency
+        if 'Invalid Vs30-z1 combination' in status:
             raise ValueError(
                 'Vs30 and z1 combination not valid. (The `lenient` '
                 'option does not apply to this type of issue.)',
@@ -158,8 +159,8 @@ class Site_Factors:
             amplification factors. 'nl_hh' uses the results from nonlinear site
             response simulation, which is recommended.
         Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (``False``).
+            Whether to return Fourier-spectra-based amplification factors
+            (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
             curves".
@@ -167,11 +168,11 @@ class Site_Factors:
         Returns
         -------
         amplif : Frequency_Spectrum
-            Amplification factors as a function of frequency.
-            (Note: Even if ``Fourier`` is set to ``False``, i.e., the user is
-            querying response spectral amplification, the returned result
-            is still (freq, amplif). The user can take the reciprocal of
-            frequency to get period.)
+            Amplification factors as a function of frequency. (Note: Even if
+            ``Fourier`` is set to ``False``, i.e., the user is querying
+            response spectral amplification, the returned result is still
+            (freq, amplif). The user can take the reciprocal of frequency to
+            get period.)
 
         Raises
         ------
@@ -193,7 +194,8 @@ class Site_Factors:
             result = np.column_stack((freq, amplif))
         else:  # response spectra
             freq = 1.0 / period_or_freq
-            result = np.column_stack((freq, amplif))[::-1, :]  # so that freq increases
+            # reverse the order so that freq increases
+            result = np.column_stack((freq, amplif))[::-1, :]
 
         return Frequency_Spectrum(result)
 
@@ -290,8 +292,8 @@ class Site_Factors:
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
         Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (``False``).
+            Whether to return Fourier-spectra-based amplification factors
+            (True) or response-spectra based factors (``False``).
         show_interp_plots : bool
             Whether to plot interpolated curve together with the "reference
             curves".
@@ -360,9 +362,9 @@ class Site_Factors:
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Query amplification or phase factors from pre-computed .csv files. The
-        given Vs30, z1_in_m, and PGA_in_g values need to match the
-        pre-defined values (see `Vs30_array`, `z1_array`, and `PGA_array`
-        at the top of this file).
+        given Vs30, z1_in_m, and PGA_in_g values need to match the pre-defined
+        values (see `Vs30_array`, `z1_array`, and `PGA_array` at the top of
+        this file).
 
         Parameters
         ----------
@@ -375,8 +377,8 @@ class Site_Factors:
         PGA : float
             Peak ground acceleration. Unit: g.
         Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors or response-spectra based factors.
+            Whether to return Fourier-spectra-based amplification factors or
+            response-spectra based factors.
         method : Literal['nl_hh', 'eq_hh', 'eq_kz']
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
@@ -398,15 +400,13 @@ class Site_Factors:
             When values of some input arguments are not correct
         """
         if Vs30 not in Site_Factors.Vs30_array:
-            raise ValueError(
-                '`Vs30` should be in %s.' % Site_Factors.Vs30_array
-            )
+            raise ValueError(f'`Vs30` should be in {Site_Factors.Vs30_array}.')
 
         if z1 not in Site_Factors.z1_array:
-            raise ValueError('`z1` should be in %s.' % Site_Factors.z1_array)
+            raise ValueError(f'`z1` should be in {Site_Factors.z1_array}.')
 
         if PGA not in Site_Factors.PGA_array:
-            raise ValueError('`PGA` should be in %s.' % Site_Factors.PGA_array)
+            raise ValueError(f'`PGA` should be in {Site_Factors.PGA_array}.')
 
         if method not in ['nl_hh', 'eq_kz', 'eq_hh']:
             raise ValueError(
@@ -415,14 +415,14 @@ class Site_Factors:
 
         if amplif_or_phase == 'amplif':
             if Fourier:
-                y_filename = '%d_%03d_af_fs_%s_avg.csv' % (Vs30, z1, method)
-                x_filename = '%d_%03d_freq.csv' % (Vs30, z1)
+                y_filename = f'{Vs30}_{z1:03d}_af_fs_{method}_avg.csv'
+                x_filename = f'{Vs30}_{z1:03d}_freq.csv'
             else:  # response spectra
-                y_filename = '%d_%03d_af_rs_%s_avg.csv' % (Vs30, z1, method)
-                x_filename = '%d_%03d_period.csv' % (Vs30, z1)
+                y_filename = f'{Vs30}_{z1:03d}_af_rs_{method}_avg.csv'
+                x_filename = f'{Vs30}_{z1:03d}_period.csv'
         else:  # phase shift
-            y_filename = '%d_%03d_phase_shift_%s_avg.csv' % (Vs30, z1, method)
-            x_filename = '%d_%03d_freq.csv' % (Vs30, z1)
+            y_filename = f'{Vs30}_{z1:03d}_phase_shift_{method}_avg.csv'
+            x_filename = f'{Vs30}_{z1:03d}_freq.csv'
 
         y = np.genfromtxt(os.path.join(data_dir, y_filename), delimiter=',')
         x = np.genfromtxt(os.path.join(data_dir, x_filename), delimiter=',')
@@ -454,9 +454,9 @@ class Site_Factors:
             Vs30_in_mps: float, z1_in_m: float, PGA_in_g: float
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         """
-        Find the indices of Vs30, z1, and PGA that surround the provided values.
-        If the provided values fall onto the "reference" Vs30, z1, or PGA values,
-        two indices are still returned.
+        Find the indices of Vs30, z1, and PGA that surround the provided
+        values. If the provided values fall onto the "reference" Vs30, z1, or
+        PGA values, two indices are still returned.
 
         The three inputs need to already within the correct range.
         """
@@ -473,19 +473,40 @@ class Site_Factors:
         return Vs30_loc, z1_loc, PGA_loc
 
     @staticmethod
-    def _search_sorted(value, array) -> tuple[int, int]:
+    def _search_sorted(
+            value: float,
+            array: np.ndarray,
+    ) -> tuple[int, int]:
         """
         Search for the location of `value` within `array`.
 
-        Example behaviors:
-            In: _search_sorted(3, [0, 1, 2, 3, 4, 5])
-            Out: (2, 3)
+        Parameters
+        ----------
+        value : float
+            The value to search for
+        array : np.ndarray
+            The array to search in
 
-            In: _search_sorted(1, [0, 1, 2, 3, 4, 5])
-            Out: (0, 1)
+        Returns
+        -------
+        tuple[int, int]
+            A tuple of two integers representing the lower and upper indices
 
-            In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
-            Out: (0, 1)
+        Raises
+        ------
+        ValueError
+            If the value is outside the range of the array
+
+        Examples
+        --------
+        >>> In: _search_sorted(3, [0, 1, 2, 3, 4, 5])
+        >>> Out: (2, 3)
+
+        >>> In: _search_sorted(1, [0, 1, 2, 3, 4, 5])
+        >>> Out: (0, 1)
+
+        >>> In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
+        >>> Out: (0, 1)
         """
         if value < array[0] or value > array[-1]:
             raise ValueError(
@@ -520,9 +541,10 @@ class Site_Factors:
             `values`. Each element of ``ref_points`` is the coordinate of a
             point as a tuple.
         values : list[list[float]]
-            Values of interest corresponding to each reference point. There can be
-            different versions of values at the reference points (for example, at
-            different frequencies, the reference points take on different voltages).
+            Values of interest corresponding to each reference point. There can
+            be different versions of values at the reference points (for
+            example, at different frequencies, the reference points take on
+            different voltages).
 
             So the structure of ``values`` shall look like this::
 
@@ -603,11 +625,11 @@ class Site_Factors:
         phase_interp : np.ndarray | None
             Interpolated phase shift factor at ``query_point``.
         Fourier : bool
-            Whether the amplification factors passed in are the
-            Fourier-based factors.
+            Whether the amplification factors passed in are the Fourier-based
+            factors.
 
-        Return
-        ------
+        Returns
+        -------
         tuple[Figure, Axes, Axes | None]
             (fig, ax1, ax2) or (fig, ax, None). If the user also passes in the
             phase factors, then two subplots are produced, and ``ax1`` and
@@ -632,7 +654,9 @@ class Site_Factors:
             ax = plt.axes()
 
         for j, ref_point in enumerate(ref_points):
-            label = '%d m/s, %d m, %.2gg' % ref_point
+            label = (
+                f'{ref_point[0]} m/s, {ref_point[1]} m, {ref_point[2]:.2g}g'
+            )
             if phase_flag:
                 ax1.semilogx(T_or_freq, amps[j], alpha=alpha)
                 ax2.semilogx(T_or_freq, phases[j], alpha=alpha, label=label)
@@ -669,7 +693,8 @@ class Site_Factors:
             )
 
         fig.suptitle(
-            '$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point
+            f'$V_{{S30}}$ = {query_point[0]} m/s, $z_1$ = {query_point[1]} m,'
+            f' PGA = {query_point[2]:.2g}$g$'
         )
 
         bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)
@@ -687,8 +712,8 @@ class Site_Factors:
             PGA_in_g: float,
     ) -> list[str]:
         """
-        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within
-        the pre-computed range.
+        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within the
+        pre-computed range.
 
         The return value (``status``) indicates the kind(s) of errors
         associated with the given input parameters.

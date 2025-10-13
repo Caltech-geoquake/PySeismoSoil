@@ -17,23 +17,23 @@ class Frequency_Spectrum:
     """
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
-    array. (If frequency range implied in ``data`` and/or ``df`` goes beyond ``fmin``
-    and/or ``fmax``, then the interpolation algorithm automatically use the 0th
-    and the last point in the extrapolated parts.)
+    array. (If frequency range implied in ``data`` and/or ``df`` goes beyond
+    ``fmin`` and/or ``fmax``, then the interpolation algorithm automatically
+    use the 0th and the last point in the extrapolated parts.)
 
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the data.
-        The data can have one column (which contains the spectrum) or two
-        columns (0st column: freq; 1st column: spectrum). If only one column
-        is supplied, another input parameter ``df`` must also be supplied.
+        If str: the full file name on the hard drive containing the data. If
+        np.ndarray: the numpy array containing the data. The data can have one
+        column (which contains the spectrum) or two columns (0st column: freq;
+        1st column: spectrum). If only one column is supplied, another input
+        parameter ``df`` must also be supplied.
     df : float
         Frequency interval. Not necessary if ``data`` has two columns (with the
-        0th column being the frequency information). If ``data`` has one column,
-        it is assumed that the values in ``data`` correspond to a linear
-        frequency array.
+        0th column being the frequency information). If ``data`` has one
+        column, it is assumed that the values in ``data`` correspond to a
+        linear frequency array.
     interpolate : bool
         Whether to use the interpolated spectra in place of the raw data.
     fmin : float
@@ -46,9 +46,9 @@ class Frequency_Spectrum:
         Number of points in the manualy constructed frequency array for
         interpolation. It has no effect if ``interpolate`` is ``False``.
     log_scale : bool
-        Whether the manually constructed frequency (for interpolation) array
-        is in log scale (or linear scale). It has no effect if ``interpolate``
-        is False.
+        Whether the manually constructed frequency (for interpolation) array is
+        in log scale (or linear scale). It has no effect if ``interpolate`` is
+        False.
     sep : str
         Delimiter identifier, only useful if ``data`` is a file name.
 
@@ -71,9 +71,9 @@ class Frequency_Spectrum:
     spectrum : np.ndarray
         Just the spectrum values.
     amplitude : np.ndarray
-        The amplitude (or "magnitude") of ``spectrum``. Note that
-        ``spectrum`` can already be all real numbers.
-    amplitude_2col: np.ndarray
+        The amplitude (or "magnitude") of ``spectrum``. Note that ``spectrum``
+        can already be all real numbers.
+    amplitude_2col : np.ndarray
         A two-column numpy array (frequency and amplitude).
     phase : np.ndarray
         The phase angle of ``spectrum``. If ``spectrum`` has all real values,
@@ -148,11 +148,9 @@ class Frequency_Spectrum:
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
     def __repr__(self) -> str:
-        text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' % (
-            self.raw_df,
-            self.n_pts,
-            self.fmin,
-            self.fmax,
+        text = (
+            f'df = {self.raw_df:.2f} Hz, n_pts = {self.n_pts},'
+            f' f_min = {self.fmin:.2f} Hz, f_max = {self.fmax:.2f} Hz'
         )
         return text
 
@@ -176,12 +174,12 @@ class Frequency_Spectrum:
             Figure object. If None, a new figure will be created.
         ax : Axes | None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
+        figsize : tuple[float, float]
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
         dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         logx : bool
             Whether to show x scale as log.
         logy : bool
@@ -230,13 +228,14 @@ class Frequency_Spectrum:
             **kwargs: dict[Any, Any],
     ) -> tuple[np.ndarray | None, Figure, Axes]:
         """
-        Smooth the spectrum by calculating the convolution of the raw
-        signal and the smoothing window.
+        Smooth the spectrum by calculating the convolution of the raw signal
+        and the smoothing window.
 
         Parameters
         ----------
         win_len : int
-            Length of the smoothing window. Larget numbers means more smoothing.
+            Length of the smoothing window. Larget numbers means more
+            smoothing.
         show_fig : bool
             Whether to show a before/after figure.
         log_scale : bool
@@ -280,8 +279,8 @@ class Frequency_Spectrum:
 
     def get_f0(self) -> float:
         """
-        Get the "fundamental frequency" of the amplitude spectrum, which is
-        the frequency of the first amplitude peak.
+        Get the "fundamental frequency" of the amplitude spectrum, which is the
+        frequency of the first amplitude peak.
 
         Returns
         -------

@@ -212,7 +212,10 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
             show_fig=False,
             verbose=False,
         )
-        HH_G_benchmark = np.genfromtxt(_join(f_dir, 'HH_G_FKSH14.txt'))  # calculated by MATLAB
+
+        # calculated by MATLAB
+        HH_G_benchmark = np.genfromtxt(_join(f_dir, 'HH_G_FKSH14.txt'))
+
         # use low tolerance because the whole process is highly reproducible
         self.assertTrue(
             np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0)

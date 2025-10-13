@@ -23,9 +23,9 @@ class Site_Effect_Adjustment:
     Vs30_in_meter_per_sec : float
         Vs30 values in SI unit.
     z1_in_m : float | None
-        z1 (basin depth) in meters. If ``None``, it will be estimated from
-        Vs30 using an empirical correlation (see `calc_z1_from_Vs30()`
-        function in `helper_site_response.py`).
+        z1 (basin depth) in meters. If ``None``, it will be estimated from Vs30
+        using an empirical correlation (see `calc_z1_from_Vs30()` function in
+        `helper_site_response.py`).
     ampl_method : Literal['nl_hh', 'eq_hh']
         Which site response simulation method was used to calculate the
         amplification factors. 'nl_hh' uses the results from nonlinear site
@@ -33,8 +33,8 @@ class Site_Effect_Adjustment:
     lenient : bool
         Whether to ensure the given Vs30, z1, and PGA values are within the
         valid range. If False and the given values fall outside the valid
-        range, the given values (e.g., Vs30 = 170 m/s) will be treated as
-        the closest boundary values (e.g., Vs30 = 175 m/s).
+        range, the given values (e.g., Vs30 = 170 m/s) will be treated as the
+        closest boundary values (e.g., Vs30 = 175 m/s).
 
     Attributes
     ----------
@@ -49,8 +49,8 @@ class Site_Effect_Adjustment:
     site_factor : Site_Factors
         Site factors object for the given Vs30, z1, and PGA values.
 
-    Raise
-    -----
+    Raises
+    ------
     TypeError
         When input arguments do not have correct type
     ValueError
@@ -119,8 +119,7 @@ class Site_Effect_Adjustment:
         Parameters
         ----------
         show_fig : bool
-            Whether to show a figure demonstrating how the adjustment
-            works.
+            Whether to show a figure demonstrating how the adjustment works.
         return_fig_obj : bool
             Whether to return the figure and axes objects.
         **kwargs_to_plot : dict[Any, Any]
@@ -181,9 +180,8 @@ class Site_Effect_Adjustment:
             accel_out, fig, ax = result
             ax[0].set_ylabel('Accel. [m/s/s]')
             ax[0].set_title(
-                '$V_{S30}$=%.1fm/s, $z_1$=%.1fm, '
-                r'$\mathrm{PGA}_{\mathrm{input}}$=%.3g$g$'
-                % (self.Vs30, self.z1, self.PGA_in_g),
+                f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_1$={self.z1:.1f}m, '
+                rf'$\mathrm{{PGA}}_{{\mathrm{{input}}}}$={self.PGA_in_g:.3g}$g$',
             )
             ax[1].set_ylabel('Amplif. factor')
             ax[2].set_ylabel('Phase factor [rad]')

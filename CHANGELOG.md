@@ -2,8 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/).
+The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
@@ -27,4 +28,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - Python 3.12 pipeline issues
-- GitHub Pages deployment workflow permissions by adding environment configuration
+- GitHub Pages deployment workflow permissions by adding environment
+  configuration
