@@ -476,21 +476,21 @@ def produce_HH_G_param(
 
     mu = np.zeros_like(OCR)
     for j in range(n_layer):
-        if Vs[j] <= 760:  # softer soil: use Vardanega & Bolton (2011) CGJ formula
-            mu[j] = 1.0 / (
-                0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
-            )  # noqa: E226
-            if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
-                # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
-                mu[j] = mu[j] * 10.0 ** (0.236 * 3)
-            elif mu[j] <= 0.03:
-                mu[j] = mu[j] * 10.0 ** (0.236 * 2)
-            elif mu[j] <= 0.04:
-                mu[j] = mu[j] * 10.0 ** (0.236 * 1)
-            # END IF
-        else:  # stiffer soils: set mu to 1 for lack of better information
-            mu[j] = 1.0
-        # END IF
+        # softer soil: use Vardanega & Bolton (2011) CGJ formula
+        # fx (251012): we remove the 760m/s limitation on applying the
+        # formula, where mu was being set to 1.0 for Vs higher than 760m/s,
+        # which caused occasional instabilities for Vs profiles that cross
+        # 760m/s in a smooth manner
+        mu[j] = 1.0 / (
+            0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
+        )  # noqa: E226
+        if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
+            # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
+            mu[j] = mu[j] * 10.0 ** (0.236 * 3)
+        elif mu[j] <= 0.03:
+            mu[j] = mu[j] * 10.0 ** (0.236 * 2)
+        elif mu[j] <= 0.04:
+            mu[j] = mu[j] * 10.0 ** (0.236 * 1)
     # END FOR
 
     # ========== Start FKZ optimization =======================================
