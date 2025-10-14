@@ -152,7 +152,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
                     8.6175879e-01,
                     1.0300000e00,
                     6.8809045e-01,
-                ]
+                ],
             ],
         )
         HH_G_param_benchmark = HH_Param_Multi_Layer(HH_G_benchmark_data)

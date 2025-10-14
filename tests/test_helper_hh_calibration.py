@@ -242,7 +242,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
                     1.000000e02,
                     1.000000e02,
                     1.000000e02,
-                    1.000000e02
+                    1.000000e02,
                 ],
                 [
                     2.850723e-04,
