@@ -477,11 +477,6 @@ def produce_HH_G_param(
     mu = np.zeros_like(OCR)
     for j in range(n_layer):
         # softer soil: use Vardanega & Bolton (2011) CGJ formula
-        # We remove the former 760m/s limitation on applying the
-        # formula, where mu was being set to 1.0 for Vs higher than 760m/s,
-        # which caused occasional instabilities for Vs profiles that cross
-        # 760m/s in a smooth manner. We allow the CGJ formula to apply
-        # to stiffer soils as well.
         mu[j] = 1.0 / (
             0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
         )  # noqa: E226
