@@ -132,7 +132,7 @@ class Test_Helper_Generic(unittest.TestCase):
             hlp.extend_scalar(np.ones(3), 2)
 
         # Case #2: `length` is something strange
-        self.assertTrue(np.allclose(hlp.extend_scalar(2.5, ()), np.array(2.5)))
+        self.assertTrue(np.allclose(hlp.extend_scalar(2.5, None), np.array(2.5)))
 
         # Case #3: `length` is an integer
         self.assertTrue(
