@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [0.6.3] - 2025-08-17
+## [0.6.3] - 2025-10-15
 
 ### Added
 
@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Updated docstrings throughout the codebase
 - Auto-formatted code for consistency
 - Migrated from setup.cfg to pyproject.toml
+- Removed 760m/s boundary on mu estimation formula when generating G/Gmax
+  curve parameters for the hybrid hyperbolic model
 
 ### Removed
 

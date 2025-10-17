@@ -1,28 +1,24 @@
+---
 # Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
-
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
-
+    branches: [main]
   pull_request:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   id-token: write
   pages: write
   contents: read
-
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
-
 jobs:
   build_docs_and_deploy:
     runs-on: ubuntu-latest
@@ -54,7 +50,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
-          path: "./docs/build/html"
+          path: ./docs/build/html
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
