@@ -40,6 +40,12 @@ Docstrings use the NumPy style and are checked with `pydoclint`
 (`tox -e pydoclint`). To check formatting without modifying any files, run
 `tox -e muff-format`.
 
+To check that every example notebook in `examples/` still runs, use
+`tox -e notebooks` (this takes a few minutes; CI runs it on every PR). It does
+not modify the notebooks. To also save fresh outputs, run
+`jupyter nbconvert --to notebook --execute --inplace <notebook>` from inside
+`examples/`, and then `pre-commit run -a`.
+
 ## 4. Update the documentations
 
 If you would like to make changes to the documentations of this library, you
