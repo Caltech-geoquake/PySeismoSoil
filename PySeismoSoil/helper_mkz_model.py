@@ -82,45 +82,45 @@ def fit_H4_x_single_layer(
     damping_data_in_pct : np.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
-    use_scipy : bool
+    use_scipy : bool, default=True
         Whether to use the "differential_evolution" algorithm in scipy
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html)
         to perform the optimization. If ``False``, use the algorithm in the
         DEAP package.
-    pop_size : int
+    pop_size : int, default=800
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
-    n_gen : int
+    n_gen : int, default=100
         Number of generations that the evolution lasts. A larger number leads
         to potentially better curve-fitting, but a longer computing time.
-    lower_bound_power : float
+    lower_bound_power : float, default=-4
         The 10-based power of the lower bound of all the 9 parameters. For
         example, if your desired lower bound is 0.26, then set this parameter
         to be numpy.log10(0.26).
-    upper_bound_power : float
+    upper_bound_power : float, default=6
         The 10-based power of the upper bound of all the 9 parameters.
-    eta : float
-        Crowding degree of the mutation or crossover. A high ``eta`` will produce
-        children resembling to their parents, while a low ``eta`` will produce
-        solutions much more different.
-    seed : int
+    eta : float, default=0.1
+        Crowding degree of the mutation or crossover. A high ``eta`` will
+        produce children resembling to their parents, while a low ``eta`` will
+        produce solutions much more different.
+    seed : int, default=0
         Seed value for the random number generator.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show the curve fitting results as a figure.
-    verbose : bool
+    verbose : bool, default=False
         Whether to display information (statistics of the loss in each
         generation) on the console.
-    suppress_warnings : bool
+    suppress_warnings : bool, default=True
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
-    parallel : bool
+    parallel : bool, default=False
         Whether to use multiple processors in the calculation. All CPU cores
         will be used if set to ``True``.
-    n_cores : int | None
+    n_cores : int | None, default=None
         The number of CPU cores to use in the curve fitting
 
-    Return
-    ------
+    Returns
+    -------
     best_param : dict[str, float]
         The best parameters found in the optimization.
     """
@@ -180,16 +180,15 @@ def damping_misfit(
         damping_data: np.ndarray,
 ) -> float:
     """
-    Calculate the misfit given a set of MKZ parameters. Note that the values
-    in `param` are actually the 10-based power of the actual MKZ parameters.
-    Using the powers in the genetic algorithm searching turns out to work
-    much better for this particular problem.
+    Calculate the misfit given a set of MKZ parameters. Note that the values in
+    ``param`` are actually the 10-based power of the actual MKZ parameters.
+    Using the powers in the genetic algorithm searching turns out to work much
+    better for this particular problem.
 
     Parameters
     ----------
     param_without_Gmax : tuple[float, float, float]
-        MKZ model parameters, in the order specified below:
-            gamma_ref, s, beta
+        MKZ model parameters, in the order specified below: gamma_ref, s, beta
     damping_data : np.ndarray
         2D numpy array with two columns (strain and damping value). Both
         columns need to use "1" as the unit, not percent.
@@ -223,14 +222,13 @@ def serialize_params_to_array(
 ) -> np.ndarray:
     """
     Convert the MKZ parameters from a dictionary to an array, according to this
-    order:
-        gamma_ref, s, beta, Gmax
+    order: gamma_ref, s, beta, Gmax
 
     Parameters
     ----------
     param : dict[str, float]
         A dictionary containing the parameters of the MKZ model.
-    to_files : bool
+    to_files : bool, default=False
         Whether the result is for writing to files. If so, the last parameter,
         Gmax, is removed, and a dummy parameter, b, which is always 0, is
         inserted between gamma_ref and s. This is for historical reasons: the
@@ -262,18 +260,20 @@ def deserialize_array_to_params(
     """
     Reconstruct a MKZ model parameter dictionary from an array of values.
 
-    The users need to ensure the order of values in ``array`` are in this order:
-        gamma_ref, s, beta, Gmax (if ``from_files`` is ``False``)
-    or:
-        gamma_ref, b, s, beta (if ``from_files`` is ``True``)
+    The users need to ensure the order of values in ``array`` are in this
+    order:
+
+    - gamma_ref, s, beta, Gmax (if ``from_files`` is ``False``)
+    - gamma_ref, b, s, beta (if ``from_files`` is ``True``)
+
     (b is always 0, for historical reasons)
 
     Parameters
     ----------
     array : np.ndarray
-        A 1D numpy array of MKZ parameter values in this order:
-            gamma_ref, s, beta, Gmax
-    from_files : bool
+        A 1D numpy array of MKZ parameter values in this order: gamma_ref, s,
+        beta, Gmax
+    from_files : bool, default=False
         Whether the array was directly imported from a "H4_x_SITE_NAME.txt"
         file. If so, the 1st (0-based indexing) element, "b", which is always
         0, is neglected, and a dummy Gmax value (1.0) is padded at the end. The
@@ -324,16 +324,16 @@ def fit_MKZ(
 
         The damping information is neglected in this function, so users can
         supply some dummy values.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show curve-fitting results.
-    verbose : bool
+    verbose : bool, default=False
         Whether to show messages about the calculation progress on the console.
 
     Returns
     -------
     param : np.ndarray
-        The fitted MKZ parameters. Shape: (n_mat, 4), where ``n_mat`` is
-        the number of materials implied in ``curve_data``.
+        The fitted MKZ parameters. Shape: (n_mat, 4), where ``n_mat`` is the
+        number of materials implied in ``curve_data``.
     fitted_curves : np.ndarray
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.

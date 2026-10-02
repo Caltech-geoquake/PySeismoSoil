@@ -12,27 +12,26 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 class HH_Calibration:
     """
     Class implementation of the "HH calibration procedure" (HHC procedure). The
-    HHC procedure generates parameters of each soil layer for the HH model.
-    The users can provide only a shear-wave velocity (Vs) profile, or they can
-    also provide pre-defined G/Gmax curves for the soil layers, if they have
-    such laboratory measurements.
+    HHC procedure generates parameters of each soil layer for the HH model. The
+    users can provide only a shear-wave velocity (Vs) profile, or they can also
+    provide pre-defined G/Gmax curves for the soil layers, if they have such
+    laboratory measurements.
 
-    For more information, refer to the following paper:
-        J. Shi and D. Asimaki (2017) "From stiffness to strength: Formulation
-        and validation of a hybrid hyperbolic nonlinear soil model for
-        site‐response analyses." Bulletin of the Seismological Society of
-        America. 107 (3), 1336-1355.
+    For more information, refer to the following paper: J. Shi and D. Asimaki
+    (2017) "From stiffness to strength: Formulation and validation of a hybrid
+    hyperbolic nonlinear soil model for site‐response analyses." Bulletin of
+    the Seismological Society of America. 107 (3), 1336-1355.
 
     Parameters
     ----------
     vs_profile : Vs_Profile
         The Vs profile of interest.
-    GGmax_curves : Multiple_GGmax_Curves | None
+    GGmax_curves : Multiple_GGmax_Curves | None, default=None
         The G/Gmax curves of each layer. If ``None``, HH parameters will be
         determined from the Vs profile alone. If the user supplies this
         parameter, it will be used to calibrate the MKZ model, which eventually
         goes into calibrating the HH parameters.
-    Tmax_profile : np.ndarray | None
+    Tmax_profile : np.ndarray | None, default=None
         The profile of shear strength of each soil layer (not including the
         rock half space at the bottom). If ``None``, it will be determined
         using the empirical formula by Ladd (1991).
@@ -110,25 +109,25 @@ class HH_Calibration:
 
         Parameters
         ----------
-        show_fig : bool
-            Whether to show figures G/Gmax and stress-strain curves of
-            MKZ, FKZ, and HH for each layer.
-        save_fig : bool
-            Whether to save the figures to the hard drive. Only effective
-            if ``show_fig`` is set to ``True``.
-        fig_output_dir : str | None
-            The output directory for the figures. Only effective if ``show_fig``
-            and ``save_fig`` are both ``True``.
-        save_HH_G_file : bool
-            Whether to save the HH parameters to the hard drive (as a
-            "HH_G" file).
-        HH_G_file_dir : str | None
+        show_fig : bool, default=False
+            Whether to show figures G/Gmax and stress-strain curves of MKZ,
+            FKZ, and HH for each layer.
+        save_fig : bool, default=False
+            Whether to save the figures to the hard drive. Only effective if
+            ``show_fig`` is set to ``True``.
+        fig_output_dir : str | None, default=None
+            The output directory for the figures. Only effective if
+            ``show_fig`` and ``save_fig`` are both ``True``.
+        save_HH_G_file : bool, default=False
+            Whether to save the HH parameters to the hard drive (as a "HH_G"
+            file).
+        HH_G_file_dir : str | None, default=None
             The output directory for the "HH_G" file. Only effective if
             ``save_HH_G_file`` is ``True``.
-        profile_name : str | None
+        profile_name : str | None, default=None
             The name of the Vs profile, such as "CE.12345". If ``None``, a
             string of current date and time will be used as the profile name.
-        verbose : bool
+        verbose : bool, default=True
             Whether to print progresses on the console.
 
         Returns

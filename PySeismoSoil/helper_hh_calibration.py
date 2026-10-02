@@ -74,37 +74,36 @@ def hh_param_from_profile(
             |      ...      |   ...    |   ...   |   ...   |      ...        |
             +---------------+----------+---------+---------+-----------------+
 
-    Tmax : np.ndarray | None
+    Tmax : np.ndarray | None, default=None
         Shear strength of each layer of soil. If ``None``, it will be
-        calculated using a combination of Ladd (1991) and Mohr-Coulomb criteria.
-    show_fig : bool
-        Whether to show figures G/Gmax and stress-strain curves of MKZ,
-        FKZ, and HH for each layer.
-    save_fig : bool
-        Whether to save the figures to the hard drive. Only effective
-        if ``show_fig`` is set to ``True``.
-    fig_output_dir : str | None
+        calculated using a combination of Ladd (1991) and Mohr-Coulomb
+        criteria.
+    show_fig : bool, default=False
+        Whether to show figures G/Gmax and stress-strain curves of MKZ, FKZ,
+        and HH for each layer.
+    save_fig : bool, default=False
+        Whether to save the figures to the hard drive. Only effective if
+        ``show_fig`` is set to ``True``.
+    fig_output_dir : str | None, default=None
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
-    save_HH_G_file : bool
-        Whether to save the HH parameters to the hard drive (as a
-        "HH_G" file).
-    HH_G_file_dir : str | None
+    save_HH_G_file : bool, default=False
+        Whether to save the HH parameters to the hard drive (as a "HH_G" file).
+    HH_G_file_dir : str | None, default=None
         The output directory for the "HH_G" file. Only effective if
         ``save_HH_G_file`` is ``True``.
-    profile_name : str | None
+    profile_name : str | None, default=None
         The name of the Vs profile, such as "CE.12345". If ``None``, a string
         of current date and time will be used as the profile name.
-    verbose : bool
+    verbose : bool, default=True
         Whether to print progresses on the console.
 
     Returns
     -------
     HH_G_param : np.ndarray
-        The HH parameters of each layer. It's a 2D array of shape
-        ``(9, n_layer)``. For each layer (i.e., column), the values are in
-        this order:
-            gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+        The HH parameters of each layer. It's a 2D array of shape ``(9,
+        n_layer)``. For each layer (i.e., column), the values are in this
+        order: gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Raises
     ------
@@ -202,37 +201,36 @@ def hh_param_from_curves(
 
         The damping information is neglected in this function, so users can
         supply some dummy values.
-    Tmax : np.ndarray | None
+    Tmax : np.ndarray | None, default=None
         Shear strength of each layer of soil. If ``None``, it will be
-        calculated using a combination of Ladd (1991) and Mohr-Coulomb criteria.
-    show_fig : bool
-        Whether to show figures G/Gmax and stress-strain curves of MKZ,
-        FKZ, and HH for each layer.
-    save_fig : bool
-        Whether to save the figures to the hard drive. Only effective
-        if ``show_fig`` is set to ``True``.
-    fig_output_dir : str | None
+        calculated using a combination of Ladd (1991) and Mohr-Coulomb
+        criteria.
+    show_fig : bool, default=False
+        Whether to show figures G/Gmax and stress-strain curves of MKZ, FKZ,
+        and HH for each layer.
+    save_fig : bool, default=False
+        Whether to save the figures to the hard drive. Only effective if
+        ``show_fig`` is set to ``True``.
+    fig_output_dir : str | None, default=None
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
-    save_HH_G_file : bool
-        Whether to save the HH parameters to the hard drive (as a
-        "HH_G" file).
-    HH_G_file_dir : str | None
+    save_HH_G_file : bool, default=False
+        Whether to save the HH parameters to the hard drive (as a "HH_G" file).
+    HH_G_file_dir : str | None, default=None
         The output directory for the "HH_G" file. Only effective if
         ``save_HH_G_file`` is ``True``.
-    profile_name : str | None
+    profile_name : str | None, default=None
         The name of the Vs profile, such as "CE.12345". If ``None``, a string
         of current date and time will be used as the profile name.
-    verbose : bool
+    verbose : bool, default=True
         Whether to print progresses on the console.
 
     Returns
     -------
     HH_G_param : np.ndarray
-        The HH parameters of each layer. It's a 2D array of shape
-        ``(9, n_layer)``. For each layer (i.e., column), the values are in
-        this order:
-            gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+        The HH parameters of each layer. It's a 2D array of shape ``(9,
+        n_layer)``. For each layer (i.e., column), the values are in this
+        order: gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Raises
     ------
@@ -338,13 +336,13 @@ def produce_HH_G_param(
     OCR : np.ndarray
         Over-consolidation ratio of each layer. Shape: ``(n_layer, )``.
     sigma_v0 : np.ndarray
-        Vertical effective confining stress of each layer. Shape:
-        ``(n_layer, )``. Unit: Pa.
+        Vertical effective confining stress of each layer. Shape: ``(n_layer,
+        )``. Unit: Pa.
     K0 : np.ndarray | float
         Lateral soil pressure coefficient. If an array, it must have shape
-        ``(n_layer, )``. If a single value, it means that all layers share
-        this same value.
-    curves : np.ndarray | None
+        ``(n_layer, )``. If a single value, it means that all layers share this
+        same value.
+    curves : np.ndarray | None, default=None
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
             +------------+--------+------------+-------------+-------------+--------+-----+
@@ -355,37 +353,36 @@ def produce_HH_G_param(
 
         The damping information is neglected in this function, so users can
         supply some dummy values. If ``None``, it means that the users do not
-        have G/Gmax curve information, so this function will calculate the
-        MKZ G/Gmax curves from the empirical formulas in Darendeli (2001).
-    PI : float | np.ndarray | None
+        have G/Gmax curve information, so this function will calculate the MKZ
+        G/Gmax curves from the empirical formulas in Darendeli (2001).
+    PI : float | np.ndarray | None, default=None
         Plasticity index of the soils. It is not necessary (can be ``None``) if
         ``curves`` is provided (i.e., not ``None``). If an array, it must have
         shape ``(n_layer, )``. If a single value, it means that all layers
         share this same value.
-    phi : float | np.ndarray | None
+    phi : float | np.ndarray | None, default=None
         Effective internal frictional angle (in degrees). It is not necessary
-        (can be ``None``) if ``curve`` is provided (i.e., not ``None``). If
-        an array, it must have shape ``(n_layer, )``. If a single value, it
-        means that all layers share this same value.
-    show_fig : bool
-        Whether to show figures G/Gmax and stress-strain curves of MKZ,
-        FKZ, and HH for each layer.
-    save_fig : bool
-        Whether to save the figures to the hard drive. Only effective
-        if ``show_fig`` is set to ``True``.
-    fig_output_dir : str
+        (can be ``None``) if ``curve`` is provided (i.e., not ``None``). If an
+        array, it must have shape ``(n_layer, )``. If a single value, it means
+        that all layers share this same value.
+    show_fig : bool, default=False
+        Whether to show figures G/Gmax and stress-strain curves of MKZ, FKZ,
+        and HH for each layer.
+    save_fig : bool, default=False
+        Whether to save the figures to the hard drive. Only effective if
+        ``show_fig`` is set to ``True``.
+    fig_output_dir : str, default=None
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
-    verbose : bool
+    verbose : bool, default=True
         Whether to print progresses on the console.
 
     Returns
     -------
     parameters : np.ndarray
-        The HH parameters of each layer. It's a 2D array of shape
-        ``(9, n_layer)``. For each layer (i.e., column), the values are in
-        this order:
-            gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+        The HH parameters of each layer. It's a 2D array of shape ``(9,
+        n_layer)``. For each layer (i.e., column), the values are in this
+        order: gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Raises
     ------
@@ -429,7 +426,9 @@ def produce_HH_G_param(
             phi=phi,
             strain_in_pct=strain_,
         )
-        strain = np.tile(strain_, (n_layer, 1)).T  # strain matrix for all layers
+        strain = np.tile(
+            strain_, (n_layer, 1)
+        ).T  # strain matrix for all layers
         beta = np.ones(n_layer)
         s = 0.9190 * np.ones(n_layer)
     else:  # user provides own curves
@@ -480,7 +479,9 @@ def produce_HH_G_param(
         mu[j] = 1.0 / (
             0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
         )  # noqa: E226
-        if mu[j] <= 0.02:  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
+        if (
+            mu[j] <= 0.02
+        ):  # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
             # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
             mu[j] = mu[j] * 10.0 ** (0.236 * 3)
         elif mu[j] <= 0.03:
@@ -676,11 +677,11 @@ def _calc_shear_strength(
         A 1D array of OCR (over-consolidation ratio) of each layer. Unit: 1.
     sigma_v0 : np.ndarray
         A 1D array of vertical overburden pressure. Unit: Pa.
-    K0 : float | int | np.ndarray | None
+    K0 : float | int | np.ndarray | None, default=None
         Lateral soil pressure coefficient. If a single value is given, it is
         assumed to be the value for all layers. If ``None``, it will be
         determined from OCR via an empirical formula by Mayne & Kulhawy (1982).
-    phi : float | int | np.ndarray
+    phi : float | int | np.ndarray, default=30.0
         Effective internal friction angle of soils (in degrees).
 
     Returns
@@ -698,12 +699,22 @@ def _calc_shear_strength(
 
     Tmax = np.zeros(len(Vs))
     for j in range(len(Vs)):
-        if Vs[j] <= 760:  # for softer soils, calculate undrained shear strength
-            Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]  # Ladd (1991)
+        if (
+            Vs[j] <= 760
+        ):  # for softer soils, calculate undrained shear strength
+            Tmax[j] = (
+                dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]
+            )  # Ladd (1991)
         else:  # stiffer soils: Mohr-Coulomb criterion
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
-            sigma_1 = np.max([sigma_v0[j], sigma_h0])  # largest principal stress
-            sigma_3 = np.min([sigma_v0[j], sigma_h0])  # smallest principal stress
+            sigma_1 = np.max([
+                sigma_v0[j],
+                sigma_h0,
+            ])  # largest principal stress
+            sigma_3 = np.min([
+                sigma_v0[j],
+                sigma_h0,
+            ])  # smallest principal stress
 
             # normal effective stress on the slip plane
             sigma_n = (sigma_1 + sigma_3) / 2.0 - (
@@ -754,7 +765,7 @@ def _calc_OCR(
         1D array of mass density of layers. Unit: kg/m^3.
     sigma_v0 : np.ndarray
         Vertical overburden stress at the mid-point of each layer. Unit: Pa.
-    OCR_upper_limit : float | None
+    OCR_upper_limit : float | None, default=None
         The maximum acceptable OCR value. If ``None``, there is no limit.
 
     Returns
@@ -762,7 +773,9 @@ def _calc_OCR(
     OCR : np.ndarray
         1D array of OCR value, for each soil layer. (Unitless.)
     """
-    sigma_p0 = 0.106 * Vs**1.47  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from seismic piezocone tests"  # noqa: E501,E226
+    sigma_p0 = (
+        0.106 * Vs**1.47
+    )  # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from seismic piezocone tests"  # noqa: E501,E226
     sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
     OCR = np.minimum(
@@ -821,8 +834,8 @@ def _calc_rho(h: np.ndarray, Vs: np.ndarray) -> np.ndarray:
     h : np.ndarray
         The thickness of each soil layer. Unit: m.
     Vs : np.ndarray
-        The shear-wave velocity for each layer. It needs to be a 1D numpy array.
-        Unit: m/s.
+        The shear-wave velocity for each layer. It needs to be a 1D numpy
+        array. Unit: m/s.
 
     Returns
     -------
@@ -861,8 +874,8 @@ def _calc_PI(Vs: np.ndarray) -> np.ndarray:
     Parameters
     ----------
     Vs : np.ndarray
-        The shear-wave velocity for each layer. It needs to be a 1D numpy array.
-        Unit: m/s.
+        The shear-wave velocity for each layer. It needs to be a 1D numpy
+        array. Unit: m/s.
 
     Returns
     -------
@@ -893,10 +906,10 @@ def _calc_K0(
     OCR : float | int | np.ndarray
         Over-consolidation ratio of each layer of soils. If it is a float/int,
         it means only one layer, or all the layers have the same OCR.
-    phi : float | int | np.ndarray
+    phi : float | int | np.ndarray, default=30.0
         Internal effective friction angle of soils. If it is a float/int, it
-        means only one soil layer, or all the layers have the same angle.
-        Unit: deg.
+        means only one soil layer, or all the layers have the same angle. Unit:
+        deg.
 
     Returns
     -------
@@ -917,27 +930,27 @@ def produce_Darendeli_curves(
         strain_in_pct: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Produce G/Gmax and damping curves using empirical correlations by
-    Darendeli (2001).
+    Produce G/Gmax and damping curves using empirical correlations by Darendeli
+    (2001).
 
     Parameters
     ----------
     sigma_v0 : np.ndarray
         Effective vertical confining stress of each layer. Unit: Pa.
-    PI : int | float | np.ndarray
-        Plasticity index of each layer. Unit: %. If a single value is given,
-        it is assumed to be the PI for all layers.
-    OCR : int | float | np.ndarray
-        Over-consolidation ratio of each layer. If a single value is given,
-        it is assumed to be the value for all layers.
-    K0 : int | float | np.ndarray | None
+    PI : int | float | np.ndarray, default=20.0
+        Plasticity index of each layer. Unit: %. If a single value is given, it
+        is assumed to be the PI for all layers.
+    OCR : int | float | np.ndarray, default=1.0
+        Over-consolidation ratio of each layer. If a single value is given, it
+        is assumed to be the value for all layers.
+    K0 : int | float | np.ndarray | None, default=0.5
         Lateral soil pressure coefficient. If a single value is given, it is
         assumed to be the value for all layers. If ``None``, it will be
         determined from OCR via an empirical formula by Mayne & Kulhawy (1982).
-    phi : int | float | np.ndarray
+    phi : int | float | np.ndarray, default=30.0
         Internal effective friction angle of soils. If it is a float/int, it
         means all the layers have the same angle. Unit: deg.
-    strain_in_pct : np.ndarray | None
+    strain_in_pct : np.ndarray | None, default=None
         The strain values at which to calculate G/Gmax and damping values. If
         ``None``, numpy.geomspace(1e-4, 10, 400) will be used. Unit: percent.
 
@@ -988,7 +1001,9 @@ def produce_Darendeli_curves(
     phi12 = -0.0057
     a = phi5
 
-    c1 = -1.1143 * a**2 + 1.8618 * a + 0.2523  # from Darendeli (2001), page 226
+    c1 = (
+        -1.1143 * a**2 + 1.8618 * a + 0.2523
+    )  # from Darendeli (2001), page 226
     c2 = 0.0805 * a**2 - 0.0710 * a - 0.0095
     c3 = -0.0005 * a**2 + 0.0002 * a + 0.0003
     b = phi11 + phi12 * np.log(N)  # Darendeli (2001) Eq 9.1d
@@ -1004,7 +1019,9 @@ def produce_Darendeli_curves(
     GGmax = np.zeros((n_strain_pts, n_layer))
     xi = np.zeros_like(GGmax)
     for i in range(n_layer):
-        GGmax[:, i] = 1.0 / (1 + (gamma / gamma_r[i]) ** a)  # G of i-th layer (Eq 9.2a)
+        GGmax[:, i] = 1.0 / (
+            1 + (gamma / gamma_r[i]) ** a
+        )  # G of i-th layer (Eq 9.2a)
         D_masing_1 = (100.0 / np.pi) * (  # unit: % (page 226)
             4
             * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
@@ -1019,7 +1036,9 @@ def produce_Darendeli_curves(
             * sigma_0[i] ** phi9
             * (1 + phi10 * np.log(frq))
         )  # Eq 9.1c (page 221)  # noqa: E501, LN001
-        xi[:, i] = b * GGmax[:, i] ** 0.1 * D_masing + D_min  # Eq 9.2b (page 224). Unit: percent
+        xi[:, i] = (
+            b * GGmax[:, i] ** 0.1 * D_masing + D_min
+        )  # Eq 9.2b (page 224). Unit: percent
 
     xi /= 100.0
     gamma_r /= 100.0
@@ -1083,8 +1102,8 @@ def _optimization_kernel(
         A parameter of the HH model that defines the "speed" of transition from
         MKZ to FKZ
     gamma_t : float
-        The shear strain at which the transition from MKZ to FKZ happens.
-        Unit: 1
+        The shear strain at which the transition from MKZ to FKZ happens. Unit:
+        1
     d : float
         The "shape power" parameter in the FKZ model.
 
@@ -1104,7 +1123,9 @@ def _optimization_kernel(
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
         gamma_t_LB = 0.005  # for very deep layers, tau_MKZ may be larger than tau_f at gamma_t_LB
 
-    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)  # do it again
+    index_gamma_t_LB, _ = hlp.find_closest_index(
+        x, gamma_t_LB / 100.0
+    )  # do it again
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
         gamma_t_LB = 0.001
 
@@ -1168,8 +1189,8 @@ def __find_x_t_and_d(
         T_MKZ: np.ndarray,
 ) -> tuple[float, float]:
     """
-    Find the ``x_t`` (transition strain) that minimizes the "area" between
-    the MKZ stress curve and the FKZ stress curve.
+    Find the ``x_t`` (transition strain) that minimizes the "area" between the
+    MKZ stress curve and the FKZ stress curve.
 
     Parameters
     ----------
@@ -1221,7 +1242,8 @@ def __calc_area(
     r"""
     Calculate the "area" between the MKZ stress curve and the FKZ stress curve.
     The MKZ stress curve is supplied as a parameter, and the FKZ stress curve
-    is determined by ``x``, ``Gmax``, ``mu``, ``d``, ``tau_f``, and ``gamma_t``.
+    is determined by ``x``, ``Gmax``, ``mu``, ``d``, ``tau_f``, and
+    ``gamma_t``.
 
     Parameters
     ----------
@@ -1254,9 +1276,13 @@ def __calc_area(
     for j in range(len(range_d)):
         d = range_d[j]
         T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
-        range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0  # unit: 1
+        range_gamma_t = (
+            np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
+        )  # unit: 1
 
-        copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)  # "copt" = cross-over point
+        copt, _ = hlp.find_closest_index(
+            np.abs(T_MKZ - T_FKZ), 0
+        )  # "copt" = cross-over point
         gamma_t = x[copt]
         if (gamma_t >= range_gamma_t[0]) and (gamma_t <= range_gamma_t[-1]):
             diff_T = np.abs(T_MKZ[: copt + 1] - T_FKZ[: copt + 1])

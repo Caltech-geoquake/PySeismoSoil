@@ -17,44 +17,43 @@ class SVM:
     """
     Class implementation for the Sediment Velocity Model (SVM).
 
-    Original paper:
-        Shi & Asimaki (2018) "A generic velocity profile for basin sediments in
-        California conditioned on Vs30". Seismological Research Letters, 89(4)
+    Original paper: Shi & Asimaki (2018) "A generic velocity profile for basin
+    sediments in California conditioned on Vs30". Seismological Research
+    Letters, 89(4)
 
     Parameters
     ----------
     target_Vs30 : float
         The Vs30 value to be queried. Unit: m/s.
-    z1 : float | None
+    z1 : float | None, default=None
         The depth to bedrock (1,000 m/s rock). Unit: m. If ``None``, it will be
         estimated from Vs30 using an empirical correlation (see documentation
-        of `helper_site_response.calc_z1_from_Vs30()`).
-    Vs_cap : bool | float
-        Whether to "cap" the Vs profile or not.
-        If True, then the Vs profile is capped at 1000.0 m/s; if specified
-        as another real number, Vs profile is capped at that value.
-        If the resultant Vs profile does not reach ``Vs_cap`` at ``z1``, it
-        will be "glued" to ``Vs_cap``, resulting in a velocity impedance at
-        ``z1``. If the Vs profile exceeds ``Vs_cap`` at a depth shallower
-        than ``z1``, then the smooth Vs profile is truncated at a depth where
-        ``Vs = eta * Vs_cap``, then filled down to ``z1`` with linearly
-        increasing Vs values.
-    eta : float
+        of ``helper_site_response.calc_z1_from_Vs30()``).
+    Vs_cap : bool | float, default=True
+        Whether to "cap" the Vs profile or not. If True, then the Vs profile is
+        capped at 1000.0 m/s; if specified as another real number, Vs profile
+        is capped at that value. If the resultant Vs profile does not reach
+        ``Vs_cap`` at ``z1``, it will be "glued" to ``Vs_cap``, resulting in a
+        velocity impedance at ``z1``. If the Vs profile exceeds ``Vs_cap`` at a
+        depth shallower than ``z1``, then the smooth Vs profile is truncated at
+        a depth where ``Vs = eta * Vs_cap``, then filled down to ``z1`` with
+        linearly increasing Vs values.
+    eta : float, default=0.90
         If Vs will reach ``Vs_cap`` (usually 1000 m/s) before the depth of
-        ``z1``, the SVM Vs profile will stop at ``Vs = eta * Vs_cap``, and
-        then a linear Vs gradation will be filled from ``eta * Vs_cap`` to
-        ``Vs_cap``. Do not change this parameter, unless you know what you
-        are doing.
-    show_fig : bool
+        ``z1``, the SVM Vs profile will stop at ``Vs = eta * Vs_cap``, and then
+        a linear Vs gradation will be filled from ``eta * Vs_cap`` to
+        ``Vs_cap``. Do not change this parameter, unless you know what you are
+        doing.
+    show_fig : bool, default=False
         Whether to plot the generated Vs profile.
-    iterate : bool
-        Whether to iteratively adjust the input Vs30 so that the actual
-        Vs30 (calculated from the resultant Vs profile) falls within 10 m/s
-        of the ``target_Vs30``. (There is usually no need to do this.)
-    verbose : bool
-        Whether to print iteration progress (trial Vs30 value and
-        calculated Vs30 value) on the terminal. It has no effects if ``iterate``
-        is ``False``.
+    iterate : bool, default=False
+        Whether to iteratively adjust the input Vs30 so that the actual Vs30
+        (calculated from the resultant Vs profile) falls within 10 m/s of the
+        ``target_Vs30``. (There is usually no need to do this.)
+    verbose : bool, default=False
+        Whether to print iteration progress (trial Vs30 value and calculated
+        Vs30 value) on the terminal. It has no effects if ``iterate`` is
+        ``False``.
 
     Attributes
     ----------
@@ -106,7 +105,9 @@ class SVM:
         if eta <= 0 or eta > 1:
             raise ValueError('`eta` must be between (0, 1].')
 
-        thk_addl_layer = 2.5 - thk  # thickness of "additional" layer to be added on top
+        thk_addl_layer = (
+            2.5 - thk
+        )  # thickness of "additional" layer to be added on top
 
         # Note 1: The first layer of Vs_analyt (before adding any new layers on
         #         top) is Vs0. The final Vs profile should have a homogeneous Vs
@@ -130,7 +131,9 @@ class SVM:
         # q2 = 2.9981  # noqa: E800
         # q3 = 0.03073  # noqa: E800
 
-        r1 = -59.67  # updated on 2018/1/2: improved curve fitting accuracy for k_
+        r1 = (
+            -59.67
+        )  # updated on 2018/1/2: improved curve fitting accuracy for k_
         r2 = -0.2722
         r3 = 11.132
 
@@ -144,7 +147,10 @@ class SVM:
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
             Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
-            vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])  # just one layer
+            vs_profile = np.array([
+                [z1, Vs0_],
+                [0.0, 1000.0],
+            ])  # just one layer
         else:  # this is most of the cases...
             Vs30 = target_Vs30
             iteration_flag = True
@@ -154,11 +160,14 @@ class SVM:
                 Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
 
                 k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
-                n_ = np.max(
-                    [1.0, s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30)]
-                )
+                n_ = np.max([
+                    1.0,
+                    s1 * np.exp(s2 * Vs30) + s3 * np.exp(s4 * Vs30),
+                ])
 
-                z_array_analyt = np.arange(0.0, z1 - thk_addl_layer, thk)  # depth array
+                z_array_analyt = np.arange(
+                    0.0, z1 - thk_addl_layer, thk
+                )  # depth array
 
                 # thickness array (for analytical Vs)
                 th_array_analyt = sr.dep2thk(z_array_analyt)
@@ -176,7 +185,9 @@ class SVM:
                 temp_Vs_profile = np.vstack((array1, array2))
 
                 if iterate is False:
-                    iteration_flag = False  # abort while loop after only one run
+                    iteration_flag = (
+                        False  # abort while loop after only one run
+                    )
                 else:
                     # -------  Check if actual Vs30 matches target Vs30 -------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
@@ -215,7 +226,9 @@ class SVM:
             temp_Vs_profile = np.vstack((array1, array2))
 
             # ---------   Prepare output variables  ---------------
-            if Vs_cap is not False:  # if we need to "cap" the Vs profile somehow
+            if (
+                Vs_cap is not False
+            ):  # if we need to "cap" the Vs profile somehow
                 # if Vs_cap value not specified (i.e., user inputs "True")
                 if Vs_cap is True:
                     Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap
@@ -225,7 +238,9 @@ class SVM:
                     # find the index from which Vs_analyt exceeds Vs_cap
                     index_Vs_cap = np.where(Vs_analyt > Vs_cap)[0][0]
                 else:
-                    index_Vs_cap = np.nan  # use NaN to denote the alternative situation
+                    index_Vs_cap = (
+                        np.nan
+                    )  # use NaN to denote the alternative situation
 
                 # total number of layers in the smooth profile (i.e., Vs_analyt)
                 end_index = len(Vs_analyt)
@@ -294,16 +309,16 @@ class SVM:
 
         Parameters
         ----------
-        fig : Figure | None
+        fig : Figure | None, default=None
             Figure object. If None, a new figure will be created.
-        ax : Axes | None
+        ax : Axes | None, default=None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
-        dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+        figsize : tuple[float, float], default=(2.6, 3.2)
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float, default=100
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs : dict[Any, Any]
             Other keyword arguments to be passed to
             ``helper_site_response.plot_Vs_profile()``.
@@ -340,20 +355,20 @@ class SVM:
             show_fig: bool = False,
     ) -> Vs_Profile:
         """
-        Return the discretized Vs profile (with user-specified layer
-        thickness, or Vs increment).
+        Return the discretized Vs profile (with user-specified layer thickness,
+        or Vs increment).
 
         Parameters
         ----------
-        fixed_thk : float
+        fixed_thk : float, default=None
             The layer thickness for each layer.
-        Vs_increment : float
+        Vs_increment : float, default=None
             The Vs increment between adjacent layers.
-        at_midpoint : bool
-            Whether to return Vs values queried at the top of each layer
-            depth. It is strongly recommended that you use `True`. Using
-            `False` will produce biased Vs profiles.
-        show_fig : bool
+        at_midpoint : bool, default=True
+            Whether to return Vs values queried at the top of each layer depth.
+            It is strongly recommended that you use ``True``. Using ``False``
+            will produce biased Vs profiles.
+        show_fig : bool, default=False
             Whether to show the figure of smooth and discretized profiles.
 
         Returns
@@ -478,31 +493,31 @@ class SVM:
 
         Parameters
         ----------
-        seed : float | None
+        seed : float | None, default=None
             The seed value for setting the random state. It not set, this
             method automatically uses the current time to generate a seed.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show the figure of smooth and randomized profiles.
-        use_Toros_layering : bool
-            Whether to use the layering relation in Toro (1995) instead
-            of Eq (7) of Shi & Asimaki (2018).
-        use_Toros_std : bool
-            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
-            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
-        vs30_z1_compliance : bool
-            Whether to ensure that the resultant Vs30 and z1 of the
-            randomized profile are compliant with the user-specified Vs30 and z1
-            values. The criteria for "compliance" are:
+        use_Toros_layering : bool, default=False
+            Whether to use the layering relation in Toro (1995) instead of Eq
+            (7) of Shi & Asimaki (2018).
+        use_Toros_std : bool, default=False
+            Whether to use the standard deviation (i.e., sigma(ln(Vs))) in Toro
+            (1995) instead of Eq (9) of Shi & Asimaki (2018).
+        vs30_z1_compliance : bool, default=False
+            Whether to ensure that the resultant Vs30 and z1 of the randomized
+            profile are compliant with the user-specified Vs30 and z1 values.
+            The criteria for "compliance" are:
                 1. The absolute difference between the randomized and target
                    Vs30 is < 25 m/s;
                 2. The relative difference (between the randomized profile and
                    the base profile) of the last soil layer’s Vs is < 5%;
                 3. The relative difference of the randomized and target z1 is
                    < 20%.
-        verbose : bool
-            Whether to show the progress of iteratively searching for
-            compliant randomized Vs profile. Only effective if
-            ``vs30_z1_compliance`` is ``True``.
+        verbose : bool, default=True
+            Whether to show the progress of iteratively searching for compliant
+            randomized Vs profile. Only effective if ``vs30_z1_compliance`` is
+            ``True``.
 
         Returns
         -------
@@ -581,18 +596,18 @@ class SVM:
 
         Parameters
         ----------
-        seed : int
+        seed : int, default=None
             The seed value for setting the random state. It not set, this
-            method automatically uses the current time to generate a seed.
-            Not effective if ``vs30_z1_compliance`` is set to ``True``.
-        show_fig : bool
+            method automatically uses the current time to generate a seed. Not
+            effective if ``vs30_z1_compliance`` is set to ``True``.
+        show_fig : bool, default=False
             Whether to show the figure of smooth and randomized profiles.
-        use_Toros_layering : bool
-            Whether to use the layering relation in Toro (1995) instead
-            of Eq (7) of Shi & Asimaki (2018).
-        use_Toros_std : bool
-            Whether to use the standard deviation (i.e., sigma(ln(Vs)))
-            in Toro (1995) instead of Eq (9) of Shi & Asimaki (2018).
+        use_Toros_layering : bool, default=False
+            Whether to use the layering relation in Toro (1995) instead of Eq
+            (7) of Shi & Asimaki (2018).
+        use_Toros_std : bool, default=False
+            Whether to use the standard deviation (i.e., sigma(ln(Vs))) in Toro
+            (1995) instead of Eq (9) of Shi & Asimaki (2018).
 
         Returns
         -------
@@ -614,7 +629,9 @@ class SVM:
 
         while len(z_bot) == 0 or z_bot[-1] < self.z1:
             if use_Toros_layering:
-                rate = 1.98 * (z_top[-1] + 10.86) ** (-0.89)  # Eq (2) of Toro (1995)
+                rate = 1.98 * (z_top[-1] + 10.86) ** (
+                    -0.89
+                )  # Eq (2) of Toro (1995)
 
                 # The parameter for the Poisson process equals to 1/rate, because
                 # Toro (1995) says the unit of `rate` is 1/m, and also as written
@@ -630,7 +647,9 @@ class SVM:
                 func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
-                    while ier != 1:  # keeps trying until fsolve() properly converges
+                    while (
+                        ier != 1
+                    ):  # keeps trying until fsolve() properly converges
                         mean_thk, info, ier, msg = fsolve(
                             func,
                             z_top[-1] + 4.0,
@@ -639,7 +658,9 @@ class SVM:
                     # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
-                    while ier != 1:  # keeps trying until fzero() properly converges
+                    while (
+                        ier != 1
+                    ):  # keeps trying until fzero() properly converges
                         mean_thk, info, ier, msg = fsolve(
                             func,
                             z_top[-1] + 4.0,
@@ -653,7 +674,9 @@ class SVM:
                 mean_thk = mean_thk[0]
 
                 z_mid_temp = z_top[-1] + mean_thk / 2.0
-                std_thk = 0.951 * z_mid_temp**0.628  # Eq (8) of Shi & Asimaki (2018)
+                std_thk = (
+                    0.951 * z_mid_temp**0.628
+                )  # Eq (8) of Shi & Asimaki (2018)
 
                 # randomized thickness based on mean and std
                 thk_rand = np.random.normal(mean_thk, std_thk)
@@ -750,7 +773,9 @@ class SVM:
         # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
-        np.random.seed([2 * seed])  # specify seed value to random number generator
+        np.random.seed([
+            2 * seed
+        ])  # specify seed value to random number generator
 
         for i in range(0, len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
@@ -814,8 +839,8 @@ class SVM:
             array: np.ndarray, value: float
     ) -> tuple[int, float]:
         """
-        Find the index in `array` which contains the closest value to `value`.
-        NaN values within `array` are omitted implicitly.
+        Find the index in ``array`` which contains the closest value to
+        ``value``. NaN values within ``array`` are omitted implicitly.
 
         Parameters
         ----------

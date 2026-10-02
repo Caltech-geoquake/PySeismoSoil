@@ -16,34 +16,32 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 class Ground_Motion:
-    """
+    r"""
     Class implementation of an earthquake ground motion.
 
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the motion data.
+        - If str: the full file name on the hard drive containing the data.
+        - If np.ndarray: the numpy array containing the motion data.
 
         The motion data can be acceleration, velocity, or displacement.
 
-        The data can have one column (which contains the motion) or two
-        columns (1st column: time; 2nd column: motion). If only one column
-        is supplied, another input parameter ``dt`` must also be supplied.
+        The data can have one column (which contains the motion) or two columns
+        (1st column: time; 2nd column: motion). If only one column is supplied,
+        another input parameter ``dt`` must also be supplied.
     unit : str
-        Valid values include:
-            ['m', 'cm',
-            'm/s', 'cm/s',
-            'm/s/s', 'cm/s/s', 'gal', 'g']
-    motion_type : Literal['accel', 'veloc', 'displ']
+        Valid values include: ['m', 'cm', 'm/s', 'cm/s', 'm/s/s', 'cm/s/s',
+        'gal', 'g']
+    motion_type : Literal['accel', 'veloc', 'displ'], default='accel'
         Specifying what type of motion "data" contains. It needs to be
-        consistent with "unit". For example, if motion_type is "accel" and
-        unit is "m/s", an exception will be raised.
-    dt : float | None
+        consistent with "unit". For example, if motion_type is "accel" and unit
+        is "m/s", an exception will be raised.
+    dt : float | None, default=None
         Recording time interval of the ground motion. If ``data`` has only one
         column, this parameter must be supplied. If ``data`` has two columns,
         this parameter is ignored.
-    sep : str
+    sep : str, default='\t'
         Delimiter character for reading the text file. If ``data`` is supplied
         as a numpy array, this parameter is ignored.
     **kwargs_to_genfromtxt : dict[Any, Any]
@@ -57,14 +55,14 @@ class Ground_Motion:
     time : np.ndarray
         1D numpy array: the time points in seconds.
     accel : np.ndarray
-        A numpy array of two columns, whose first column is identical to "time",
-        and second column is the acceleration in SI unit.
+        A numpy array of two columns, whose first column is identical to
+        "time", and second column is the acceleration in SI unit.
     veloc : np.ndarray
-        A numpy array of two columns, whose first column is identical to "time",
-        and second column is the velocity in SI unit.
+        A numpy array of two columns, whose first column is identical to
+        "time", and second column is the velocity in SI unit.
     displ : np.ndarray
-        A numpy array of two columns, whose first column is identical to "time",
-        and second column is the displacement in SI unit.
+        A numpy array of two columns, whose first column is identical to
+        "time", and second column is the displacement in SI unit.
     npts : int
         Number of time points in the motion.
     pga : float
@@ -82,16 +80,16 @@ class Ground_Motion:
     pgd_in_cm : float
         Peak ground displacement in cm units.
     Arias_Intensity : np.ndarray
-        A numpy array of two columns, whose first column is identical to "time",
-        and second column is the Arias intensity.
+        A numpy array of two columns, whose first column is identical to
+        "time", and second column is the Arias intensity.
     Arias_Intensity_normalized : np.ndarray
-        A numpy array of two columns, whose first column is identical to "time",
-        and second column is the normalized Arias intensity.
+        A numpy array of two columns, whose first column is identical to
+        "time", and second column is the normalized Arias intensity.
     peak_Arias_Intensity : float
         The last element of the second column of Arias_Intensity.
     T5_95 : float
-        The time interval (in seconds) between 5% of peak Arias intensity
-        to 95% of peak Arias intensity.
+        The time interval (in seconds) between 5% of peak Arias intensity to
+        95% of peak Arias intensity.
     rms_accel : float
         Root-mean-square acceleration of the ground motion.
     rms_veloc : float
@@ -243,17 +241,17 @@ class Ground_Motion:
 
         Parameters
         ----------
-        real_val : bool
+        real_val : bool, default=True
             Whether to return the amplitude (or "magnitude") of the complex
             numbers.
-        double_sided : bool
+        double_sided : bool, default=False
             Whether to return the second half of the spectrum (i.e. beyond the
             Nyquist frequency).
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show figures of the spectrum.
 
-        Return
-        ------
+        Returns
+        -------
         fs : Frequency_Spectrum
             A frequency spectrum object.
         """
@@ -279,28 +277,29 @@ class Ground_Motion:
     ) -> tuple[np.ndarray, ...]:
         """
         Get elastic response spectra of the ground motion, using the "exact"
-        solution to the equation of motion (Section 5.2, Dynamics of Structures,
-        Second Edition, by Anil K. Chopra).
+        solution to the equation of motion (Section 5.2, Dynamics of
+        Structures, Second Edition, by Anil K. Chopra).
 
         Parameters
         ----------
-        T_min : float
+        T_min : float, default=0.01
             Minimum period value to calculate the response spectra. Unit: sec.
-        T_max : float
+        T_max : float, default=10
             Maximum period value to calculate the response spectra. Unit: sec.
-        n_pts : int
+        n_pts : int, default=60
             Number of points you want for the response spectra. A high number
             increases computation time.
-        damping : float
+        damping : float, default=0.05
             Damping of the dash pots. Do not use "percent" as unit. Unit: 1
             (i.e., not percent).
-        show_fig : bool
+        show_fig : bool, default=True
             Whether to show a figure of the response spectra.
-        parallel : bool
+        parallel : bool, default=False
             Whether to perform the calculation in parallel.
-        n_cores : int | None
-            Number of cores to use in parallel. Not necessary if not ``parallel``.
-        subsample_interval : int
+        n_cores : int | None, default=None
+            Number of cores to use in parallel. Not necessary if not
+            ``parallel``.
+        subsample_interval : int, default=1
             The interval at which to subsample the input acceleration in the
             time domain. A higher number reduces computation time, but could
             lead to less accurate results.
@@ -337,18 +336,18 @@ class Ground_Motion:
 
         Parameters
         ----------
-        show_as_unit : str
+        show_as_unit : str, default='m'
             What unit to convert the ground motion into, when plotting.
-        fig : Figure | None
+        fig : Figure | None, default=None
             Figure object. If None, a new figure will be created.
-        ax : Axes | None
+        ax : Axes | None, default=None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
-        dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+        figsize : tuple[float, float], default=(5, 6)
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float, default=100
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
 
         Returns
         -------
@@ -396,7 +395,7 @@ class Ground_Motion:
 
         Parameters
         ----------
-        unit : Literal['m/s/s', 'cm/s/s', 'gal', 'g']
+        unit : Literal['m/s/s', 'cm/s/s', 'gal', 'g'], default='m/s/s'
             What unit to convert the acceleration into.
 
         Returns
@@ -540,10 +539,10 @@ class Ground_Motion:
 
         Parameters
         ----------
-        factor : float
-            The factor to multiply to the original acceleration (with the
-            unit of m/s/s)
-        target_PGA_in_g : float | None
+        factor : float, default=1.0
+            The factor to multiply to the original acceleration (with the unit
+            of m/s/s)
+        target_PGA_in_g : float | None, default=None
             The target PGA (in g). If it is not None, it overrides ``factor``.
 
         Returns
@@ -576,15 +575,15 @@ class Ground_Motion:
         limit : tuple[float, float]
             The lower/upper bounds of time (e.g., [2, 95]) or normalized Arias
             intensity (e.g., [0.05, 0.95]).
-        arias : bool
+        arias : bool, default=True
             If ``True``, ``limit`` means the normalized Arias intensity.
             Otherwise, ``limit`` means the actual time.
-        extend : tuple[float, float]
+        extend : tuple[float, float], default=(0, 0)
             How many seconds to extend before and after the original truncated
             time limits. For example, if extend is [5, 5] sec, and the original
-            time limits are [3, 50] sec, then the actual time limits are
-            [0, 55] sec. (3 - 5 = -2 smaller than 0, so truncated at 0.)
-        show_fig : bool
+            time limits are [3, 50] sec, then the actual time limits are [0,
+            55] sec. (3 - 5 = -2 smaller than 0, so truncated at 0.)
+        show_fig : bool, default=False
             Whether to show the waveforms before and after truncation.
 
         Returns
@@ -712,21 +711,22 @@ class Ground_Motion:
         transfer_function : Frequency_Spectrum
             The transfer function to apply to the ground motion. It only needs
             to be "single-sided" (see notes below).
-        taper : bool
+        taper : bool, default=False
             Whether to taper the input acceleration (using Tukey taper)
-        extrap_tf : bool
+        extrap_tf : bool, default=True
             Whether to extrapolate the transfer function if its frequency range
             does not reach the frequency range implied by the input motion
-        deconv : bool
+        deconv : bool, default=False
             If ``False``, a regular amplification is performed; otherwise, the
-            transfer function is "deducted" from the input motion ("deconvolution").
-        show_fig : bool
-            Whether to show an illustration of how the calculation is
-            carried out.
-        dpi : float
+            transfer function is "deducted" from the input motion
+            ("deconvolution").
+        show_fig : bool, default=False
+            Whether to show an illustration of how the calculation is carried
+            out.
+        dpi : float, default=100
             Desired DPI for the figures; only effective when ``show_fig`` is
             ``True``.
-        return_fig_obj : bool
+        return_fig_obj : bool, default=False
             Whether to return figure and axis objects to the caller.
 
         Returns
@@ -745,12 +745,11 @@ class Ground_Motion:
 
         Notes
         -----
-        "Single sided":
-            For example, the sampling time interval of ``input_motion`` is 0.01
-            sec, then the Nyquist frequency is 50 Hz. Therefore, the transfer
-            function needs to contain information at least up to the Nyquist
-            frequency, i.e., at least 0-50 Hz, and anything above 50 Hz will
-            not affect the input motion at all.
+        "Single sided": For example, the sampling time interval of
+        ``input_motion`` is 0.01 sec, then the Nyquist frequency is 50 Hz.
+        Therefore, the transfer function needs to contain information at least
+        up to the Nyquist frequency, i.e., at least 0-50 Hz, and anything above
+        50 Hz will not affect the input motion at all.
         """
         if not isinstance(transfer_function, Frequency_Spectrum):
             raise TypeError(
@@ -792,9 +791,9 @@ class Ground_Motion:
         ----------
         soil_profile : Vs_Profile
             The soil profile through which to deconvolve the gound motion.
-        boundary : Literal['elastic', 'rigid']
+        boundary : Literal['elastic', 'rigid'], default='elastic'
             The type of boundary of the bottom of the soil profile.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure that illustrates the deconvolution
             process.
 
@@ -832,22 +831,22 @@ class Ground_Motion:
             output_accel_label: str = 'Output',
     ) -> tuple[Figure, Axes]:
         """
-        Compare with another ground motion: plot comparison figures showing
-        two time histories and the transfer function between them.
+        Compare with another ground motion: plot comparison figures showing two
+        time histories and the transfer function between them.
 
         Parameters
         ----------
         another_ground_motion : Ground_Motion
             Another ground motion object.
-        this_ground_motion_as_input : bool
+        this_ground_motion_as_input : bool, default=True
             If ``True``, this ground motion is treated as the input ground
             motion. Otherwise, the other ground motion is treated as the input.
-        smooth : bool
+        smooth : bool, default=True
             In the comparison plot, whether to also show the smoothed
             amplification factor.
-        input_accel_label : str
+        input_accel_label : str, default='Input'
             The text label for the input acceleration in the figure legend.
-        output_accel_label : str
+        output_accel_label : str, default='Output'
             The text label for the output acceleration in the figure legend.
 
         Returns
@@ -909,9 +908,9 @@ class Ground_Motion:
         ----------
         soil_profile : Vs_Profile
             The soil profile through which to deconvolve the gound motion.
-        boundary : Literal['elastic', 'rigid']
+        boundary : Literal['elastic', 'rigid'], default='elastic'
             The type of boundary of the bottom of the soil profile.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure that illustrates the deconvolution
             process.
 
@@ -949,10 +948,10 @@ class Ground_Motion:
 
         Parameters
         ----------
-        cutoff_freq : float
+        cutoff_freq : float, default=0.20
             The frequency (unit: Hz) for high passing. Energies below this
             frequency are filtered out.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show figures comparing before and after.
 
         Returns
@@ -979,13 +978,14 @@ class Ground_Motion:
         ----------
         cutoff_freq : float
             Cut-off frequency (unit: Hz).
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure of "before vs after"
-        filter_order : int
+        filter_order : int, default=4
             Filter order.
-        padlen : int
-            Pad length (the number of elements by which to extend x at both ends
-            of axis before applying the filter). If None, use the default value
+        padlen : int, default=150
+            Pad length (the number of elements by which to extend x at both
+            ends of axis before applying the filter). If None, use the default
+            value
             (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
@@ -1016,13 +1016,14 @@ class Ground_Motion:
         ----------
         cutoff_freq : float
             Cut-off frequency (unit: Hz).
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure of "before vs after"
-        filter_order : int
+        filter_order : int, default=4
             Filter order.
-        padlen : int
-            Pad length (the number of elements by which to extend x at both ends
-            of axis before applying the filter). If None, use the default value
+        padlen : int, default=150
+            Pad length (the number of elements by which to extend x at both
+            ends of axis before applying the filter). If None, use the default
+            value
             (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
@@ -1053,13 +1054,14 @@ class Ground_Motion:
         ----------
         cutoff_freq : tuple[float, float]
             Cut-off frequencies (in Hz), from low to high.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure of "before vs after"
-        filter_order : int
+        filter_order : int, default=4
             Filter order.
-        padlen : int
-            Pad length (the number of elements by which to extend x at both ends
-            of axis before applying the filter). If None, use the default value
+        padlen : int, default=150
+            Pad length (the number of elements by which to extend x at both
+            ends of axis before applying the filter). If None, use the default
+            value
             (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
@@ -1090,14 +1092,14 @@ class Ground_Motion:
         ----------
         cutoff_freq : tuple[float, float]
             Cut-off frequencies (in Hz), from low to high.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure of "before vs after"
-        filter_order : int
+        filter_order : int, default=4
             Filter order.
-        padlen : int
-            padlen : int
-            Pad length (the number of elements by which to extend x at both ends
-            of axis before applying the filter). If None, use the default value
+        padlen : int, default=150
+            Pad length (the number of elements by which to extend x at both
+            ends of axis before applying the filter). If None, use the default
+            value
             (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
 
         Returns
@@ -1122,20 +1124,20 @@ class Ground_Motion:
             motion_prec: str = '%.5g',
             unit: str = 'm/s/s',
     ) -> None:
-        """
+        r"""
         Save the acceleration as a text file.
 
         Parameters
         ----------
         fname : str
             File name (including path).
-        sep : str
+        sep : str, default='\t'
             Delimiter.
-        t_prec : str
+        t_prec : str, default='%.5g'
             The precision specifier for the "time" column.
-        motion_prec : str
+        motion_prec : str, default='%.5g'
             The precision specifier for the "motion" column.
-        unit : str
+        unit : str, default='m/s/s'
             What unit shall the exported acceleration be in.
         """
         fmt = [t_prec, motion_prec]

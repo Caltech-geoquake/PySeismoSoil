@@ -15,21 +15,21 @@ class GOF_Scores:
     Parameters
     ----------
     measurement : np.ndarray
-        A 2D numpy array with 2 columns. The 0th column contains the time
-        in seconds, and the 1st column contains an acceleration time series.
+        A 2D numpy array with 2 columns. The 0th column contains the time in
+        seconds, and the 1st column contains an acceleration time series.
     simulation : np.ndarray
-        A 2D numpy array with 2 columns. The 0th column contains the time
-        in seconds, and the 1st column contains an acceleration time series.
+        A 2D numpy array with 2 columns. The 0th column contains the time in
+        seconds, and the 1st column contains an acceleration time series.
 
     Attributes
     ----------
     measurement : np.ndarray
-        Same as `measurement` parameter.
+        Same as ``measurement`` parameter.
     simulation : np.ndarray
-        Same as `simulation` parameter.
+        Same as ``simulation`` parameter.
     scores : np.ndarray
-        When `calc_scores()` has been run, holds the computed
-        goodness-of-fit scores.
+        When ``calc_scores()`` has been run, holds the computed goodness-of-fit
+        scores.
 
     Raises
     ------
@@ -86,20 +86,27 @@ class GOF_Scores:
                 count += 1
 
         text += '---------------------------------------\n'
-        text += f'Average Score: {sum/count:.3f}\n'
+        text += f'Average Score: {sum / count:.3f}\n'
 
         return text
 
     def get_meas(self) -> np.ndarray:
-        """Return two-column measurement array, where the first column is time."""
+        """
+        Return two-column measurement array, where the first column is time.
+        """
         return self.measurement
 
     def get_simu(self) -> np.ndarray:
-        """Return two-column simulation array, where the first column is time."""
+        """
+        Return two-column simulation array, where the first column is time.
+        """
         return self.simulation
 
     def get_scores(self) -> np.ndarray:
-        """Return entire score array, with 'None' for scores that haven't been calculated."""
+        """
+        Return entire score array, with 'None' for scores that haven't been
+        calculated.
+        """
         return self.scores
 
     def calc_scores(
@@ -116,40 +123,44 @@ class GOF_Scores:
             show_fig: bool = False,
     ) -> np.ndarray:
         """
-        Calculate the goodness-of-fit scores with the given measurement
-        and simulation time series.
+        Calculate the goodness-of-fit scores with the given measurement and
+        simulation time series.
 
         Parameters
         ----------
-        fmin : float | None
-            Minimum frequency to be considered, in units of Hz.
-            Default is (sampling frequency)/(length of time series).
-        fmax : float | None
-            Maximum frequency to be considered, in units of Hz.
-            Default is (sampling frequency)/2.0.
-        score_arias : bool
+        fmin : float | None, default=None
+            Minimum frequency to be considered, in units of Hz. Default is
+            (sampling frequency)/(length of time series).
+        fmax : float | None, default=None
+            Maximum frequency to be considered, in units of Hz. Default is
+            (sampling frequency)/2.0.
+        score_arias : bool, default=True
             Whether or not to compute the arias intensity and energy integral
             group of scores.
-        score_rms : bool
+        score_rms : bool, default=True
             Whether or not to compute the RMS group of scores.
-        score_spectra : bool
-            Whether or not to compute the FAS and spectral acceleration group of scores.
-        score_cross_correlation : bool
-            Whether or not to compute the cross-correlation score. Only recommended if
-            the measurement and simulation time series being compared are identical
-            in start time.
-        baseline : bool
+        score_spectra : bool, default=True
+            Whether or not to compute the FAS and spectral acceleration group
+            of scores.
+        score_cross_correlation : bool, default=False
+            Whether or not to compute the cross-correlation score. Only
+            recommended if the measurement and simulation time series being
+            compared are identical in start time.
+        baseline : bool, default=True
             Whether or not to perform baseline correction of the time series.
-        verbose : bool
+        verbose : bool, default=False
             Whether or not to print output information.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether or not to plot.
 
         Returns
         -------
         scores : np.ndarray
-            A vector containing the goodness-of-fit scores, in the following order:
-            [d1, d2, d3, d4, d5, d6, d7, d8, d9, d10]
+            A vector containing the goodness-of-fit scores, in the following
+            order::
+
+                [d1, d2, d3, d4, d5, d6, d7, d8, d9, d10]
+
             If the score hasn't been calculated, it will be omitted from the
             returned array.
 
@@ -251,7 +262,7 @@ class GOF_Scores:
 
             if score_rms:
                 [
-                    print(f'{sn[ix+4]:>31}: {s: .3f}')
+                    print(f'{sn[ix + 4]:>31}: {s: .3f}')
                     for ix, s in enumerate(scores[ind : ind + 3])
                 ]
 
@@ -259,7 +270,7 @@ class GOF_Scores:
 
             if score_spectra:
                 [
-                    print(f'{sn[ix+7]:>31}: {s: .3f}')
+                    print(f'{sn[ix + 7]:>31}: {s: .3f}')
                     for ix, s in enumerate(scores[ind : ind + 2])
                 ]
 
@@ -300,19 +311,18 @@ class Batch_GOF_Scores:
 
         Parameters
         ----------
-        parallel : bool
+        parallel : bool, default=False
             Whether to use multiple CPU cores to run simulations.
-        n_cores : int | None
+        n_cores : int | None, default=1
             Number of CPU cores to be used. If ``None``, all CPU cores will be
             used.
-        options : dict[str, Any] | None
+        options : dict[str, Any] | None, default=None
             Options to be passed to the ``run()`` method for the GoF scoring.
 
         Returns
         -------
         score_results : list[GOF_Scores]
             A list of the score objects containing computed scores.
-
         """
         options = {} if options is None else options
 
@@ -341,8 +351,10 @@ class Batch_GOF_Scores:
         ----------
         all_params : list[Any]
             All the parameters needed for running the simulation. It should
-            have the following structure:
+            have the following structure::
+
                 [i, [catch_errors, options]]
+
             where:
                 - ``i`` is the index of the current simulation in the batch.
                 - ``options``: same as in the ``run()`` method

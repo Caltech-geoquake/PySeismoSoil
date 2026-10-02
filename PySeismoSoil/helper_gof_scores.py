@@ -25,7 +25,7 @@ def S_(
     Returns
     -------
     score : float | np.ndarray
-        The computed score between `meas` and `simu`.
+        The computed score between ``meas`` and ``simu``.
 
     References
     ----------
@@ -36,8 +36,8 @@ def S_(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
     """
     eps2 = 1e-12
     if isinstance(meas, (float, np.float64)):
@@ -68,8 +68,8 @@ def d_1234(
         show_fig: bool = False,
 ) -> tuple[float, float, float, float]:
     """
-    Calculate the first four goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017).
+    Calculate the first four goodness-of-fit scores in the GoF scheme described
+    in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -77,15 +77,15 @@ def d_1234(
         Measured time history. Must be two-columned.
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
-    fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
-    fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
-    baseline : bool
+    fmin : float | None, default=None
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
+    fmax : float | None, default=None
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
+    baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether or not to plot.
 
     Returns
@@ -108,8 +108,8 @@ def d_1234(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
     """
     filter_order = 4
     q = 15
@@ -179,7 +179,9 @@ def d_1234(
         tt_array = t1
 
     # Calculate scores
-    d1 = np.mean(S_(N_Ia_m[1:], N_Ia_s[1:]))  # because first element of meas is 0
+    d1 = np.mean(
+        S_(N_Ia_m[1:], N_Ia_s[1:])
+    )  # because first element of meas is 0
     d2 = np.mean(S_(N_Ie_m[1:], N_Ie_s[1:]))
     d3 = S_(Ia_m_peak, Ia_s_peak)
     d4 = S_(Ie_m_peak, Ie_s_peak)
@@ -259,24 +261,23 @@ def calc_AriasIntensity(
     Parameters
     ----------
     accel_in_SI_unit : np.ndarray
-        Acceleration in SI unit (i.e., m/s^2). It needs
-        to be in two columns, with the first column
-        being time array, and the second column being
+        Acceleration in SI unit (i.e., m/s^2). It needs to be in two columns,
+        with the first column being time array, and the second column being
         acceleration.
 
     Returns
     -------
     Ia : np.ndarray
-        Arias intensity duration as a function of time
-                    (unit: m/s^2) It also has two columns.
+        Arias intensity duration as a function of time (unit: m/s^2) It also
+        has two columns.
     Ia_peak : float
-        The maximum value of the Ia duration, which is also
-        the value of the last element in the Ia duration array.
+        The maximum value of the Ia duration, which is also the value of the
+        last element in the Ia duration array.
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
     """
     g = 9.81
 
@@ -315,15 +316,15 @@ def d_567(
         Measured time history. Must be two-columned.
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
-    fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
-    fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
-    baseline : bool
+    fmin : float | None, default=None
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
+    fmax : float | None, default=None
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
+    baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether or not to plot.
 
     Returns
@@ -344,8 +345,8 @@ def d_567(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
     """
     filter_order = 4
     q = 15
@@ -506,12 +507,12 @@ def baseline_wavelet(
 
     Parameters
     ----------
-    signal: np.ndarray
-        The signal to be corrected. Must have two columns, with the first
-        being time and the second containing the data.
-    wavelet_level: int
+    signal : np.ndarray
+        The signal to be corrected. Must have two columns, with the first being
+        time and the second containing the data.
+    wavelet_level : int, default=6
         Wavelet level.
-    wavelet_name: str
+    wavelet_name : str, default='dmey'
         Type of wavelet to use.
 
     Returns
@@ -521,8 +522,8 @@ def baseline_wavelet(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
     """
     t = signal[:, 0]
     x = signal[:, 1]
@@ -539,18 +540,18 @@ def baseline_wavelet(
 
 def calc_rms(x: np.ndarray) -> float:
     """
-    Compute the RMS of the provided signal `x`.
+    Compute the RMS of the provided signal ``x``.
 
     Parameters
     ----------
     x : np.ndarray
-        Assumed to be a two-column array, with the time in the first
-        column and the data in the second.
+        Assumed to be a two-column array, with the time in the first column and
+        the data in the second.
 
     Returns
     -------
     rms : float
-        The RMS value of `x`.
+        The RMS value of ``x``.
     """
     rms = np.sqrt(np.mean(x[:, 1] ** 2.0))
     return rms
@@ -558,23 +559,23 @@ def calc_rms(x: np.ndarray) -> float:
 
 def getAbsPeak(x: np.ndarray) -> float:
     """
-    Get the peak value of the absolute value of a signal `x`.
+    Get the peak value of the absolute value of a signal ``x``.
 
     Parameters
     ----------
     x : np.ndarray
-        Assumed to be a two-column array, with the time in the first
-        column and the data in the second.
+        Assumed to be a two-column array, with the time in the first column and
+        the data in the second.
 
     Returns
     -------
     peak : float
-        The peak value of the absolute value of `x`.
+        The peak value of the absolute value of ``x``.
 
     Raises
     ------
     TypeError
-        If the size of the second dimension of `x` is not one or two
+        If the size of the second dimension of ``x`` is not one or two
     """
     if x.shape[1] == 1:
         peak = np.max(np.abs(x))
@@ -595,8 +596,8 @@ def d_89(
         show_fig: bool = False,
 ) -> tuple[float, float]:
     """
-    Calculate the last two goodness-of-fit scores in the GoF scheme
-    described in Shi & Asimaki (2017).
+    Calculate the last two goodness-of-fit scores in the GoF scheme described
+    in Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -604,15 +605,15 @@ def d_89(
         Measured time history. Must be two-columned.
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
-    fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
-    fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
-    baseline : bool
+    fmin : float | None, default=None
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
+    fmax : float | None, default=None
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
+    baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether or not to plot.
 
     Returns
@@ -636,8 +637,8 @@ def d_89(
 
     Notes
     -----
-    Original Matlab code (c) Jian Shi, 2/17/2015
-    Ported to Python by Flora Xia, 02/2024
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
     """
     if baseline:
         measurement = sp.baseline(measurement)
@@ -790,8 +791,8 @@ def d_10(
         show_fig: bool = False,
 ) -> float:
     """
-    Cross-correlation measure of goodness-of-fit, as described in:
-    Anderson (2004).
+    Cross-correlation measure of goodness-of-fit, as described in: Anderson
+    (2004).
 
     Parameters
     ----------
@@ -799,15 +800,15 @@ def d_10(
         Measured time history. Must be two-columned.
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
-    fmin : float | None
-        Minimum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/(length of time series).
-    fmax : float | None
-        Maximum frequency to be considered, in units of Hz.
-        Default is (sampling frequency)/2.0.
-    baseline : bool
+    fmin : float | None, default=None
+        Minimum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/(length of time series).
+    fmax : float | None, default=None
+        Maximum frequency to be considered, in units of Hz. Default is
+        (sampling frequency)/2.0.
+    baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether or not to plot.
 
     Returns
@@ -957,8 +958,9 @@ def circular_convolve_d(h_t, v_j_1, j):
 def modwt(x, filters, level):
     """
     Code from: https://github.com/pistonly/modwtpy
-    filters: 'db1', 'db2', 'haar', ...
-    return: see matlab
+
+    - filters: 'db1', 'db2', 'haar', ...
+    - return: see matlab
     """
     # filter
     wavelet = pywt.Wavelet(filters)
@@ -980,6 +982,7 @@ def modwt(x, filters, level):
 def modwtmra(w, filters):
     """
     Multiresolution analysis based on MODWT
+
     Code from: https://github.com/pistonly/modwtpy
     """
     # filter

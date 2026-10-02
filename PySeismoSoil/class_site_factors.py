@@ -26,19 +26,19 @@ class Site_Factors:
         z1 (basin depth) in meters.
     PGA_in_g : float
         PGA in g.
-    lenient : bool
+    lenient : bool, default=False
         Whether to ensure the given Vs30, z1, and PGA values are within the
         valid range. If False and the given values fall outside the valid
-        range, the given values (e.g., Vs30 = 170 m/s) will be treated as
-        the closest boundary values (e.g., Vs30 = 175 m/s).
+        range, the given values (e.g., Vs30 = 170 m/s) will be treated as the
+        closest boundary values (e.g., Vs30 = 175 m/s).
 
     Attributes
     ----------
-    Vs30_array : list[int]
+    Vs30_array : list[int], default=[175, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950]
         Valid Vs30 values (class attribute).
-    z1_array : list[int]
+    z1_array : list[int], default=[8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
         Valid z1 values (class attribute).
-    PGA_array : list[float]
+    PGA_array : list[float], default=[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
         Valid PGA values (class attribute).
     Vs30 : float
         Same as the input parameter ``Vs30_in_meter_per_sec``.
@@ -132,7 +132,9 @@ class Site_Factors:
 
             PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
 
-        if 'Invalid Vs30-z1 combination' in status:  # TODO: think about whether to add leniency
+        if (
+            'Invalid Vs30-z1 combination' in status
+        ):  # TODO: think about whether to add leniency
             raise ValueError(
                 'Vs30 and z1 combination not valid. (The `lenient` '
                 'option does not apply to this type of issue.)',
@@ -153,30 +155,30 @@ class Site_Factors:
 
         Parameters
         ----------
-        method : Literal['nl_hh', 'eq_hh']
+        method : Literal['nl_hh', 'eq_hh'], default='nl_hh'
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' uses the results from nonlinear site
             response simulation, which is recommended.
-        Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (``False``).
-        show_interp_plots : bool
+        Fourier : bool, default=True
+            Whether to return Fourier-spectra-based amplification factors
+            (True) or response-spectra based factors (``False``).
+        show_interp_plots : bool, default=False
             Whether to plot interpolated curve together with the "reference
             curves".
 
         Returns
         -------
         amplif : Frequency_Spectrum
-            Amplification factors as a function of frequency.
-            (Note: Even if ``Fourier`` is set to ``False``, i.e., the user is
-            querying response spectral amplification, the returned result
-            is still (freq, amplif). The user can take the reciprocal of
-            frequency to get period.)
+            Amplification factors as a function of frequency. (Note: Even if
+            ``Fourier`` is set to ``False``, i.e., the user is querying
+            response spectral amplification, the returned result is still
+            (freq, amplif). The user can take the reciprocal of frequency to
+            get period.)
 
         Raises
         ------
         ValueError
-            When the value of `method` is not in {'nl_hh', 'eq_hh'}
+            When the value of ``method`` is not in {'nl_hh', 'eq_hh'}
         """
         if method not in {'nl_hh', 'eq_hh'}:
             raise ValueError("Currently, only 'nl_hh' and 'eq_hh' are valid.")
@@ -193,7 +195,9 @@ class Site_Factors:
             result = np.column_stack((freq, amplif))
         else:  # response spectra
             freq = 1.0 / period_or_freq
-            result = np.column_stack((freq, amplif))[::-1, :]  # so that freq increases
+            result = np.column_stack((freq, amplif))[
+                ::-1, :
+            ]  # so that freq increases
 
         return Frequency_Spectrum(result)
 
@@ -207,10 +211,10 @@ class Site_Factors:
 
         Parameters
         ----------
-        method : Literal['eq_hh']
+        method : Literal['eq_hh'], default='eq_hh'
             Which site response simulation method was used to calculate the
             amplification factors. Currently, only 'eq_hh' is valid.
-        show_interp_plots : bool
+        show_interp_plots : bool, default=False
             Whether to plot interpolated curve together with the "reference
             curves".
 
@@ -246,10 +250,10 @@ class Site_Factors:
 
         Parameters
         ----------
-        method : Literal['nl_hh', 'eq_hh']
+        method : Literal['nl_hh', 'eq_hh'], default='nl_hh'
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
-        show_interp_plots : bool
+        show_interp_plots : bool, default=False
             Whether to plot interpolated curve together with the "reference
             curves".
 
@@ -286,13 +290,13 @@ class Site_Factors:
             Specifies what to query: amplification or phase.
         data_dir : str
             Directory where the csv data files are stored.
-        method : Literal['nl_hh', 'eq_hh', 'eq_kz']
+        method : Literal['nl_hh', 'eq_hh', 'eq_kz'], default='nl_hh'
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
-        Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors (True) or response-spectra based factors (``False``).
-        show_interp_plots : bool
+        Fourier : bool, default=True
+            Whether to return Fourier-spectra-based amplification factors
+            (True) or response-spectra based factors (``False``).
+        show_interp_plots : bool, default=False
             Whether to plot interpolated curve together with the "reference
             curves".
 
@@ -360,9 +364,9 @@ class Site_Factors:
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Query amplification or phase factors from pre-computed .csv files. The
-        given Vs30, z1_in_m, and PGA_in_g values need to match the
-        pre-defined values (see `Vs30_array`, `z1_array`, and `PGA_array`
-        at the top of this file).
+        given Vs30, z1_in_m, and PGA_in_g values need to match the pre-defined
+        values (see ``Vs30_array``, ``z1_array``, and ``PGA_array`` at the top
+        of this file).
 
         Parameters
         ----------
@@ -374,13 +378,13 @@ class Site_Factors:
             Basin depth (i.e., depth to Vs = 1000 m/s). Unit: m.
         PGA : float
             Peak ground acceleration. Unit: g.
-        Fourier : bool
-            Whether to return Fourier-spectra-based amplification
-            factors or response-spectra based factors.
-        method : Literal['nl_hh', 'eq_hh', 'eq_kz']
+        Fourier : bool, default=True
+            Whether to return Fourier-spectra-based amplification factors or
+            response-spectra based factors.
+        method : Literal['nl_hh', 'eq_hh', 'eq_kz'], default='nl_hh'
             Which site response simulation method was used to calculate the
             amplification factors. 'nl_hh' is recommended.
-        data_dir : str | None
+        data_dir : str | None, default=None
             Directory where the csv data files are stored.
 
         Returns
@@ -454,9 +458,9 @@ class Site_Factors:
             Vs30_in_mps: float, z1_in_m: float, PGA_in_g: float
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         """
-        Find the indices of Vs30, z1, and PGA that surround the provided values.
-        If the provided values fall onto the "reference" Vs30, z1, or PGA values,
-        two indices are still returned.
+        Find the indices of Vs30, z1, and PGA that surround the provided
+        values. If the provided values fall onto the "reference" Vs30, z1, or
+        PGA values, two indices are still returned.
 
         The three inputs need to already within the correct range.
         """
@@ -475,15 +479,14 @@ class Site_Factors:
     @staticmethod
     def _search_sorted(value, array) -> tuple[int, int]:
         """
-        Search for the location of `value` within `array`.
+        Search for the location of ``value`` within ``array``.
 
-        Example behaviors:
+        Example behaviors::
+
             In: _search_sorted(3, [0, 1, 2, 3, 4, 5])
             Out: (2, 3)
-
             In: _search_sorted(1, [0, 1, 2, 3, 4, 5])
             Out: (0, 1)
-
             In: _search_sorted(0, [0, 1, 2, 3, 4, 5])
             Out: (0, 1)
         """
@@ -517,12 +520,13 @@ class Site_Factors:
         ----------
         ref_points : list[tuple[float, float, float]]
             Coordinates of reference points at which the values are given by
-            `values`. Each element of ``ref_points`` is the coordinate of a
+            ``values``. Each element of ``ref_points`` is the coordinate of a
             point as a tuple.
         values : list[list[float]]
-            Values of interest corresponding to each reference point. There can be
-            different versions of values at the reference points (for example, at
-            different frequencies, the reference points take on different voltages).
+            Values of interest corresponding to each reference point. There can
+            be different versions of values at the reference points (for
+            example, at different frequencies, the reference points take on
+            different voltages).
 
             So the structure of ``values`` shall look like this::
 
@@ -537,7 +541,7 @@ class Site_Factors:
         interp_points : tuple[float, float, float]
             Point at which you want to know the value. Only one point is
             allowed at a time.
-        method : Literal['linear', 'nearest', 'cubic']
+        method : Literal['linear', 'nearest', 'cubic'], default='linear'
             Method of interpolation. See documentation of
             ``scipy.interpolate.griddata``.
 
@@ -597,17 +601,17 @@ class Site_Factors:
             the same length as ``ref_points``.
         amp_interp : np.ndarray
             Interpolated amplification factor at ``query_point``.
-        phases : list[np.ndarray] | None
+        phases : list[np.ndarray] | None, default=None
             A list of phase shift factors at the reference points. Must have
             the same length as ``ref_points``.
-        phase_interp : np.ndarray | None
+        phase_interp : np.ndarray | None, default=None
             Interpolated phase shift factor at ``query_point``.
-        Fourier : bool
-            Whether the amplification factors passed in are the
-            Fourier-based factors.
+        Fourier : bool, default=True
+            Whether the amplification factors passed in are the Fourier-based
+            factors.
 
-        Return
-        ------
+        Returns
+        -------
         tuple[Figure, Axes, Axes | None]
             (fig, ax1, ax2) or (fig, ax, None). If the user also passes in the
             phase factors, then two subplots are produced, and ``ax1`` and
@@ -687,8 +691,8 @@ class Site_Factors:
             PGA_in_g: float,
     ) -> list[str]:
         """
-        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within
-        the pre-computed range.
+        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within the
+        pre-computed range.
 
         The return value (``status``) indicates the kind(s) of errors
         associated with the given input parameters.

@@ -22,19 +22,19 @@ class Site_Effect_Adjustment:
         Input ground motion.
     Vs30_in_meter_per_sec : float
         Vs30 values in SI unit.
-    z1_in_m : float | None
-        z1 (basin depth) in meters. If ``None``, it will be estimated from
-        Vs30 using an empirical correlation (see `calc_z1_from_Vs30()`
-        function in `helper_site_response.py`).
-    ampl_method : Literal['nl_hh', 'eq_hh']
+    z1_in_m : float | None, default=None
+        z1 (basin depth) in meters. If ``None``, it will be estimated from Vs30
+        using an empirical correlation (see ``calc_z1_from_Vs30()`` function in
+        ``helper_site_response.py``).
+    ampl_method : Literal['nl_hh', 'eq_hh'], default='nl_hh'
         Which site response simulation method was used to calculate the
         amplification factors. 'nl_hh' uses the results from nonlinear site
         response simulation, which is recommended.
-    lenient : bool
+    lenient : bool, default=False
         Whether to ensure the given Vs30, z1, and PGA values are within the
         valid range. If False and the given values fall outside the valid
-        range, the given values (e.g., Vs30 = 170 m/s) will be treated as
-        the closest boundary values (e.g., Vs30 = 175 m/s).
+        range, the given values (e.g., Vs30 = 170 m/s) will be treated as the
+        closest boundary values (e.g., Vs30 = 175 m/s).
 
     Attributes
     ----------
@@ -49,12 +49,12 @@ class Site_Effect_Adjustment:
     site_factor : Site_Factors
         Site factors object for the given Vs30, z1, and PGA values.
 
-    Raise
-    -----
+    Raises
+    ------
     TypeError
         When input arguments do not have correct type
     ValueError
-        When the value of `ampl_method` is not one of {'nl_hh', 'eq_hh'}
+        When the value of ``ampl_method`` is not one of {'nl_hh', 'eq_hh'}
     """
 
     input_motion: Ground_Motion
@@ -118,10 +118,9 @@ class Site_Effect_Adjustment:
 
         Parameters
         ----------
-        show_fig : bool
-            Whether to show a figure demonstrating how the adjustment
-            works.
-        return_fig_obj : bool
+        show_fig : bool, default=False
+            Whether to show a figure demonstrating how the adjustment works.
+        return_fig_obj : bool, default=False
             Whether to return the figure and axes objects.
         **kwargs_to_plot : dict[Any, Any]
             Keyword arguments to pass to ``matplotlib.pyplot.plot()``.

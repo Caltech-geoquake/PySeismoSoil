@@ -37,9 +37,9 @@ class Parameter(collections.UserDict):
     ----------
     param_dict : dict[str, float]
         Name-value pairs of the parameters.
-    allowable_keys : set[str] | None
+    allowable_keys : set[str] | None, default=None
         The allowable parameter names of the constitutive model.
-    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None
+    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None, default=None
         A function to calculate shear stress from the parameters.
 
     Attributes
@@ -128,14 +128,15 @@ class Parameter(collections.UserDict):
 
         Parameters
         ----------
-        strain_in_pct : np.ndarray
+        strain_in_pct : np.ndarray, default=STRAIN_RANGE_PCT
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
-        result : np.ndarray | None
+        np.ndarray | None
             The shear stress array, with the same shape as the strain array.
-            Its unit is identical to the unit of Gmax (one of the HH parameters).
+            Its unit is identical to the unit of Gmax (one of the HH
+            parameters).
         """
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
@@ -152,7 +153,7 @@ class Parameter(collections.UserDict):
 
         Parameters
         ----------
-        strain_in_pct : np.ndarray
+        strain_in_pct : np.ndarray, default=STRAIN_RANGE_PCT
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
@@ -178,13 +179,14 @@ class Parameter(collections.UserDict):
 
         Parameters
         ----------
-        strain_in_pct : np.ndarray
+        strain_in_pct : np.ndarray, default=STRAIN_RANGE_PCT
             Strain array. Must be a 1D numpy array. Unit: %
 
         Returns
         -------
         result : np.ndarray
-            The damping array (unit: %), with the same shape as the strain array
+            The damping array (unit: %), with the same shape as the strain
+            array
         """
         if self.func_stress is None:
             print('You did not provide a function to calculate shear stress.')
@@ -208,10 +210,10 @@ class Parameter(collections.UserDict):
 
         Parameters
         ----------
-        figsize: tuple[float, float]
+        figsize : tuple[float, float], default=None
             Figure size in inches, as a tuple of two numbers. If ``None``, use
             (3, 6).
-        dpi : float
+        dpi : float, default=100
             Figure resolution. If ``None``, use 100.
         **kwargs_to_matplotlib : dict[Any, Any]
             Keyword arguments to be passed to ``matplotlib.pyplot.plot()``.
@@ -260,8 +262,8 @@ class HH_Param(Parameter):
     Parameters
     ----------
     param_dict : dict[str, float]
-        Values of the HH model parameters. Acceptable key names are:
-            gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+        Values of the HH model parameters. Acceptable key names are: gamma_t,
+        a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Attributes
     ----------
@@ -294,8 +296,8 @@ class HH_Param(Parameter):
 
     def serialize(self) -> np.ndarray:
         """
-        Return an array of parameter values in the order of:
-        {'gamma_t', 'a', 'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
+        Return an array of parameter values in the order of: {'gamma_t', 'a',
+        'gamma_ref', 'beta', 's', 'Gmax', 'mu', 'Tmax', 'd'}
         """
         return hh.serialize_params_to_array(self.data)
 
@@ -308,8 +310,8 @@ class MKZ_Param(Parameter):
     Parameters
     ----------
     param_dict : dict[str, float]
-        Values of the HH model parameters. Acceptable key names are:
-            gamma_ref, s, beta, Gmax
+        Values of the HH model parameters. Acceptable key names are: gamma_ref,
+        s, beta, Gmax
 
     Attributes
     ----------
@@ -332,8 +334,8 @@ class MKZ_Param(Parameter):
 
     def serialize(self) -> np.ndarray:
         """
-        Return an array of parameter values in the order of:
-        {'gamma_ref', 's', 'beta', 'Gmax'}
+        Return an array of parameter values in the order of: {'gamma_ref', 's',
+        'beta', 'Gmax'}
         """
         return mkz.serialize_params_to_array(self.data)
 
@@ -342,9 +344,8 @@ class Param_Multi_Layer:
     """
     Class implementation of multiple curves.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., ``element_class``.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., ``element_class``.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -360,8 +361,9 @@ class Param_Multi_Layer:
         List of dict or a list of valid parameter class (such as ``HH_Param``),
         which contain data for parameters of each layer.
     element_class : Type[Parameter]
-        A class name, such as ``HH_Param``. Each element of ``list_of_param_dict``
-        will be used to initialize an object of ``element_class``.
+        A class name, such as ``HH_Param``. Each element of
+        ``list_of_param_dict`` will be used to initialize an object of
+        ``element_class``.
 
     Attributes
     ----------
@@ -413,7 +415,9 @@ class Param_Multi_Layer:
             return self.param_list[i]
 
         if isinstance(i, slice):  # return an object of the same class
-            return self.__class__(self.param_list[i])  # filled with the sliced data
+            return self.__class__(
+                self.param_list[i]
+            )  # filled with the sliced data
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
@@ -431,17 +435,17 @@ class Param_Multi_Layer:
 
         Parameters
         ----------
-        strain_in_pct : np.ndarray
+        strain_in_pct : np.ndarray, default=STRAIN_RANGE_PCT
             Strain array. Must be a 1D numpy array. Unit: %
-        curve_type : str | None
+        curve_type : str | None, default=None
             Either "ggmax" or "xi" for option to calculate only one of them.
             "None" will be returned for the other curve object in this case.
 
         Returns
         -------
-        mgc : Multiple_GGmax_Curves
+        mgc : 'Multiple_GGmax_Curves'
             G/Gmax curves for each soil layer.
-        mdc : Multiple_Damping_Curves
+        mdc : 'Multiple_Damping_Curves'
             Damping curves for each soil layer.
         """
         # Importing within the method to avoid circular imports
@@ -456,9 +460,12 @@ class Param_Multi_Layer:
             GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
-                curves = np.column_stack(
-                    (strain_in_pct, GGmax, strain_in_pct, damping)
-                )
+                curves = np.column_stack((
+                    strain_in_pct,
+                    GGmax,
+                    strain_in_pct,
+                    damping,
+                ))
             else:
                 curves = np.column_stack(
                     (curves, strain_in_pct, GGmax, strain_in_pct, damping),
@@ -508,16 +515,16 @@ class Param_Multi_Layer:
             sep: str = '\t',
             **kw_to_savetxt: dict[Any, Any],
     ) -> None:
-        """
+        r"""
         Save data as text file.
 
         Parameters
         ----------
         filename : str
             File name (including path) of the output file.
-        precision : str
+        precision : str, default='%.5g'
             Precision of the numbers to be saved.
-        sep : str
+        sep : str, default='\t'
             Delimiter identifier.
         **kw_to_savetxt : dict[Any, Any]
             Additional keyword arguments to pass to ``numpy.savetxt()``.
@@ -533,12 +540,11 @@ class Param_Multi_Layer:
 
 
 class HH_Param_Multi_Layer(Param_Multi_Layer):
-    """
+    r"""
     Class implementation of multiple sets of HH parameters for multiple layers.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., HH_Param.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., HH_Param.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -563,11 +569,11 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
             |      ...       |      ...        |      ...        | ... |
             +----------------+-----------------+-----------------+-----+
 
-        or a 2D numpy array containing the data of the format above, or a
-        list containing HH parameter data.
-    sep : str
-        Delimiter of the file to be imported. If ``filename_or_data`` is not
-        a file name, ``sep`` has no effect.
+        or a 2D numpy array containing the data of the format above, or a list
+        containing HH parameter data.
+    sep : str, default='\t'
+        Delimiter of the file to be imported. If ``filename_or_data`` is not a
+        file name, ``sep`` has no effect.
 
     Attributes
     ----------
@@ -626,12 +632,12 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
 
 class MKZ_Param_Multi_Layer(Param_Multi_Layer):
-    """
-    Class implementation of multiple sets of MKZ parameters for multiple layers.
+    r"""
+    Class implementation of multiple sets of MKZ parameters for multiple
+    layers.
 
-    Its behavior is similar to a list,
-    but with a more stringent requirement: all elements are of the same data
-    type, i.e., MKZ_Param.
+    Its behavior is similar to a list, but with a more stringent requirement:
+    all elements are of the same data type, i.e., MKZ_Param.
 
     The list-like behaviors available are:
         - indexing: foo[3]
@@ -656,11 +662,11 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             |      ...       |      ...        |      ...        | ... |
             +----------------+-----------------+-----------------+-----+
 
-        or a 2D numpy array containing the data of the format above, or a
-        list containing MKZ parameter data.
-    sep : str
-        Delimiter of the file to be imported. If ``filename_or_data`` is not
-        a file name, ``sep`` has no effect.
+        or a 2D numpy array containing the data of the format above, or a list
+        containing MKZ parameter data.
+    sep : str, default='\t'
+        Delimiter of the file to be imported. If ``filename_or_data`` is not a
+        file name, ``sep`` has no effect.
 
     Attributes
     ----------

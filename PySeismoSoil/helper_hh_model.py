@@ -49,9 +49,7 @@ def tau_FKZ(
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_FKZ = (
-        mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
-    )
+    T_FKZ = mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
 
     return T_FKZ
 
@@ -60,8 +58,8 @@ def transition_function(
         gamma: np.ndarray, *, a: float, gamma_t: float
 ) -> np.ndarray:
     """
-    Calculate the transition function of the HH model, as defined
-    in Equation (7) of Shi & Asimaki (2017).
+    Calculate the transition function of the HH model, as defined in Equation
+    (7) of Shi & Asimaki (2017).
 
     Parameters
     ----------
@@ -147,8 +145,8 @@ def tau_HH(
     Returns
     -------
     T_FKZ : np.ndarray
-        The shear stress determined by the HH model. Same shape as ``x``,
-        and same unit as ``Gmax``.
+        The shear stress determined by the HH model. Same shape as ``x``, and
+        same unit as ``Gmax``.
     """
     w = transition_function(gamma, a=a, gamma_t=gamma_t)
     T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
@@ -184,45 +182,45 @@ def fit_HH_x_single_layer(
     damping_data_in_pct : np.ndarray
         Damping data. Needs to have 2 columns (strain and damping ratio). Both
         columns need to use % as unit.
-    use_scipy : bool
+    use_scipy : bool, default=True
         Whether to use the "differential_evolution" algorithm in scipy
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html)
         to perform the optimization. If ``False``, use the algorithm in the
         DEAP package.
-    pop_size : int
+    pop_size : int, default=800
         The number of individuals in a generation. A larger number leads to
         potentially better curve-fitting, but a longer computing time.
-    n_gen : int
+    n_gen : int, default=100
         Number of generations that the evolution lasts. A larger number leads
         to potentially better curve-fitting, but a longer computing time.
-    lower_bound_power : float
+    lower_bound_power : float, default=-4
         The 10-based power of the lower bound of all the 9 parameters. For
         example, if your desired lower bound is 0.26, then set this parameter
         to be numpy.log10(0.26).
-    upper_bound_power : float
+    upper_bound_power : float, default=6
         The 10-based power of the upper bound of all the 9 parameters.
-    eta : float
-        Crowding degree of the mutation or crossover. A high ``eta`` will produce
-        children resembling to their parents, while a low ``eta`` will produce
-        solutions much more different.
-    seed : int
+    eta : float, default=0.1
+        Crowding degree of the mutation or crossover. A high ``eta`` will
+        produce children resembling to their parents, while a low ``eta`` will
+        produce solutions much more different.
+    seed : int, default=0
         Seed value for the random number generator.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show the curve fitting results as a figure.
-    verbose : bool
+    verbose : bool, default=False
         Whether to display information (statistics of the loss in each
         generation) on the console.
-    suppress_warnings : bool
+    suppress_warnings : bool, default=True
         Whether to suppress warning messages. For this particular task,
         overflow warnings are likely to occur.
-    parallel : bool
+    parallel : bool, default=False
         Whether to use multiple processors in the calculation. All CPU cores
         will be used if set to ``True``.
-    n_cores : int | None
+    n_cores : int | None, default=None
         The number of CPU cores to use in the curve fitting
 
-    Return
-    ------
+    Returns
+    -------
     best_param : dict[str, float]
         The best parameters found in the optimization.
     """
@@ -236,7 +234,9 @@ def fit_HH_x_single_layer(
     damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
     damping_data_in_unit_1 = damping_data_in_pct / 100  # unit: percent --> 1
 
-    n_param = 9  # number of HH model parameters; do not change this for HH model
+    n_param = (
+        9  # number of HH model parameters; do not change this for HH model
+    )
     N = 122  # denser strain array for more accurate damping calculation
     strain_dense = np.logspace(-6, -1, N)  # unit: 1
     damping_dense = np.interp(
@@ -290,16 +290,16 @@ def _damping_misfit(
         param: tuple[float, ...], damping_data: np.ndarray
 ) -> float:
     """
-    Calculate the misfit given a set of HH parameters. Note that the values
-    in `param` are actually the 10-based power of the actual HH parameters.
-    Using the powers in the genetic algorithm searching turns out to work
-    much better for this particular problem.
+    Calculate the misfit given a set of HH parameters. Note that the values in
+    ``param`` are actually the 10-based power of the actual HH parameters.
+    Using the powers in the genetic algorithm searching turns out to work much
+    better for this particular problem.
 
     Parameters
     ----------
     param : tuple[float, ...]
-        HH model parameters, in the order specified below:
-            gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+        HH model parameters, in the order specified below: gamma_t, a,
+        gamma_ref, beta, s, Gmax, mu, Tmax, d
     damping_data : np.ndarray
         2D numpy array with two columns (strain and damping value). Both
         columns need to use "1" as the unit, not percent.
@@ -346,8 +346,7 @@ def _damping_misfit(
 def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
     """
     Convert the HH parameters from a dictionary to an array, according to this
-    order:
-        gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+    order: gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters
     ----------
@@ -383,8 +382,8 @@ def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
     """
     Reconstruct a HH model parameter dictionary from an array of values.
 
-    The users need to ensure the order of values in ``array`` are in this order:
-        gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
+    The users need to ensure the order of values in ``array`` are in this
+    order: gamma_t, a, gamma_ref, beta, s, Gmax, mu, Tmax, d
 
     Parameters
     ----------
