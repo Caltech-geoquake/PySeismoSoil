@@ -78,11 +78,13 @@ def d_1234(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None, default=None
-        Minimum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. It must be
+        provided: unlike ``fmax``, ``None`` is not supported and raises an
+        error.
     fmax : float | None, default=None
-        Maximum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. If ``None``, only a
+        high-pass filter at ``fmin`` is applied, i.e., frequencies up to the
+        Nyquist frequency, (sampling frequency)/2.0, are kept.
     baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
     show_fig : bool, default=False
@@ -316,11 +318,13 @@ def d_567(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None, default=None
-        Minimum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. It must be
+        provided: unlike ``fmax``, ``None`` is not supported and raises an
+        error.
     fmax : float | None, default=None
-        Maximum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. If ``None``, only a
+        high-pass filter at ``fmin`` is applied, i.e., frequencies up to the
+        Nyquist frequency, (sampling frequency)/2.0, are kept.
     baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
     show_fig : bool, default=False
@@ -605,11 +609,13 @@ def d_89(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None, default=None
-        Minimum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. If ``None``, it is
+        calculated as (sampling frequency)/(length of time series), using the
+        larger of the values of ``measurement`` and ``simulation``.
     fmax : float | None, default=None
-        Maximum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. If ``None``, it is
+        calculated as (sampling frequency)/2.0, using the smaller of the values
+        of ``measurement`` and ``simulation``.
     baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
     show_fig : bool, default=False
@@ -800,11 +806,13 @@ def d_10(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None, default=None
-        Minimum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/(length of time series).
+        Minimum frequency to be considered, in units of Hz. If ``None``, it is
+        calculated as (sampling frequency)/(length of time series), using the
+        larger of the values of ``measurement`` and ``simulation``.
     fmax : float | None, default=None
-        Maximum frequency to be considered, in units of Hz. Default is
-        (sampling frequency)/2.0.
+        Maximum frequency to be considered, in units of Hz. If ``None``, it is
+        calculated as (sampling frequency)/2.0, using the smaller of the values
+        of ``measurement`` and ``simulation``.
     baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
     show_fig : bool, default=False

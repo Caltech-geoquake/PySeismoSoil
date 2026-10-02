@@ -129,11 +129,13 @@ class GOF_Scores:
         Parameters
         ----------
         fmin : float | None, default=None
-            Minimum frequency to be considered, in units of Hz. Default is
-            (sampling frequency)/(length of time series).
+            Minimum frequency to be considered, in units of Hz. If ``None``, it
+            is calculated as (sampling frequency)/(length of time series) of
+            the measurement.
         fmax : float | None, default=None
-            Maximum frequency to be considered, in units of Hz. Default is
-            (sampling frequency)/2.0.
+            Maximum frequency to be considered, in units of Hz. If ``None``, it
+            is calculated as (sampling frequency)/2.0 of the measurement (i.e.,
+            the Nyquist frequency).
         score_arias : bool, default=True
             Whether or not to compute the arias intensity and energy integral
             group of scores.
