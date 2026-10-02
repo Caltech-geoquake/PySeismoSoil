@@ -1751,9 +1751,8 @@ def linear_site_resp(
     df, fmax, _, _, _ = _get_freq_interval(input_motion)
 
     # ---------Get linear transfer function (complex valued)--------------
-    factor = (
-        1.05  # to ensure f_max of TF >= f_max inferred from `input_motion`
-    )
+    # to ensure f_max of TF >= f_max inferred from `input_motion`
+    factor = 1.05
     fmax_ = fmax * factor
     df_ = df * factor  # to ensure consistent length of the output freq array
     tmp = linear_tf(

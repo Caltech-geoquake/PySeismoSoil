@@ -180,9 +180,8 @@ class SVM:
                 temp_Vs_profile = np.vstack((array1, array2))
 
                 if iterate is False:
-                    iteration_flag = (
-                        False  # abort while loop after only one run
-                    )
+                    # abort while loop after only one run
+                    iteration_flag = False
                 else:
                     # -------  Check if actual Vs30 matches target Vs30 -------
                     actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
