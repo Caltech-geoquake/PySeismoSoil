@@ -522,7 +522,7 @@ class Vs_Profile:
             self._plot_queried_Vs(vs_queried, depth)
 
         if is_scalar:
-            return float(vs_queried)
+            return float(vs_queried[0])
 
         return vs_queried
 
