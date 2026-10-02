@@ -142,9 +142,8 @@ def _process_fig_ax_objects(
         if ax_proj is None:
             ax = fig.add_subplot(1, 1, 1)
         else:
-            ax = plt.axes(
-                projection=ax_proj
-            )  # create new axes and plot lines on it
+            # create new axes and plot lines on it
+            ax = plt.axes(projection=ax_proj)
     else:
         ax = ax  # plot lines on the provided axes handle
 

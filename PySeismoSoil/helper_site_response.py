@@ -675,9 +675,8 @@ def response_spectra(
                 )),
             )
 
-    utdd_max, ud_max, u_max, PSA, PSV = zip(
-        *result
-    )  # transpose list of tuples
+    # transpose list of tuples
+    utdd_max, ud_max, u_max, PSA, PSV = zip(*result)
 
     SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration
     SV = np.array(ud_max)  # (Relative) spectral velocity
@@ -895,9 +894,8 @@ def calc_VsZ(
             cumul_sl = cumul_sl + sl[i] * (thick[i] - (depth[i + 1] - Z))
             break
 
-    if (
-        option_for_profile_shallower_than_Z == 1
-    ):  # assume last Vs extends to Z m
+    # assume last Vs extends to Z m
+    if option_for_profile_shallower_than_Z == 1:
         if total_thickness < Z:
             if verbose is True:
                 print(
@@ -911,9 +909,8 @@ def calc_VsZ(
             VsZ = float(Z) / cumul_sl
 
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth
-        VsZ = np.min([total_thickness, Z]) / float(
-            cumul_sl
-        )  # use actual depth
+        # use actual depth
+        VsZ = np.min([total_thickness, Z]) / float(cumul_sl)
 
     return VsZ
 
@@ -1041,9 +1038,8 @@ def plot_Vs_profile(
     if title:
         ax.set_title(title)
 
-    if (
-        int(mpl.__version__[0]) <= 1
-    ):  # if matplotlib version is earlier than 2.0.0
+    # if matplotlib version is earlier than 2.0.0
+    if int(mpl.__version__[0]) <= 1:
         ax.xaxis.set_major_locator(
             mpl.ticker.MaxNLocator(nbins=7, integer=True)
         )
@@ -1175,12 +1171,10 @@ def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:
     z_mid = np.zeros(L)
 
     for i in range(1, L):  # the first element of 'z_top' remains zero
-        z_top[i] = (
-            z_top[i - 1] + thk[i - 1]
-        )  # the last element of 'thk' is not used at all
-        z_mid[i - 1] = (
-            z_top[i - 1] + thk[i - 1] / 2.0
-        )  # the last element of 'z_mid' is NaN
+        # the last element of 'thk' is not used at all
+        z_top[i] = z_top[i - 1] + thk[i - 1]
+        # the last element of 'z_mid' is NaN
+        z_mid[i - 1] = z_top[i - 1] + thk[i - 1] / 2.0
 
     if thk[-1] == 0:  # if the last layer thickness is unknown
         z_mid = z_mid[:-1]
@@ -1305,9 +1299,8 @@ def linear_tf(
     try:
         xi = vs_profile[:, 2]  # damping ratio (unit: 1, not percent)
         rho = vs_profile[:, 3]  # mass density (unit: kg/m/m/m)
-    except (
-        IndexError
-    ):  # if index 2/3 out of bounds, i.e., vs_profile only has 2 columns
+    # if index 2/3 out of bounds, i.e., vs_profile only has 2 columns
+    except IndexError:
         xi, rho = get_xi_rho(Vs)  # calculate xi and rho
 
     h_length = len(h)
@@ -1319,9 +1312,8 @@ def linear_tf(
             float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
         )
 
-    TF_size = int(
-        np.floor_divide(fmax, freq_resolution)
-    )  # length of transfer function
+    # length of transfer function
+    TF_size = int(np.floor_divide(fmax, freq_resolution))
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
@@ -2009,9 +2001,8 @@ def compare_two_accel(
     fs_in = sig.fourier_transform(a_in_2col, real_val=False)
     fs_out = sig.fourier_transform(a_out_2col, real_val=False)
 
-    freq = np.real(
-        fs_in[:, 0]
-    )  # values in fs_in[:, 0] all look like: 1.23 + 0j
+    # values in fs_in[:, 0] all look like: 1.23 + 0j
+    freq = np.real(fs_in[:, 0])
     tf = fs_out[:, 1] / fs_in[:, 1]
     amp_func = np.abs(tf)
     phase_shift = np.angle(tf)
@@ -2838,8 +2829,7 @@ def ga_optimization(
             verbose=verbose,
         )
 
-        opt_result = list(
-            hof[0]
-        )  # 0th element of "hall of fame" --> best param
+        # 0th element of "hall of fame" --> best param
+        opt_result = list(hof[0])
 
     return opt_result

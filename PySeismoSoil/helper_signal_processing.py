@@ -405,9 +405,10 @@ def baseline(
 
     filter_order = 2
     t_zpad = 1.5 * filter_order / cutoff_freq  # time span of zeros
+    # number of zeros added
     nr_zpad = int(
         np.max([1000, np.round(t_zpad / dt), cross_bound_left + 1]),
-    )  # number of zeros added
+    )
 
     a_cut = np.append(np.zeros(nr_zpad), np.append(a_cut, np.zeros(nr_zpad)))
     t_cut = np.linspace(dt, len(a_cut) * dt, len(a_cut), endpoint=True)

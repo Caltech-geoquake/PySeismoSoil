@@ -339,10 +339,8 @@ def equiv_linear(
         D_vector[:, k] = D_vector[:, k] - D_vector[0, k] + D[k]
 
     # -------- Part 2: Start iteration -----------------------------------------
-    G_matrix = np.zeros((
-        n_layer - 1,
-        max_iter + 1,
-    ))  # to store G of all iterations
+    # to store G of all iterations
+    G_matrix = np.zeros((n_layer - 1, max_iter + 1))
     D_matrix = np.zeros((n_layer - 1, max_iter + 1))
     G_matrix[:, 0] = G[:-1]  # initial values
     D_matrix[:, 0] = D[:-1]
@@ -537,9 +535,8 @@ def _prepare_inputs(
 
     n_layer = len(h)  # includes the rock layer
     Gmax = rho * vs**2.0
-    G = (
-        Gmax.copy()
-    )  # initial value of G; Gmax cannot change, so needs a hard copy
+    # initial value of G; Gmax cannot change, so needs a hard copy
+    G = Gmax.copy()
 
     return (
         flag,
@@ -657,9 +654,8 @@ def _lin_resp_every_layer(
 
     # (4) Complex wave number (Kramer's book, page 260)
     vs_star_recip = (1.0 / vs_star).reshape((1, n_layer))  # (1, n_layer)
-    k_star = (
-        omega[:half_N].reshape(half_N, 1) * vs_star_recip
-    )  # (half_N, n_layer)
+    # (half_N, n_layer)
+    k_star = omega[:half_N].reshape(half_N, 1) * vs_star_recip
     assert k_star.shape == (half_N, n_layer)
 
     # (5) Compute A and B (Kramer's book, page 269)
@@ -668,24 +664,20 @@ def _lin_resp_every_layer(
     A[:, 0] = 1
     B[:, 0] = 1
     for k in range(n_layer - 1):  # layer by layer
+        # left half
         A[:, k + 1] = 0.5 * A[:, k] * (1 + alpha[k]) * np.exp(
             1j * k_star[:, k] * h[k]
-        ) + 0.5 * B[:, k] * (1 - alpha[k]) * np.exp(
-            -1j * k_star[:, k] * h[k]
-        )  # left half
+        ) + 0.5 * B[:, k] * (1 - alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])
+        # left half
         B[:, k + 1] = 0.5 * A[:, k] * (1 - alpha[k]) * np.exp(
             1j * k_star[:, k] * h[k]
-        ) + 0.5 * B[:, k] * (1 + alpha[k]) * np.exp(
-            -1j * k_star[:, k] * h[k]
-        )  # left half
+        ) + 0.5 * B[:, k] * (1 + alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])
 
     # (6) Compute linear transfer function
-    H_ss = np.zeros(
-        (half_N, n_layer), dtype=np.complex128
-    )  # single-sided transfer function
-    H_append = np.zeros(
-        (half_N - 1, n_layer), dtype=np.complex128
-    )  # the other half
+    # single-sided transfer function
+    H_ss = np.zeros((half_N, n_layer), dtype=np.complex128)
+    # the other half
+    H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex128)
     for k in range(n_layer):
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
         H_ss[0, k] = np.real(H_ss[0, k])  # see Note (1) below
@@ -694,9 +686,8 @@ def _lin_resp_every_layer(
 
     H = np.vstack((H_ss, H_append))
 
-    H = H[
-        ::freq_oversample_factor, :
-    ]  # down-sample back to original resolution
+    # down-sample back to original resolution
+    H = H[::freq_oversample_factor, :]
     freq = freq[::freq_oversample_factor]
     N = N_original
 

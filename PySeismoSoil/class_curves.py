@@ -708,9 +708,8 @@ class Multiple_Curves:
             return self.curves[i]
 
         if isinstance(i, slice):  # return an object of the same class
-            return self.__class__(
-                self.curves[i]
-            )  # filled with the sliced data
+            # filled with the sliced data
+            return self.__class__(self.curves[i])
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
@@ -775,9 +774,8 @@ class Multiple_Curves:
         ax : Axes
             The axes object being created or being passed into this function.
         """
-        if (
-            fig is None
-        ):  # User provided ax but not fig, or user provided neither
+        # User provided ax but not fig, or user provided neither
+        if fig is None:
             fig, ax = hlp._process_fig_ax_objects(
                 fig, None, figsize=figsize, dpi=dpi
             )

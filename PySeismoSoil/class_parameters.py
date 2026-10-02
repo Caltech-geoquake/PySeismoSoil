@@ -415,9 +415,8 @@ class Param_Multi_Layer:
             return self.param_list[i]
 
         if isinstance(i, slice):  # return an object of the same class
-            return self.__class__(
-                self.param_list[i]
-            )  # filled with the sliced data
+            # filled with the sliced data
+            return self.__class__(self.param_list[i])
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
