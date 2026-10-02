@@ -1011,20 +1011,24 @@ def produce_Darendeli_curves(
     for i in range(n_layer):
         # G of i-th layer (Eq 9.2a)
         GGmax[:, i] = 1.0 / (1 + (gamma / gamma_r[i]) ** a)
+
         D_masing_1 = (100.0 / np.pi) * (  # unit: % (page 226)
             4
             * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
             / (gamma**2 / (gamma + gamma_r[i]))
             - 2
         )
-        # unit: % (page 226)
+
+        # from page 226; unit of D_masing: %
         D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3
+
         # Eq 9.1c (page 221)
         D_min = (
             (phi6 + phi7 * PI[i] * OCR[i] ** phi8)
             * sigma_0[i] ** phi9
             * (1 + phi10 * np.log(frq))
-        )  # noqa: E501, LN001
+        )
+
         # Eq 9.2b (page 224). Unit: percent
         xi[:, i] = b * GGmax[:, i] ** 0.1 * D_masing + D_min
 
