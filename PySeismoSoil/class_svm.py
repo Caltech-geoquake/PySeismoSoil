@@ -663,6 +663,7 @@ class SVM:
                 mean_thk = mean_thk[0]
 
                 z_mid_temp = z_top[-1] + mean_thk / 2.0
+
                 # Eq (8) of Shi & Asimaki (2018)
                 std_thk = 0.951 * z_mid_temp**0.628
 
@@ -761,7 +762,6 @@ class SVM:
         # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
-        # specify seed value to random number generator
         np.random.seed([2 * seed])
 
         for i in range(0, len(thk)):  # loop through layers
