@@ -41,8 +41,8 @@ PACIFIC_TIME_OFFSETS = {
 }
 
 HOW_TO_FIX = (
-    'To fix this, re-run all the notebooks with '
-    '`python scripts/run_notebooks.py`, and commit them.'
+    'To fix this, re-run all the notebooks with `tox -e run-notebooks`, and'
+    ' commit them.'
 )
 
 

@@ -31,8 +31,8 @@
   - A pre-commit hook, `check-notebooks-were-run`, that checks that every
     example notebook was re-run (in order, starting from cell 1) in the current
     branch
-  - A script to re-run all example notebooks and save their outputs:
-    `python scripts/run_notebooks.py`
+  - A script to re-run all example notebooks and save their outputs
+    (`scripts/run_notebooks.py`), and a `run-notebooks` tox env that runs it
 - Maintenance
   - Re-ran all example notebooks with the current code and saved their outputs
     (#40)

@@ -3,15 +3,17 @@ Re-run the example notebooks and save their outputs.
 
 Usage (from the root directory of this repository)::
 
-    python scripts/run_notebooks.py  # all notebooks in examples/
-    python scripts/run_notebooks.py -j 4  # run 4 notebooks at a time
-    python scripts/run_notebooks.py examples/Demo_01_Ground_Motion.ipynb
+    tox -e run-notebooks  # all notebooks in examples/
+    tox -e run-notebooks -- -j 4  # run 4 notebooks at a time
+    tox -e run-notebooks -- examples/Demo_01_Ground_Motion.ipynb
 
 Each notebook runs from top to bottom in a fresh kernel, from the folder that
 it is in. A notebook is saved only if all its cells run without errors.
 
-This needs the packages in ``requirements.dev``, and PySeismoSoil installed in
-the current Python environment (``pip install -e .``).
+The ``run-notebooks`` tox env sets up the environment that this script needs.
+To run the script directly instead (``python scripts/run_notebooks.py``), it
+needs the packages in ``requirements.dev``, and PySeismoSoil installed in the
+current Python environment (``pip install -e .``).
 """
 
 from __future__ import annotations

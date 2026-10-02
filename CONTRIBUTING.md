@@ -48,15 +48,24 @@ them, so that their outputs always come from the current code. To do this, run
 this command from the root directory:
 
 ```
-python scripts/run_notebooks.py
+tox -e run-notebooks
 ```
 
-It runs each notebook from top to bottom in a fresh kernel, and saves the
-notebooks that run without errors. This takes a few minutes. It needs the
-packages in `requirements.dev` (`pip install -r requirements.dev`) and this
-library installed with `pip install -e .`. To run only some notebooks, pass
-their paths to the script. To run several notebooks at a time, use `-j` (e.g.,
-`-j 4`), but the timings that some notebooks print are then less accurate.
+It installs this library and the packages needed to run the notebooks in a
+separate environment (managed by `tox`), runs each notebook from top to bottom
+in a fresh kernel, and saves the notebooks that run without errors. This takes
+a few minutes. Options after `--` are passed to the script
+(`scripts/run_notebooks.py`):
+
+- To run only some notebooks, pass their paths (e.g.,
+  `tox -e run-notebooks -- examples/Demo_01_Ground_Motion.ipynb`)
+- To run several notebooks at a time, use `-j` (e.g.,
+  `tox -e run-notebooks -- -j 4`), but the timings that some notebooks print
+  are then less accurate
+
+If you already have a development environment with this library installed
+(`pip install -e .`) and the packages in `requirements.dev`, you can also run
+`python scripts/run_notebooks.py` directly.
 
 The first cell of each notebook prints when the notebook was last run (in
 Pacific Time). The pre-commit hook `check-notebooks-were-run` fails if:
