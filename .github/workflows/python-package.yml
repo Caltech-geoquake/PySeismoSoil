@@ -29,6 +29,15 @@ jobs:
           python -m pip install tox
       - name: Run muff-format, pydoclint, and pre-commit
         run: tox -e muff-format,pydoclint,pre-commit
+  # Runs every example notebook in a clean environment, without saving them.
+  # The pre-commit hook `check-notebooks-were-run` (in the lint job above)
+  # only checks that the notebooks were re-run during this PR, on the
+  # contributor's own machine. This job also catches notebooks that fail:
+  #   - because of code changes made after the notebooks were re-run
+  #   - outside the contributor's machine (e.g., because of a package that is
+  #     only installed locally, or a data file that was not committed)
+  #   - with the latest versions of the dependencies, or with the latest `main`
+  #     (CI runs this PR merged into `main`)
   notebooks:
     name: Run example notebooks
     runs-on: ubuntu-latest
