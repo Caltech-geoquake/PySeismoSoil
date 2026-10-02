@@ -1299,8 +1299,8 @@ def linear_tf(
     try:
         xi = vs_profile[:, 2]  # damping ratio (unit: 1, not percent)
         rho = vs_profile[:, 3]  # mass density (unit: kg/m/m/m)
-    # if index 2/3 out of bounds, i.e., vs_profile only has 2 columns
     except IndexError:
+        # if index 2/3 out of bounds, i.e., vs_profile only has 2 columns
         xi, rho = get_xi_rho(Vs)  # calculate xi and rho
 
     h_length = len(h)
@@ -1652,6 +1652,7 @@ def amplify_motion(
     # ---------Inverse Fourier transform to get the response time history------
     # truncate imaginary part (very small)
     resp = scipy.fftpack.ifft(RESP).real
+
     response = np.column_stack((t, resp))
 
     # ---------Plot comparisons-------------------
@@ -1753,6 +1754,7 @@ def linear_site_resp(
     # ---------Get linear transfer function (complex valued)--------------
     # to ensure f_max of TF >= f_max inferred from `input_motion`
     factor = 1.05
+
     fmax_ = fmax * factor
     df_ = df * factor  # to ensure consistent length of the output freq array
     tmp = linear_tf(
@@ -2001,6 +2003,7 @@ def compare_two_accel(
 
     # values in fs_in[:, 0] all look like: 1.23 + 0j
     freq = np.real(fs_in[:, 0])
+
     tf = fs_out[:, 1] / fs_in[:, 1]
     amp_func = np.abs(tf)
     phase_shift = np.angle(tf)
