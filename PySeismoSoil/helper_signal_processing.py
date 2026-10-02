@@ -978,7 +978,7 @@ def sine_smooth(
         g2[ln - lix - 2] = g2[ll - lix - 2] + g2[ln + lix + 1]
 
     for k in range(nfold):
-        g[k] = g2[ll - 1 + k]
+        g[k] = g2[ll - 1 + k, 0]
 
     sm_signal[0] = np.sqrt(g[0] * T)
     for k in range(1, nfold - 1):

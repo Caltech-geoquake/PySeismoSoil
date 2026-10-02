@@ -293,7 +293,7 @@ def calc_AriasIntensity(
     for ix in range(1, n):
         Ia[ix] = Ia[ix - 1] + np.pi / (2 * g) * a_sq[ix - 1] * dt
 
-    Ia_peak = float(Ia[-1])
+    Ia_peak = float(Ia[-1, 0])
     Ia = np.hstack((t.reshape(n, 1), Ia))
 
     return Ia, Ia_peak

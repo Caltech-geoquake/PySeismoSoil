@@ -15,6 +15,11 @@
     with numpy 2.4+
   - `d_89()` and `d_10()` in `helper_gof_scores.py` raising `TypeError` when
     `fmin` or `fmax` is `None`
+  - `GOF_Scores.calc_scores()` failing with numpy 2.4+ when computing the Arias
+    intensity / energy integral scores (d1-d4) or the spectral scores (d8-d9)
+    (#38)
+- Added
+  - Tests for the goodness-of-fit scores and for `sine_smooth()`
 
 ## [0.6.3] - 2025-10-15
 
