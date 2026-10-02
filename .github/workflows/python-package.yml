@@ -13,6 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The pre-commit hook `check-notebooks-were-run` needs the PR's own
+          # commit (not the merge commit that GitHub creates for the PR), and
+          # the full git history to find the latest commit from main in it
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
       - name: Set up Python 3.13
         uses: actions/setup-python@v7
         with:

@@ -102,3 +102,12 @@ repos:
           - muff-format
           - --tox-dep
           - muff
+  - repo: local
+    hooks:
+      - id: check-notebooks-were-run
+        name: Check that the notebooks were re-run in this branch
+        entry: python scripts/check_notebooks_were_run.py
+        language: python
+        # Lets `zoneinfo` find the Pacific Time zone on Windows too
+        additional_dependencies: [tzdata]
+        files: ^examples/.*\.ipynb$

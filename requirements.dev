@@ -1,3 +1,6 @@
-pytest
+h5py
+ipykernel
+nbclient
 pre-commit
+pytest
 tox
