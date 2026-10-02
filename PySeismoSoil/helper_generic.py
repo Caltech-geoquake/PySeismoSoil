@@ -28,9 +28,9 @@ def get_current_time(for_filename: bool = True) -> str:
 
     Parameters
     ----------
-    for_filename : bool
-        Whether the returned string is for filenames or not. If so, colons
-        are substituted with dashes, and the space is substituted with an
+    for_filename : bool, default=True
+        Whether the returned string is for filenames or not. If so, colons are
+        substituted with dashes, and the space is substituted with an
         underscore.
 
     Returns
@@ -49,8 +49,8 @@ def find_closest_index(
         value: float,
 ) -> tuple[int | None, float | None]:
     """
-    Find the index in ``array`` corresponding to the value closest to the
-    given ``value``.
+    Find the index in ``array`` corresponding to the value closest to the given
+    ``value``.
 
     Parameters
     ----------
@@ -114,17 +114,17 @@ def _process_fig_ax_objects(
         Figure object. If None, a new figure will be created.
     ax : Axes | None
         Axes object. If None, a new axes will be created.
-    figsize: tuple[float, float] | None
-        Figure size in inches, as a tuple of two numbers. The figure
-        size of ``fig`` (if not ``None``) will override this parameter.
-    dpi : float | None
+    figsize : tuple[float, float] | None, default=None
+        Figure size in inches, as a tuple of two numbers. The figure size of
+        ``fig`` (if not ``None``) will override this parameter.
+    dpi : float | None, default=None
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    ax_proj : Literal[None, 'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear']
+    ax_proj : Literal[None, 'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'], default=None
         The projection type of the axes. The default None results in a
         'rectilinear' projection.
-    bypass_ax_creation : bool
-        If True, do not create an `ax` object if `ax` is `None`
+    bypass_ax_creation : bool, default=False
+        If True, do not create an ``ax`` object if ``ax`` is ``None``
 
     Returns
     -------
@@ -142,7 +142,8 @@ def _process_fig_ax_objects(
         if ax_proj is None:
             ax = fig.add_subplot(1, 1, 1)
         else:
-            ax = plt.axes(projection=ax_proj)  # create new axes and plot lines on it
+            # create new axes and plot lines on it
+            ax = plt.axes(projection=ax_proj)
     else:
         ax = ax  # plot lines on the provided axes handle
 
@@ -155,23 +156,23 @@ def read_two_column_stuff(
         sep: str = '\t',
         **kwargs_to_genfromtxt: dict[Any, Any],
 ) -> tuple[np.ndarray, float]:
-    """
+    r"""
     Process "data" into a two-columned "data_".
 
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the data.
+        - If str: the full file name on the hard drive containing the data.
+        - If np.ndarray: the numpy array containing the data.
 
-        The data can have one column (which contains the motion/spectrum) or two
-        columns (1st column: time/freq; 2nd column: motion/spectrum). If only
-        one column is supplied, another input parameter "d_" must also be
+        The data can have one column (which contains the motion/spectrum) or
+        two columns (1st column: time/freq; 2nd column: motion/spectrum). If
+        only one column is supplied, another input parameter "d_" must also be
         supplied.
-    delta : float | None
+    delta : float | None, default=None
         The time or frequency interval. If data is a file name, this parameter
         is ignored.
-    sep : str
+    sep : str, default='\t'
         The file delimiter. If data is not a file name, this parameter is
         ignored.
     **kwargs_to_genfromtxt : dict[Any, Any]
@@ -232,8 +233,9 @@ def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     ----------
     something : Any
         Any Python object.
-    name : str | None
-        The name of ``something`` to be displayed in the potential error message.
+    name : str | None, default=None
+        The name of ``something`` to be displayed in the potential error
+        message.
 
     Raises
     ------
@@ -259,8 +261,9 @@ def assert_array_length(
         Any Python object
     length : int | None
         The length that ``something`` must have.
-    name : str
-        The name of ``something`` for displaying the error message, if necessary.
+    name : str, default='`something`'
+        The name of ``something`` for displaying the error message, if
+        necessary.
 
     Raises
     ------
@@ -293,7 +296,8 @@ def extend_scalar(
     Returns
     -------
     array : np.ndarray
-        A 1D numpy array with length ``length`` and elements of value ``scalar``.
+        A 1D numpy array with length ``length`` and elements of value
+        ``scalar``.
 
     Raises
     ------
@@ -315,9 +319,9 @@ def check_length_or_extend_to_array(
         name: str = '`something`',
 ) -> np.ndarray:
     """
-    Check that ``something`` is a 1D numpy array with length ``length``, or
-    if ``something`` is a single value, extend it to a 1D numpy array whose
-    length is ``length`` and elements are all ``something``.
+    Check that ``something`` is a 1D numpy array with length ``length``, or if
+    ``something`` is a single value, extend it to a 1D numpy array whose length
+    is ``length`` and elements are all ``something``.
 
     Parameters
     ----------
@@ -325,8 +329,9 @@ def check_length_or_extend_to_array(
         Any Python object.
     length : int
         The desired length of array.
-    name : str
-        The name of ``something`` for displaying the error message, if necessary.
+    name : str, default='`something`'
+        The name of ``something`` for displaying the error message, if
+        necessary.
 
     Returns
     -------
@@ -351,8 +356,9 @@ def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
     ----------
     something : Any
         Any Python object.
-    name : str | None
-        The name of ``something`` to be displayed in the potential error message.
+    name : str | None, default=None
+        The name of ``something`` to be displayed in the potential error
+        message.
 
     Raises
     ------
@@ -378,11 +384,12 @@ def check_two_column_format(
     ----------
     something : Any
         Any Python object.
-    name : str | None
-        The name of ``something`` to be displayed in the potential error message.
-    ensure_non_negative : bool
+    name : str | None, default=None
+        The name of ``something`` to be displayed in the potential error
+        message.
+    ensure_non_negative : bool, default=False
         Whether to ensure that all values in ``something`` >= 0.
-    at_least_two_columns : bool
+    at_least_two_columns : bool, default=False
         Whether to relax the constraints to from "exactly 2 columns" to "at
         least two columns".
 
@@ -568,14 +575,14 @@ def interpolate(
     x_query_max : float
         Maximum x value at which you want to query (inclusive).
     n_pts : int
-        An array of x values are constructed between `x_query_min` and
-        `x_query_max`, at which we query the y values. `n_pts` controls the
+        An array of x values are constructed between ``x_query_min`` and
+        ``x_query_max``, at which we query the y values. ``n_pts`` controls the
         length of this array.
     x_ref : np.ndarray
         Reference x values for interpolation. Must be a 1D numpy array.
     y_ref : np.ndarray
         Reference y values for interpolation. Must be a 1D numpy array.
-    log_scale : bool
+    log_scale : bool, default=True
         Whether to construct the query array in log or linear scale.
     **kwargs_to_interp : dict[Any, Any]
         Extra keyword arguments to be passed to ``numpy.interp()``.
@@ -583,8 +590,8 @@ def interpolate(
     Returns
     -------
     x_query_array : np.ndarray
-        A 1D numpy array constructed from ``x_query_min``, ``x_query_max``,
-        and ``n_pts``.
+        A 1D numpy array constructed from ``x_query_min``, ``x_query_max``, and
+        ``n_pts``.
     y_query_array : np.ndarray
         The interpolation result. Same shape as ``x_query_array``.
     """
@@ -648,7 +655,7 @@ def extract_from_curve_format(
 
         Such an array can be constructed by hand, or by directly imported from
         a "curve_STATION_NAME.txt" file.
-    ensure_non_negative : bool
+    ensure_non_negative : bool, default=True
         If ``True``, raise an exception if there exists at least one negative
         G/Gmax value or damping value in the data in ``curves``.
 
@@ -730,7 +737,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
     Returns
     -------
     param_list : list[np.ndarray]
-        The parsed parameters for each layer. Each element of `param_list` is
+        The parsed parameters for each layer. Each element of ``param_list`` is
         a 1D numpy array with length N, where N is the number of parameters for
         the particular soil constitutive model.
 

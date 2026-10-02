@@ -27,13 +27,13 @@ def lowpass(
         The signal to be filtered (2 columns).
     cutoff_freq : float
         Cut-off frequency, in Hz
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show a figure of before/after spectra
-    filter_order : int
+    filter_order : int, default=4
         Filter order.
-    padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value.
+    padlen : int | None, default=None
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -68,13 +68,13 @@ def highpass(
         The signal to be filtered (2 columns)
     cutoff_freq : float
         Cut-off frequency, in Hz
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show a figure of before/after spectra
-    filter_order : int
+    filter_order : int, default=4
         Filter order.
-    padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value.
+    padlen : int | None, default=None
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value.
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -109,13 +109,13 @@ def bandpass(
         The signal to be filtered (2 columns)
     cutoff_freq : tuple[float, float]
         Cut-off frequencies, from low to high, in Hz
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show a figure of before/after spectra
-    filter_order : int
+    filter_order : int, default=4
         Filter order.
-    padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value
+    padlen : int | None, default=None
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -150,13 +150,13 @@ def bandstop(
         The signal to be filtered (2 columns)
     cutoff_freq : tuple[float, float]
         Cut-off frequencies, from low to high, in Hz
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show a figure of before/after spectra
-    filter_order : int
+    filter_order : int, default=4
         Filter order.
-    padlen : int | None
-        Pad length (the number of elements by which to extend x at both ends
-        of axis before applying the filter). If ``None``, use the default value
+    padlen : int | None, default=None
+        Pad length (the number of elements by which to extend x at both ends of
+        axis before applying the filter). If ``None``, use the default value
         (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
 
     Returns
@@ -344,9 +344,9 @@ def baseline(
     ----------
     orig_signal : np.ndarray
         Original signal. Must have two columns.
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show figures comparing before and after.
-    cutoff_freq : float
+    cutoff_freq : float, default=0.20
         The frequency (unit: Hz) for high passing. Energies below this
         frequency are filtered out.
 
@@ -514,12 +514,13 @@ def fourier_transform(
     ----------
     signal_2_col : np.ndarray
         Signal in two columns (time array and signal array).
-    real_val : bool
-        Whether to return the amplitude (or "magnitude") of the complex numbers.
-    double_sided : bool
+    real_val : bool, default=True
+        Whether to return the amplitude (or "magnitude") of the complex
+        numbers.
+    double_sided : bool, default=False
         Whether to return the second half of the spectrum (i.e. beyond the
         Nyquist frequency).
-    show_fig : bool
+    show_fig : bool, default=False
         Whether to show figures of the spectrum.
 
     Returns
@@ -589,7 +590,7 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     ----------
     input_signal : np.ndarray
         Signal to be tapered. Can be 1D numpy array or 2D array with 2 columns.
-    width : float
+    width : float, default=0.05
         The width of the Tukey window.
 
     Returns
@@ -641,11 +642,11 @@ def calc_transfer_function(
         Input signal in the time domain. Needs to have two columns.
     output_signal : np.ndarray
         Output signal in the time domain. Needs to have two columns.
-    amplitude_only : bool
+    amplitude_only : bool, default=True
         Whether to keep only the amplitude of the transfer function.
-    smooth_signal : bool
-        Whether to smooth the amplitude spectrum. If ``smooth`` is ``True``
-        and ``amplitude_only`` is ``False``, an error will be raised.
+    smooth_signal : bool, default=False
+        Whether to smooth the amplitude spectrum. If ``smooth`` is ``True`` and
+        ``amplitude_only`` is ``False``, an error will be raised.
 
     Returns
     -------
@@ -740,38 +741,39 @@ def log_smooth(
     ----------
     signal : np.ndarray
         The signal to be smoothed. Must be a 1D numpy array.
-    win_len : int
+    win_len : int, default=15
         The length of the convolution window.
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
+    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
         The name of the window.
-    lin_space : bool
-        Whether the points of the signal is uniformly spaced linearly.
-        If ``False``, the signal is treated as uniformaly spaced logarithmically.
-    fmin : float | None
-        Minimum frequency (in Hz) that the signal is spaced within.
-        Only effective when ``lin_space`` is ``True``.
-    fmax : float | None
-        Maximum frequency (in Hz) that the signal is spaced within.
-        Only effective when ``lin_space`` is ``True``.
-    n_pts : int
+    lin_space : bool, default=True
+        Whether the points of the signal is uniformly spaced linearly. If
+        ``False``, the signal is treated as uniformaly spaced logarithmically.
+    fmin : float | None, default=None
+        Minimum frequency (in Hz) that the signal is spaced within. Only
+        effective when ``lin_space`` is ``True``.
+    fmax : float | None, default=None
+        Maximum frequency (in Hz) that the signal is spaced within. Only
+        effective when ``lin_space`` is ``True``.
+    n_pts : int, default=None
         The number of points of the logarithmically interpolated the signal.
         Only effective when ``lin_space`` is ``True``.
-    fix_ends : bool
-        Whether to fix the two ends of the smoothed signal, so that
-        the "boundary effect" from convolution can be corrected. If ``True``,
-        the first and last n points will be adjusted using the exponentially
+    fix_ends : bool, default=True
+        Whether to fix the two ends of the smoothed signal, so that the
+        "boundary effect" from convolution can be corrected. If ``True``, the
+        first and last n points will be adjusted using the exponentially
         weighted averaging method. (n is half of ``win_len``.)
-    beta1 : float
+    beta1 : float, default=0.9
         The "strength" of exponentially weighted averaging. For the head and
         the tail ends, respectively. Values should be within [0, 1].
-    beta2 : float
+    beta2 : float, default=0.9
         The "strength" of exponentially weighted averaging. For the head and
         the tail ends, respectively. Values should be within [0, 1].
 
     Returns
     -------
     smoothed_signal : np.ndarray
-        The smoothed signal which has the same dimension as the original signal.
+        The smoothed signal which has the same dimension as the original
+        signal.
 
     Raises
     ------
@@ -843,45 +845,43 @@ def lin_smooth(
     Smooth the data using a window with requested size.
 
     This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal
-    (with the window size) in both ends so that transient parts are minimized
-    in the begining and end part of the output signal.
+    The signal is prepared by introducing reflected copies of the signal (with
+    the window size) in both ends so that transient parts are minimized in the
+    begining and end part of the output signal.
 
     Parameters
     ----------
     x : np.ndarray
         The input signal. Should be a 1D numpy array
-    window_len : int
+    window_len : int, default=15
         The dimension of the smoothing window; should be an odd integer
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
+    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
         The type of window. A 'flat' window will produce a moving average
         smoothing.
 
     Returns
     -------
     smoothed : np.ndarray
-        The smoothed signal (same dimension as `x`)
+        The smoothed signal (same dimension as ``x``)
 
-    Example
-    -------
-    >>> t = linspace(-2,2,0.1)
-    >>> x = sin(t)+randn(len(t))*0.1
+    Examples
+    --------
+    >>> t = linspace(-2, 2, 0.1)
+    >>> x = sin(t) + randn(len(t)) * 0.1
     >>> y = lin_smooth(x)
 
-    See also
+    See Also
     --------
-    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
-    scipy.signal.lfilter
-
-    TO-DO
-    -----
-    The window parameter could be the window itself if an array instead of a string
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman,
+    numpy.convolve, scipy.signal.lfilter
 
     Notes
     -----
     - length(output) != length(input), to correct
       this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
     - Copied from: http://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
+    - TO-DO: The window parameter could be the window itself if an array
+      instead of a string
 
     Raises
     ------
@@ -918,8 +918,8 @@ def sine_smooth(
     """
     Smooths a frequency spectrum using a sine-shaped window.
 
-    data: two column signal, first column is frequency
-    window_span: width of moving window in hz
+    - data: two column signal, first column is frequency
+    - window_span: width of moving window in hz
     """
     x = signal[:, 1]
     sm_signal = np.zeros_like(x)

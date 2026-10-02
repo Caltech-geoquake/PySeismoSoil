@@ -14,14 +14,15 @@ from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 
 
 class Vs_Profile:
-    """
+    r"""
     Class implementation of a Vs profile
 
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the Vs profile data.
+        - If str: the full file name on the hard drive containing the data.
+        - If np.ndarray: the numpy array containing the Vs profile data.
+
         The provided data needs to have either 2 or 5 columns.
 
         The correct format for a Vs profile should be:
@@ -38,18 +39,18 @@ class Vs_Profile:
         (The "material numbers" are integer indices that map each layer to
         their G/Gmax and damping curves.)
 
-    damping_unit : Literal['1', '%']
+    damping_unit : Literal['1', '%'], default='1'
         The unit for the damping ratio.
-    density_unit : Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3']
+    density_unit : Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'], default='kg/m^3'
         The unit for the mass density of soils.
-    sep : str
-        Delimiter character for reading the text file. If `data` is
-        supplied as a numpy array, this parameter is ignored.
-    add_halfspace : bool
+    sep : str, default='\t'
+        Delimiter character for reading the text file. If ``data`` is supplied
+        as a numpy array, this parameter is ignored.
+    add_halfspace : bool, default=False
         If ``True``, add a "half space" (represented by a layer of 0 m
         thickness) at the bottom of the profile, if such a layer does not
         already exist.
-    xi_rho_formula : Literal[1, 2, 3]
+    xi_rho_formula : Literal[1, 2, 3], default=3
         The formula identifier to determine damping and mass density. See the
         documentation of ``helper_site_response.get_xi_rho()`` for the
         definitions of these three identifiers.
@@ -97,8 +98,9 @@ class Vs_Profile:
             *,
             damping_unit: Literal['1', '%'] = '1',
             # fmt: off
-            density_unit: Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'] = 'kg/m^3',
-
+            density_unit: Literal[
+                'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'
+            ] = 'kg/m^3',
             # fmt: on
             sep: str = '\t',
             add_halfspace: bool = False,
@@ -229,16 +231,16 @@ class Vs_Profile:
 
         Parameters
         ----------
-        fig : Figure | None
+        fig : Figure | None, default=None
             Figure object. If None, a new figure will be created.
-        ax : Axes | None
+        ax : Axes | None, default=None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
-        dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
+        figsize : tuple[float, float], default=(2.6, 3.2)
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float, default=100
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
         **kwargs : dict[Any, Any]
             Extra keyword arguments to be passed to the function
             ``helper_site_response.plot_Vs_profile()``.
@@ -282,11 +284,11 @@ class Vs_Profile:
 
         Parameters
         ----------
-        show_fig : bool
+        show_fig : bool, default=False
             Whether show figures of the amplification function.
-        freq_resolution : float
+        freq_resolution : float, default=0.05
             Frequency resolution of the frequency spectrum.
-        fmax : float
+        fmax : float, default=30.0
             Maximum frequency of interest.
 
         Returns
@@ -320,11 +322,11 @@ class Vs_Profile:
 
         Parameters
         ----------
-        show_fig : bool
+        show_fig : bool, default=False
             Whether show figures of the transfer function.
-        freq_resolution : float
+        freq_resolution : float, default=0.05
             Frequency resolution of the frequency spectrum.
-        fmax : float
+        fmax : float, default=30.0
             Maximum frequency of interest.
 
         Returns
@@ -390,10 +392,10 @@ class Vs_Profile:
 
         Parameters
         ----------
-        depth : float | None
-            The depth at which to truncate the original Vs profile. It can
-            be deeper than z_max (total depth).
-        Vs : float
+        depth : float | None, default=None
+            The depth at which to truncate the original Vs profile. It can be
+            deeper than z_max (total depth).
+        Vs : float, default=1000.0
             The velocity of the bedrock.
 
         Returns
@@ -426,7 +428,8 @@ class Vs_Profile:
             total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
-            profile_[-1][0] = depth + last_thk - total_depth  # extend to `depth`
+            # extend to `depth`
+            profile_[-1][0] = depth + last_thk - total_depth
 
         xi, rho = sr.get_xi_rho(np.array([Vs]))
         if isinstance(xi, np.ndarray):  # xi and rho are 1D numpy arrays
@@ -437,8 +440,10 @@ class Vs_Profile:
         profile_.append(bedrock)  # add half space whose Vs is `Vs`
         profile_ = np.array(profile_)
 
-        if profile_[-2, -1] == 0:  # last "material number" before appending is 0
-            profile_[-2, -1] = np.max(profile_[:, -1]) + 1  # require add'l material
+        # last "material number" before appending is 0
+        if profile_[-2, -1] == 0:
+            # require add'l material
+            profile_[-2, -1] = np.max(profile_[:, -1]) + 1
 
         return Vs_Profile(profile_)
 
@@ -457,10 +462,10 @@ class Vs_Profile:
         ----------
         depth : float | np.ndarray
             Value(s) of depths to query the Vs value at. Unit should be m.
-        as_profile : bool
+        as_profile : bool, default=False
             If ``True``, return a Vs profile object. If False, only return the
             array of Vs.
-        show_fig : bool
+        show_fig : bool, default=False
             Whether to show a figure
 
         Returns
@@ -517,7 +522,7 @@ class Vs_Profile:
             self._plot_queried_Vs(vs_queried, depth)
 
         if is_scalar:
-            return float(vs_queried)
+            return float(vs_queried[0])
 
         return vs_queried
 
@@ -538,26 +543,25 @@ class Vs_Profile:
         ----------
         thk : float | np.ndarray
             Thickness array, or a single value that means a constant thickness.
-        n_layers : int | None
+        n_layers : int | None, default=None
             Number of layers to query. This parameter has no effect if ``thk``
-            is a numpy array (because the number of layers can be inferred
-            from ``thk``). If ``None``, it is automatically inferred from
-            ``thk`` and the maximum depth of the profile.
-        as_profile : bool
-            If ``True``, return a Vs profile object. If ``False``, only
-            return the array of Vs.
-        at_midpoint : bool
+            is a numpy array (because the number of layers can be inferred from
+            ``thk``). If ``None``, it is automatically inferred from ``thk``
+            and the maximum depth of the profile.
+        as_profile : bool, default=False
+            If ``True``, return a Vs profile object. If ``False``, only return
+            the array of Vs.
+        at_midpoint : bool, default=True
             If ``True``, the Vs values are queried at the mid-point depths of
             each layer. If ``False``, at the top of each layer.
-        add_halfspace : bool
+        add_halfspace : bool, default=True
             If ``True``, add a "half space" (represented by a layer of 0 m
-            thickness) at the bottom, if such a layer does not already
-            exist.
-        show_fig : bool
+            thickness) at the bottom, if such a layer does not already exist.
+        show_fig : bool, default=False
             Whether to show a figure
 
-        Return
-        ------
+        Returns
+        -------
         vs_array : np.ndarray | Vs_Profile
             Vs values corresponding to the given depths. Its type depends on
             ``as_profile``.
@@ -597,11 +601,11 @@ class Vs_Profile:
 
         Parameters
         ----------
-        vs_queried: float | np.ndarray
+        vs_queried : float | np.ndarray
             Queried Vs values.
         depth : float | np.ndarray
             Depth.
-        dpi : float
+        dpi : float, default=100
             The resolution of the plot
         """
         fig, ax, _ = self.plot(dpi=dpi)
@@ -612,12 +616,12 @@ class Vs_Profile:
 
     def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:
         """
-        Query the depth of the basin as indicated in the Vs profile data.
-        The basin is defined as the material whose Vs is at least `bedrock_Vs`.
+        Query the depth of the basin as indicated in the Vs profile data. The
+        basin is defined as the material whose Vs is at least ``bedrock_Vs``.
 
         Parameters
         ----------
-        bedrock_Vs : float
+        bedrock_Vs : float, default=1000.0
             The shear-wave velocity that you consider as the bedrock.
 
         Returns
@@ -685,18 +689,18 @@ class Vs_Profile:
                 '%d',
             ),
     ) -> None:
-        """
+        r"""
         Write Vs profile to a text file.
 
         Parameters
         ----------
         fname : str
             File name (including path).
-        sep : str
+        sep : str, default='\t'
             Delimiter for the output file.
-        precision : tuple[str, str, str, str, str]
-            A list of precision specifiers, each for the five columns of the
-            Vs profile.
+        precision : tuple[str, str, str, str, str], default=('%.2f', '%.2f', '%.4g', '%.5g', '%d')
+            A list of precision specifiers, each for the five columns of the Vs
+            profile.
 
         Raises
         ------

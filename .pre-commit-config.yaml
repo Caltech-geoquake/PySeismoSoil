@@ -1,32 +1,104 @@
+---
+# Test files (and the data files they read) are intentionally left untouched
+# by every hook, so that they keep verifying the reformatted source code.
+exclude: ^tests/
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-
-  - repo: https://github.com/jsh9/cercis
-    rev: 0.2.3
-    hooks:
-      - id: cercis
-      - id: cercis-jupyter
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.3
-    hooks:
-      - id: prettier
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
-      - id: end-of-file-fixer
       - id: trailing-whitespace
-
-  - repo: https://github.com/pre-commit/pre-commit
-    rev: v3.5.0
+      - id: end-of-file-fixer
+        exclude: \.json$|\.ipynb$
+      - id: requirements-txt-fixer
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-toml
+      - id: check-yaml
+      - id: name-tests-test
+        args: [--pytest-test-first]
+      - id: check-merge-conflict
+  - repo: https://github.com/jsh9/muff-pre-commit
+    rev: 0.15.20
     hooks:
-      - id: validate_manifest
-
+      - id: muff-format
+        args: [--config, muff.toml]
+  - repo: https://github.com/lyz-code/yamlfix
+    rev: 1.19.1
+    hooks:
+      - id: yamlfix
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.4
+    hooks:
+      - id: toml-sort-fix
+        args:
+          - --in-place
+          - --sort-table-keys
+          - --sort-inline-tables
+          - --sort-first=name,version,dependencies,requires-python,authors,maintainers
+          - --trailing-comma-inline-array
+          - --sort-inline-arrays
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.16.0
+    hooks:
+      - id: pretty-format-ini
+        args: [--autofix]
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        args: [--wrap=79, --number]
+        additional_dependencies: [mdformat-gfm]
+  - repo: https://github.com/jsh9/format-json
+    rev: 0.1.2
+    hooks:
+      - id: format-json
+        args:
+          - --autofix
+          - --no-ensure-ascii
+          - --indent=4
+          - --no-sort-keys
+          - --no-eof-newline
+  - repo: https://github.com/jsh9/markdown-heading-numbering
+    rev: 0.1.1
+    hooks:
+      - id: markdown-heading-numbering
+        exclude: ^CHANGELOG\.md$
   - repo: https://github.com/jsh9/markdown-toc-creator
-    rev: 0.0.6
+    rev: 0.1.3
     hooks:
       - id: markdown-toc-creator
+        exclude: ^AGENTS\.md$|^CHANGELOG\.md$
+  - repo: https://github.com/jsh9/format-docstring
+    rev: 0.4.0
+    hooks:
+      - id: format-docstring
+        name: Format docstrings in .py files
+        args:
+          - --line-length=79
+          - --docstring-style=numpy
+          - --include-arg-types=true
+          - --include-arg-defaults=true
+          - --include-return-and-yield-types=true
+      - id: format-docstring-jupyter
+        name: Format docstrings in .ipynb files
+        args:
+          - --line-length=79
+          - --docstring-style=numpy
+          - --include-arg-types=true
+          - --include-arg-defaults=true
+          - --include-return-and-yield-types=true
+  - repo: https://github.com/jsh9/blank-line-after-blocks
+    rev: 0.1.4
+    hooks:
+      - id: blank-line-after-blocks
+  - repo: https://github.com/jsh9/pre-commit-tox-version-sync
+    rev: 0.1.1
+    hooks:
+      - id: sync-precommit-tox-versions
+        args:
+          - --pre-commit-repo
+          - https://github.com/jsh9/muff-pre-commit
+          - --tox-env
+          - muff-format
+          - --tox-dep
+          - muff

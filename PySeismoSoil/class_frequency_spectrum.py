@@ -14,42 +14,43 @@ from PySeismoSoil import helper_site_response as sr
 
 
 class Frequency_Spectrum:
-    """
+    r"""
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
-    array. (If frequency range implied in ``data`` and/or ``df`` goes beyond ``fmin``
-    and/or ``fmax``, then the interpolation algorithm automatically use the 0th
-    and the last point in the extrapolated parts.)
+    array. (If frequency range implied in ``data`` and/or ``df`` goes beyond
+    ``fmin`` and/or ``fmax``, then the interpolation algorithm automatically
+    use the 0th and the last point in the extrapolated parts.)
 
     Parameters
     ----------
     data : str | np.ndarray
-        If str: the full file name on the hard drive containing the data.
-        If np.ndarray: the numpy array containing the data.
+        - If str: the full file name on the hard drive containing the data.
+        - If np.ndarray: the numpy array containing the data.
+
         The data can have one column (which contains the spectrum) or two
-        columns (0st column: freq; 1st column: spectrum). If only one column
-        is supplied, another input parameter ``df`` must also be supplied.
-    df : float
+        columns (0st column: freq; 1st column: spectrum). If only one column is
+        supplied, another input parameter ``df`` must also be supplied.
+    df : float, default=None
         Frequency interval. Not necessary if ``data`` has two columns (with the
-        0th column being the frequency information). If ``data`` has one column,
-        it is assumed that the values in ``data`` correspond to a linear
-        frequency array.
-    interpolate : bool
+        0th column being the frequency information). If ``data`` has one
+        column, it is assumed that the values in ``data`` correspond to a
+        linear frequency array.
+    interpolate : bool, default=False
         Whether to use the interpolated spectra in place of the raw data.
-    fmin : float
+    fmin : float, default=0.1
         Minimum frequency of the manuall constructed frequency array for
         interpolation. It has no effect if ``interpolate`` is ``False``.
-    fmax : float
+    fmax : float, default=30
         Maximum frequency of the manually constructed frequency array for
         interpolation. It has no effect if ``interpolate`` is ``False``.
-    n_pts : int
+    n_pts : int, default=1000
         Number of points in the manualy constructed frequency array for
         interpolation. It has no effect if ``interpolate`` is ``False``.
-    log_scale : bool
-        Whether the manually constructed frequency (for interpolation) array
-        is in log scale (or linear scale). It has no effect if ``interpolate``
-        is False.
-    sep : str
+    log_scale : bool, default=True
+        Whether the manually constructed frequency (for interpolation) array is
+        in log scale (or linear scale). It has no effect if ``interpolate`` is
+        False.
+    sep : str, default='\t'
         Delimiter identifier, only useful if ``data`` is a file name.
 
     Attributes
@@ -71,9 +72,9 @@ class Frequency_Spectrum:
     spectrum : np.ndarray
         Just the spectrum values.
     amplitude : np.ndarray
-        The amplitude (or "magnitude") of ``spectrum``. Note that
-        ``spectrum`` can already be all real numbers.
-    amplitude_2col: np.ndarray
+        The amplitude (or "magnitude") of ``spectrum``. Note that ``spectrum``
+        can already be all real numbers.
+    amplitude_2col : np.ndarray
         A two-column numpy array (frequency and amplitude).
     phase : np.ndarray
         The phase angle of ``spectrum``. If ``spectrum`` has all real values,
@@ -172,21 +173,21 @@ class Frequency_Spectrum:
 
         Parameters
         ----------
-        fig : Figure | None
+        fig : Figure | None, default=None
             Figure object. If None, a new figure will be created.
-        ax : Axes | None
+        ax : Axes | None, default=None
             Axes object. If None, a new axes will be created.
-        figsize: tuple[float, float]
-            Figure size in inches, as a tuple of two numbers. The figure
-            size of ``fig`` (if not ``None``) will override this parameter.
-        dpi : float
-            Figure resolution. The dpi of ``fig`` (if not ``None``) will override
-            this parameter.
-        logx : bool
+        figsize : tuple[float, float], default=None
+            Figure size in inches, as a tuple of two numbers. The figure size
+            of ``fig`` (if not ``None``) will override this parameter.
+        dpi : float, default=100
+            Figure resolution. The dpi of ``fig`` (if not ``None``) will
+            override this parameter.
+        logx : bool, default=True
             Whether to show x scale as log.
-        logy : bool
+        logy : bool, default=False
             Whether to show y scale as log.
-        plot_abs : bool
+        plot_abs : bool, default=False
             Whether to plot the absolute values of the spectrum.
         **kwargs_plot : dict[Any, Any]
             Extra keyword arguments are passed to ``matplotlib.pyplot.plot()``.
@@ -230,14 +231,15 @@ class Frequency_Spectrum:
             **kwargs: dict[Any, Any],
     ) -> tuple[np.ndarray | None, Figure, Axes]:
         """
-        Smooth the spectrum by calculating the convolution of the raw
-        signal and the smoothing window.
+        Smooth the spectrum by calculating the convolution of the raw signal
+        and the smoothing window.
 
         Parameters
         ----------
-        win_len : int
-            Length of the smoothing window. Larget numbers means more smoothing.
-        show_fig : bool
+        win_len : int, default=15
+            Length of the smoothing window. Larget numbers means more
+            smoothing.
+        show_fig : bool, default=False
             Whether to show a before/after figure.
         log_scale : bool
             Whether the frequency spacing of this frequency spectrum is in log
@@ -280,8 +282,8 @@ class Frequency_Spectrum:
 
     def get_f0(self) -> float:
         """
-        Get the "fundamental frequency" of the amplitude spectrum, which is
-        the frequency of the first amplitude peak.
+        Get the "fundamental frequency" of the amplitude spectrum, which is the
+        frequency of the first amplitude peak.
 
         Returns
         -------
@@ -296,7 +298,7 @@ class Frequency_Spectrum:
 
         Parameters
         ----------
-        robust : bool
+        robust : bool, default=True
             When unwrapping, whether to use the robust adjustment or not.
             Turning this option on can help mitigate some issues associated
             with incomplete unwrapping due to discretization errors.
