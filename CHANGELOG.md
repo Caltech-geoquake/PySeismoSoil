@@ -24,6 +24,11 @@
     reaches the Nyquist frequency
 - Added
   - Tests for the goodness-of-fit scores and for `sine_smooth()`
+  - A `notebooks` tox env and CI job that execute every example notebook on
+    every PR (#40)
+- Maintenance
+  - Re-ran all example notebooks with the current code and saved their outputs
+    (#40)
 
 ## [0.6.3] - 2025-10-15
 

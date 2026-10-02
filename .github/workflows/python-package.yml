@@ -23,6 +23,22 @@ jobs:
           python -m pip install tox
       - name: Run muff-format, pydoclint, and pre-commit
         run: tox -e muff-format,pydoclint,pre-commit
+  notebooks:
+    name: Run example notebooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox
+      - name: Execute every notebook in examples/
+        run: tox -e notebooks
   build:
     runs-on: ubuntu-latest
     strategy:
