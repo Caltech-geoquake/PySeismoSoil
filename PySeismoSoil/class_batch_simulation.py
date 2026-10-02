@@ -224,7 +224,6 @@ class Batch_Simulation:
             Simulation results of a single simulation object.
         """
         i, other_params = all_params  # unpack
-        # unpack
         n_digits, base_output_dir, catch_errors, options = other_params
         output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
         if self.sim_type == Nonlinear_Simulation:
