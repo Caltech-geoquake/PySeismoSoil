@@ -318,13 +318,14 @@ def d_567(
     simulation : np.ndarray
         Simulated time history. Must be two-columned.
     fmin : float | None, default=None
-        Minimum frequency to be considered, in units of Hz. It must be
-        provided: unlike ``fmax``, ``None`` is not supported and raises an
-        error.
+        Minimum frequency to be considered, in units of Hz. Only used when
+        ``baseline`` is ``True``, in which case it must be provided: unlike
+        ``fmax``, ``None`` is not supported and raises an error.
     fmax : float | None, default=None
-        Maximum frequency to be considered, in units of Hz. If ``None``, only a
-        high-pass filter at ``fmin`` is applied, i.e., frequencies up to the
-        Nyquist frequency, (sampling frequency)/2.0, are kept.
+        Maximum frequency to be considered, in units of Hz. Only used when
+        ``baseline`` is ``True``. If ``None``, only a high-pass filter at
+        ``fmin`` is applied, i.e., frequencies up to the Nyquist frequency,
+        (sampling frequency)/2.0, are kept.
     baseline : bool, default=True
         Whether or not to perform baseline correction of the time series.
     show_fig : bool, default=False
@@ -661,10 +662,10 @@ def d_89(
     n2 = simulation.shape[0]
 
     if fmin is None:
-        fmin = np.max(fs1 / n1, fs2 / n2)
+        fmin = max(fs1 / n1, fs2 / n2)
 
     if fmax is None:
-        fmax = np.min(fs1, fs2) / 2.0
+        fmax = min(fs1, fs2) / 2.0
 
     if fmin >= fmax:
         raise ValueError(
@@ -857,10 +858,10 @@ def d_10(
     n2 = simulation.shape[0]
 
     if fmin is None:
-        fmin = np.max(fs1 / n1, fs2 / n2)
+        fmin = max(fs1 / n1, fs2 / n2)
 
     if fmax is None:
-        fmax = np.min(fs1, fs2) / 2.0
+        fmax = min(fs1, fs2) / 2.0
 
     if fmin >= fmax:
         raise ValueError(
