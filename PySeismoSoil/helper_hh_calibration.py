@@ -426,9 +426,8 @@ def produce_HH_G_param(
             phi=phi,
             strain_in_pct=strain_,
         )
-        strain = np.tile(
-            strain_, (n_layer, 1)
-        ).T  # strain matrix for all layers
+        # strain matrix for all layers
+        strain = np.tile(strain_, (n_layer, 1)).T
         beta = np.ones(n_layer)
         s = 0.9190 * np.ones(n_layer)
     else:  # user provides own curves

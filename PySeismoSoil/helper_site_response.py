@@ -1650,9 +1650,8 @@ def amplify_motion(
         RESP = A / tf_ds
 
     # ---------Inverse Fourier transform to get the response time history------
-    resp = scipy.fftpack.ifft(
-        RESP
-    ).real  # truncate imaginary part (very small)
+    # truncate imaginary part (very small)
+    resp = scipy.fftpack.ifft(RESP).real
     response = np.column_stack((t, resp))
 
     # ---------Plot comparisons-------------------
