@@ -67,6 +67,17 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         plt.ylabel('Signal value')
         plt.legend(loc='best')
 
+    def test_sine_smooth__constant_spectrum(self):
+        freq = np.linspace(0.1, 50, 2000)
+        spectrum = np.column_stack((freq, np.full_like(freq, 2.0)))
+        smoothed = sig.sine_smooth(spectrum)
+
+        self.assertEqual(smoothed.shape, freq.shape)
+        # A constant spectrum stays constant everywhere, including at both
+        # ends (where the smoothing window is folded back in by mirroring)
+        self.assertTrue(np.allclose(smoothed, smoothed[0]))
+        self.assertTrue(np.allclose(smoothed, 2.0, rtol=0.01))
+
 
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(

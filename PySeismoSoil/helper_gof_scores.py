@@ -287,14 +287,14 @@ def calc_AriasIntensity(
     n = a.shape[0]
 
     dt = t[1] - t[0]
-    Ia = np.zeros((n, 1))
+    Ia = np.zeros(n)
     a_sq = a**2.0
 
     for ix in range(1, n):
         Ia[ix] = Ia[ix - 1] + np.pi / (2 * g) * a_sq[ix - 1] * dt
 
     Ia_peak = float(Ia[-1])
-    Ia = np.hstack((t.reshape(n, 1), Ia))
+    Ia = np.column_stack((t, Ia))
 
     return Ia, Ia_peak
 
