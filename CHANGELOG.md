@@ -18,6 +18,10 @@
   - `GOF_Scores.calc_scores()` failing with numpy 2.4+ when computing the Arias
     intensity / energy integral scores (d1-d4) or the spectral scores (d8-d9)
     (#38)
+  - `sine_smooth()` corrupting the first and last bins of the smoothed spectrum
+    (the window was folded back in about the wrong points at both ends). This
+    skewed the Fourier spectra score (d9), whose default frequency range
+    reaches the Nyquist frequency
 - Added
   - Tests for the goodness-of-fit scores and for `sine_smooth()`
 

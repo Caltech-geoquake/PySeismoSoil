@@ -935,7 +935,7 @@ def sine_smooth(
     udf = 1.854305 / window_span * df
 
     lmax = int(np.floor(2 / udf) + 1)
-    w = np.zeros((lmax, 1))
+    w = np.zeros(lmax)
 
     w[0] = 0.75 * udf
     for llix in range(1, lmax):
@@ -954,11 +954,11 @@ def sine_smooth(
     le = lt - lmax + 1
 
     if lt > 4497:
-        g1 = np.zeros((lt, 1))
-        g2 = np.zeros((lt, 1))
+        g1 = np.zeros(lt)
+        g2 = np.zeros(lt)
     else:
-        g1 = np.zeros((4497, 1))
-        g2 = np.zeros((4497, 1))
+        g1 = np.zeros(4497)
+        g2 = np.zeros(4497)
 
     for k in range(nfold):
         g1[ll - 1 + k] = g[k]
@@ -973,12 +973,15 @@ def sine_smooth(
     for k in range(le, ln + lmax + 1):
         g2[k] = 0.0
 
+    # Fold the parts of the window that fall beyond the first data point
+    # (index ll - 1) and the last data point (index ln - 1) back in, by
+    # mirroring them about those points
     for lix in range(1, lmax):
-        g2[ll + lix - 1] = g2[ll + lix - 1] + g2[ll - lix - 2]
-        g2[ln - lix - 2] = g2[ll - lix - 2] + g2[ln + lix + 1]
+        g2[ll - 1 + lix] = g2[ll - 1 + lix] + g2[ll - 1 - lix]
+        g2[ln - 1 - lix] = g2[ln - 1 - lix] + g2[ln - 1 + lix]
 
     for k in range(nfold):
-        g[k] = g2[ll - 1 + k, 0]
+        g[k] = g2[ll - 1 + k]
 
     sm_signal[0] = np.sqrt(g[0] * T)
     for k in range(1, nfold - 1):
