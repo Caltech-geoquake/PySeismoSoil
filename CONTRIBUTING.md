@@ -42,9 +42,8 @@ Docstrings use the NumPy style and are checked with `pydoclint`
 
 To check that every example notebook in `examples/` still runs, use
 `tox -e notebooks` (this takes a few minutes; CI runs it on every PR). It does
-not modify the notebooks. To also save fresh outputs, run
-`jupyter nbconvert --to notebook --execute --inplace <notebook>` from inside
-`examples/`, and then `pre-commit run -a`.
+not modify the notebooks. To also save the fresh outputs into the notebooks,
+run `tox -e notebooks -- --overwrite`, and then `pre-commit run -a`.
 
 ## 4. Update the documentations
 
