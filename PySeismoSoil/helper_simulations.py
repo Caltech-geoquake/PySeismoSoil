@@ -654,7 +654,7 @@ def _lin_resp_every_layer(
 
     # (4) Complex wave number (Kramer's book, page 260)
     vs_star_recip = (1.0 / vs_star).reshape((1, n_layer))  # (1, n_layer)
-    # (half_N, n_layer)
+    # shape of k_star: (half_N, n_layer)
     k_star = omega[:half_N].reshape(half_N, 1) * vs_star_recip
     assert k_star.shape == (half_N, n_layer)
 
@@ -664,19 +664,19 @@ def _lin_resp_every_layer(
     A[:, 0] = 1
     B[:, 0] = 1
     for k in range(n_layer - 1):  # layer by layer
-        # left half
+        # left half:
         A[:, k + 1] = 0.5 * A[:, k] * (1 + alpha[k]) * np.exp(
             1j * k_star[:, k] * h[k]
         ) + 0.5 * B[:, k] * (1 - alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])
-        # left half
+        # left half:
         B[:, k + 1] = 0.5 * A[:, k] * (1 - alpha[k]) * np.exp(
             1j * k_star[:, k] * h[k]
         ) + 0.5 * B[:, k] * (1 + alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])
 
     # (6) Compute linear transfer function
-    # single-sided transfer function
+    # single-sided transfer function:
     H_ss = np.zeros((half_N, n_layer), dtype=np.complex128)
-    # the other half
+    # the other half:
     H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex128)
     for k in range(n_layer):
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
@@ -686,7 +686,7 @@ def _lin_resp_every_layer(
 
     H = np.vstack((H_ss, H_append))
 
-    # down-sample back to original resolution
+    # down-sample back to original resolution:
     H = H[::freq_oversample_factor, :]
     freq = freq[::freq_oversample_factor]
     N = N_original
