@@ -662,10 +662,10 @@ def d_89(
     n2 = simulation.shape[0]
 
     if fmin is None:
-        fmin = max(fs1 / n1, fs2 / n2)
+        fmin = np.max((fs1 / n1, fs2 / n2))
 
     if fmax is None:
-        fmax = min(fs1, fs2) / 2.0
+        fmax = np.min((fs1, fs2)) / 2.0
 
     if fmin >= fmax:
         raise ValueError(
@@ -858,10 +858,10 @@ def d_10(
     n2 = simulation.shape[0]
 
     if fmin is None:
-        fmin = max(fs1 / n1, fs2 / n2)
+        fmin = np.max((fs1 / n1, fs2 / n2))
 
     if fmax is None:
-        fmax = min(fs1, fs2) / 2.0
+        fmax = np.min((fs1, fs2)) / 2.0
 
     if fmin >= fmax:
         raise ValueError(
