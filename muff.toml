@@ -3,7 +3,7 @@
 # Test files are intentionally left untouched by the formatter and linter
 extend-exclude = ["tests"]
 line-length = 79
-target-version = "py310"
+target-version = "py311"
 
 [format]
 docstring-code-format = true

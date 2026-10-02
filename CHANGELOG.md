@@ -14,6 +14,16 @@ adheres to [Semantic Versioning](https://semver.org/).
   `muff-format`, `pydoclint`, and an updated set of pre-commit hooks (same as
   in [bootstrap2](https://github.com/jsh9/bootstrap2))
 - Auto-formatted code and docstrings with the new formatters
+- Minimum numpy version is now 2.4.0
+
+### Removed
+
+- Python 3.10 support (minimum version is now 3.11)
+
+### Fixed
+
+- `Vs_Profile.query_Vs_at_depth()` raising `TypeError` for a scalar depth with
+  numpy 2.4+
 
 ## [0.6.3] - 2025-10-15
 
