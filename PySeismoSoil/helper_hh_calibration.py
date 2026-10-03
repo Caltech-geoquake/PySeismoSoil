@@ -1278,6 +1278,7 @@ def __calc_area(
 
         # "copt" = cross-over point
         copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)
+
         gamma_t = x[copt]
         if (gamma_t >= range_gamma_t[0]) and (gamma_t <= range_gamma_t[-1]):
             diff_T = np.abs(T_MKZ[: copt + 1] - T_FKZ[: copt + 1])

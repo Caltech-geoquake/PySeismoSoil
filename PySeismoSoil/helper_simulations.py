@@ -339,7 +339,7 @@ def equiv_linear(
         D_vector[:, k] = D_vector[:, k] - D_vector[0, k] + D[k]
 
     # -------- Part 2: Start iteration -----------------------------------------
-    # to store G of all iterations
+    # to store G and D of all iterations
     G_matrix = np.zeros((n_layer - 1, max_iter + 1))
     D_matrix = np.zeros((n_layer - 1, max_iter + 1))
     G_matrix[:, 0] = G[:-1]  # initial values

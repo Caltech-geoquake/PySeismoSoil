@@ -909,7 +909,6 @@ def calc_VsZ(
             VsZ = float(Z) / cumul_sl
 
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth
-        # use actual depth
         VsZ = np.min([total_thickness, Z]) / float(cumul_sl)
 
     return VsZ
@@ -1315,6 +1314,7 @@ def linear_tf(
 
     # length of transfer function
     TF_size = int(np.floor_divide(fmax, freq_resolution))
+
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
@@ -1609,6 +1609,7 @@ def amplify_motion(
     # interpolate amplitude and phase (NOT the real/imag parts)
     amp_ss_interp = np.interp(ref_f_array, f_array, amp_ss)
     phase_ss_interp = np.interp(ref_f_array, f_array, phase_ss)
+
     tf_ss = amp_ss_interp * np.exp(1j * phase_ss_interp)  # reconstruction
     f_array = ref_f_array
 
