@@ -100,6 +100,22 @@ class Test_Class_SVM(unittest.TestCase):
         profile_2 = svm.get_randomized_profile(seed=5).vs_profile
         np.testing.assert_array_equal(profile_1, profile_2)
 
+        # With `vs30_z1_compliance=True`, the same seed gives the same
+        # compliant profile. (The profile from seed 5 is not compliant, so the
+        # search moves on to seed 6, 7, ...)
+        profile_5 = svm.get_randomized_profile(
+            seed=5,
+            vs30_z1_compliance=True,
+            verbose=False,
+        ).vs_profile
+        profile_6 = svm.get_randomized_profile(
+            seed=5,
+            vs30_z1_compliance=True,
+            verbose=False,
+        ).vs_profile
+        np.testing.assert_array_equal(profile_5, profile_6)
+        self.assertFalse(np.array_equal(profile_1, profile_5))
+
         # Without a seed, every call gives a different profile. (The seed used
         # to come from the current time in seconds, so all the calls within
         # the same second gave the same profile.)
