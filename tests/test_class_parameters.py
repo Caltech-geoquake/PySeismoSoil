@@ -59,6 +59,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         )
         HH_G = HH_Param(hh.deserialize_array_to_params(params))
         GGmax = HH_G.get_GGmax(strain_in_pct=np.logspace(-4, 1, num=50))
+
         # fmt: off
         GGmax_bench = [
             0.994964, 0.993758, 0.992265, 0.990419, 0.988137,
@@ -73,6 +74,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             0.0153483, 0.0123084, 0.00985001, 0.00786843, 0.00627576,
         ]
         # fmt: on
+
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
     def test_get_GGmax__the_0th_layer_of_actual_H4_G_parameter_of_IBRH17(self):
@@ -81,6 +83,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             mkz.deserialize_array_to_params(params, from_files=True)
         )
         GGmax = H4_G.get_GGmax(strain_in_pct=np.geomspace(0.0001, 6, num=50))
+
         # fmt: off
         GGmax_bench = [
             0.99038, 0.9882, 0.98553, 0.98228, 0.9783, 0.97346,
@@ -94,6 +97,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             0.0051149, 0.0041652,
         ]
         # fmt: on
+
         self.assertTrue(np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0))
 
     def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01(self):
@@ -112,6 +116,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         )
         HH_x = HH_Param(hh.deserialize_array_to_params(params))
         damping = HH_x.get_damping(strain_in_pct=np.logspace(-4, 1, num=50))
+
         # fmt: off
         damping_bench = [
             1.6815, 1.70007, 1.72351, 1.75306, 1.79029, 1.83716,
@@ -125,6 +130,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             20.1723, 19.8606,
         ]
         # fmt: on
+
         # The error could be high, due to curve-fitting errors of genetic algorithms
         self.assertTrue(
             np.allclose(damping, damping_bench, atol=7.0, rtol=0.0)
@@ -140,6 +146,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         damping = H4_x.get_damping(
             strain_in_pct=np.geomspace(0.0001, 6, num=50)
         )
+
         # fmt: off
         damping_bench = [
             2.3463, 2.3679, 2.3949, 2.4286, 2.4705, 2.5227,
@@ -153,6 +160,7 @@ class Test_Class_HH_Param(unittest.TestCase):
             21.197, 20.914,
         ]
         # fmt: on
+
         self.assertTrue(
             np.allclose(damping, damping_bench, atol=7.0, rtol=0.0)
         )

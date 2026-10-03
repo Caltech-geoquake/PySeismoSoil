@@ -26,12 +26,14 @@ class Test_Helper_Generic(unittest.TestCase):
         data, dt = hlp.read_two_column_stuff(
             _join(f_dir, 'two_column_data_example.txt'),
         )
+
         # fmt: off
         benchmark = np.array([
             [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
             [1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7],
         ]).T
         # fmt: on
+
         self.assertTrue(np.allclose(data, benchmark))
         self.assertAlmostEqual(dt, benchmark[1, 0] - benchmark[0, 0])
 
@@ -176,6 +178,7 @@ class Test_Helper_Generic(unittest.TestCase):
         GGmax, damping = hlp.extract_from_curve_format(data)
 
         strain = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
+
         # fmt: off
         GGmax_1 = [
             0.99038, 0.97403, 0.92539, 0.8188, 0.59912, 0.35256,
@@ -194,6 +197,7 @@ class Test_Helper_Generic(unittest.TestCase):
             19.02, 21.021, 20.947,
         ]
         # fmt: on
+
         GGmax_bench = [
             np.column_stack((strain, GGmax_1)),
             np.column_stack((strain, GGmax_2)),

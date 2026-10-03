@@ -75,10 +75,12 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_get_randomized_profile(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
+
         # A fixed seed, because the randomized profile does not end with the
         # bedrock if the randomized Vs of the last soil layer is >= 1000 m/s
         # (see #48)
         random_profile = svm.get_randomized_profile(seed=0, show_fig=False)
+
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
         if svm.has_bedrock_Vs:  # bedrock Vs must match

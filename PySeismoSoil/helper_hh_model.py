@@ -236,6 +236,7 @@ def fit_HH_x_single_layer(
 
     # number of HH model parameters; do not change this for HH model
     n_param = 9
+
     N = 122  # denser strain array for more accurate damping calculation
     strain_dense = np.logspace(-6, -1, N)  # unit: 1
     damping_dense = np.interp(

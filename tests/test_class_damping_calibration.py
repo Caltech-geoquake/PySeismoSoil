@@ -40,6 +40,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
             use_Darendeli_Dmin=True,
             show_fig=True,
         )
+
         # Check two things:
         #  (1) The unit of strains are correct (i.e., %), and no interpolation happened
         #  (2) The unit of the damping ratios are correct (i.e., %)

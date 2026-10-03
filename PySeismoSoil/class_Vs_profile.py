@@ -428,6 +428,7 @@ class Vs_Profile:
             total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
+
             # extend to `depth`
             profile_[-1][0] = depth + last_thk - total_depth
 

@@ -78,8 +78,10 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
 
     def test_equiv_linear(self):
         gm_raw = Ground_Motion(_join(f_dir, 'sample_accel.txt'), unit='gal')
+
         # Make a very weak motion to speed up equivalent linear calculation
         gm = gm_raw.scale_motion(target_PGA_in_g=0.001)
+
         prof_2 = Vs_Profile(_join(f_dir, 'profile_P001.txt'))
         mgdc_2 = Multiple_GGmax_Damping_Curves(
             data=_join(f_dir, 'curve_P001.txt')

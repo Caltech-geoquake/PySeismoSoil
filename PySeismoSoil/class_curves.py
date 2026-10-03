@@ -707,8 +707,8 @@ class Multiple_Curves:
         if isinstance(i, int):
             return self.curves[i]
 
-        if isinstance(i, slice):  # return an object of the same class
-            # filled with the sliced data
+        if isinstance(i, slice):
+            # return an object of the same class, filled with the sliced data
             return self.__class__(self.curves[i])
 
         raise TypeError('Indices must be integers or slices, not %s' % type(i))
