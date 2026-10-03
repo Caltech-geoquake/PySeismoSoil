@@ -9,7 +9,8 @@ ______________________________________________________________________
 - [1. General guideline](#1-general-guideline)
 - [2. Install the library for development](#2-install-the-library-for-development)
 - [3. Running local tests and linting](#3-running-local-tests-and-linting)
-- [4. Update the documentations](#4-update-the-documentations)
+- [4. Re-run the example notebooks in every PR](#4-re-run-the-example-notebooks-in-every-pr)
+- [5. Update the documentations](#5-update-the-documentations)
 
 ______________________________________________________________________
 
@@ -40,12 +41,49 @@ Docstrings use the NumPy style and are checked with `pydoclint`
 (`tox -e pydoclint`). To check formatting without modifying any files, run
 `tox -e muff-format`.
 
-To check that every example notebook in `examples/` still runs, use
-`tox -e notebooks` (this takes a few minutes; CI runs it on every PR). It does
-not modify the notebooks. To also save the fresh outputs into the notebooks,
-run `tox -e notebooks -- --overwrite`, and then `pre-commit run -a`.
+## 4. Re-run the example notebooks in every PR
 
-## 4. Update the documentations
+Every PR needs to re-run all the example notebooks in `examples/` and commit
+them, so that their outputs always come from the current code. To do this, run
+this command from the root directory:
+
+```
+tox -e run-notebooks
+```
+
+It installs this library and the packages needed to run the notebooks in a
+separate environment (managed by `tox`), runs each notebook from top to bottom
+in a fresh kernel, and saves the notebooks that run without errors. This takes
+a few minutes. Options after `--` are passed to the script
+(`scripts/run_notebooks.py`):
+
+- To run only some notebooks, pass their paths (e.g.,
+  `tox -e run-notebooks -- examples/Demo_01_Ground_Motion.ipynb`)
+- To run several notebooks at a time, use `-j` (e.g.,
+  `tox -e run-notebooks -- -j 4`), but the timings that some notebooks print
+  are then less accurate
+
+If you already have a development environment with this library installed
+(`pip install -e .`) and the packages in `requirements.dev`, you can also run
+`python scripts/run_notebooks.py` directly.
+
+The first cell of each notebook prints when the notebook was last run (in
+Pacific Time). The pre-commit hook `check-notebooks-were-run` fails if:
+
+- this time is not later than the commit on `main` that your branch started
+  from (or the latest commit on `main` that you merged into your branch), or
+- the code cells were not run in order starting from 1, any cell was skipped,
+  or any cell has an error output.
+
+Locally, the hook only checks the notebooks in each commit. CI checks all the
+notebooks. If you run a notebook in Jupyter instead, use "Restart Kernel and
+Run All Cells". New notebooks need the same first cell (copy it from an
+existing notebook).
+
+Separately, `tox -e notebooks` checks that every notebook runs, without
+modifying them. CI runs it on every PR.
+
+## 5. Update the documentations
 
 If you would like to make changes to the documentations of this library, you
 need to install the dependencies for building documentations with the following
