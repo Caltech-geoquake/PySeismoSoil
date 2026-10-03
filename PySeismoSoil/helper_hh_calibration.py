@@ -426,8 +426,10 @@ def produce_HH_G_param(
             phi=phi,
             strain_in_pct=strain_,
         )
+
         # strain matrix for all layers
         strain = np.tile(strain_, (n_layer, 1)).T
+
         beta = np.ones(n_layer)
         s = 0.9190 * np.ones(n_layer)
     else:  # user provides own curves
@@ -478,6 +480,7 @@ def produce_HH_G_param(
         mu[j] = 1.0 / (
             0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
         )  # noqa: E226
+
         # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
         if mu[j] <= 0.02:
             # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
@@ -703,8 +706,10 @@ def _calc_shear_strength(
             Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]
         else:  # stiffer soils: Mohr-Coulomb criterion
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
+
             # largest principal stress
             sigma_1 = np.max([sigma_v0[j], sigma_h0])
+
             # smallest principal stress
             sigma_3 = np.min([sigma_v0[j], sigma_h0])
 
@@ -1267,6 +1272,7 @@ def __calc_area(
     for j in range(len(range_d)):
         d = range_d[j]
         T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
+
         # unit: 1
         range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
 

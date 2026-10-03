@@ -51,6 +51,7 @@ def run_notebook(path: Path, timeout: int) -> str | None:
         if cell.cell_type == 'code':
             cell.outputs = []
             cell.execution_count = None
+
             # Remove cell timing info that other tools may have recorded
             cell.metadata.pop('execution', None)
 

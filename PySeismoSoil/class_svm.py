@@ -144,6 +144,7 @@ class SVM:
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...
             Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
+
             # just one layer
             vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])
         else:  # this is most of the cases...
@@ -641,6 +642,7 @@ class SVM:
                 func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
+
                     # keeps trying until fsolve() properly converges
                     while ier != 1:
                         mean_thk, info, ier, msg = fsolve(
@@ -651,6 +653,7 @@ class SVM:
                     # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
+
                     # keeps trying until fzero() properly converges
                     while ier != 1:
                         mean_thk, info, ier, msg = fsolve(

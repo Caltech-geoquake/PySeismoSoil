@@ -383,6 +383,7 @@ def equiv_linear(
             #            ^ Interpolation needs to start from Gmax[k], otherwise
             #            the shear modulus values would get smaller and smaller
             #            and eventually to 0.
+
             D_new[k] = np.interp(eff_strain[k], strain_D_, D_vector_)
         # END FOR
         G_relative_diff = np.abs(G[:-1] - G_new) / G_new
@@ -535,6 +536,7 @@ def _prepare_inputs(
 
     n_layer = len(h)  # includes the rock layer
     Gmax = rho * vs**2.0
+
     # initial value of G; Gmax cannot change, so needs a hard copy
     G = Gmax.copy()
 
@@ -654,6 +656,7 @@ def _lin_resp_every_layer(
 
     # (4) Complex wave number (Kramer's book, page 260)
     vs_star_recip = (1.0 / vs_star).reshape((1, n_layer))  # (1, n_layer)
+
     # shape of k_star: (half_N, n_layer)
     k_star = omega[:half_N].reshape(half_N, 1) * vs_star_recip
     assert k_star.shape == (half_N, n_layer)
@@ -668,6 +671,7 @@ def _lin_resp_every_layer(
         A[:, k + 1] = 0.5 * A[:, k] * (1 + alpha[k]) * np.exp(
             1j * k_star[:, k] * h[k]
         ) + 0.5 * B[:, k] * (1 - alpha[k]) * np.exp(-1j * k_star[:, k] * h[k])
+
         # left half:
         B[:, k + 1] = 0.5 * A[:, k] * (1 - alpha[k]) * np.exp(
             1j * k_star[:, k] * h[k]
@@ -676,8 +680,10 @@ def _lin_resp_every_layer(
     # (6) Compute linear transfer function
     # single-sided transfer function:
     H_ss = np.zeros((half_N, n_layer), dtype=np.complex128)
+
     # the other half:
     H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex128)
+
     for k in range(n_layer):
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
         H_ss[0, k] = np.real(H_ss[0, k])  # see Note (1) below

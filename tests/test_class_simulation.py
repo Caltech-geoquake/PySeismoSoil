@@ -57,6 +57,7 @@ class Test_Class_Simulation(unittest.TestCase):
         )
         output = equiv_lin_sim.run(show_fig=True)
         max_v = output.max_a_v_d[:, 2]
+
         # fmt: off
         max_v_benchmark = [
             0.404085, 0.403931, 0.402998, 0.399842, 0.390005,
@@ -74,6 +75,7 @@ class Test_Class_Simulation(unittest.TestCase):
             0.287429, 0.290265, 0.292502,  # from MATLAB SeismoSoil
         ]
         # fmt: on
+
         tol = 0.01  # FFT of scipy and MATLAB are different, hence a lenient tolerance
         self.assertTrue(
             np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0)

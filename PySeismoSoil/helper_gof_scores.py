@@ -927,10 +927,12 @@ def upArrow_op(li, j):
 def period_list(li, N):
     """Code from: https://github.com/pistonly/modwtpy"""
     n = len(li)
+
     # append [0 0 ...]
     n_app = N - np.mod(n, N)
     li = list(li)
     li = li + [0] * n_app
+
     if len(li) < 2 * N:
         li_result = np.array(li)
     else:
@@ -997,6 +999,7 @@ def modwtmra(w, filters):
     wavelet = pywt.Wavelet(filters)
     h = wavelet.dec_hi
     g = wavelet.dec_lo
+
     # D
     level, N = w.shape
     level = level - 1
@@ -1006,6 +1009,7 @@ def modwtmra(w, filters):
         # g_j_part
         g_j_up = upArrow_op(g, j)
         g_j_part = np.convolve(g_j_part, g_j_up)
+
         # h_j_o
         h_j_up = upArrow_op(h, j + 1)
         h_j = np.convolve(g_j_part, h_j_up)
@@ -1015,6 +1019,7 @@ def modwtmra(w, filters):
 
         h_j_t_o = period_list(h_j_t, N)
         D.append(circular_convolve_mra(h_j_t_o, w[j]))
+
     # S
     j = level - 1
     g_j_up = upArrow_op(g, j + 1)

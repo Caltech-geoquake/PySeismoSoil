@@ -17,6 +17,7 @@ class Test_Helper_MKZ_Model(unittest.TestCase):
 
     def test_tau_MKZ(self):
         T = mkz.tau_MKZ(self.strain, gamma_ref=1, beta=2, s=3, Gmax=4)
+
         # note: benchmark results come from comparable functions in MATLAB
         self.assertTrue(
             np.allclose(
