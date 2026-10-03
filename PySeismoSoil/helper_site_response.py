@@ -909,7 +909,6 @@ def calc_VsZ(
             VsZ = float(Z) / cumul_sl
 
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth
-        # use actual depth
         VsZ = np.min([total_thickness, Z]) / float(cumul_sl)
 
     return VsZ
@@ -1173,6 +1172,7 @@ def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:
     for i in range(1, L):  # the first element of 'z_top' remains zero
         # the last element of 'thk' is not used at all
         z_top[i] = z_top[i - 1] + thk[i - 1]
+
         # the last element of 'z_mid' is NaN
         z_mid[i - 1] = z_top[i - 1] + thk[i - 1] / 2.0
 
@@ -1314,6 +1314,7 @@ def linear_tf(
 
     # length of transfer function
     TF_size = int(np.floor_divide(fmax, freq_resolution))
+
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
@@ -1582,6 +1583,7 @@ def amplify_motion(
             phase_slope = phase_ss[-1] / f_array[-1]  # average slope of phase
             f_array = np.append(f_array, fmax)
             amp_ss = np.append(amp_ss, amp_ss[-1])
+
             # extrapolate phase knowing that it is a straight line in general:
             phase_ss = np.append(phase_ss, phase_slope * fmax)
 
@@ -1607,6 +1609,7 @@ def amplify_motion(
     # interpolate amplitude and phase (NOT the real/imag parts)
     amp_ss_interp = np.interp(ref_f_array, f_array, amp_ss)
     phase_ss_interp = np.interp(ref_f_array, f_array, phase_ss)
+
     tf_ss = amp_ss_interp * np.exp(1j * phase_ss_interp)  # reconstruction
     f_array = ref_f_array
 

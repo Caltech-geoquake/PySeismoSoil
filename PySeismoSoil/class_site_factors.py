@@ -194,6 +194,7 @@ class Site_Factors:
             result = np.column_stack((freq, amplif))
         else:  # response spectra
             freq = 1.0 / period_or_freq
+
             # so that freq increases
             result = np.column_stack((freq, amplif))[::-1, :]
 

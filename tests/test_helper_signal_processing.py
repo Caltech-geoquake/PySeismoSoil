@@ -73,9 +73,11 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         smoothed = sig.sine_smooth(spectrum)
 
         self.assertEqual(smoothed.shape, freq.shape)
+
         # A constant spectrum stays constant everywhere, including at both
         # ends (where the smoothing window is folded back in by mirroring)
         self.assertTrue(np.allclose(smoothed, smoothed[0]))
+
         self.assertTrue(np.allclose(smoothed, 2.0, rtol=0.01))
 
 
