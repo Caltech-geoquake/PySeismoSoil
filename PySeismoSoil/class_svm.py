@@ -501,8 +501,8 @@ class SVM:
             The criteria for "compliance" are:
                 1. The absolute difference between the randomized and target
                    Vs30 is < 25 m/s;
-                2. The Vs of the last soil layer (i.e., the layer right above
-                   the half-space) is < 1.05 times the Vs of the half-space;
+                2. The relative difference (between the randomized profile and
+                   the base profile) of the last soil layer’s Vs is < 5%;
                 3. The relative difference of the randomized and target z1 is
                    < 20%.
         verbose : bool, default=True
@@ -546,16 +546,16 @@ class SVM:
                     Vs_profile,
                     option_for_profile_shallower_than_30m=1,
                 )
-                # The last row of `Vs_profile` is the half-space (the same one
-                # as in the base profile), so the last soil layer is above it
-                rand_Vs_last_soil = Vs_profile[-2, 1]
+                rand_Vs_last = Vs_profile[-1, 1]
                 rand_z1 = sr.calc_z1(Vs_profile)
                 base_Vs30 = self.Vs30
-                halfspace_Vs = self._base_profile[-1, 1]
+                base_Vs_last = self._base_profile[-1, 1]
                 base_z1 = sr.calc_z1(self._base_profile)
 
                 condition_1 = np.abs(rand_Vs30 - base_Vs30) < 25.0
-                condition_2 = rand_Vs_last_soil < 1.05 * halfspace_Vs
+                condition_2 = (
+                    np.abs(rand_Vs_last - base_Vs_last) / base_Vs_last < 0.05
+                )
                 condition_3 = np.abs(rand_z1 - base_z1) / base_z1 < 0.20
 
                 if condition_1 and condition_2 and condition_3:
@@ -690,12 +690,6 @@ class SVM:
         # adjust thickness of last layer so that sum(thk) = z1
         thk[-1] = self.z1 - np.sum(thk[:-1])
 
-        # The adjustment above can make the last layer thinner than 2 m, so
-        # merge it into the layer above it (which is at least 2 m thick)
-        if len(thk) > 1 and thk[-1] < 2.0:
-            last_thk = thk.pop()
-            thk[-1] += last_thk
-
         # update z_mid because thk has changed
         # (z_top and z_bot are not used below, so no need to update)
         z_mid = sr.thk2dep(np.array(thk), midpoint=True)
@@ -797,12 +791,12 @@ class SVM:
 
             Vs_hat[i] = baseline_Vs[i] * np.exp(Y[i] * sigma_)
 
-        # -------------  Part 4: Add the half-space  ----------------
-        #     The randomized profile always ends with the same half-space as
-        #     the base profile (i.e., the bedrock, if there is one), even if
-        #     the Vs of the last soil layer is higher than that.
+        # -------------  Part 4: Adjust Vs_profile  ----------------
+        #     If the last layer of Vs_profile is less than 1000 m/s, add a
+        #     1000 m/s layer at the very bottom.  '''
         Vs_profile = np.column_stack((thk, Vs_hat))
-        Vs_profile = np.vstack((Vs_profile, [0, self._base_profile[-1, 1]]))
+        if Vs_profile[-1, 1] < 1000:
+            Vs_profile = np.vstack((Vs_profile, [0, 1000]))
 
         # -------------  Part 5: Plot Vs profile (optional) ---------------
         if show_fig is True:
