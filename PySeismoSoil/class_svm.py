@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any
 
 import numpy as np
@@ -486,8 +485,8 @@ class SVM:
         Parameters
         ----------
         seed : float | None, default=None
-            The seed value for setting the random state. It not set, this
-            method automatically uses the current time to generate a seed.
+            The seed value for setting the random state. If ``None``, a
+            different random seed is used every time.
         show_fig : bool, default=False
             Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool, default=False
@@ -589,9 +588,8 @@ class SVM:
         Parameters
         ----------
         seed : int, default=None
-            The seed value for setting the random state. It not set, this
-            method automatically uses the current time to generate a seed. Not
-            effective if ``vs30_z1_compliance`` is set to ``True``.
+            The seed value for setting the random state. If ``None``, a
+            different random seed is used every time.
         show_fig : bool, default=False
             Whether to show the figure of smooth and randomized profiles.
         use_Toros_layering : bool, default=False
@@ -607,11 +605,16 @@ class SVM:
             The randomized Vs profile.
         """
         if seed is None:
-            cc = time.localtime(time.time())
-            seed = cc[5] * 1e7
+            # A new seed from the OS's entropy source. (It is < 2**31 so that
+            # `2 * seed` below is a valid seed too.)
+            seed = np.random.default_rng().integers(2**31)
 
         seed = int(seed)  # convert seed_value into int (for robustness)
-        np.random.seed(int(seed))
+
+        # A local random state (rather than `np.random.seed()`) leaves numpy's
+        # global random state untouched, and it draws the same numbers as
+        # `np.random.seed(seed)` did, so a given seed gives the same profile
+        rng = np.random.RandomState(seed)
 
         # --------------  Part 1. Soil Layering Randomization  -------------
         z_top = [0]  # depth of layer top
@@ -632,7 +635,7 @@ class SVM:
                 lamda_ = 1 / rate
                 thk_rand = -1
                 while thk_rand <= 0:  # to ensure thickness is always positive
-                    thk_rand = np.random.poisson(lamda_)  # draw random sample
+                    thk_rand = rng.poisson(lamda_)  # draw random sample
                 # END
             else:
                 func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
@@ -668,7 +671,7 @@ class SVM:
                 std_thk = 0.951 * z_mid_temp**0.628
 
                 # randomized thickness based on mean and std
-                thk_rand = np.random.normal(mean_thk, std_thk)
+                thk_rand = rng.normal(mean_thk, std_thk)
             # END IF
 
             # make sure each layer is at least 2 meters thick; too thin layers are not realistic
@@ -762,7 +765,7 @@ class SVM:
         # ****** 3.3. Generate random Vs values based on Toro's equations  ******
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
-        np.random.seed([2 * seed])
+        rng = np.random.RandomState([2 * seed])
 
         for i in range(0, len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
@@ -780,11 +783,11 @@ class SVM:
 
             if i == 0:  # for the first layer
                 # generate a 1-by-nr_of_rand_profiles vector
-                Y[i] = np.random.normal(0, 1, (1, 1))
+                Y[i] = rng.normal(0, 1, (1, 1))
             else:  # for other layers
-                Y[i] = rho_1L * Y[i - 1] + np.random.normal(
-                    0, 1, (1, 1)
-                ) * np.sqrt(1 - rho_1L**2)
+                Y[i] = rho_1L * Y[i - 1] + rng.normal(0, 1, (1, 1)) * np.sqrt(
+                    1 - rho_1L**2
+                )
 
             Vs_hat[i] = baseline_Vs[i] * np.exp(Y[i] * sigma_)
 

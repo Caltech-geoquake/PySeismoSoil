@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from PySeismoSoil.class_svm import SVM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
@@ -73,7 +75,10 @@ class Test_Class_SVM(unittest.TestCase):
 
     def test_get_randomized_profile(self):
         svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-        random_profile = svm.get_randomized_profile(show_fig=False)
+        # A fixed seed, because the randomized profile does not end with the
+        # bedrock if the randomized Vs of the last soil layer is >= 1000 m/s
+        # (see #48)
+        random_profile = svm.get_randomized_profile(seed=0, show_fig=False)
         self.assertTrue(isinstance(random_profile, Vs_Profile))
 
         if svm.has_bedrock_Vs:  # bedrock Vs must match
@@ -86,6 +91,45 @@ class Test_Class_SVM(unittest.TestCase):
             vs30_z1_compliance=True,
             verbose=True,
         )
+
+    def test_get_randomized_profile__seed(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
+
+        # The same seed gives the same profile
+        profile_1 = svm.get_randomized_profile(seed=5).vs_profile
+        profile_2 = svm.get_randomized_profile(seed=5).vs_profile
+        np.testing.assert_array_equal(profile_1, profile_2)
+
+        # With `vs30_z1_compliance=True`, the same seed gives the same
+        # compliant profile. (The profile from seed 5 is not compliant, so the
+        # search moves on to seed 6, 7, ...)
+        profile_5 = svm.get_randomized_profile(
+            seed=5,
+            vs30_z1_compliance=True,
+            verbose=False,
+        ).vs_profile
+        profile_6 = svm.get_randomized_profile(
+            seed=5,
+            vs30_z1_compliance=True,
+            verbose=False,
+        ).vs_profile
+        np.testing.assert_array_equal(profile_5, profile_6)
+        self.assertFalse(np.array_equal(profile_1, profile_5))
+
+        # Without a seed, every call gives a different profile. (The seed used
+        # to come from the current time in seconds, so all the calls within
+        # the same second gave the same profile.)
+        profile_3 = svm.get_randomized_profile().vs_profile
+        profile_4 = svm.get_randomized_profile().vs_profile
+        self.assertFalse(np.array_equal(profile_3, profile_4))
+
+        # numpy's global random state is not changed
+        np.random.seed(0)
+        expected = np.random.random()
+        np.random.seed(0)
+        svm.get_randomized_profile(seed=5)
+        svm.get_randomized_profile()
+        self.assertEqual(expected, np.random.random())
 
     def test_index_closest(self):
         array = [0, 1, 2, 1.1, 0.4, -3.2]

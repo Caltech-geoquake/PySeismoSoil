@@ -8,6 +8,10 @@
     in [bootstrap2](https://github.com/jsh9/bootstrap2))
   - Auto-formatted code and docstrings with the new formatters
   - Minimum numpy version is now 2.4.0
+  - `SVM.get_randomized_profile()` no longer calls `np.random.seed()`, so it
+    leaves numpy's global random state alone, with or without a `seed`. Code
+    that relied on it to seed later `np.random` calls needs to call
+    `np.random.seed()` itself
 - Removed
   - Python 3.10 support (minimum version is now 3.11)
 - Fixed
@@ -22,6 +26,11 @@
     (the window was folded back in about the wrong points at both ends). This
     skewed the Fourier spectra score (d9), whose default frequency range
     reaches the Nyquist frequency
+  - `SVM.get_randomized_profile()` with `seed=None` using the current time in
+    seconds as the seed. It could only give 60 different profiles, and the
+    search for a compliant profile (`vs30_z1_compliance=True`) repeated the
+    same profile until the next second. A given `seed` still gives the same
+    profile as before
 - Added
   - Tests for the goodness-of-fit scores and for `sine_smooth()`
   - A `notebooks` tox env and CI job that execute every example notebook on
@@ -36,6 +45,8 @@
 - Maintenance
   - Re-ran all example notebooks with the current code and saved their outputs
     (#40)
+  - Made `test_get_randomized_profile` use a fixed seed, so that it no longer
+    fails randomly (#48)
 
 ## [0.6.3] - 2025-10-15
 
