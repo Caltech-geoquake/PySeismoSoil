@@ -22,6 +22,20 @@
     (the window was folded back in about the wrong points at both ends). This
     skewed the Fourier spectra score (d9), whose default frequency range
     reaches the Nyquist frequency
+  - `SVM.get_randomized_profile()` returning a profile without the bedrock
+    half-space when the randomized Vs of the last soil layer was 1000 m/s or
+    higher. This also made `test_get_randomized_profile` fail randomly (#48)
+  - `SVM.get_randomized_profile()` always ending the profile with 1000 m/s,
+    instead of the half-space of the base profile (i.e., `Vs_cap`, or the Vs at
+    `z1` if `Vs_cap=False`). With `vs30_z1_compliance=True`, this made the
+    search for a compliant profile very slow, or never end
+  - `SVM.get_randomized_profile()` with `seed=None` using the current time in
+    seconds as the seed (so it could only give 60 different profiles, and the
+    search for a compliant profile repeated the same profile until the next
+    second), and changing numpy's global random state. A given `seed` still
+    gives the same profile as before, apart from these fixes
+  - The last soil layer of `SVM.get_randomized_profile()` being thinner than 2
+    m sometimes. It is now merged into the layer above it
 - Added
   - Tests for the goodness-of-fit scores and for `sine_smooth()`
   - A `notebooks` tox env and CI job that execute every example notebook on

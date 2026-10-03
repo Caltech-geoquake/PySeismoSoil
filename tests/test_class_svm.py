@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from PySeismoSoil.class_svm import SVM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
@@ -86,6 +88,57 @@ class Test_Class_SVM(unittest.TestCase):
             vs30_z1_compliance=True,
             verbose=True,
         )
+
+    def test_get_randomized_profile__ends_with_bedrock(self):
+        # The randomized Vs of the last soil layer can be higher than the
+        # bedrock Vs. The profile used to end without the bedrock in this case,
+        # which made `test_get_randomized_profile()` fail randomly.
+        svm = SVM(target_Vs30=256, z1=200, show_fig=False)
+        n_last_layer_stiffer_than_bedrock = 0
+        for seed in range(30):
+            profile = svm.get_randomized_profile(seed=seed).vs_profile
+            np.testing.assert_array_equal([0, svm.bedrock_Vs], profile[-1, :2])
+            self.assertAlmostEqual(svm.z1, np.sum(profile[:, 0]))
+            self.assertTrue(np.all(profile[:-1, 0] >= 2.0))  # no thin layers
+            if profile[-2, 1] >= svm.bedrock_Vs:
+                n_last_layer_stiffer_than_bedrock += 1
+
+        # Make sure that the seeds above do cover this case
+        self.assertGreater(n_last_layer_stiffer_than_bedrock, 0)
+
+    def test_get_randomized_profile__Vs_cap_is_False(self):
+        # Without bedrock, the randomized profile ends with the same half-space
+        # as the base profile (it used to always end with 1000 m/s, so the
+        # loop for a compliant profile could never end)
+        svm = SVM(target_Vs30=256, z1=100, Vs_cap=False, show_fig=False)
+        base_halfspace = svm.base_profile.vs_profile[-1, :2]
+        self.assertLess(base_halfspace[1], 1000)
+        for seed in range(5):
+            profile = svm.get_randomized_profile(seed=seed).vs_profile
+            np.testing.assert_array_equal(base_halfspace, profile[-1, :2])
+
+    def test_get_randomized_profile__seed(self):
+        svm = SVM(target_Vs30=256, z1=100, show_fig=False)
+
+        # The same seed gives the same profile
+        profile_1 = svm.get_randomized_profile(seed=5).vs_profile
+        profile_2 = svm.get_randomized_profile(seed=5).vs_profile
+        np.testing.assert_array_equal(profile_1, profile_2)
+
+        # Without a seed, every call gives a different profile. (The seed used
+        # to come from the current time in seconds, so all the calls within
+        # the same second gave the same profile.)
+        profile_3 = svm.get_randomized_profile().vs_profile
+        profile_4 = svm.get_randomized_profile().vs_profile
+        self.assertFalse(np.array_equal(profile_3, profile_4))
+
+        # numpy's global random state is not changed
+        np.random.seed(0)
+        expected = np.random.random()
+        np.random.seed(0)
+        svm.get_randomized_profile(seed=5)
+        svm.get_randomized_profile()
+        self.assertEqual(expected, np.random.random())
 
     def test_index_closest(self):
         array = [0, 1, 2, 1.1, 0.4, -3.2]
