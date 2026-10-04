@@ -1,3 +1,5 @@
+"""Ground motion class."""
+
 from __future__ import annotations
 
 import os
@@ -134,7 +136,7 @@ class Ground_Motion:
             motion_type: Literal['accel', 'veloc', 'displ'] = 'accel',
             dt: float | None = None,
             sep: str = '\t',
-            **kwargs_to_genfromtxt: dict[Any, Any],
+            **kwargs_to_genfromtxt: dict[Any, Any],  # noqa: ARG002
     ) -> None:
         if isinstance(data, str):  # a file name
             self._path_name, self._file_name = os.path.split(data)
@@ -173,9 +175,9 @@ class Ground_Motion:
             )
 
         if unit in {'cm', 'cm/s', 'cm/s/s', 'gal'}:
-            data_[:, 1] = data_[:, 1] / 100.0  # cm --> m
+            data_[:, 1] = data_[:, 1] / 100.0  # noqa: PLR6104  # cm --> m
         elif unit == 'g':
-            data_[:, 1] = data_[:, 1] * 9.81  # g --> m/s/s
+            data_[:, 1] = data_[:, 1] * 9.81  # noqa: PLR6104  # g --> m/s/s
 
         self.dt = float(dt)  # float; unit: sec
         self.npts = len(data_[:, 0])  # int; how many time points
@@ -209,19 +211,13 @@ class Ground_Motion:
         self.T5_95 = arias_result[3]
         self.rms_accel, self.rms_veloc, self.rms_displ = self.__calc_RMS()
 
-    def __repr__(self) -> None:
+    def __repr__(self) -> str:
         """Return basic information of a ground motion."""
         return (
-            'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'
-            % (
-                self.npts,
-                self.dt,
-                self.pga_in_g,
-                self.pga_in_gal,
-                self.pgv_in_cm_s,
-                self.pgd_in_cm,
-                self.T5_95,
-            )
+            f'n_pts={self.npts:d}, dt={self.dt:.4g}s, '
+            f'PGA={self.pga_in_g:.3g}g={self.pga_in_gal:.3g}gal, '
+            f'PGV={self.pgv_in_cm_s:.3g}cm/s, PGD={self.pgd_in_cm:.3g}cm, '
+            f'T5_95={self.T5_95:.3g}s'
         )
 
     def summary(self) -> None:
@@ -274,9 +270,10 @@ class Ground_Motion:
             subsample_interval: int = 1,
     ) -> tuple[np.ndarray, ...]:
         """
-        Get elastic response spectra of the ground motion, using the "exact"
-        solution to the equation of motion (Section 5.2, Dynamics of
-        Structures, Second Edition, by Anil K. Chopra).
+        Get elastic response spectra of the ground motion.
+
+        This uses the "exact" solution to the equation of motion (Section 5.2,
+        Dynamics of Structures, Second Edition, by Anil K. Chopra).
 
         Parameters
         ----------
@@ -385,8 +382,10 @@ class Ground_Motion:
             self, unit: Literal['m/s/s', 'cm/s/s', 'gal', 'g'] = 'm/s/s'
     ) -> np.ndarray:
         """
-        Convert the unit of acceleration. "In-place" conversion is not allowed,
-        because ground motions are always stored in SI units internally.
+        Convert the unit of acceleration.
+
+        "In-place" conversion is not allowed, because ground motions are
+        always stored in SI units internally.
 
         Parameters
         ----------
@@ -437,8 +436,10 @@ class Ground_Motion:
             high_lim: float,
     ) -> tuple[float, float]:
         """
-        Calculate lower and upper time bounds corresponding to two given
-        normalized Arias intensity percentages (e.g., [0.05, 0.95])
+        Calculate lower and upper time bounds for given Arias intensities.
+
+        The bounds correspond to two given normalized Arias intensity
+        percentages (e.g., [0.05, 0.95]).
         """
         if low_lim >= high_lim:
             raise ValueError('low_lim must be smaller than high_lim.')
@@ -474,9 +475,10 @@ class Ground_Motion:
             show_fig: bool = False,
     ) -> tuple[np.ndarray, np.ndarray, float, float]:
         """
-        Calculate Arias intensity. Returns the intensity time series, peak
-        intensity, and T5_95 (time interval from 5% Arias intensity to 95%
-        Arias intensity).
+        Calculate Arias intensity.
+
+        Returns the intensity time series, peak intensity, and T5_95 (time
+        interval from 5% Arias intensity to 95% Arias intensity).
         """
         g = 9.81
 
@@ -529,8 +531,10 @@ class Ground_Motion:
             target_PGA_in_g: float | None = None,
     ) -> Ground_Motion:
         """
-        Scale ground motion, either by specifying a factor, or specifying a
-        target PGA level.
+        Scale ground motion.
+
+        This can be done either by specifying a factor, or specifying a target
+        PGA level.
 
         Parameters
         ----------
@@ -692,8 +696,9 @@ class Ground_Motion:
             return_fig_obj: bool = False,
     ) -> tuple[Ground_Motion, Figure | None, Axes | None]:
         """
-        Amplify (or de-amplify) ground motions in the frequency domain. The
-        mathematical process behind this function is as follows:
+        Amplify (or de-amplify) ground motions in the frequency domain.
+
+        The mathematical process behind this function is as follows:
 
             (1) INPUT = fft(input)
             (2) OUTPUT = INPUT * TRANS_FUNC
@@ -777,8 +782,9 @@ class Ground_Motion:
             show_fig: bool = False,
     ) -> Ground_Motion:
         """
-        Amplify the ground motion via a 1D soil profile, using linear site
-        amplification method.
+        Amplify the ground motion via a 1D soil profile.
+
+        This uses the linear site amplification method.
 
         Parameters
         ----------
@@ -823,8 +829,10 @@ class Ground_Motion:
             output_accel_label: str = 'Output',
     ) -> tuple[Figure, Axes]:
         """
-        Compare with another ground motion: plot comparison figures showing two
-        time histories and the transfer function between them.
+        Compare with another ground motion.
+
+        This plots comparison figures showing two time histories and the
+        transfer function between them.
 
         Parameters
         ----------
@@ -892,9 +900,10 @@ class Ground_Motion:
             show_fig: bool = False,
     ) -> Ground_Motion:
         """
-        Deconvolve the ground motion, i.e., propagate the motion downwards to
-        get the borehole motion (rigid boundary) or the "rock outcrop" motion
-        (elastic boundary).
+        Deconvolve the ground motion.
+
+        That is, propagate the motion downwards to get the borehole motion
+        (rigid boundary) or the "rock outcrop" motion (elastic boundary).
 
         Parameters
         ----------
@@ -934,8 +943,9 @@ class Ground_Motion:
             self, cutoff_freq: float = 0.20, show_fig: bool = False
     ) -> Ground_Motion:
         """
-        Baseline-correct the acceleration (via zero-phase-shift high-pass
-        method).
+        Baseline-correct the acceleration.
+
+        This uses the zero-phase-shift high-pass method.
 
         Parameters
         ----------
@@ -1137,8 +1147,8 @@ class Ground_Motion:
         if unit == 'm/s/s':
             pass
         elif unit == 'g':
-            data[:, 1] = data[:, 1] / 9.81
+            data[:, 1] = data[:, 1] / 9.81  # noqa: PLR6104 (may be int dtype)
         elif unit in {'gal', 'cm/s/s'}:
-            data[:, 1] = data[:, 1] * 100.0
+            data[:, 1] = data[:, 1] * 100.0  # noqa: PLR6104 (may be int dtype)
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)

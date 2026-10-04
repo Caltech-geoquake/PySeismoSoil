@@ -1,3 +1,5 @@
+"""Vs profile class."""
+
 from __future__ import annotations
 
 import os
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
 
 class Vs_Profile:
     r"""
-    Class implementation of a Vs profile
+    Class implementation of a Vs profile.
 
     Parameters
     ----------
@@ -43,7 +45,7 @@ class Vs_Profile:
 
     damping_unit : Literal['1', '%'], default='1'
         The unit for the damping ratio.
-    density_unit : Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'], default='kg/m^3'
+    density_unit : {'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'}, default='kg/m^3'
         The unit for the mass density of soils.
     sep : str, default='\t'
         Delimiter character for reading the text file. If ``data`` is supplied
@@ -140,7 +142,8 @@ class Vs_Profile:
                 print(
                     'Warning in initializing Vs_Profile: surface layer '
                     f'thickness lower than 1.0 m (user provided = {thk[0]}).',
-                    'May result in unrealistic surface layer overburden pressure.',
+                    'May result in unrealistic surface layer overburden '
+                    'pressure.',
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
@@ -200,20 +203,23 @@ class Vs_Profile:
 
     def __repr__(self) -> str:
         """Define a presentation of the basic info of a Vs profile."""
-        text = '\n----------+----------+-------------+------------------+--------------\n'
-        text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] | Material No. \n'
-        text += '----------+----------+-------------+------------------+--------------\n'
+        rule = '----------+----------+-------------+------------------+-------'
+        rule += '-------\n'
+        text = '\n' + rule
+        text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] '
+        text += '| Material No. \n'
+        text += rule
 
         n_layer_all, _ = self.vs_profile.shape
         for j in range(n_layer_all):
             text += '{:^10}|'.format(f'{self.vs_profile[j, 0]:.2f}')
             text += '{:^10}|'.format(f'{self.vs_profile[j, 1]:.1f}')
-            text += '{:^13}|'.format('%.3f' % (self.vs_profile[j, 2] * 100.0))
+            text += '{:^13}|'.format(f'{self.vs_profile[j, 2] * 100.0:.3f}')
             text += '{:^18}|'.format(f'{self.vs_profile[j, 3]:.1f}')
-            text += '{:^14}'.format('%d' % self.vs_profile[j, 4])
+            text += '{:^14}'.format(f'{int(self.vs_profile[j, 4])}')
             text += '\n'
 
-        text += '----------+----------+-------------+------------------+--------------\n'
+        text += rule
         text += f'\n(Vs30 = {self.vs30:.1f} m/s)\n'
 
         return text
@@ -387,8 +393,9 @@ class Vs_Profile:
             self, depth: float | None = None, Vs: float = 1000.0
     ) -> Vs_Profile:
         """
-        Truncate Vs profile at a given ``depth``, and "glue" the truncated
-        profile to a given ``Vs``.
+        Truncate Vs profile at a given ``depth``.
+
+        The truncated profile is "glued" to a given ``Vs``.
 
         Parameters
         ----------
@@ -455,9 +462,10 @@ class Vs_Profile:
             show_fig: bool = False,
     ) -> float | np.ndarray | Vs_Profile:
         """
-        Query Vs values at given ``depth`` values. If the given depth values
-        happen to be at layer interfaces, return the Vs of the layer *below*
-        the interface.
+        Query Vs values at given ``depth`` values.
+
+        If the given depth values happen to be at layer interfaces, return
+        the Vs of the layer *below* the interface.
 
         Parameters
         ----------
@@ -507,7 +515,7 @@ class Vs_Profile:
             if not np.any(depth == 0):
                 thk_array = sr.dep2thk(np.append([0], depth))
                 vs_queried = np.append(vs_queried[0:1], vs_queried)
-            else:  # `depth` has been guarenteed to be sorted with no duplicates
+            else:  # `depth` is guaranteed to be sorted with no duplicates
                 thk_array = sr.dep2thk(depth)
 
             vs_ = np.column_stack((thk_array, vs_queried))
@@ -537,8 +545,9 @@ class Vs_Profile:
             show_fig: bool = False,
     ) -> np.ndarray | Vs_Profile:
         """
-        Query Vs values from a thickness layer ``thk``. The starting point of
-        querying is the ground surface.
+        Query Vs values from a thickness layer ``thk``.
+
+        The starting point of querying is the ground surface.
 
         Parameters
         ----------
@@ -617,8 +626,10 @@ class Vs_Profile:
 
     def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:
         """
-        Query the depth of the basin as indicated in the Vs profile data. The
-        basin is defined as the material whose Vs is at least ``bedrock_Vs``.
+        Query the depth of the basin as indicated in the Vs profile data.
+
+        The basin is defined as the material whose Vs is at least
+        ``bedrock_Vs``.
 
         Parameters
         ----------
@@ -646,8 +657,9 @@ class Vs_Profile:
 
     def get_slowness(self) -> np.ndarray:
         """
-        Get "slowness" (reciprocal of wave velocity) as a 2D numpy array
-        (including the thickness array).
+        Get "slowness" as a 2D numpy array (including the thickness array).
+
+        "Slowness" is the reciprocal of wave velocity.
 
         Returns
         -------
@@ -699,9 +711,9 @@ class Vs_Profile:
             File name (including path).
         sep : str, default='\t'
             Delimiter for the output file.
-        precision : tuple[str, str, str, str, str], default=('%.2f', '%.2f', '%.4g', '%.5g', '%d')
+        precision : tuple[str, ...]
             A list of precision specifiers, each for the five columns of the Vs
-            profile.
+            profile. Default is ``('%.2f', '%.2f', '%.4g', '%.5g', '%d')``.
 
         Raises
         ------

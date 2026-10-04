@@ -250,11 +250,11 @@ def equiv_linear(
     curve_matrix : np.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-         +------------+--------+------------+-------------+-------------+--------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-         +------------+--------+------------+-------------+-------------+--------+-----+
+         +------------+--------+------------+-------------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+         +============+========+============+=============+=====+
+         |    ...     |  ...   |    ...     |    ...      | ... |
+         +------------+--------+------------+-------------+-----+
 
     boundary : Literal['elastic', 'rigid'], default='elastic'
         Boundary condition. 'Elastic' means that the input motion is the "rock

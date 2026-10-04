@@ -1,3 +1,5 @@
+"""Sediment Velocity Model (SVM) class."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -110,15 +112,16 @@ class SVM:
         thk_addl_layer = 2.5 - thk
 
         # Note 1: The first layer of Vs_analyt (before adding any new layers on
-        #         top) is Vs0. The final Vs profile should have a homogeneous Vs
-        #         layer for the top 2.5 m, thus we should add a new layer with
-        #         Vs = Vs0 whose thickness is "2.5 minus thk".
+        #         top) is Vs0. The final Vs profile should have a homogeneous
+        #         Vs layer for the top 2.5 m, thus we should add a new layer
+        #         with Vs = Vs0 whose thickness is "2.5 minus thk".
         #
         # Note 2: For shallow profiles (i.e., z1 < 50 m), we still want at
         #         least 50 layers, so we solve these following two equations:
         #
         #            thk$ = 2.5 - thk  (note: thk$ is `thk_addl_layer`)
-        #            thk = (z1 - thk$)/50   (divide remaining soils into 50 layers)
+        #            thk = (z1 - thk$)/50   (divide remaining soils into
+        #                                    50 layers)
         #
         #         Then thk and thk$ can both be solved, hence we have:
         #         >>>    thk = (z1 - 2.5)/49.0
@@ -127,9 +130,8 @@ class SVM:
         p2 = 0.5182
         p3 = 69.452
 
-        # q1 = 8.4562e-09
-        # q2 = 2.9981
-        # q3 = 0.03073
+        # (Unused alternative fitting parameters: q1 = 8.4562e-09,
+        # q2 = 2.9981, and q3 = 0.03073.)
 
         # updated on 2018/1/2: improved curve fitting accuracy for k_
         r1 = -59.67
@@ -154,7 +156,7 @@ class SVM:
             iteration_flag = True
 
             while iteration_flag is True:
-                # --------  Calculate analytical Vs profile from Vs30  ---------
+                # --------  Calculate analytical Vs profile from Vs30  -------
                 Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
 
                 k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
@@ -207,8 +209,9 @@ class SVM:
                             if verbose is True:
                                 print()
                         else:
-                            Vs30 = Vs30_temp  # use the "trial Vs30" as the new Vs30
-                    # END OF ACTUAL_VS30 WITHIN [TARGET_VS30-10, TARGER_VS30+10] CHECK
+                            # use the "trial Vs30" as the new Vs30
+                            Vs30 = Vs30_temp
+                    # END OF ACTUAL_VS30 WITHIN [TARGET_VS30 +/- 10] CHECK
 
             # END OF WHILE LOOP (ITERATION UNTIL CONVERGENCE)
 
@@ -236,7 +239,7 @@ class SVM:
                     # use NaN to denote the alternative situation
                     index_Vs_cap = np.nan
 
-                # total number of layers in the smooth profile (i.e., Vs_analyt)
+                # total number of layers in the smooth profile (Vs_analyt)
                 end_index = len(Vs_analyt)
 
                 if not np.isnan(index_Vs_cap):  # if index_Vs_cap is not NaN
@@ -245,7 +248,8 @@ class SVM:
 
                     # change Vs value where Vs > eta * Vs_cap
                     for i in range(idx_eta_Vs_cap, end_index):
-                        # linearly distribute Vs increment from eta*Vs_cap to Vs_cap
+                        # linearly distribute Vs increment from eta*Vs_cap to
+                        # Vs_cap
                         Vs_analyt[i] = Vs_cap * eta + Vs_cap * (1 - eta) / (
                             end_index - idx_eta_Vs_cap
                         ) * (i - idx_eta_Vs_cap)
@@ -288,6 +292,7 @@ class SVM:
             self.bedrock_Vs = None
 
     def __repr__(self) -> str:
+        """Return basic information of the SVM."""
         return f'Vs30 = {self.Vs30:.2g} m/s, z1 = {self.z1:.2g} m'
 
     def plot(
@@ -347,8 +352,10 @@ class SVM:
             show_fig: bool = False,
     ) -> Vs_Profile:
         """
-        Return the discretized Vs profile (with user-specified layer thickness,
-        or Vs increment).
+        Return the discretized Vs profile.
+
+        The layering is determined by the user-specified layer thickness, or
+        Vs increment.
 
         Parameters
         ----------
@@ -378,7 +385,10 @@ class SVM:
             raise ValueError(msg)
 
         if fixed_thk is not None and Vs_increment is not None:
-            msg = 'Please only provide `fixed_thk` or `Vs_increment`; do not provide both.'
+            msg = (
+                'Please only provide `fixed_thk` or `Vs_increment`; '
+                'do not provide both.'
+            )
             raise ValueError(msg)
 
         if fixed_thk is not None:
@@ -411,8 +421,8 @@ class SVM:
                     # (1) `Vs_increment` exceeds the "natural" increment of the
                     #     base profile --- accumulate "temporary layer" whose
                     #     thickness is `thk_tmp`
-                    # (2) `Vs_increment` is smaller than the "natural" increment
-                    #     of the base profile --- we need to use the natural
+                    # (2) `Vs_increment` is smaller than the "natural"
+                    #     increment of the base profile --- we need to use the natural
                     #     increment as the Vs increment
                     if thk_tmp != 0:  # the first case
                         discr_Vs_previous_layer += Vs_increment
@@ -501,7 +511,7 @@ class SVM:
                 1. The absolute difference between the randomized and target
                    Vs30 is < 25 m/s;
                 2. The relative difference (between the randomized profile and
-                   the base profile) of the last soil layer’s Vs is < 5%;
+                   the base profile) of the last soil layer's Vs is < 5%;
                 3. The relative difference of the randomized and target z1 is
                    < 20%.
         verbose : bool, default=True
@@ -626,24 +636,24 @@ class SVM:
                 # Eq (2) of Toro (1995)
                 rate = 1.98 * (z_top[-1] + 10.86) ** (-0.89)
 
-                # The parameter for the Poisson process equals to 1/rate, because
-                # Toro (1995) says the unit of `rate` is 1/m, and also as written
-                # in page 40 of Harmon's UIUC PhD thesis (2017), "the expected
-                # layer thickness at 1000 m is 239 m", which confirms that
-                # lambda_ = 1 / rate.
+                # The parameter for the Poisson process equals to 1/rate,
+                # because Toro (1995) says the unit of `rate` is 1/m, and also
+                # as written in page 40 of Harmon's UIUC PhD thesis (2017),
+                # "the expected layer thickness at 1000 m is 239 m", which
+                # confirms that lambda_ = 1 / rate.
                 lamda_ = 1 / rate
                 thk_rand = -1
                 while thk_rand <= 0:  # to ensure thickness is always positive
                     thk_rand = rng.poisson(lamda_)  # draw random sample
                 # END
             else:
-                func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])  # noqa: E731
+                func = lambda thk: SVM._thk_depth_func(thk, z_top[-1])
                 if len(thk) == 0:  # the first layer
                     ier = -6  # exit flag
 
                     # keeps trying until fsolve() properly converges
                     while ier != 1:
-                        mean_thk, info, ier, msg = fsolve(
+                        mean_thk, _info, ier, _msg = fsolve(
                             func,
                             z_top[-1] + 4.0,
                             full_output=True,
@@ -675,7 +685,8 @@ class SVM:
                 thk_rand = rng.normal(mean_thk, std_thk)
             # END IF
 
-            # make sure each layer is at least 2 meters thick; too thin layers are not realistic
+            # make sure each layer is at least 2 meters thick; too thin
+            # layers are not realistic
             thk_rand = np.max([thk_rand, 2.0])
 
             if isinstance(thk_rand, (np.number, float, int)):
@@ -748,7 +759,7 @@ class SVM:
             z_0 = 0
             b = 0.063
 
-        # ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth  ****
+        # ***** 3.2. Calculate "mu" and "sigma" of Vs as a function of depth **
         #     (Note: "mu" and "sigma" here are NOT the mean value and standard
         #     deviation of Vs, but rather the two parameters of the log-normal
         #     distribution that Vs is assumed to follow.)
@@ -763,7 +774,7 @@ class SVM:
             # From page 8 of Toro (1995):
             sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)
 
-        # ****** 3.3. Generate random Vs values based on Toro's equations  ******
+        # ****** 3.3. Generate random Vs values based on Toro's equations  ****
         Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
         rng = np.random.RandomState([2 * seed])
@@ -811,8 +822,10 @@ class SVM:
             z_top: np.ndarray | float,
     ) -> np.ndarray:
         """
-        Given thk (thickness, in meter) and z_top (depth of layer top, in
-        meter), returns "right hand side" minus "left hand side".
+        Calculate "right hand side" minus "left hand side".
+
+        This is based on the given thk (thickness, in meter) and z_top (depth
+        of layer top, in meter).
 
         Eq (7) of Shi & Asimaki (2018) Seismological Research Letters:
 
@@ -830,8 +843,9 @@ class SVM:
             array: np.ndarray, value: float
     ) -> tuple[int, float]:
         """
-        Find the index in ``array`` which contains the closest value to
-        ``value``. NaN values within ``array`` are omitted implicitly.
+        Find the index in ``array`` which contains the closest value to ``value``.
+
+        NaN values within ``array`` are omitted implicitly.
 
         Parameters
         ----------

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import glob
 import importlib.resources
 import os
 import pathlib
 import shutil
 import stat
-import subprocess
+import subprocess  # noqa: S404
 from typing import Literal
 
 import numpy as np
@@ -72,7 +71,7 @@ class Simulation:
         When input arguments have incorrect or incompatible types
     ValueError
         When input arguments have incorrect or invalid values
-    """
+    """  # noqa: E501
 
     soil_profile: Vs_Profile
     input_motion: Ground_Motion
@@ -88,11 +87,17 @@ class Simulation:
             input_motion: Ground_Motion,
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
-            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
-            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,
+            G_param: (
+                HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+            ) = None,
+            xi_param: (
+                HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+            ) = None,
+            GGmax_and_damping_curves: (
+                Multiple_GGmax_Damping_Curves | None
+            ) = None,
     ) -> None:
-    # fmt: on  # noqa: E115
+    # fmt: on
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
 
@@ -102,7 +107,7 @@ class Simulation:
         if boundary not in {'elastic', 'rigid'}:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
 
-        if type(G_param) != type(xi_param):  # noqa: E721
+        if type(G_param) is not type(xi_param):
             raise TypeError(
                 '`G_param` and `xi_param` must be of the same type.'
             )
@@ -611,7 +616,7 @@ class Nonlinear_Simulation(Simulation):
             ],
         )
 
-        # --------- Re-discretize Vs profile -----------------------------------
+        # --------- Re-discretize Vs profile ----------------------------------
         new_profile = sr.stratify(self.soil_profile.vs_profile)
         new_profile[:, 3] /= 1000.0  # convert to g/cm3 to pass to NLHH
 
@@ -626,7 +631,7 @@ class Nonlinear_Simulation(Simulation):
         t = input_accel[:, 0]
         nt_out = len(t)
 
-        # --------- Create a dummy "curves" for Fortran ------------------------
+        # --------- Create a dummy "curves" for Fortran -----------------------
         mgc, _ = self.G_param.construct_curves(
             strain_in_pct=strain_in_pct, curve_type='ggmax'
         )
@@ -636,7 +641,7 @@ class Nonlinear_Simulation(Simulation):
         mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
         curves = mgdc.get_curve_matrix()
 
-        # --------- Prepare tabk.dat file --------------------------------------
+        # --------- Prepare tabk.dat file -------------------------------------
         if hlp.detect_OS() == 'Windows':
             exec_ext = 'exe'
         elif hlp.detect_OS() == 'Darwin':
@@ -650,55 +655,58 @@ class Nonlinear_Simulation(Simulation):
 
         package_path = importlib.resources.files(PySeismoSoil)
         dir_exec_files = str(package_path / 'exec_files')
-        shutil.copy(os.path.join(dir_exec_files, f'NLHH.{exec_ext}'), sim_dir)
-        np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
+        sim_path = pathlib.Path(sim_dir)
+        shutil.copy(pathlib.Path(dir_exec_files) / f'NLHH.{exec_ext}', sim_dir)
+        np.savetxt(str(sim_path / 'tabk.dat'), tabk, delimiter='\t')
 
-        # -------- Prepare control.dat file ------------------------------------
-        pathlib.Path(os.path.join(sim_dir, 'control.dat')).write_text(
-            f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f} {n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f} {N_obs:6.0f}',
+        # -------- Prepare control.dat file -----------------------------------
+        (sim_path / 'control.dat').write_text(
+            f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f} '
+            f'{n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f} '
+            f'{N_obs:6.0f}',
             encoding='utf-8',
         )
 
-        # -------- Write data to files for the Fortran kernel to read ----------
-        np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
-        np.savetxt(os.path.join(sim_dir, 'incident.dat'), input_accel)
-        np.savetxt(os.path.join(sim_dir, 'curve.dat'), curves)
+        # -------- Write data to files for the Fortran kernel to read ---------
+        np.savetxt(str(sim_path / 'profile.dat'), new_profile)
+        np.savetxt(str(sim_path / 'incident.dat'), input_accel)
+        np.savetxt(str(sim_path / 'curve.dat'), curves)
         np.savetxt(
-            os.path.join(sim_dir, 'HH_G.dat'),
+            str(sim_path / 'HH_G.dat'),
             self.G_param.serialize_to_2D_array(),
         )
         np.savetxt(
-            os.path.join(sim_dir, 'HH_x.dat'),
+            str(sim_path / 'HH_x.dat'),
             self.xi_param.serialize_to_2D_array(),
         )
 
-        # ------- Execute Fortran kernel ---------------------------------------
+        # ------- Execute Fortran kernel --------------------------------------
         cwd = pathlib.Path.cwd()
         os.chdir(sim_dir)
         if hlp.detect_OS() == 'Windows':
-            subprocess.run('NLHH.exe')
+            subprocess.run('NLHH.exe', check=False)  # noqa: S607
         elif hlp.detect_OS() == 'Darwin':
-            current_status = os.stat('NLHH.mac').st_mode
+            current_status = pathlib.Path('NLHH.mac').stat().st_mode
             pathlib.Path('NLHH.mac').chmod(
                 current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
             )
-            subprocess.run('./NLHH.mac', stdout=True)
+            subprocess.run('./NLHH.mac', stdout=True, check=False)
         elif hlp.detect_OS() == 'Linux':
-            current_status = os.stat('NLHH.unix').st_mode
+            current_status = pathlib.Path('NLHH.unix').stat().st_mode
             pathlib.Path('NLHH.unix').chmod(
                 current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
             )
             if verbose:
-                subprocess.run('./NLHH.unix', stdout=True)
+                subprocess.run('./NLHH.unix', stdout=True, check=False)
             else:
-                subprocess.run('./NLHH.unix', capture_output=True)
+                subprocess.run('./NLHH.unix', capture_output=True, check=False)
         else:
             raise ValueError('Unknown operating system.')
 
         if verbose:
             print('Simulation finished. Now post processing.')
 
-        # ------------ Post-process files --------------------------------------
+        # ------------ Post-process files -------------------------------------
         layer_boundary_depth = np.genfromtxt('node_depth.dat').T
         layer_midpoint_depth = np.genfromtxt('layer_depth.dat').T
         out_a = np.genfromtxt('out_a.dat')
@@ -707,7 +715,7 @@ class Nonlinear_Simulation(Simulation):
         out_gamma = np.genfromtxt('out_gamma.dat')
         out_tau = np.genfromtxt('out_tau.dat')
 
-        dat_files = glob.glob('*.dat')
+        dat_files = pathlib.Path().glob('*.dat')
         for dat_file in dat_files:
             pathlib.Path(dat_file).unlink()
 
@@ -745,7 +753,7 @@ class Nonlinear_Simulation(Simulation):
         )
         os.chdir(cwd)
 
-        # ------------ Create sim_results object and plot and/or save ----------
+        # ------------ Create sim_results object and plot and/or save ---------
         sim_results = Simulation_Results(
             self.input_motion,
             Ground_Motion(accel_surface_2col, unit='m'),

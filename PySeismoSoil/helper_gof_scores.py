@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pywt
 import scipy
@@ -27,17 +29,17 @@ def S_(
     score : float | np.ndarray
         The computed score between ``meas`` and ``simu``.
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     eps2 = 1e-12
     if isinstance(meas, (float, np.float64)):
@@ -97,17 +99,17 @@ def d_1234(
     d4 : float
         Peak energy integral score.
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     filter_order = 4
     q = 15
@@ -336,17 +338,17 @@ def d_567(
     d7 : float
         RMS displacement score.
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     filter_order = 4
     q = 15
@@ -627,17 +629,17 @@ def d_89(
     ValueError
         If fmin is greater than fmax
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     if baseline:
         measurement = sp.baseline(measurement)
@@ -904,8 +906,11 @@ def d_10(
     return d10
 
 
-def upArrow_op(li, j):
-    """Code from: https://github.com/pistonly/modwtpy"""
+def upArrow_op(
+        li: np.ndarray | list[float],
+        j: int,
+) -> np.ndarray | list[int]:
+    """Code from: https://github.com/pistonly/modwtpy."""
     if j == 0:
         return [1]
 
@@ -917,14 +922,14 @@ def upArrow_op(li, j):
     return li_n
 
 
-def period_list(li, N):
-    """Code from: https://github.com/pistonly/modwtpy"""
+def period_list(li: np.ndarray | list[float], N: int) -> np.ndarray:
+    """Code from: https://github.com/pistonly/modwtpy."""
     n = len(li)
 
     # append [0 0 ...]
     n_app = N - np.mod(n, N)
     li = list(li)
-    li = li + [0] * n_app
+    li += [0] * n_app
 
     if len(li) < 2 * N:
         li_result = np.array(li)
@@ -937,17 +942,17 @@ def period_list(li, N):
     return li_result
 
 
-def circular_convolve_mra(h_j_o, w_j):
+def circular_convolve_mra(h_j_o: np.ndarray, w_j: np.ndarray) -> np.ndarray:
     """Calculate the mra D_j. Code from: https://github.com/pistonly/modwtpy"""
     return convolve1d(
         w_j, np.flip(h_j_o), mode='wrap', origin=(len(h_j_o) - 1) // 2
     )
 
 
-def circular_convolve_d(h_t, v_j_1, j):
-    """Code from: https://github.com/pistonly/modwtpy"""
-    N = len(v_j_1)
-    np.zeros(N)
+def circular_convolve_d(
+        h_t: np.ndarray, v_j_1: np.ndarray, j: int
+) -> np.ndarray:
+    """Code from: https://github.com/pistonly/modwtpy."""
     ker = np.zeros(len(h_t) * 2 ** (j - 1))
 
     # make kernel
@@ -957,7 +962,7 @@ def circular_convolve_d(h_t, v_j_1, j):
     return convolve1d(v_j_1, ker, mode='wrap', origin=-len(ker) // 2)
 
 
-def modwt(x, filters, level):
+def modwt(x: np.ndarray, filters: str, level: int) -> np.ndarray:
     """
     Code from: https://github.com/pistonly/modwtpy
 
@@ -981,7 +986,7 @@ def modwt(x, filters, level):
     return np.vstack(wavecoeff)
 
 
-def modwtmra(w, filters):
+def modwtmra(w: np.ndarray, filters: str) -> np.ndarray:
     """
     Multiresolution analysis based on MODWT
 
@@ -994,7 +999,7 @@ def modwtmra(w, filters):
 
     # D
     level, N = w.shape
-    level = level - 1
+    level -= 1
     D = []
     g_j_part = [1]
     for j in range(level):

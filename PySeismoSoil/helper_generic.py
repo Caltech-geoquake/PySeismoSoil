@@ -1,3 +1,5 @@
+"""Generic helper functions."""
+
 from __future__ import annotations
 
 import platform
@@ -41,9 +43,9 @@ def get_current_time(for_filename: bool = True) -> str:
         The current time as a string (such as "2001-01-01 23:59:59")
     """
     if for_filename:
-        return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        return datetime.now().astimezone().strftime('%Y-%m-%d_%H-%M-%S')
 
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def find_closest_index(
@@ -51,8 +53,7 @@ def find_closest_index(
         value: float,
 ) -> tuple[int | None, float | None]:
     """
-    Find the index in ``array`` corresponding to the value closest to the given
-    ``value``.
+    Find the index in ``array`` of the value closest to ``value``.
 
     Parameters
     ----------
@@ -101,9 +102,11 @@ def _process_fig_ax_objects(
         bypass_ax_creation: bool = False,
 ) -> tuple[Figure, Axes]:
     """
-    Process figure and axes objects. If ``fig`` and ``ax`` are None, creates
-    new figure and new axes according to ``figsize``, ``dpi``, and ``ax_proj``.
-    Otherwise, uses the passed-in ``fig`` and/or ``ax``.
+    Process figure and axes objects.
+
+    If ``fig`` and ``ax`` are None, creates new figure and new axes according
+    to ``figsize``, ``dpi``, and ``ax_proj``. Otherwise, uses the passed-in
+    ``fig`` and/or ``ax``.
 
     Parameters
     ----------
@@ -117,8 +120,9 @@ def _process_fig_ax_objects(
     dpi : float | None, default=None
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    ax_proj : Literal[None, 'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'], default=None
-        The projection type of the axes. The default None results in a
+    ax_proj : str | None, default=None
+        The projection type of the axes. One of 'aitoff', 'hammer', 'lambert',
+        'mollweide', 'polar', 'rectilinear'. The default None results in a
         'rectilinear' projection.
     bypass_ax_creation : bool, default=False
         If True, do not create an ``ax`` object if ``ax`` is ``None``
@@ -141,8 +145,7 @@ def _process_fig_ax_objects(
         else:
             # create new axes and plot lines on it
             ax = plt.axes(projection=ax_proj)
-    else:
-        ax = ax  # plot lines on the provided axes handle
+    # else: plot lines on the provided axes handle
 
     return fig, ax
 
@@ -206,7 +209,7 @@ def read_two_column_stuff(
 
         n = len(data_)
         col1 = np.linspace(delta, n * delta, num=n)
-        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
+        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8  # noqa: S101
         data_ = np.column_stack((col1, data_))
     elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
         col1 = data_[:, 0]
@@ -222,13 +225,13 @@ def read_two_column_stuff(
     return data_, delta
 
 
-def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
+def assert_1D_numpy_array(something: object, name: str | None = None) -> None:
     """
-    Assert that ``something`` is a 1D numpy array
+    Assert that ``something`` is a 1D numpy array.
 
     Parameters
     ----------
-    something : Any
+    something : object
         Any Python object.
     name : str | None, default=None
         The name of ``something`` to be displayed in the potential error
@@ -245,7 +248,7 @@ def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
 
 
 def assert_array_length(
-        something: Any,
+        something: object,
         length: int | None,
         name: str = '`something`',
 ) -> None:
@@ -254,7 +257,7 @@ def assert_array_length(
 
     Parameters
     ----------
-    something : Any
+    something : object
         Any Python object
     length : int | None
         The length that ``something`` must have.
@@ -270,8 +273,7 @@ def assert_array_length(
     assert_1D_numpy_array(something, name=name)
     if len(something) != length:
         raise ValueError(
-            '%s must have length %d, but not %d.'
-            % (name, length, len(something)),
+            f'{name} must have length {length}, but not {len(something)}.',
         )
 
 
@@ -280,8 +282,10 @@ def extend_scalar(
         length: int,
 ) -> np.ndarray:
     """
-    "Extend" a scalar (float, int, or numpy.number type) into a 1D numpy array
-    whose length is ``length`` and whose elements are all ``scalar``.
+    "Extend" a scalar (float, int, or numpy.number type) into a 1D array.
+
+    The output is a 1D numpy array whose length is ``length`` and whose
+    elements are all ``scalar``.
 
     Parameters
     ----------
@@ -310,18 +314,19 @@ def extend_scalar(
 
 
 def check_length_or_extend_to_array(
-        something: Any,
+        something: object,
         length: int,
         name: str = '`something`',
 ) -> np.ndarray:
     """
-    Check that ``something`` is a 1D numpy array with length ``length``, or if
-    ``something`` is a single value, extend it to a 1D numpy array whose length
-    is ``length`` and elements are all ``something``.
+    Check that ``something`` is a 1D numpy array with length ``length``.
+
+    If ``something`` is a single value, extend it to a 1D numpy array whose
+    length is ``length`` and elements are all ``something``.
 
     Parameters
     ----------
-    something : Any
+    something : object
         Any Python object.
     length : int
         The desired length of array.
@@ -344,13 +349,13 @@ def check_length_or_extend_to_array(
     return array
 
 
-def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
+def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
     """
     Assert that ``something`` is a 2D numpy array.
 
     Parameters
     ----------
-    something : Any
+    something : object
         Any Python object.
     name : str | None, default=None
         The name of ``something`` to be displayed in the potential error
@@ -367,18 +372,19 @@ def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
 
 
 def check_two_column_format(
-        something: Any,
+        something: object,
         name: str | None = None,
         ensure_non_negative: bool = False,
         at_least_two_columns: bool = False,
 ) -> None:
     """
-    Check that ``something`` is a 2D numpy array with two columns. Raises an
-    error if ``something`` is the wrong format.
+    Check that ``something`` is a 2D numpy array with two columns.
+
+    Raises an error if ``something`` is the wrong format.
 
     Parameters
     ----------
-    something : Any
+    something : object
         Any Python object.
     name : str | None, default=None
         The name of ``something`` to be displayed in the potential error
@@ -422,14 +428,16 @@ def check_two_column_format(
         raise ValueError(f'{name} should have all non-negative values.')
 
 
-def check_Vs_profile_format(data: Any) -> None:
+def check_Vs_profile_format(data: object) -> None:
     """
-    Check that ``data`` is in a valid format as a Vs profile (i.e., 2D numpy
-    array, two or five columns, non-negative or positive values, etc.)
+    Check that ``data`` is in a valid format as a Vs profile.
+
+    A valid Vs profile is a 2D numpy array with two or five columns,
+    non-negative or positive values, etc.
 
     Parameters
     ----------
-    data : Any
+    data : object
         Any Python object.
 
     Raises
@@ -459,7 +467,8 @@ def check_Vs_profile_format(data: Any) -> None:
     Vs = data[:, 1]
     if np.any(thk[:-1] <= 0):
         raise ValueError(
-            'The thickness column should be all positive, except for the last layer.',
+            'The thickness column should be all positive, except for the '
+            'last layer.',
         )
 
     if np.any(thk[-1] < 0):
@@ -490,18 +499,20 @@ def check_Vs_profile_format(data: Any) -> None:
 
         if np.any(mat[-1] < 0):
             raise ValueError(
-                'The material number of the last layer should be non-negative.',
+                'The material number of the last layer should be '
+                'non-negative.',
             )
 
 
-def is_int(number: Any) -> bool:
+def is_int(number: object) -> bool:
     """
-    Check that a ``number`` represents an integer value. (Its data type does
-    not need to be int or numpy.integer).
+    Check that a ``number`` represents an integer value.
+
+    Its data type does not need to be int or numpy.integer.
 
     Parameters
     ----------
-    number : Any
+    number : object
         Any Python object.
 
     Returns
@@ -524,8 +535,9 @@ def is_int(number: Any) -> bool:
 
 def check_numbers_valid(array: np.ndarray) -> int:
     """
-    Check the contents in ``array`` is valid (i.e., are numbers, are not
-    infinite, are positive).
+    Check the contents in ``array`` is valid.
+
+    Valid contents are numbers that are not infinite and are positive.
 
     Parameters
     ----------
@@ -537,7 +549,7 @@ def check_numbers_valid(array: np.ndarray) -> int:
     error_flag : int
         Flag indicating type of errors.
     """
-    assert isinstance(array, np.ndarray)
+    assert isinstance(array, np.ndarray)  # noqa: S101
 
     if not np.issubdtype(array.dtype, np.number):
         return -1
@@ -561,8 +573,10 @@ def interpolate(
         **kwargs_to_interp: dict[Any, Any],
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Interpolate data (``x_ref`` and ``y_ref``) at x query points defined by
-    ``x_query_min``, ``x_query_max``, and ``n_pts``.
+    Interpolate data (``x_ref`` and ``y_ref``) at x query points.
+
+    The x query points are defined by ``x_query_min``, ``x_query_max``, and
+    ``n_pts``.
 
     Parameters
     ----------
@@ -634,6 +648,7 @@ def extract_from_curve_format(
 ) -> tuple[list[np.ndarray], list[np.ndarray]]:
     """
     Extract G/Gmax and damping curves from a "curve formatted" 2D numpy array.
+
     All G/Gmax curves are organized into a list, and all damping curves are
     organized into another list.
 
@@ -642,11 +657,11 @@ def extract_from_curve_format(
     curves : np.ndarray
         A 2D numpy array that follows the following format:
 
-            +------------+--------+------------+-------------+-------------+--------+-----+
-            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-            +============+========+============+=============+=============+========+=====+
-            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-            +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+            +============+========+============+=============+=====+
+            |    ...     |  ...   |    ...     |    ...      | ... |
+            +------------+--------+------------+-------------+-----+
 
         Such an array can be constructed by hand, or by directly imported from
         a "curve_STATION_NAME.txt" file.
@@ -693,12 +708,12 @@ def extract_from_curve_format(
         damping = curves[:, j * 4 + 2 : j * 4 + 4]
         check_two_column_format(
             GGmax,
-            name='G/Gmax curve for layer #%d' % j,
+            name=f'G/Gmax curve for layer #{j}',
             ensure_non_negative=ensure_non_negative,
         )
         check_two_column_format(
             damping,
-            name='Damping curve for layer #%d' % j,
+            name=f'Damping curve for layer #{j}',
             ensure_non_negative=ensure_non_negative,
         )
         GGmax_curves_list.append(GGmax)
@@ -752,14 +767,15 @@ def merge_curve_matrices(
         GGmax_matrix: np.ndarray, xi_matrix: np.ndarray
 ) -> np.ndarray:
     """
-    Merge G/Gmax curves matrix and damping curves matrix. Both matrices need to
-    have the following format:
+    Merge G/Gmax curves matrix and damping curves matrix.
 
-        +------------+--------+------------+-------------+-------------+--------+-----+
-        | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-        +============+========+============+=============+=============+========+=====+
-        |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-        +------------+--------+------------+-------------+-------------+--------+-----+
+    Both matrices need to have the following format:
+
+        +------------+--------+------------+-------------+-----+
+        | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+        +============+========+============+=============+=====+
+        |    ...     |  ...   |    ...     |    ...      | ... |
+        +------------+--------+------------+-------------+-----+
 
     They need to have the same shape. This function will take the G/Gmax
     information from ``GGmax_matrix`` and the damping information from
@@ -788,14 +804,14 @@ def merge_curve_matrices(
         raise ValueError(
             'The number of columns of `GGmax_matrix` needs '
             'to be a multiple of 4. However, your '
-            '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1],
+            f'`GGmax_matrix` has {GGmax_matrix.shape[1]} columns.',
         )
 
     if xi_matrix.shape[1] % 4 != 0:
         raise ValueError(
             'The number of columns of `xi_matrix` needs '
             'to be a multiple of 4. However, your '
-            '`xi_matrix` has %d columns.' % xi_matrix.shape[1],
+            f'`xi_matrix` has {xi_matrix.shape[1]} columns.',
         )
 
     if GGmax_matrix.shape[1] != xi_matrix.shape[1]:

@@ -60,7 +60,7 @@ class Parameter(collections.UserDict):
         When input arguments have invalid types
     KeyError
         When keys outside ``allowable_keys`` exist in ``param_dict``
-    """
+    """  # noqa: E501
 
     data: dict[str, float]
     allowable_keys: set[str] | None
@@ -95,13 +95,13 @@ class Parameter(collections.UserDict):
     def __repr__(self) -> str:
         return json.dumps(self.data, indent=2).replace('"', '')
 
-    def __setitem__(self, key, item) -> None:
+    def __setitem__(self, key: str, item: float) -> None:
         if key not in self.allowable_keys:
             raise KeyError(f"The model does not have a '{key}' parameter.")
 
         self.data[key] = item
 
-    def __delitem__(self, key) -> None:
+    def __delitem__(self, key: str) -> None:
         raise ValueError(
             'Deleting items from the parameter set is not allowed.'
         )
@@ -117,9 +117,7 @@ class Parameter(collections.UserDict):
         result : np.ndarray
             Serialized parameters.
         """
-        param_array = []
-        for val in self.data.values():
-            param_array.append(val)
+        param_array = list(self.data.values())
 
         return np.array(param_array)
 
@@ -205,7 +203,7 @@ class Parameter(collections.UserDict):
             self,
             figsize: tuple[float, float] | None = None,
             dpi: float = 100,
-            **kwargs_to_matplotlib: dict[Any, Any],
+            **kwargs_to_matplotlib: dict[Any, Any],  # noqa: ARG002
     ) -> tuple[Figure, list[Axes]]:
         """
         Plot G/Gmax and damping curves from the model parameters
@@ -409,10 +407,10 @@ class Param_Multi_Layer:
     def __len__(self) -> int:
         return self.n_layer
 
-    def __setitem__(self, i, item) -> None:
+    def __setitem__(self, i: int, item: Parameter) -> None:
         self.param_list[i] = item
 
-    def __getitem__(self, i) -> Parameter | Param_Multi_Layer:
+    def __getitem__(self, i: int | slice) -> Parameter | Param_Multi_Layer:
         if isinstance(i, int):
             return self.param_list[i]
 
@@ -422,7 +420,7 @@ class Param_Multi_Layer:
 
         raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
-    def __delitem__(self, i) -> None:
+    def __delitem__(self, i: int | slice) -> None:
         del self.param_list[i]
         self.n_layer -= 1
 
@@ -586,7 +584,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     ------
     TypeError
         When the type of ``filename_or_data`` is not valid
-    """
+    """  # noqa: E501
 
     param_list: list[HH_Param]
     n_layer: int
@@ -679,7 +677,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     ------
     TypeError
         When then type of ``filename_or_data`` is not valid
-    """
+    """  # noqa: E501
 
     param_list: list[MKZ_Param]
     n_layer: int

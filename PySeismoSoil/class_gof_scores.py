@@ -74,7 +74,7 @@ class GOF_Scores:
             'Cross Correlation (S10)',
         ]
 
-        sum = 0
+        total = 0.0
         count = 0
 
         text = '\nGoodness of Fit Scores\n'
@@ -82,11 +82,11 @@ class GOF_Scores:
         for ix, sc in enumerate(self.scores):
             if not np.isnan(sc):
                 text += f'{sn[ix]:>31}: {sc: .3f}\n'
-                sum += sc
+                total += sc
                 count += 1
 
         text += '---------------------------------------\n'
-        text += f'Average Score: {sum / count:.3f}\n'
+        text += f'Average Score: {total / count:.3f}\n'
 
         return text
 

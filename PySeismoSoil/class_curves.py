@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
@@ -689,15 +689,15 @@ class Multiple_Curves:
         self.n_layer = len(curves)
 
     def __repr__(self) -> str:
-        return 'n_layers = %d, type: %s' % (self.n_layer, type(self.curves[0]))
+        return f'n_layers = {self.n_layer}, type: {type(self.curves[0])}'
 
-    def __contains__(self, item) -> bool:
+    def __contains__(self, item: object) -> bool:
         return item in self.curves
 
     def __len__(self) -> int:
         return self.n_layer
 
-    def __setitem__(self, i, item) -> None:
+    def __setitem__(self, i: int, item: Curve) -> None:
         if not isinstance(item, self.element_class):
             raise TypeError(
                 f'The new `item` must be of type {self.element_class}.'
@@ -705,7 +705,7 @@ class Multiple_Curves:
 
         self.curves[i] = item
 
-    def __getitem__(self, i) -> Curve:
+    def __getitem__(self, i: int | slice) -> Curve | Multiple_Curves:
         if isinstance(i, int):
             return self.curves[i]
 
@@ -715,11 +715,11 @@ class Multiple_Curves:
 
         raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
-    def __delitem__(self, i) -> None:
+    def __delitem__(self, i: int | slice) -> None:
         del self.curves[i]
         self.n_layer -= 1
 
-    def append(self, item) -> None:
+    def append(self, item: Curve) -> None:
         """Append another curve item to the curves."""
         if not isinstance(item, self.element_class):
             raise TypeError(
@@ -739,7 +739,7 @@ class Multiple_Curves:
             ylabel: str | None = None,
             figsize: tuple[float, float] = (3, 3),
             dpi: float = 100,
-            **kwargs_to_matplotlib: dict[Any, Any],
+            **kwargs_to_matplotlib: dict[Any, Any],  # noqa: ARG002
     ) -> tuple[Figure, Axes]:
         """
         Plot multiple curves together on one figure.
@@ -929,8 +929,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
     def get_curve_matrix(
             self,
             GGmax_filler_value: float = 1.0,
-            save_to_file: bool = False,
-            full_file_name: str | None = None,
+            save_to_file: bool = False,  # noqa: ARG002
+            full_file_name: str | None = None,  # noqa: ARG002
     ) -> np.ndarray:
         """
         Produce a full "curve matrix" based on the damping data defined in
@@ -960,7 +960,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         -------
         curve_matrix : np.ndarray
             A matrix containing damping curves in the above-mentioned format.
-        """
+        """  # noqa: E501
         # lengths of strain array of each layer
         lengths = [len(curve_.strain) for curve_ in self.curves]
 
@@ -1256,8 +1256,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
                 'name to work with.',
             )
 
-        _path_name, file_name = os.path.split(self._filename)
-        file_name_, _ = os.path.splitext(file_name)
+        file_name_ = Path(self._filename).stem
         site_name = file_name_[6:] if 'curve_' in file_name_ else file_name_
 
         return f'{prefix}_x_{site_name}.{extension}'
@@ -1391,8 +1390,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):
     def get_curve_matrix(
             self,
             damping_filler_value: float = 1.0,
-            save_to_file: bool = False,
-            full_file_name: str | None = None,
+            save_to_file: bool = False,  # noqa: ARG002
+            full_file_name: str | None = None,  # noqa: ARG002
     ) -> np.ndarray:
         """
         Produce a full "curve matrix" based on the G/Gmax data defined in
@@ -1422,7 +1421,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         -------
         curve_matrix : np.ndarray
             A matrix containing G/Gmax curves in the above-mentioned format.
-        """
+        """  # noqa: E501
         # lengths of strain array of each layer
         lengths = [len(curve_.strain) for curve_ in self.curves]
 
@@ -1496,7 +1495,7 @@ class Multiple_GGmax_Damping_Curves:
         When the type of ``mgc_and_mdc`` is wrong
     ValueError
         When both input arguments are ``None``, or neither of them are ``None``
-    """
+    """  # noqa: E501
 
     mgc: Multiple_GGmax_Curves
     mdc: Multiple_Damping_Curves
@@ -1568,7 +1567,7 @@ class Multiple_GGmax_Damping_Curves:
                 raise ValueError(
                     'The number of columns of `data` needs '
                     'to be a multiple of 4. However, your '
-                    '`data` has %d columns.' % data.shape[1],
+                    f'`data` has {data.shape[1]} columns.',
                 )
 
             self.data = data
@@ -1612,7 +1611,7 @@ class Multiple_GGmax_Damping_Curves:
                 +============+========+============+=============+=============+========+=====+
                 |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
                 +------------+--------+------------+-------------+-------------+--------+-----+
-        """
+        """  # noqa: E501
         if self.data is not None:
             return self.data
 

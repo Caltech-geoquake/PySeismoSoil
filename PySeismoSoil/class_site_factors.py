@@ -1,9 +1,11 @@
+"""Site response factors class."""
+
 from __future__ import annotations
 
 import importlib.resources
 import itertools
-import os
-from typing import TYPE_CHECKING, Literal
+from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 import numpy as np
 from scipy.interpolate import griddata
@@ -17,8 +19,9 @@ if TYPE_CHECKING:
 
 class Site_Factors:
     """
-    Class implementation of site response factors proposed by Shi, Asimaki, and
-    Graves (2019).
+    Class implementation of site response factors.
+
+    The factors were proposed by Shi, Asimaki, and Graves (2019).
 
     Parameters
     ----------
@@ -36,12 +39,15 @@ class Site_Factors:
 
     Attributes
     ----------
-    Vs30_array : list[int], default=[175, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950]
-        Valid Vs30 values (class attribute).
-    z1_array : list[int], default=[8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
-        Valid z1 values (class attribute).
-    PGA_array : list[float], default=[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
-        Valid PGA values (class attribute).
+    Vs30_array : list[int]
+        Valid Vs30 values (class attribute). The values are [175, 200, 250,
+        300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950].
+    z1_array : list[int]
+        Valid z1 values (class attribute). The values are [8, 16, 24, 36, 75,
+        150, 300, 450, 600, 900].
+    PGA_array : list[float]
+        Valid PGA values (class attribute). The values are [0.01, 0.05, 0.1,
+        0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5].
     Vs30 : float
         Same as the input parameter ``Vs30_in_meter_per_sec``.
     z1 : float
@@ -59,7 +65,7 @@ class Site_Factors:
         When the combination of Vs30 and z1 values is invalid
     """
 
-    Vs30_array: list[int] = [
+    Vs30_array: ClassVar[list[int]] = [
         175,
         200,
         250,
@@ -78,8 +84,19 @@ class Site_Factors:
         900,
         950,
     ]
-    z1_array: list[int] = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
-    PGA_array: list[float] = [
+    z1_array: ClassVar[list[int]] = [
+        8,
+        16,
+        24,
+        36,
+        75,
+        150,
+        300,
+        450,
+        600,
+        900,
+    ]
+    PGA_array: ClassVar[list[float]] = [
         0.01,
         0.05,
         0.1,
@@ -134,7 +151,7 @@ class Site_Factors:
 
             PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
 
-        # TODO: think about whether to add leniency
+        # TODO: think about whether to add leniency  # noqa: TD003
         if 'Invalid Vs30-z1 combination' in status:
             raise ValueError(
                 'Vs30 and z1 combination not valid. (The `lenient` '
@@ -208,7 +225,7 @@ class Site_Factors:
             show_interp_plots: bool = False,
     ) -> Frequency_Spectrum:
         """
-        Get site amplification factors
+        Get site phase-shift factors.
 
         Parameters
         ----------
@@ -247,7 +264,7 @@ class Site_Factors:
             show_interp_plots: bool = False,
     ) -> tuple[Frequency_Spectrum, Frequency_Spectrum]:
         """
-        Get both amplification and phase-shift factors
+        Get both amplification and phase-shift factors.
 
         Parameters
         ----------
@@ -364,10 +381,11 @@ class Site_Factors:
             data_dir: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
-        Query amplification or phase factors from pre-computed .csv files. The
-        given Vs30, z1_in_m, and PGA_in_g values need to match the pre-defined
-        values (see ``Vs30_array``, ``z1_array``, and ``PGA_array`` at the top
-        of this file).
+        Query amplification or phase factors from pre-computed .csv files.
+
+        The given Vs30, z1_in_m, and PGA_in_g values need to match the
+        pre-defined values (see ``Vs30_array``, ``z1_array``, and
+        ``PGA_array`` at the top of this file).
 
         Parameters
         ----------
@@ -416,19 +434,20 @@ class Site_Factors:
                 "`method` must be within {'nl_hh', 'eq_kz', 'eq_hh'}"
             )
 
+        prefix = f'{int(Vs30)}_{int(z1):03d}'
         if amplif_or_phase == 'amplif':
             if Fourier:
-                y_filename = '%d_%03d_af_fs_%s_avg.csv' % (Vs30, z1, method)
-                x_filename = '%d_%03d_freq.csv' % (Vs30, z1)
+                y_filename = f'{prefix}_af_fs_{method}_avg.csv'
+                x_filename = f'{prefix}_freq.csv'
             else:  # response spectra
-                y_filename = '%d_%03d_af_rs_%s_avg.csv' % (Vs30, z1, method)
-                x_filename = '%d_%03d_period.csv' % (Vs30, z1)
+                y_filename = f'{prefix}_af_rs_{method}_avg.csv'
+                x_filename = f'{prefix}_period.csv'
         else:  # phase shift
-            y_filename = '%d_%03d_phase_shift_%s_avg.csv' % (Vs30, z1, method)
-            x_filename = '%d_%03d_freq.csv' % (Vs30, z1)
+            y_filename = f'{prefix}_phase_shift_{method}_avg.csv'
+            x_filename = f'{prefix}_freq.csv'
 
-        y = np.genfromtxt(os.path.join(data_dir, y_filename), delimiter=',')
-        x = np.genfromtxt(os.path.join(data_dir, x_filename), delimiter=',')
+        y = np.genfromtxt(Path(data_dir) / y_filename, delimiter=',')
+        x = np.genfromtxt(Path(data_dir) / x_filename, delimiter=',')
         PGA_index = np.argwhere(np.array(Site_Factors.PGA_array) == PGA)[0][0]
         y_values_at_given_PGA = y[PGA_index, :]
 
@@ -436,8 +455,10 @@ class Site_Factors:
 
     def _locate_grids(self) -> list[tuple[float, float, float]]:
         """
-        Locate the "reference grids", i.e., rereference Vs30, z1, and PGA
-        values (in terms of the indices, not actual values).
+        Locate the "reference grids".
+
+        The "reference grids" are the reference Vs30, z1, and PGA values (in
+        terms of the indices, not actual values).
 
         Return all possible combinations of Vs30, z1, and PGA values.
         """
@@ -457,9 +478,10 @@ class Site_Factors:
             Vs30_in_mps: float, z1_in_m: float, PGA_in_g: float
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         """
-        Find the indices of Vs30, z1, and PGA that surround the provided
-        values. If the provided values fall onto the "reference" Vs30, z1, or
-        PGA values, two indices are still returned.
+        Find the indices of Vs30, z1, and PGA that surround given values.
+
+        If the provided values fall onto the "reference" Vs30, z1, or PGA
+        values, two indices are still returned.
 
         The three inputs need to already within the correct range.
         """
@@ -476,7 +498,9 @@ class Site_Factors:
         return Vs30_loc, z1_loc, PGA_loc
 
     @staticmethod
-    def _search_sorted(value, array) -> tuple[int, int]:
+    def _search_sorted(
+            value: float, array: list[float] | np.ndarray
+    ) -> tuple[int, int]:
         """
         Search for the location of ``value`` within ``array``.
 
@@ -535,7 +559,8 @@ class Site_Factors:
                    [3, 4, 5, 6, ...]  # reference point No.3
                    ...
                    [9, 10, 11, 12, ...]  # reference point No.X
-                 ]   # Each vertical slice is a version of values at the ref. points
+                 ]   # Each vertical slice is a version of values at the
+                     # ref. points
 
         interp_points : tuple[float, float, float]
             Point at which you want to know the value. Only one point is
@@ -584,8 +609,10 @@ class Site_Factors:
             Fourier: bool = True,
     ) -> tuple[Figure, Axes, Axes | None]:
         """
-        Show a plot of the amplification and/or phase shift factors at the
-        reference (Vs30, z1, PGA) points, as well as the interpolated factors.
+        Show a plot of the amplification and/or phase shift factors.
+
+        The factors are shown at the reference (Vs30, z1, PGA) points, as well
+        as the interpolated factors.
 
         Parameters
         ----------
@@ -635,7 +662,10 @@ class Site_Factors:
             ax = plt.axes()
 
         for j, ref_point in enumerate(ref_points):
-            label = '%d m/s, %d m, %.2gg' % ref_point
+            label = (
+                f'{int(ref_point[0])} m/s, {int(ref_point[1])} m, '
+                f'{ref_point[2]:.2g}g'
+            )
             if phase_flag:
                 ax1.semilogx(T_or_freq, amps[j], alpha=alpha)
                 ax2.semilogx(T_or_freq, phases[j], alpha=alpha, label=label)
@@ -672,7 +702,8 @@ class Site_Factors:
             )
 
         fig.suptitle(
-            '$V_{S30}$ = %d m/s, $z_1$ = %d m, PGA = %.2g$g$' % query_point
+            f'$V_{{S30}}$ = {int(query_point[0])} m/s, '
+            f'$z_1$ = {int(query_point[1])} m, PGA = {query_point[2]:.2g}$g$'
         )
 
         bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)
@@ -690,8 +721,9 @@ class Site_Factors:
             PGA_in_g: float,
     ) -> list[str]:
         """
-        Check if the provided Vs30, z1_in_m, and PGA_in_g values are within the
-        pre-computed range.
+        Check if the provided Vs30, z1_in_m, and PGA_in_g values are valid.
+
+        "Valid" means within the pre-computed range.
 
         The return value (``status``) indicates the kind(s) of errors
         associated with the given input parameters.

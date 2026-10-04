@@ -22,7 +22,7 @@ class HH_Calibration:
 
     For more information, refer to the following paper: J. Shi and D. Asimaki
     (2017) "From stiffness to strength: Formulation and validation of a hybrid
-    hyperbolic nonlinear soil model for site‐response analyses." Bulletin of
+    hyperbolic nonlinear soil model for site-response analyses." Bulletin of
     the Seismological Society of America. 107 (3), 1336-1355.
 
     Parameters

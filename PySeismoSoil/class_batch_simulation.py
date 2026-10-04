@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import multiprocessing as mp
-import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 from PySeismoSoil import helper_generic as hlp
@@ -50,7 +50,7 @@ class Batch_Simulation:
         When ``list_of_simulations`` is not a list
     ValueError
         When ``list_of_simulations`` has length 0
-    """
+    """  # noqa: E501
 
     list_of_simulations: list[Simulation_Results]
     n_simulations: int
@@ -84,7 +84,8 @@ class Batch_Simulation:
 
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
-                'All the elements of `list_of_simulations` should be of the same type.',
+                'All the elements of `list_of_simulations` should be of '
+                'the same type.',
             )
 
         n_simulations = len(list_of_simulations)
@@ -151,7 +152,7 @@ class Batch_Simulation:
 
         if base_output_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            base_output_dir = os.path.join('./', f'batch_sim_{current_time}')
+            base_output_dir = str(Path('./') / f'batch_sim_{current_time}')
 
         other_params = [n_digits, base_output_dir, catch_errors, options]
 
@@ -228,7 +229,7 @@ class Batch_Simulation:
         """
         i, other_params = all_params  # unpack
         n_digits, base_output_dir, catch_errors, options = other_params
-        output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
+        output_dir = str(Path(base_output_dir) / str(i).rjust(n_digits, '0'))
         if self.sim_type == Nonlinear_Simulation:
             options.update({'sim_dir': output_dir})
         else:  # linear or equivalent linear

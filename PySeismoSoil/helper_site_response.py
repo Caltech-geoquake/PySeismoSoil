@@ -162,7 +162,7 @@ def query_Vs_at_depth(
     ValueError
         When there are negative `depth`` values.
     """
-    # ------------- Check input type, input value, etc. ------------------------
+    # ------------- Check input type, input value, etc. -----------------------
     if isinstance(depth, (int, float, np.number)):
         is_scalar = True
         depth = np.array([depth])
@@ -189,7 +189,7 @@ def query_Vs_at_depth(
         name='`vs_profile`',
     )
 
-    # ------------------ Start querying ----------------------------------------
+    # ------------------ Start querying ---------------------------------------
     thk_ref = vs_profile[:, 0]
     vs_ref = vs_profile[:, 1]
     dep_ref = thk2dep(thk_ref, midpoint=False)
@@ -251,7 +251,8 @@ def query_Vs_given_thk(
     else:  # need to construct an array
         if not isinstance(n_layers, (int, np.integer)):
             raise TypeError(
-                'If `thk` is a scalar, you need to provide `n_layers` as an integer.',
+                'If `thk` is a scalar, you need to provide `n_layers` as an '
+                'integer.',
             )
 
         if n_layers <= 0:
@@ -477,7 +478,7 @@ def find_f0(x: np.ndarray) -> float:
         previous_flag = current_flag
 
     if i == ll - 2:  # if the loop above finishes without breaking
-        i = i + 1
+        i += 1
 
     return freq[i]
 
@@ -888,10 +889,10 @@ def calc_VsZ(
     cumul_sl = 0.0  # make sure cumul_sl is float
     for i in range(len(thick)):
         if depth[i + 1] < Z:
-            cumul_sl = cumul_sl + sl[i] * thick[i]  # cumulative Vs*thickness
+            cumul_sl += sl[i] * thick[i]  # cumulative Vs*thickness
 
         if depth[i + 1] >= Z:
-            cumul_sl = cumul_sl + sl[i] * (thick[i] - (depth[i + 1] - Z))
+            cumul_sl += sl[i] * (thick[i] - (depth[i + 1] - Z))
             break
 
     # assume last Vs extends to Z m
@@ -903,7 +904,7 @@ def calc_VsZ(
                     f'Assume last Vs value goes down to {Z:.2f} m.',
                 )
 
-            cumul_sl = cumul_sl + sl[-1] * (Z - total_thickness)
+            cumul_sl += sl[-1] * (Z - total_thickness)
             VsZ = float(Z) / cumul_sl
         else:
             VsZ = float(Z) / cumul_sl
@@ -1503,8 +1504,8 @@ def amplify_motion(
             (1) A complex-valued transformation, which should be a 1D complex
                 numpy array
             (2) A tuple of (amplitude, phase) which represents the complex
-                numbers. ``amplitude`` and ``phase`` both need to be 1D arrays and
-                real-valued.
+                numbers. ``amplitude`` and ``phase`` both need to be 1D arrays
+                and real-valued.
         The transfer function only needs to be "single-sided" (see note below.)
     taper : bool, default=False
         Whether to taper the input acceleration (using Tukey taper).
@@ -1587,7 +1588,7 @@ def amplify_motion(
             f_array = np.append(df, f_array)
             amp_ss = np.append(1.0, amp_ss)
             phase_ss = np.append(0.0, phase_ss)
-    else:  # keep downsampling `input_motion` until f_array covers the freq range
+    else:  # keep downsampling `input_motion` until f_array covers fmax
         while np.max(f_array) < fmax:
             input_motion = input_motion[::2, :]
             if input_motion.shape[0] <= 1:
@@ -1687,11 +1688,11 @@ def linear_site_resp(
         1D Vs profile. If it is a string, it means the file name that contains
         the data. If it is a 2D array, it has the following format:
 
-         +---------------+----------+---------+------------------+--------------+
-         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
-         +===============+==========+=========+==================+==============+
-         |      ...      |   ...    |   ...   |       ...        |      ...     |
-         +---------------+----------+---------+------------------+--------------+
+         +---------------+----------+---------+------------------+----------+
+         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Mat. No. |
+         +===============+==========+=========+==================+==========+
+         |      ...      |   ...    |   ...   |       ...        |   ...    |
+         +---------------+----------+---------+------------------+----------+
         (Damping unit: 1)
     input_motion : np.ndarray | str
         Input motion in the time domain (with two columns). If it is a string,
@@ -2149,10 +2150,10 @@ def robust_unwrap(
     n = len(signal)
     signal_ = signal.copy()
 
-    # -------1. Find anomalies (peaks and troughs that are too far apart)-------
+    # ------1. Find anomalies (peaks and troughs that are too far apart)------
     trough = -1  # to store index of trough point
     peak = -1  # to store index of peak point
-    drawer = []  # to keep pairs of (trough, peak) that are 1+ apart in location
+    drawer = []  # to keep pairs of (trough, peak) that are 1+ apart
     flag = 0
     for i in range(1, n):
         if signal[i] <= signal[i - 1]:  # trend is decreasing
@@ -2166,7 +2167,7 @@ def robust_unwrap(
             peak = i
             flag = 1
 
-    # --------2. Move in-between points into (signal[trough], -3.1415927]-------
+    # -------2. Move in-between points into (signal[trough], -3.1415927]------
     for pair in drawer:
         i1, i2 = pair
         length = i2 - i1 - 1
@@ -2402,11 +2403,13 @@ def fit_all_damping_curves(
     curves : np.ndarray | list[np.ndarray]
         Can either be a 2D array in the "curve" format, or a list of individual
         damping curves. The "curve" format is as follows:
-         +------------+--------+------------+-------------+-------------+--------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-         +============+========+============+=============+=============+========+=====+
-         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-         +------------+--------+------------+-------------+-------------+--------+-----+
+         +------------+--------+------------+-------------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+         +============+========+============+=============+=====+
+         |    ...     |  ...   |    ...     |    ...      | ... |
+         +------------+--------+------------+-------------+-----+
+
+        (The four columns above are repeated for each layer.)
 
         The G/Gmax information is redundant for this function.
 
@@ -2481,13 +2484,16 @@ def fit_all_damping_curves(
         _, curves_list = hlp.extract_from_curve_format(curves)
     elif isinstance(curves, list):
         if not all(isinstance(_, np.ndarray) for _ in curves):
-            msg = 'If `curves` is a list, all its elements needs to be 2D numpy arrays.'
+            msg = (
+                'If `curves` is a list, all its elements needs to be 2D '
+                'numpy arrays.'
+            )
             raise TypeError(msg)
 
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
                 curve,
-                name='Damping curve for layer #%d' % j,
+                name=f'Damping curve for layer #{j}',
                 ensure_non_negative=True,
             )
 
@@ -2549,7 +2555,8 @@ def fit_all_damping_curves(
     if save_txt:
         if func_serialize is None:
             raise ValueError(
-                'Please provide a function to serialize the parameters into a lists.',
+                'Please provide a function to serialize the parameters into a '
+                'lists.',
             )
 
         data_for_file = [func_serialize(param) for param in params]
@@ -2560,7 +2567,7 @@ def fit_all_damping_curves(
     return params
 
 
-def _fit_single_layer_loop(param):
+def _fit_single_layer_loop(param: tuple[Any, ...]) -> Any:
     """
     Loop body to be passed to the parallel pool.
 
@@ -2702,7 +2709,9 @@ def ga_optimization(
         loss.
     """
     if suppress_warnings:
-        import warnings  # TODO: enable setting it from methods that calls this function
+        # TODO: enable setting it from methods that call this  # noqa: TD003
+        # function
+        import warnings
 
         warnings.filterwarnings('ignore', category=RuntimeWarning)
 
@@ -2737,14 +2746,22 @@ def ga_optimization(
         import deap.creator
         import deap.tools
 
-        def loss_function__(param):  # because DEAP requires (loss, ) as output
+        def loss_function__(
+                param: Any,
+        ) -> tuple[Any]:  # because DEAP requires (loss, ) as output
             return (loss_function(param, damping_data),)
 
-        def uniform(low, up, size=None):
+        def uniform(
+                low: Any,
+                up: Any,
+                size: int | None = None,
+        ) -> list[float]:
             try:
-                return list(map(random.uniform, low, up))
+                return list(map(random.uniform, low, up))  # noqa: S311
             except TypeError:
-                return list(map(random.uniform, [low] * size, [up] * size))
+                return list(
+                    map(random.uniform, [low] * size, [up] * size),  # noqa: S311
+                )
 
         LB = lower_bound
         UB = upper_bound
