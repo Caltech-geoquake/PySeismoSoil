@@ -3,7 +3,7 @@ from __future__ import annotations
 import collections
 import json
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,8 +28,12 @@ STRAIN_RANGE_PCT = np.logspace(-2, 1)
 StressFunction = Callable[[dict[str, float], ...], np.ndarray]
 
 # Valid ways of initializing HH_Param_Multi_Layer and MKZ_Param_Multi_Layer
-HHParamInput = str | np.ndarray | list[dict[str, float]] | list['HH_Param']
-MKZParamInput = str | np.ndarray | list[dict[str, float]] | list['MKZ_Param']
+HHParamInput: TypeAlias = (
+    str | np.ndarray | list[dict[str, float]] | list['HH_Param']
+)
+MKZParamInput: TypeAlias = (
+    str | np.ndarray | list[dict[str, float]] | list['MKZ_Param']
+)
 
 
 class Parameter(collections.UserDict):
@@ -408,7 +412,7 @@ class Param_Multi_Layer:
         self.param_list = param_list
         self.n_layer = len(param_list)
 
-    def __contains__(self, item: object) -> bool:
+    def __contains__(self, item: Any) -> bool:
         return item in self.param_list
 
     def __len__(self) -> int:

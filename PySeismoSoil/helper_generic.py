@@ -19,6 +19,10 @@ AxesProjection = Literal[
 
 NDIM_2D_ARRAY = 2
 NUM_COLUMNS_TWO_COL_DATA = 2
+
+# A Vs profile has either 2 columns (thickness, Vs) or 5 columns (thickness,
+# Vs, damping, density, material number)
+NUM_COLUMNS_THICKNESS_AND_VS = 2
 NUM_COLUMNS_OF_FULL_VS_PROFILE = 5
 DELTA_UNIFORMITY_REL_TOL = 1e-8
 
@@ -245,13 +249,13 @@ def read_two_column_stuff(
     return data_, delta
 
 
-def assert_1D_numpy_array(something: object, name: str | None = None) -> None:
+def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     Assert that ``something`` is a 1D numpy array.
 
     Parameters
     ----------
-    something : object
+    something : Any
         Any Python object.
     name : str | None, default=None
         The name of ``something`` to be displayed in the potential error
@@ -268,7 +272,7 @@ def assert_1D_numpy_array(something: object, name: str | None = None) -> None:
 
 
 def assert_array_length(
-        something: object,
+        something: Any,
         length: int | None,
         name: str = '`something`',
 ) -> None:
@@ -277,7 +281,7 @@ def assert_array_length(
 
     Parameters
     ----------
-    something : object
+    something : Any
         Any Python object
     length : int | None
         The length that ``something`` must have.
@@ -334,7 +338,7 @@ def extend_scalar(
 
 
 def check_length_or_extend_to_array(
-        something: object,
+        something: Any,
         length: int,
         name: str = '`something`',
 ) -> np.ndarray:
@@ -346,7 +350,7 @@ def check_length_or_extend_to_array(
 
     Parameters
     ----------
-    something : object
+    something : Any
         Any Python object.
     length : int
         The desired length of array.
@@ -369,13 +373,13 @@ def check_length_or_extend_to_array(
     return array
 
 
-def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
+def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     Assert that ``something`` is a 2D numpy array.
 
     Parameters
     ----------
-    something : object
+    something : Any
         Any Python object.
     name : str | None, default=None
         The name of ``something`` to be displayed in the potential error
@@ -395,7 +399,7 @@ def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
 
 
 def check_two_column_format(
-        something: object,
+        something: Any,
         name: str | None = None,
         *,
         ensure_non_negative: bool = False,
@@ -408,7 +412,7 @@ def check_two_column_format(
 
     Parameters
     ----------
-    something : object
+    something : Any
         Any Python object.
     name : str | None, default=None
         The name of ``something`` to be displayed in the potential error
@@ -455,7 +459,7 @@ def check_two_column_format(
         raise ValueError(f'{name} should have all non-negative values.')
 
 
-def check_Vs_profile_format(data: object) -> None:
+def check_Vs_profile_format(data: Any) -> None:
     """
     Check that ``data`` is in a valid format as a Vs profile.
 
@@ -464,7 +468,7 @@ def check_Vs_profile_format(data: object) -> None:
 
     Parameters
     ----------
-    data : object
+    data : Any
         Any Python object.
 
     Raises
@@ -534,7 +538,7 @@ def check_Vs_profile_format(data: object) -> None:
             )
 
 
-def is_int(number: object) -> bool:
+def is_int(number: Any) -> bool:
     """
     Check that a ``number`` represents an integer value.
 
@@ -542,7 +546,7 @@ def is_int(number: object) -> bool:
 
     Parameters
     ----------
-    number : object
+    number : Any
         Any Python object.
 
     Returns

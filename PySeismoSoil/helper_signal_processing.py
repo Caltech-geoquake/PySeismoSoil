@@ -19,9 +19,6 @@ WindowName = Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
 # Band-pass and band-stop filters need two cut-off frequencies (low and high)
 NUM_CUTOFF_FREQS_BAND_FILTER = 2
 
-# Number of dimensions of a two-column signal (time and value)
-NUM_DIMS_TWO_COL_SIGNAL = 2
-
 # Smoothing windows shorter than this (number of points) have no effect
 MIN_SMOOTHING_WINDOW_LEN = 3
 
@@ -620,7 +617,7 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
 
-    if input_signal.ndim == NUM_DIMS_TWO_COL_SIGNAL:  # two columns
+    if input_signal.ndim == hlp.NDIM_2D_ARRAY:  # two columns
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
         ll = len(time_array)
@@ -676,10 +673,16 @@ def calc_transfer_function(
     """
     hlp.check_two_column_format(input_signal, name='`input_signal`')
     hlp.check_two_column_format(output_signal, name='`output_signal`')
-    if hlp.check_numbers_valid(input_signal) in {-1, -2}:
+    if hlp.check_numbers_valid(input_signal) in {
+        hlp.CHECK_STATUS_NON_NUMERIC,
+        hlp.CHECK_STATUS_NOT_FINITE,
+    }:
         raise ValueError('`input_signal` contains invalid values.')
 
-    if hlp.check_numbers_valid(output_signal) in {-1, -2}:
+    if hlp.check_numbers_valid(output_signal) in {
+        hlp.CHECK_STATUS_NON_NUMERIC,
+        hlp.CHECK_STATUS_NOT_FINITE,
+    }:
         raise ValueError('`output_signal` contains invalid values.')
 
     dt_in = input_signal[1, 0] - input_signal[0, 0]

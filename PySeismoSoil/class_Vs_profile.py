@@ -75,12 +75,6 @@ class Vs_Profile:
 
     Attributes
     ----------
-    NUM_COLUMNS_THICKNESS_AND_VS : ClassVar[int], default=2
-        Number of columns of a Vs profile that only has the thickness and Vs
-        columns (class attribute).
-    NUM_COLUMNS_OF_FULL_VS_PROFILE : ClassVar[int], default=5
-        Number of columns of a full Vs profile: thickness, Vs, damping,
-        density, and material number (class attribute).
     MIN_PLAUSIBLE_DENSITY_KG_M3 : ClassVar[int], default=1000
         If the minimum density of a profile (in kg/m^3) is at or below this
         value, a warning is printed because the density is likely given in a
@@ -109,11 +103,6 @@ class Vs_Profile:
     ValueError
         When the value of input arguments is incorrect or invalid
     """
-
-    # A Vs profile can have 2 columns (thickness and Vs only) or 5 columns
-    # (thickness, Vs, damping, density, and material number)
-    NUM_COLUMNS_THICKNESS_AND_VS: ClassVar[int] = 2
-    NUM_COLUMNS_OF_FULL_VS_PROFILE: ClassVar[int] = 5
 
     # If the min. density of a profile (in kg/m^3) is at or below this value, a
     # warning is printed because the density is likely to be in a wrong unit
@@ -158,7 +147,7 @@ class Vs_Profile:
         vs = data_[:, 1]
         n_layer_tmp, n_col = data_.shape
 
-        if n_col == self.NUM_COLUMNS_THICKNESS_AND_VS:
+        if n_col == hlp.NUM_COLUMNS_THICKNESS_AND_VS:
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if thk[-1] == 0:  # last layer is an "infinity" layer
                 material_number = np.append(np.arange(1, n_layer_tmp), [0])
@@ -175,7 +164,7 @@ class Vs_Profile:
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
-        elif n_col == self.NUM_COLUMNS_OF_FULL_VS_PROFILE:
+        elif n_col == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             xi = data_[:, 2]
             rho = data_[:, 3]
             if (
@@ -758,7 +747,7 @@ class Vs_Profile:
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
 
-        if len(precision) != self.NUM_COLUMNS_OF_FULL_VS_PROFILE:
+        if len(precision) != hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             raise ValueError('Length of precision must be 5.')
 
         np.savetxt(fname, self.vs_profile, fmt=precision, delimiter=sep)

@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-sys.path.insert(0, pathlib.Path.cwd())
-sys.path.insert(0, pathlib.Path('../').resolve())
+sys.path.insert(0, str(pathlib.Path.cwd()))
+sys.path.insert(0, str(pathlib.Path('../').resolve()))
 
 
 # -- Project information -----------------------------------------------------

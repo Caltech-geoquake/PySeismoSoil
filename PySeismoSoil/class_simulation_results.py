@@ -225,17 +225,16 @@ class Simulation_Results:
         self.motion_name = motion_name
         self.output_dir = output_dir
 
-    # fmt: off
     def plot(  # noqa: PLR0915
             self,
             dpi: float = 100,
-            *, save_fig: bool = False,
+            *,
+            save_fig: bool = False,
             amplif_func_ylog: bool = True,
             output_dir: str | None = None,
     ) -> tuple[
         tuple[Figure, Figure | None], tuple[Axes, tuple[Axes | None, ...]]
     ]:
-        # fmt: on
         """
         Plot simulation results.
 
@@ -401,7 +400,8 @@ class Simulation_Results:
 
     def to_txt(
             self,
-            *, save_full_time_history: bool = True,
+            *,
+            save_full_time_history: bool = True,
             verbose: bool = False,
             output_dir: str | None = None,
     ) -> None:

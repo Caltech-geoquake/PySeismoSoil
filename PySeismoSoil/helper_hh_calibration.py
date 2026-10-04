@@ -48,10 +48,6 @@ from PySeismoSoil import helper_hh_model as hh
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
-# A Vs profile has either 5 columns (thickness, Vs, damping, density,
-# material number) or 2 columns (thickness, Vs)
-NUM_COLUMNS_OF_FULL_VS_PROFILE = 5
-
 # Thresholds (in terms of "mu") below which the empirical mu is increased by
 # 3, 2, and 1 times the standard error (0.236, in log10 scale) suggested in
 # the 2011 paper by Vardanega and Bolton
@@ -272,7 +268,7 @@ def hh_param_from_curves(
     Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
     n_layer = len(Vs)
 
-    if vs_profile.shape[1] == NUM_COLUMNS_OF_FULL_VS_PROFILE:
+    if vs_profile.shape[1] == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
         mat = vs_profile[:-1, -1]
         rho = vs_profile[:-1, 3]
     else:  # only 2 columns

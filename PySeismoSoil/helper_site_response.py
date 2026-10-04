@@ -19,10 +19,6 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.lines import Line2D
 
-# A basic Vs profile has two columns: [thickness, Vs]. (The 5-column format
-# additionally has damping, density, and material number.)
-NUM_COLUMNS_BASIC_VS_PROFILE = 2
-
 # A single-sided transfer function is given as a tuple of (frequency, TF),
 # where the TF can be either a complex array or a tuple of (amplitude, phase).
 NUM_ITEMS_FREQ_AND_TF_TUPLE = 2
@@ -89,7 +85,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
 
     h = vs_profile[:, 0]
     Vs = vs_profile[:, 1]
-    if vs_profile.shape[1] > NUM_COLUMNS_BASIC_VS_PROFILE:
+    if vs_profile.shape[1] > hlp.NUM_COLUMNS_THICKNESS_AND_VS:
         five_columns = True
         xi = vs_profile[:, 2]
         rho = vs_profile[:, 3]
