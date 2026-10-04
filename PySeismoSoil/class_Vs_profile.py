@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import numpy as np
 
@@ -15,6 +15,16 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
     from matplotlib.lines import Line2D
+
+# Allowed units of mass density
+DensityUnit = Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3']
+
+# One ``numpy.savetxt()``-style format specifier for each column of a (full)
+# Vs profile: thickness, Vs, damping, density, and material number
+PrecisionSpecifiers = tuple[str, str, str, str, str]
+
+# Default precision of each column when writing a Vs profile to a text file
+DEFAULT_PRECISION: PrecisionSpecifiers = ('%.2f', '%.2f', '%.4g', '%.5g', '%d')
 
 
 class Vs_Profile:
@@ -45,8 +55,9 @@ class Vs_Profile:
 
     damping_unit : Literal['1', '%'], default='1'
         The unit for the damping ratio.
-    density_unit : Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'], default='kg/m^3'
-        The unit for the mass density of soils.
+    density_unit : DensityUnit, default='kg/m^3'
+        The unit for the mass density of soils. It can be 'kg/m^3', 'g/cm^3',
+        'kg/m3', or 'g/cm3'.
     sep : str, default='\t'
         Delimiter character for reading the text file. If ``data`` is supplied
         as a numpy array, this parameter is ignored.
@@ -87,7 +98,16 @@ class Vs_Profile:
         When the value of ``data`` is not a string or numpy array
     ValueError
         When the value of input arguments is incorrect or invalid
-    """  # noqa: E501
+    """
+
+    # A Vs profile can have 2 columns (thickness and Vs only) or 5 columns
+    # (thickness, Vs, damping, density, and material number)
+    N_COLS_THICKNESS_AND_VS: ClassVar[int] = 2
+    N_COLS_FULL_PROFILE: ClassVar[int] = 5
+
+    # If the min. density of a profile (in kg/m^3) is at or below this value, a
+    # warning is printed because the density is likely to be in a wrong unit
+    MIN_PLAUSIBLE_DENSITY_KG_M3: ClassVar[int] = 1000
 
     vs_profile: np.ndarray
     vs30: float
@@ -101,9 +121,7 @@ class Vs_Profile:
             data: str | np.ndarray,
             *,
             damping_unit: Literal['1', '%'] = '1',
-            density_unit: Literal[
-                'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'
-            ] = 'kg/m^3',
+            density_unit: DensityUnit = 'kg/m^3',
             sep: str = '\t',
             add_halfspace: bool = False,
             xi_rho_formula: Literal[1, 2, 3] = 3,
@@ -130,7 +148,7 @@ class Vs_Profile:
         vs = data_[:, 1]
         n_layer_tmp, n_col = data_.shape
 
-        if n_col == 2:  # noqa: PLR2004
+        if n_col == self.N_COLS_THICKNESS_AND_VS:
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if thk[-1] == 0:  # last layer is an "infinity" layer
                 material_number = np.append(np.arange(1, n_layer_tmp), [0])
@@ -147,10 +165,13 @@ class Vs_Profile:
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
-        elif n_col == 5:  # noqa: PLR2004
+        elif n_col == self.N_COLS_FULL_PROFILE:
             xi = data_[:, 2]
             rho = data_[:, 3]
-            if density_unit in {'kg/m^3', 'kg/m3'} and min(rho) <= 1000:  # noqa: PLR2004
+            if (
+                density_unit in {'kg/m^3', 'kg/m3'}
+                and min(rho) <= self.MIN_PLAUSIBLE_DENSITY_KG_M3
+            ):
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '
                     'lower than 1,000 kg/m^3. Possible error.',
@@ -700,13 +721,7 @@ class Vs_Profile:
             self,
             fname: str,
             sep: str = '\t',
-            precision: tuple[str, str, str, str, str] = (
-                '%.2f',
-                '%.2f',
-                '%.4g',
-                '%.5g',
-                '%d',
-            ),
+            precision: PrecisionSpecifiers = DEFAULT_PRECISION,
     ) -> None:
         r"""
         Write Vs profile to a text file.
@@ -717,9 +732,11 @@ class Vs_Profile:
             File name (including path).
         sep : str, default='\t'
             Delimiter for the output file.
-        precision : tuple[str, str, str, str, str], default=('%.2f', '%.2f', '%.4g', '%.5g', '%d')
+        precision : PrecisionSpecifiers, default=DEFAULT_PRECISION
             A list of precision specifiers, each for the five columns of the Vs
-            profile. Default is ``('%.2f', '%.2f', '%.4g', '%.5g', '%d')``.
+            profile. Default is ``DEFAULT_PRECISION``: '%.2f' for thickness and
+            Vs, '%.4g' for damping, '%.5g' for density, and '%d' for material
+            number.
 
         Raises
         ------
@@ -727,11 +744,11 @@ class Vs_Profile:
             When ``precision`` is not a list
         ValueError
             When the length of ``precision`` is not 5
-        """  # noqa: E501
+        """
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
 
-        if len(precision) != 5:  # noqa: PLR2004
+        if len(precision) != self.N_COLS_FULL_PROFILE:
             raise ValueError('Length of precision must be 5.')
 
         np.savetxt(fname, self.vs_profile, fmt=precision, delimiter=sep)

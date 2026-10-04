@@ -12,6 +12,22 @@ import scipy.signal
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
+# Names of the smoothing windows that ``log_smooth()`` and ``lin_smooth()``
+# can use
+WindowName = Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
+
+# Band-pass and band-stop filters need two cut-off frequencies (low and high)
+N_CUTOFF_FREQS_BAND_FILTER = 2
+
+# Number of dimensions of a two-column signal (time and value)
+N_DIMS_TWO_COL_SIGNAL = 2
+
+# Smoothing windows shorter than this (number of points) have no effect
+MIN_SMOOTHING_WINDOW_LEN = 3
+
+# Minimum length of the work arrays used by ``sine_smooth()``
+SINE_SMOOTH_MIN_BUFFER_LEN = 4497
+
 
 def lowpass(
         orig_signal: np.ndarray,
@@ -197,7 +213,7 @@ def _filter_kernel(  # noqa: C901, PLR0915
                 '`cutoff_freq` must be a list, tuple, or numpy array.'
             )
 
-        if len(cutoff_freq) != 2:  # noqa: PLR2004
+        if len(cutoff_freq) != N_CUTOFF_FREQS_BAND_FILTER:
             raise ValueError('`cutoff_freq` must have length 2.')
 
         if cutoff_freq[1] <= cutoff_freq[0]:
@@ -604,7 +620,7 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:  #
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
 
-    if input_signal.ndim == 2:  # if input_signal has two columns  # noqa: PLR2004
+    if input_signal.ndim == N_DIMS_TWO_COL_SIGNAL:  # two columns
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
         ll = len(time_array)
@@ -718,13 +734,7 @@ def calc_transfer_function(
 def log_smooth(
         signal: np.ndarray,
         win_len: int = 15,
-        window: Literal[
-            'flat',
-            'hanning',
-            'hamming',
-            'bartlett',
-            'blackman',
-        ] = 'hanning',
+        window: WindowName = 'hanning',
         *,
         lin_space: bool = True,
         fmin: float | None = None,
@@ -743,7 +753,7 @@ def log_smooth(
         The signal to be smoothed. Must be a 1D numpy array.
     win_len : int, default=15
         The length of the convolution window.
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
+    window : WindowName, default='hanning'
         The name of the window. One of 'flat', 'hanning', 'hamming',
         'bartlett', 'blackman'.
     lin_space : bool, default=True
@@ -780,12 +790,12 @@ def log_smooth(
     ------
     ValueError
         When the input values are not entirely valid
-    """  # noqa: E501
+    """
     hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
         raise ValueError('Input vector needs to be bigger than window size.')
 
-    if win_len < 3:  # noqa: PLR2004
+    if win_len < MIN_SMOOTHING_WINDOW_LEN:
         return signal
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
@@ -834,13 +844,7 @@ def log_smooth(
 def lin_smooth(
         x: np.ndarray,
         window_len: int = 15,
-        window: Literal[
-            'flat',
-            'hanning',
-            'hamming',
-            'bartlett',
-            'blackman',
-        ] = 'hanning',
+        window: WindowName = 'hanning',
 ) -> np.ndarray:
     """
     Smooth the data using a window with requested size.
@@ -856,7 +860,7 @@ def lin_smooth(
         The input signal. Should be a 1D numpy array
     window_len : int, default=15
         The dimension of the smoothing window; should be an odd integer
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
+    window : WindowName, default='hanning'
         The type of window. One of 'flat', 'hanning', 'hamming', 'bartlett',
         'blackman'. A 'flat' window will produce a moving average smoothing.
 
@@ -888,14 +892,14 @@ def lin_smooth(
     >>> t = linspace(-2, 2, 0.1)
     >>> x = sin(t) + randn(len(t)) * 0.1
     >>> y = lin_smooth(x)
-    """  # noqa: E501
+    """
     if x.ndim != 1:
         raise ValueError('smooth only accepts one-dimensional arrays.')
 
     if x.size < window_len:
         raise ValueError('Input vector needs to be bigger than window size.')
 
-    if window_len < 3:  # noqa: PLR2004
+    if window_len < MIN_SMOOTHING_WINDOW_LEN:
         return x
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
@@ -954,12 +958,12 @@ def sine_smooth(
     lt = (ll - 1) * 2 + nfold
     le = lt - lmax + 1
 
-    if lt > 4497:  # noqa: PLR2004
+    if lt > SINE_SMOOTH_MIN_BUFFER_LEN:
         g1 = np.zeros(lt)
         g2 = np.zeros(lt)
     else:
-        g1 = np.zeros(4497)
-        g2 = np.zeros(4497)
+        g1 = np.zeros(SINE_SMOOTH_MIN_BUFFER_LEN)
+        g2 = np.zeros(SINE_SMOOTH_MIN_BUFFER_LEN)
 
     for k in range(nfold):
         g1[ll - 1 + k] = g[k]

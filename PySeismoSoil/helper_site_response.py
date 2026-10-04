@@ -19,6 +19,42 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.lines import Line2D
 
+# A basic Vs profile has two columns: [thickness, Vs]. (The 5-column format
+# additionally has damping, density, and material number.)
+N_COLUMNS_BASIC_VS_PROFILE = 2
+
+# A single-sided transfer function is given as a tuple of (frequency, TF),
+# where the TF can be either a complex array or a tuple of (amplitude, phase).
+N_ITEMS_FREQ_AND_TF_TUPLE = 2
+N_ITEMS_AMPLITUDE_AND_PHASE_TUPLE = 2
+
+# A time array needs at least 2 points to define a time step.
+MIN_N_POINTS_IN_TIME_ARRAY = 2
+
+# Max allowed deviation among time steps of an "evenly spaced" time array.
+TIME_STEP_UNIFORMITY_TOL_SEC = 1e-7
+
+# Options for ``calc_VsZ()`` when the profile is shallower than Z.
+PROFILE_OPTION_EXTEND_LAST_LAYER = 1
+PROFILE_OPTION_USE_ACTUAL_DEPTH = 2
+
+# Formulas (``formula_type``) for ``get_xi_rho()`` to determine damping.
+XI_FORMULA_VS_STEPS = 1
+XI_FORMULA_TABORDA_BIELAK_2013 = 2
+XI_FORMULA_ARCHULETA_LIU_2004 = 3
+
+# Vs thresholds (unit: m/s) of the stepwise damping rule (formula 1)
+XI_VS_STEPS_LOW_THRESHOLD_M_S = 250
+XI_VS_STEPS_HIGH_THRESHOLD_M_S = 750
+
+# Vs thresholds (unit: m/s) of the Qs rule by Archuleta and Liu (formula 3)
+QS_ARCHULETA_LIU_LOW_VS_THRESHOLD_M_S = 1000
+QS_ARCHULETA_LIU_HIGH_VS_THRESHOLD_M_S = 2000
+
+# Vs thresholds (unit: m/s) of the stepwise soil density rule
+RHO_VS_STEPS_LOW_THRESHOLD_M_S = 200
+RHO_VS_STEPS_HIGH_THRESHOLD_M_S = 800
+
 
 def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:  # noqa: N802, N803
     """
@@ -53,7 +89,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
 
     h = vs_profile[:, 0]
     Vs = vs_profile[:, 1]
-    if vs_profile.shape[1] > 2:  # noqa: PLR2004
+    if vs_profile.shape[1] > N_COLUMNS_BASIC_VS_PROFILE:
         five_columns = True
         xi = vs_profile[:, 2]
         rho = vs_profile[:, 3]
@@ -551,7 +587,8 @@ def response_spectra(  # noqa: PLR0915
     a = accel[::subsample_interval, 1]
 
     t_shift = np.roll(t, 1)
-    if not np.all((t - t_shift)[1:] - (t - t_shift)[1] < 1e-7):  # noqa: PLR2004
+    t_step_deviation = (t - t_shift)[1:] - (t - t_shift)[1]
+    if not np.all(t_step_deviation < TIME_STEP_UNIFORMITY_TOL_SEC):
         raise ValueError('Time array within "accel" must be evenly spaced.')
 
     dt = float(t[1] - t[0])
@@ -801,15 +838,15 @@ def get_xi_rho(
     Qs = np.zeros(nr)
     rho = np.zeros(nr)
 
-    if formula_type == 1:
+    if formula_type == XI_FORMULA_VS_STEPS:
         for i in range(nr):
-            if Vs[i] < 250:  # noqa: PLR2004
+            if Vs[i] < XI_VS_STEPS_LOW_THRESHOLD_M_S:
                 xi[i] = 0.05
-            elif Vs[i] < 750:  # noqa: PLR2004
+            elif Vs[i] < XI_VS_STEPS_HIGH_THRESHOLD_M_S:
                 xi[i] = 0.02
             else:
                 xi[i] = 0.01
-    elif formula_type == 2:  # noqa: PLR2004
+    elif formula_type == XI_FORMULA_TABORDA_BIELAK_2013:
         Vs_ = Vs / 1000.0  # unit conversion: from m/s to km/s
         Qs = (
             10.5
@@ -821,14 +858,15 @@ def get_xi_rho(
             + 0.31 * Vs_**6.0
         )
 
-        # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501
+        # Substitute Qs = 0 (if any) with 0.5 to make sure xi has upper
+        # bound 1.0
         Qs[np.where(Qs == 0)] = 0.5
         xi = 1.0 / (2.0 * Qs)
-    elif formula_type == 3:  # noqa: PLR2004
+    elif formula_type == XI_FORMULA_ARCHULETA_LIU_2004:
         for i in range(nr):
-            if Vs[i] <= 1000:  # noqa: PLR2004
+            if Vs[i] <= QS_ARCHULETA_LIU_LOW_VS_THRESHOLD_M_S:
                 Qs[i] = 0.06 * Vs[i]
-            elif Vs[i] <= 2000:  # noqa: PLR2004
+            elif Vs[i] <= QS_ARCHULETA_LIU_HIGH_VS_THRESHOLD_M_S:
                 Qs[i] = 0.14 * Vs[i]
             else:
                 Qs[i] = 0.16 * Vs[i]
@@ -836,9 +874,9 @@ def get_xi_rho(
         xi = 1.0 / (2.0 * Qs)
 
     for i in range(nr):
-        if Vs[i] < 200:  # noqa: PLR2004
+        if Vs[i] < RHO_VS_STEPS_LOW_THRESHOLD_M_S:
             rho[i] = 1600
-        elif Vs[i] < 800:  # noqa: PLR2004
+        elif Vs[i] < RHO_VS_STEPS_HIGH_THRESHOLD_M_S:
             rho[i] = 1800
         else:
             rho[i] = 2000
@@ -900,7 +938,7 @@ def calc_VsZ(  # noqa: N802
             break
 
     # assume last Vs extends to Z m
-    if option_for_profile_shallower_than_Z == 1:
+    if option_for_profile_shallower_than_Z == PROFILE_OPTION_EXTEND_LAST_LAYER:
         if total_thickness < Z:
             if verbose is True:
                 print(
@@ -913,7 +951,8 @@ def calc_VsZ(  # noqa: N802
         else:
             VsZ = float(Z) / cumul_sl
 
-    if option_for_profile_shallower_than_Z == 2:  # only use actual depth  # noqa: PLR2004
+    # only use actual depth
+    if option_for_profile_shallower_than_Z == PROFILE_OPTION_USE_ACTUAL_DEPTH:
         VsZ = np.min([total_thickness, Z]) / float(cumul_sl)
 
     return VsZ
@@ -1559,7 +1598,7 @@ def amplify_motion(  # noqa: PLR0915
     motion at all.
     """
     assert isinstance(transfer_function_single_sided, tuple)
-    assert len(transfer_function_single_sided) == 2  # noqa: PLR2004
+    assert len(transfer_function_single_sided) == N_ITEMS_FREQ_AND_TF_TUPLE
 
     f_array, tf_ss = transfer_function_single_sided
     hlp.assert_1D_numpy_array(f_array, name='`f_array`')
@@ -1570,7 +1609,7 @@ def amplify_motion(  # noqa: PLR0915
         amp_ss = np.abs(tf_ss)
         phase_ss = robust_unwrap(np.angle(tf_ss))
     elif isinstance(tf_ss, tuple):
-        assert len(tf_ss) == 2  # noqa: PLR2004
+        assert len(tf_ss) == N_ITEMS_AMPLITUDE_AND_PHASE_TUPLE
         amp_ss, phase_ss = tf_ss
         assert amp_ss.ndim == 1
         assert phase_ss.ndim == 1
@@ -2040,7 +2079,10 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     hlp.assert_1D_numpy_array(t1)
     hlp.assert_1D_numpy_array(t2)
 
-    if len(t1) < 2 or len(t2) < 2:  # noqa: PLR2004
+    if (
+        len(t1) < MIN_N_POINTS_IN_TIME_ARRAY
+        or len(t2) < MIN_N_POINTS_IN_TIME_ARRAY
+    ):
         raise ValueError('Both time arrays need to have at least 2 elements.')
     # END IF
 

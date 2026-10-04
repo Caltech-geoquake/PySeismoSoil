@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import numpy as np
 
@@ -329,6 +329,11 @@ class Damping_Curve(Curve):
         When the provided damping values are not within [0, 100]
     """
 
+    # Valid range of damping values: [MIN_POSSIBLE_DAMPING,
+    # MAX_POSSIBLE_DAMPING_PCT], where the upper bound is in percent
+    MAX_POSSIBLE_DAMPING_PCT: ClassVar[int] = 100
+    MIN_POSSIBLE_DAMPING: ClassVar[int] = 0
+
     raw_data: np.ndarray
     strain: np.ndarray
     values: np.ndarray
@@ -366,7 +371,8 @@ class Damping_Curve(Curve):
             self.damping *= 100  # unit: 1 --> %
 
         if check_values and (
-            np.any(self.damping > 100) or np.any(self.damping < 0)  # noqa: PLR2004
+            np.any(self.damping > self.MAX_POSSIBLE_DAMPING_PCT)
+            or np.any(self.damping < self.MIN_POSSIBLE_DAMPING)
         ):
             raise ValueError(
                 'The provided damping values must be between [0, 100].'
@@ -943,11 +949,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
         objects of this class.
 
         The "curve matrix" will be in the following format:
-            +------------+--------+------------+-------------+-------------+--------+-----+
-            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-            +============+========+============+=============+=============+========+=====+
-            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-            +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+            +============+========+============+=============+=====+
+            |    ...     |  ...   |    ...     |    ...      | ... |
+            +------------+--------+------------+-------------+-----+
 
         Since this class only defines damping curves, not G/Gmax curves, G/Gmax
         will be filled with some dummy values.
@@ -1408,11 +1414,11 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         objects of this class.
 
         The full "curve matrix" will be in the following format:
-            +------------+--------+------------+-------------+-------------+--------+-----+
-            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-            +============+========+============+=============+=============+========+=====+
-            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-            +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+            +============+========+============+=============+=====+
+            |    ...     |  ...   |    ...     |    ...      | ... |
+            +------------+--------+------------+-------------+-----+
 
         Since this class only defines G/Gmax curves, not damping curves,
         damping values will be filled with some dummy values.
@@ -1477,11 +1483,11 @@ class Multiple_GGmax_Damping_Curves:
         the same ``n_layer`` attribute.
     data : np.ndarray | str | None, default=None
         A 2D numpy array of the following format:
-            +------------+--------+------------+-------------+-------------+--------+-----+
-            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-            +============+========+============+=============+=============+========+=====+
-            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-            +------------+--------+------------+-------------+-------------+--------+-----+
+            +------------+--------+------------+-------------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+            +============+========+============+=============+=====+
+            |    ...     |  ...   |    ...     |    ...      | ... |
+            +------------+--------+------------+-------------+-----+
 
         Or a full name of a text file containing the 2D array.
 
@@ -1616,11 +1622,11 @@ class Multiple_GGmax_Damping_Curves:
         -------
         curve_matrix : np.ndarray
             A 2D numpy array with the following format::
-                +------------+--------+------------+-------------+-------------+--------+-----+
-                | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
-                +============+========+============+=============+=============+========+=====+
-                |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
-                +------------+--------+------------+-------------+-------------+--------+-----+
+                +------------+--------+------------+-------------+-----+
+                | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
+                +============+========+============+=============+=====+
+                |    ...     |  ...   |    ...     |    ...      | ... |
+                +------------+--------+------------+-------------+-----+
         """  # noqa: E501
         if self.data is not None:
             return self.data

@@ -8,6 +8,9 @@ import numpy as np
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
+# Number of parameters in the MKZ model: gamma_ref, s, beta, Gmax
+N_MKZ_PARAMS = 4
+
 
 def tau_MKZ(  # noqa: N802
         gamma: np.ndarray,
@@ -245,7 +248,7 @@ def serialize_params_to_array(
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
-    assert len(param) == 4  # noqa: PLR2004
+    assert len(param) == N_MKZ_PARAMS
     order = ['gamma_ref', 's', 'beta', 'Gmax']
     param_array = [param[key] for key in order]
 
@@ -288,7 +291,7 @@ def deserialize_array_to_params(
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 4  # noqa: PLR2004
+    assert len(array) == N_MKZ_PARAMS
 
     if from_files:
         param = {}

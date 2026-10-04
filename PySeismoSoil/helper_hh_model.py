@@ -6,6 +6,14 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
+# Number of parameters in the HH model: gamma_t, a, gamma_ref, beta, s, Gmax,
+# mu, Tmax, d
+N_HH_PARAMS = 9
+
+# Largest exponent (base 10) that is safe for ``np.power(10, ...)`` without
+# overflowing (or underflowing to zero) in float64 numbers
+MAX_SAFE_LOG10_EXPONENT = 305
+
 
 def tau_FKZ(  # noqa: N802
         gamma: np.ndarray,
@@ -89,9 +97,9 @@ def transition_function(
         intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (
             -1.036
         )
-        if -a * intermediateValue > 305:  # noqa: PLR2004
+        if -a * intermediateValue > MAX_SAFE_LOG10_EXPONENT:
             w[ix] = 1.0
-        elif -a * intermediateValue < -305:  # noqa: PLR2004
+        elif -a * intermediateValue < -MAX_SAFE_LOG10_EXPONENT:
             w[ix] = 0.0
         else:
             w[ix] = 1 - 1.0 / (
@@ -358,7 +366,7 @@ def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
-    assert len(param) == 9  # noqa: PLR2004
+    assert len(param) == N_HH_PARAMS
     order = [
         'gamma_t',
         'a',
@@ -394,7 +402,7 @@ def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 9  # noqa: PLR2004
+    assert len(array) == N_HH_PARAMS
 
     param = {}
     param['gamma_t'] = array[0]

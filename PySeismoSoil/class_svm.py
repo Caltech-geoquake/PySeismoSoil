@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 from scipy.optimize import fsolve
@@ -78,6 +78,36 @@ class SVM:
         When values of some input arguments are not correct/valid
     """
 
+    # Range of Vs30 where the SVM is applicable
+    MIN_APPLICABLE_VS30_M_S: ClassVar[float] = 173.1
+    MAX_APPLICABLE_VS30_M_S: ClassVar[float] = 1000
+
+    # Range of the "trial Vs30" values allowed in the Vs30 iteration
+    MIN_TRIAL_VS30_M_S: ClassVar[float] = 130
+    MAX_TRIAL_VS30_M_S: ClassVar[float] = 1000
+
+    # The top part of the Vs profile is a homogeneous layer of this thickness
+    TOP_HOMOGENEOUS_LAYER_THICKNESS_M: ClassVar[float] = 2.5
+
+    # Bedrock Vs that is added at the bottom of a randomized Vs profile if the
+    # profile does not reach this value
+    BEDROCK_VS_M_S: ClassVar[float] = 1000
+
+    # Tolerances of a randomized profile to be "compliant" with the base
+    # profile (in Vs30, in the last-layer Vs, and in z1, respectively)
+    VS30_COMPLIANCE_TOL_M_S: ClassVar[float] = 25.0
+    LAST_VS_COMPLIANCE_REL_TOL: ClassVar[float] = 0.05
+    Z1_COMPLIANCE_REL_TOL: ClassVar[float] = 0.20
+
+    # Upper bounds of Vs30 (exclusive) of NEHRP site classes E, D, and C
+    SITE_CLASS_E_UPPER_VS30_M_S: ClassVar[float] = 180
+    SITE_CLASS_D_UPPER_VS30_M_S: ClassVar[float] = 360
+    SITE_CLASS_C_UPPER_VS30_M_S: ClassVar[float] = 760
+
+    # Depth beyond which the inter-layer correlation coefficient in Toro (1995)
+    # is a constant (rho_200)
+    TORO_CORRELATION_REF_DEPTH_M: ClassVar[float] = 200.0
+
     Vs30: float
     z1: float
     base_profile: Vs_Profile
@@ -97,7 +127,9 @@ class SVM:
     ) -> None:
         thk = 0.1  # hard-coded to be 10 cm, because this is small enough
 
-        if (target_Vs30 < 173.1) or (target_Vs30 > 1000):  # noqa: PLR2004
+        if (target_Vs30 < self.MIN_APPLICABLE_VS30_M_S) or (
+            target_Vs30 > self.MAX_APPLICABLE_VS30_M_S
+        ):
             print(
                 '***** Warning in initializing an SVM object: your Vs30 '
                 '(%.2f m/s) is out of the range of applicability of the '
@@ -109,7 +141,7 @@ class SVM:
             raise ValueError('`eta` must be between (0, 1].')
 
         # thickness of "additional" layer to be added on top
-        thk_addl_layer = 2.5 - thk
+        thk_addl_layer = self.TOP_HOMOGENEOUS_LAYER_THICKNESS_M - thk
 
         # Note 1: The first layer of Vs_analyt (before adding any new layers on
         #         top) is Vs0. The final Vs profile should have a homogeneous
@@ -146,7 +178,8 @@ class SVM:
         if z1 is None:
             z1 = sr.calc_z1_from_Vs30(target_Vs30)
 
-        if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...  # noqa: PLR2004
+        # a rare case, but it does happen sometimes...
+        if z1 <= self.TOP_HOMOGENEOUS_LAYER_THICKNESS_M:
             Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
 
             # just one layer
@@ -204,7 +237,9 @@ class SVM:
                         Vs30_temp = Vs30 - (actual_Vs30 - target_Vs30) / 5.0
 
                         # if the "trial Vs30" is out of range
-                        if (Vs30_temp < 130) or (Vs30_temp > 1000):  # noqa: PLR2004
+                        if (Vs30_temp < self.MIN_TRIAL_VS30_M_S) or (
+                            Vs30_temp > self.MAX_TRIAL_VS30_M_S
+                        ):
                             iteration_flag = False  # end iteration
                             if verbose is True:
                                 print()
@@ -562,11 +597,18 @@ class SVM:
                 base_Vs_last = self._base_profile[-1, 1]
                 base_z1 = sr.calc_z1(self._base_profile)
 
-                condition_1 = np.abs(rand_Vs30 - base_Vs30) < 25.0  # noqa: PLR2004
-                condition_2 = (
-                    np.abs(rand_Vs_last - base_Vs_last) / base_Vs_last < 0.05  # noqa: PLR2004
+                condition_1 = (
+                    np.abs(rand_Vs30 - base_Vs30)
+                    < self.VS30_COMPLIANCE_TOL_M_S
                 )
-                condition_3 = np.abs(rand_z1 - base_z1) / base_z1 < 0.20  # noqa: PLR2004
+                condition_2 = (
+                    np.abs(rand_Vs_last - base_Vs_last) / base_Vs_last
+                    < self.LAST_VS_COMPLIANCE_REL_TOL
+                )
+                condition_3 = (
+                    np.abs(rand_z1 - base_z1) / base_z1
+                    < self.Z1_COMPLIANCE_REL_TOL
+                )
 
                 if condition_1 and condition_2 and condition_3:
                     iterate = False
@@ -732,21 +774,21 @@ class SVM:
         # ******** 3.1. Toro (1995) coefficients *********
         # ******** These values come from Table 5 of Toro (1995) or Table 2.3
         # ******** of Kamai, Abrahamson, Silva (2013) PEER report.
-        if self.Vs30 < 180:  # site class E  # noqa: PLR2004
+        if self.Vs30 < self.SITE_CLASS_E_UPPER_VS30_M_S:  # site class E
             sigma_lnV = 0.37
             rho_0 = 0
             Delta = 5.0
             rho_200 = 0.50
             z_0 = 0
             b = 0.744
-        elif self.Vs30 < 360:  # site class D  # noqa: PLR2004
+        elif self.Vs30 < self.SITE_CLASS_D_UPPER_VS30_M_S:  # site class D
             sigma_lnV = 0.31
             rho_0 = 0.99
             Delta = 3.9
             rho_200 = 0.98
             z_0 = 0
             b = 0.344
-        elif self.Vs30 < 760:  # site class C  # noqa: PLR2004
+        elif self.Vs30 < self.SITE_CLASS_C_UPPER_VS30_M_S:  # site class C
             sigma_lnV = 0.27
             rho_0 = 0.97
             Delta = 3.8
@@ -790,10 +832,11 @@ class SVM:
             # query sigma value where z = z_mid[j]:
             sigma_ = sigma_lognormal_Vs[index_value]
 
-            if z_mid[i] > 200:  # noqa: PLR2004
+            if z_mid[i] > self.TORO_CORRELATION_REF_DEPTH_M:
                 rho_z = rho_200
             else:
-                rho_z = rho_200 * ((z_mid[i] + z_0) / (200.0 + z_0)) ** b
+                ref_depth = self.TORO_CORRELATION_REF_DEPTH_M
+                rho_z = rho_200 * ((z_mid[i] + z_0) / (ref_depth + z_0)) ** b
 
             rho_thk = rho_0 * np.exp(-thk[i] / Delta)
             rho_1L = (1 - rho_z) * rho_thk + rho_z
@@ -812,8 +855,8 @@ class SVM:
         #     If the last layer of Vs_profile is less than 1000 m/s, add a
         #     1000 m/s layer at the very bottom.  '''
         Vs_profile = np.column_stack((thk, Vs_hat))
-        if Vs_profile[-1, 1] < 1000:  # noqa: PLR2004
-            Vs_profile = np.vstack((Vs_profile, [0, 1000]))
+        if Vs_profile[-1, 1] < self.BEDROCK_VS_M_S:
+            Vs_profile = np.vstack((Vs_profile, [0, self.BEDROCK_VS_M_S]))
 
         # -------------  Part 5: Plot Vs profile (optional) ---------------
         if show_fig is True:

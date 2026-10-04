@@ -16,6 +16,40 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
+VS30_ARRAY_M_S = [
+    175,
+    200,
+    250,
+    300,
+    350,
+    400,
+    450,
+    500,
+    550,
+    600,
+    650,
+    700,
+    750,
+    800,
+    850,
+    900,
+    950,
+]
+Z1_ARRAY_M = [8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
+PGA_ARRAY_G = [
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+]
+
 
 class Site_Factors:
     """
@@ -39,15 +73,33 @@ class Site_Factors:
 
     Attributes
     ----------
-    Vs30_array : ClassVar[list[int]], default=[175, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950]
+    Vs30_array : ClassVar[list[int]], default=VS30_ARRAY_M_S
         Valid Vs30 values (class attribute). The values are [175, 200, 250,
         300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950].
-    z1_array : ClassVar[list[int]], default=[8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
+    z1_array : ClassVar[list[int]], default=Z1_ARRAY_M
         Valid z1 values (class attribute). The values are [8, 16, 24, 36, 75,
         150, 300, 450, 600, 900].
-    PGA_array : ClassVar[list[float]], default=[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
+    PGA_array : ClassVar[list[float]], default=PGA_ARRAY_G
         Valid PGA values (class attribute). The values are [0.01, 0.05, 0.1,
         0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5].
+    MIN_VS30_M_S : ClassVar[int], default=175
+        Lower bound of the valid Vs30 range, in m/s (class attribute).
+    MAX_VS30_M_S : ClassVar[int], default=950
+        Upper bound of the valid Vs30 range, in m/s (class attribute).
+    MIN_Z1_M : ClassVar[int], default=8
+        Lower bound of the valid z1 range, in meters (class attribute).
+    MAX_Z1_M : ClassVar[int], default=900
+        Upper bound of the valid z1 range, in meters (class attribute).
+    MIN_PGA_G : ClassVar[float], default=0.01
+        Lower bound of the valid PGA range, in g (class attribute).
+    MAX_PGA_G : ClassVar[float], default=1.5
+        Upper bound of the valid PGA range, in g (class attribute).
+    N_REFERENCE_GRIDS : ClassVar[int], default=8
+        Number of reference grids (corners of the cuboid in the (Vs30, z1, PGA)
+        space) surrounding the query point (class attribute).
+    N_INTERP_DIMENSIONS : ClassVar[int], default=3
+        Number of coordinates (Vs30, z1, and PGA) of the interpolation point
+        (class attribute).
     Vs30 : float
         Same as the input parameter ``Vs30_in_meter_per_sec``.
     z1 : float
@@ -63,52 +115,38 @@ class Site_Factors:
     ------
     ValueError
         When the combination of Vs30 and z1 values is invalid
-    """  # noqa: E501
+    """
 
-    Vs30_array: ClassVar[list[int]] = [
-        175,
-        200,
-        250,
-        300,
-        350,
-        400,
-        450,
-        500,
-        550,
-        600,
-        650,
-        700,
-        750,
-        800,
-        850,
-        900,
-        950,
-    ]
-    z1_array: ClassVar[list[int]] = [
-        8,
-        16,
-        24,
-        36,
-        75,
-        150,
-        300,
-        450,
-        600,
-        900,
-    ]
-    PGA_array: ClassVar[list[float]] = [
-        0.01,
-        0.05,
-        0.1,
-        0.2,
-        0.3,
-        0.4,
-        0.5,
-        0.75,
-        1.0,
-        1.25,
-        1.5,
-    ]
+    Vs30_array: ClassVar[list[int]] = VS30_ARRAY_M_S
+    z1_array: ClassVar[list[int]] = Z1_ARRAY_M
+    PGA_array: ClassVar[list[float]] = PGA_ARRAY_G
+
+    MIN_VS30_M_S: ClassVar[int] = 175
+    MAX_VS30_M_S: ClassVar[int] = 950
+    MIN_Z1_M: ClassVar[int] = 8
+    MAX_Z1_M: ClassVar[int] = 900
+    MIN_PGA_G: ClassVar[float] = 0.01
+    MAX_PGA_G: ClassVar[float] = 1.5
+
+    # Interpolation takes place within a cuboid in the (Vs30, z1, PGA) space,
+    # which has 8 corners (the "reference grids"), and the query point has 3
+    # coordinates.
+    N_REFERENCE_GRIDS: ClassVar[int] = 8
+    N_INTERP_DIMENSIONS: ClassVar[int] = 3
+
+    # Each pair is (Vs30 in m/s, z1 in m). A site whose Vs30 and z1 both
+    # exceed those of any pair (i.e., a stiff site with a deep basin) is
+    # considered an invalid combination.
+    _INVALID_VS30_Z1_THRESHOLDS: ClassVar[tuple[tuple[int, int], ...]] = (
+        (400, 750),
+        (450, 600),
+        (550, 450),
+        (600, 300),
+        (650, 150),
+        (750, 75),
+        (800, 36),
+        (850, 16),
+    )
 
     Vs30: float
     z1: float
@@ -138,19 +176,28 @@ class Site_Factors:
             if not lenient:
                 raise ValueError('Vs30 should be between [175, 950] m/s')
 
-            Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950  # noqa: PLR2004
+            if Vs30_in_meter_per_sec < self.MIN_VS30_M_S:
+                Vs30_in_meter_per_sec = self.MIN_VS30_M_S
+            else:
+                Vs30_in_meter_per_sec = self.MAX_VS30_M_S
 
         if 'z1 out of range' in status:
             if not lenient:
                 raise ValueError('z1_in_m should be between [8, 900] m')
 
-            z1_in_m = 8 if z1_in_m < 8 else 900  # noqa: PLR2004
+            if z1_in_m < self.MIN_Z1_M:
+                z1_in_m = self.MIN_Z1_M
+            else:
+                z1_in_m = self.MAX_Z1_M
 
         if 'PGA out of range' in status:
             if not lenient:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
 
-            PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5  # noqa: PLR2004
+            if PGA_in_g < self.MIN_PGA_G:
+                PGA_in_g = self.MIN_PGA_G
+            else:
+                PGA_in_g = self.MAX_PGA_G
 
         # TODO: think about whether to add leniency  # noqa: TD003
         if 'Invalid Vs30-z1 combination' in status:
@@ -475,7 +522,7 @@ class Site_Factors:
         )
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
-        assert len(list(combinations)) == 8  # noqa: PLR2004
+        assert len(list(combinations)) == self.N_REFERENCE_GRIDS
 
         return combinations
 
@@ -586,9 +633,9 @@ class Site_Factors:
         assert isinstance(ref_points, list)
         assert isinstance(values, list)
         assert isinstance(interp_points, tuple)
-        assert len(ref_points) == 8  # noqa: PLR2004
+        assert len(ref_points) == Site_Factors.N_REFERENCE_GRIDS
         assert len(ref_points) == len(values)
-        assert len(interp_points) == 3  # 3D coordinate  # noqa: PLR2004
+        assert len(interp_points) == Site_Factors.N_INTERP_DIMENSIONS
 
         values = np.array(values)
 
@@ -748,24 +795,25 @@ class Site_Factors:
 
         status = []
 
-        if Vs30_in_mps < 175 or Vs30_in_mps > 950:  # noqa: PLR2004
+        if (
+            Vs30_in_mps < Site_Factors.MIN_VS30_M_S
+            or Vs30_in_mps > Site_Factors.MAX_VS30_M_S
+        ):
             status.append('Vs30 out of range')
 
-        if z1_in_m < 8 or z1_in_m > 900:  # noqa: PLR2004
+        if z1_in_m < Site_Factors.MIN_Z1_M or z1_in_m > Site_Factors.MAX_Z1_M:
             status.append('z1 out of range')
 
-        if PGA_in_g < 0.01 or PGA_in_g > 1.5:  # noqa: PLR2004
+        if (
+            PGA_in_g < Site_Factors.MIN_PGA_G
+            or PGA_in_g > Site_Factors.MAX_PGA_G
+        ):
             status.append('PGA out of range')
 
-        if (
-            (Vs30_in_mps > 400 and z1_in_m > 750)  # noqa: PLR0916, PLR2004
-            or (Vs30_in_mps > 450 and z1_in_m > 600)  # noqa: PLR2004
-            or (Vs30_in_mps > 550 and z1_in_m > 450)  # noqa: PLR2004
-            or (Vs30_in_mps > 600 and z1_in_m > 300)  # noqa: PLR2004
-            or (Vs30_in_mps > 650 and z1_in_m > 150)  # noqa: PLR2004
-            or (Vs30_in_mps > 750 and z1_in_m > 75)  # noqa: PLR2004
-            or (Vs30_in_mps > 800 and z1_in_m > 36)  # noqa: PLR2004
-            or (Vs30_in_mps > 850 and z1_in_m > 16)  # noqa: PLR2004
+        thresholds = Site_Factors._INVALID_VS30_Z1_THRESHOLDS
+        if any(
+            Vs30_in_mps > Vs30_threshold and z1_in_m > z1_threshold
+            for Vs30_threshold, z1_threshold in thresholds
         ):
             status.append('Invalid Vs30-z1 combination')
 

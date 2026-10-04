@@ -48,6 +48,31 @@ from PySeismoSoil import helper_hh_model as hh
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
+# A Vs profile has either 5 columns (thickness, Vs, damping, density,
+# material number) or 2 columns (thickness, Vs)
+N_COLUMNS_FULL_VS_PROFILE = 5
+
+# Thresholds (in terms of "mu") below which the empirical mu is increased by
+# 3, 2, and 1 times the standard error (0.236, in log10 scale) suggested by
+# Vardanega & Bolton (2011)
+MU_THRESHOLD_THREE_STD_ERR_BOOST = 0.02
+MU_THRESHOLD_TWO_STD_ERR_BOOST = 0.03
+MU_THRESHOLD_ONE_STD_ERR_BOOST = 0.04
+
+# Below this value of mu, the lower bound of gamma_t is relaxed
+MU_THRESHOLD_RELAXED_GAMMA_T_LB = 0.03
+
+# Layers with Vs at or below this value (m/s) are "softer soils", whose shear
+# strength is calculated as undrained shear strength (otherwise, Mohr-Coulomb)
+UNDRAINED_STRENGTH_VS_LIMIT_M_S = 760
+
+# Mean mass density (kg/m^3) below which the density is likely in g/cm^3
+MIN_PLAUSIBLE_RHO_KG_M3 = 1000
+
+# Vs values (m/s) at or below which the plasticity index is 10 and 5
+PI_10_VS_LIMIT_M_S = 200
+PI_5_VS_LIMIT_M_S = 360
+
 
 def hh_param_from_profile(
         vs_profile: np.ndarray,
@@ -247,7 +272,7 @@ def hh_param_from_curves(
     Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
     n_layer = len(Vs)
 
-    if vs_profile.shape[1] == 5:  # there can only be 5 or 2 columns  # noqa: PLR2004
+    if vs_profile.shape[1] == N_COLUMNS_FULL_VS_PROFILE:
         mat = vs_profile[:-1, -1]
         rho = vs_profile[:-1, 3]
     else:  # only 2 columns
@@ -486,13 +511,13 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
         )
 
         # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
-        if mu[j] <= 0.02:  # noqa: PLR2004
+        if mu[j] <= MU_THRESHOLD_THREE_STD_ERR_BOOST:
             # 0.236 is the standard error suggested by Vardanega & Bolton
             # in their 2011 paper
             mu[j] *= 10.0 ** (0.236 * 3)
-        elif mu[j] <= 0.03:  # noqa: PLR2004
+        elif mu[j] <= MU_THRESHOLD_TWO_STD_ERR_BOOST:
             mu[j] *= 10.0 ** (0.236 * 2)
-        elif mu[j] <= 0.04:  # noqa: PLR2004
+        elif mu[j] <= MU_THRESHOLD_ONE_STD_ERR_BOOST:
             mu[j] *= 10.0 ** (0.236 * 1)
     # END FOR
 
@@ -705,7 +730,7 @@ def _calc_shear_strength(
     Tmax = np.zeros(len(Vs))
     for j in range(len(Vs)):
         # for softer soils, calculate undrained shear strength
-        if Vs[j] <= 760:  # noqa: PLR2004
+        if Vs[j] <= UNDRAINED_STRENGTH_VS_LIMIT_M_S:
             # formula by Ladd (1991)
             Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]
         else:  # stiffer soils: Mohr-Coulomb criterion
@@ -803,7 +828,7 @@ def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
     n = len(h)
     stress = np.zeros_like(h)
 
-    if np.mean(rho) < 1000:  # noqa: PLR2004
+    if np.mean(rho) < MIN_PLAUSIBLE_RHO_KG_M3:
         print(
             'Warning in __calc_vertical_stress(): It looks like the unit '
             'of mass density is g/cm^3. The correct unit should be kg/m^3.',
@@ -885,9 +910,9 @@ def _calc_PI(Vs: np.ndarray) -> np.ndarray:  # noqa: N802, N803
     """
     PI = np.zeros_like(Vs)
     for j in range(len(Vs)):
-        if Vs[j] <= 200:  # noqa: PLR2004
+        if Vs[j] <= PI_10_VS_LIMIT_M_S:
             PI[j] = 10
-        elif Vs[j] <= 360:  # noqa: PLR2004
+        elif Vs[j] <= PI_5_VS_LIMIT_M_S:
             PI[j] = 5
         else:
             PI[j] = 0
@@ -1118,7 +1143,7 @@ def _optimization_kernel(
     T_MKZ = mkz.tau_MKZ(x, gamma_ref=x_ref, beta=beta, s=s, Gmax=Gmax)
     # when mu is too small, there may be some numerical issues, therefore
     # gamma_t lower bound is relaxed
-    gamma_t_LB = 0.001 if mu <= 0.03 else 0.01  # noqa: PLR2004
+    gamma_t_LB = 0.001 if mu <= MU_THRESHOLD_RELAXED_GAMMA_T_LB else 0.01
 
     gamma_t_UB = 3.0  # unit: percent
 
