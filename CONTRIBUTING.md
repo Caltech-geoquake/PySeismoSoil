@@ -43,10 +43,18 @@ Docstrings use the NumPy style and are checked with `pydoclint`
 (`tox -e pydoclint`). To check linting and formatting without modifying any
 files, run `tox -e muff-check` and `tox -e muff-format`.
 
-Some rules (e.g., naming rules such as `N802`/`N803`/`N806`, and `FBT001`/
-`FBT002`) conflict with this library's public API and with the notation used in
-geotechnical earthquake engineering (e.g., `Vs`, `Gmax`). Where we can't
-satisfy such a rule, silence it on that line only, with `# noqa: <rule>`.
+Rules that don't fit this library are ignored globally in `muff.toml` (e.g.,
+`N801`/`N806`, because class and variable names follow the domain notation,
+such as `Vs_Profile` and `Gmax`). Please don't silence other rules with inline
+`# noqa` comments unless there is no reasonable fix. In particular:
+
+- Boolean arguments should be keyword-only (put a `*` before them) instead of
+  silencing `FBT001`/`FBT002`
+- Use a named constant for a magic number, instead of silencing
+  `PLR2004`
+- Wrap long lines (or shorten type annotations with a type alias, since
+  `format-docstring` generates the parameter lines in docstrings from them)
+  instead of silencing `E501`
 
 ## 4. Re-run the example notebooks in every PR
 
