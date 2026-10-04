@@ -1,3 +1,5 @@
+"""Helper functions for signal processing."""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -205,7 +207,8 @@ def _filter_kernel(
             )
     else:
         raise ValueError(
-            "`filter_type` must be in {'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
+            '`filter_type` must be in '
+            "{'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
         )
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
@@ -362,11 +365,12 @@ def baseline(
     dt = time[1] - time[0]
     n0 = len(a)
 
-    # ---------- Remove pre-event mean -----------------------------------------
+    # ---------- Remove pre-event mean ----------------------------------------
     pre_mean = (a[0] + a[1] + a[2] + a[3] + a[4]) / 5.0
-    a = a - pre_mean
+    # not in-place: `a` is a view of the caller's array (and may be int dtype)
+    a = a - pre_mean  # noqa: PLR6104
 
-    # ---------- Obtain first and last zero crossing ---------------------------
+    # ---------- Obtain first and last zero crossing --------------------------
     cross_bound_left = 0
     cross_bound_right = len(a)
 
@@ -388,7 +392,7 @@ def baseline(
             cross_bound_right = j
             break
 
-    # ---------- Pad zeros on both ends ----------------------------------------
+    # ---------- Pad zeros on both ends ---------------------------------------
     a_cut = a[cross_bound_left : cross_bound_right + 1]
 
     filter_order = 2
@@ -400,11 +404,11 @@ def baseline(
     a_cut = np.append(np.zeros(nr_zpad), np.append(a_cut, np.zeros(nr_zpad)))
     t_cut = np.linspace(dt, len(a_cut) * dt, len(a_cut), endpoint=True)
 
-    # ----------- Step 4: High-pass filter -------------------------------------
+    # ----------- Step 4: High-pass filter ------------------------------------
     a_new = highpass(np.column_stack((t_cut, a_cut)), cutoff_freq)
     a_new = a_new[:, 1]
 
-    # ----------- Shift a_new in time to match original signal -----------------
+    # ----------- Shift a_new in time to match original signal ----------------
     a_new = a_new[nr_zpad - cross_bound_left - 1 :]
 
     if len(a_new) >= n0:
@@ -414,14 +418,14 @@ def baseline(
 
     a_new = np.column_stack((time, a_new))
 
-    # ---------- Remove trend (assumed straight light) in displacement ---------
+    # ---------- Remove trend (assumed straight light) in displacement --------
     _, u_new = sr.num_int(a_new)
     u_new2 = _remove_linear_trend(u_new)
 
     v_new2 = sr.num_diff(u_new2)
     a_new2 = sr.num_diff(v_new2)
 
-    # ----------- Show plots ---------------------------------------------------
+    # ----------- Show plots --------------------------------------------------
     if show_fig:
         v, u = sr.num_int(orig_signal)
         v_, u_ = sr.num_int(a_new2)
@@ -572,7 +576,7 @@ def fourier_transform(
 
 def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     """
-    Taper a time-domain signal on both ends with a Tukey window
+    Taper a time-domain signal on both ends with a Tukey window.
 
     Parameters
     ----------
@@ -620,9 +624,10 @@ def calc_transfer_function(
         smooth_signal: bool = False,
 ) -> np.ndarray:
     """
-    Calculate transfer function between the output and input time-domain
-    signals. The two signals need to have the same time interval and same
-    length.
+    Calculate transfer function between the output and input signals.
+
+    The signals are in the time domain. The two signals need to have the same
+    time interval and same length.
 
     Parameters
     ----------
@@ -731,8 +736,9 @@ def log_smooth(
         The signal to be smoothed. Must be a 1D numpy array.
     win_len : int, default=15
         The length of the convolution window.
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
-        The name of the window.
+    window : str, default='hanning'
+        The name of the window. One of 'flat', 'hanning', 'hamming',
+        'bartlett', 'blackman'.
     lin_space : bool, default=True
         Whether the points of the signal is uniformly spaced linearly. If
         ``False``, the signal is treated as uniformaly spaced logarithmically.
@@ -777,7 +783,8 @@ def log_smooth(
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', "
+            "or 'blackman'",
         )
 
     if lin_space and (fmin is None or fmax is None):
@@ -842,20 +849,19 @@ def lin_smooth(
         The input signal. Should be a 1D numpy array
     window_len : int, default=15
         The dimension of the smoothing window; should be an odd integer
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
-        The type of window. A 'flat' window will produce a moving average
-        smoothing.
+    window : str, default='hanning'
+        The type of window. One of 'flat', 'hanning', 'hamming', 'bartlett',
+        'blackman'. A 'flat' window will produce a moving average smoothing.
 
     Returns
     -------
     smoothed : np.ndarray
         The smoothed signal (same dimension as ``x``)
 
-    Examples
-    --------
-    >>> t = linspace(-2, 2, 0.1)
-    >>> x = sin(t) + randn(len(t)) * 0.1
-    >>> y = lin_smooth(x)
+    Raises
+    ------
+    ValueError
+        When the input values are not entirely valid
 
     See Also
     --------
@@ -870,10 +876,11 @@ def lin_smooth(
     - TO-DO: The window parameter could be the window itself if an array
       instead of a string
 
-    Raises
-    ------
-    ValueError
-        When the input values are not entirely valid
+    Examples
+    --------
+    >>> t = linspace(-2, 2, 0.1)
+    >>> x = sin(t) + randn(len(t)) * 0.1
+    >>> y = lin_smooth(x)
     """
     if x.ndim != 1:
         raise ValueError('smooth only accepts one-dimensional arrays.')
@@ -886,13 +893,14 @@ def lin_smooth(
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', "
+            "or 'blackman'",
         )
 
     if window == 'flat':  # moving average
         w = np.ones(window_len, 'd')
     else:
-        w = eval('np.' + window + '(window_len)')
+        w = getattr(np, window)(window_len)
 
     return np.convolve(w / w.sum(), x, mode='same')
 
@@ -902,7 +910,7 @@ def sine_smooth(
         window_span: float = 0.3,
 ) -> np.ndarray:
     """
-    Smooths a frequency spectrum using a sine-shaped window.
+    Smooth a frequency spectrum using a sine-shaped window.
 
     - data: two column signal, first column is frequency
     - window_span: width of moving window in hz
@@ -963,8 +971,8 @@ def sine_smooth(
     # (index ll - 1) and the last data point (index ln - 1) back in, by
     # mirroring them about those points
     for lix in range(1, lmax):
-        g2[ll - 1 + lix] = g2[ll - 1 + lix] + g2[ll - 1 - lix]
-        g2[ln - 1 - lix] = g2[ln - 1 - lix] + g2[ln - 1 + lix]
+        g2[ll - 1 + lix] += g2[ll - 1 - lix]
+        g2[ln - 1 - lix] += g2[ln - 1 + lix]
 
     for k in range(nfold):
         g[k] = g2[ll - 1 + k]

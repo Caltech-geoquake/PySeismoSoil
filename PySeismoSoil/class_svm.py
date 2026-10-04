@@ -422,8 +422,8 @@ class SVM:
                     #     base profile --- accumulate "temporary layer" whose
                     #     thickness is `thk_tmp`
                     # (2) `Vs_increment` is smaller than the "natural"
-                    #     increment of the base profile --- we need to use the natural
-                    #     increment as the Vs increment
+                    #     increment of the base profile --- we need to use
+                    #     the natural increment as the Vs increment
                     if thk_tmp != 0:  # the first case
                         discr_Vs_previous_layer += Vs_increment
                     else:  # the second case
@@ -843,7 +843,7 @@ class SVM:
             array: np.ndarray, value: float
     ) -> tuple[int, float]:
         """
-        Find the index in ``array`` which contains the closest value to ``value``.
+        Find the index in ``array`` of the closest value to ``value``.
 
         NaN values within ``array`` are omitted implicitly.
 

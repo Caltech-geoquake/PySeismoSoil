@@ -401,7 +401,7 @@ class Param_Multi_Layer:
         self.param_list = param_list
         self.n_layer = len(param_list)
 
-    def __contains__(self, item: Any) -> bool:
+    def __contains__(self, item: object) -> bool:
         return item in self.param_list
 
     def __len__(self) -> int:
