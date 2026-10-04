@@ -662,9 +662,9 @@ class Nonlinear_Simulation(Simulation):
 
         # -------- Prepare control.dat file -----------------------------------
         (sim_path / 'control.dat').write_text(
-            f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f} '
-            f'{n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f} '
-            f'{N_obs:6.0f}',
+            f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f}'
+            f' {n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f}'
+            f' {N_obs:6.0f}',
             encoding='utf-8',
         )
 

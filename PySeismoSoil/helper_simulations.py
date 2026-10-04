@@ -65,8 +65,8 @@ def check_layer_count(
         and GGmax_and_damping_curves.n_layer < max_mat_num
     ):
         raise ValueError(
-            'Not enough sets of curves in `GGmax_and_damping_curves` for '
-            '`vs_profile`.',
+            'Not enough sets of curves in `GGmax_and_damping_curves` for'
+            ' `vs_profile`.',
         )
 
 
@@ -402,8 +402,8 @@ def equiv_linear(
         D_matrix[:, i_iter + 1] = D_new
         if verbose:
             print(
-                f'  G_diff = {np.max(G_relative_diff) * 100:7.2f}%, '
-                f'D_diff = {np.max(D_relative_diff) * 100:7.2f}%',
+                f'  G_diff = {np.max(G_relative_diff) * 100:7.2f}%,'
+                f' D_diff = {np.max(D_relative_diff) * 100:7.2f}%',
             )
 
         # --------- Check convergence -----------------------------------------

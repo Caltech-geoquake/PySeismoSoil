@@ -469,8 +469,8 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
     Vs = data[:, 1]
     if np.any(thk[:-1] <= 0):
         raise ValueError(
-            'The thickness column should be all positive, except for the '
-            'last layer.',
+            'The thickness column should be all positive, except for the'
+            ' last layer.',
         )
 
     if np.any(thk[-1] < 0):
@@ -501,8 +501,8 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
 
         if np.any(mat[-1] < 0):
             raise ValueError(
-                'The material number of the last layer should be '
-                'non-negative.',
+                'The material number of the last layer should be'
+                ' non-negative.',
             )
 
 
@@ -808,15 +808,15 @@ def merge_curve_matrices(
     if GGmax_matrix.shape[1] % 4 != 0:
         raise ValueError(
             'The number of columns of `GGmax_matrix` needs '
-            'to be a multiple of 4. However, your '
-            f'`GGmax_matrix` has {GGmax_matrix.shape[1]} columns.',
+            'to be a multiple of 4. However, your'
+            f' `GGmax_matrix` has {GGmax_matrix.shape[1]} columns.',
         )
 
     if xi_matrix.shape[1] % 4 != 0:
         raise ValueError(
             'The number of columns of `xi_matrix` needs '
-            'to be a multiple of 4. However, your '
-            f'`xi_matrix` has {xi_matrix.shape[1]} columns.',
+            'to be a multiple of 4. However, your'
+            f' `xi_matrix` has {xi_matrix.shape[1]} columns.',
         )
 
     if GGmax_matrix.shape[1] != xi_matrix.shape[1]:

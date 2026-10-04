@@ -643,8 +643,8 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
-                f'$\\mu$ = {mu[j]:.3f}, a = {a:.1f}, '
-                f'$\\gamma_{{\\mathrm{{t}}}}$ = {gamma_t * 100:.4f}%\n'
+                f'$\\mu$ = {mu[j]:.3f}, a = {a:.1f},'
+                f' $\\gamma_{{\\mathrm{{t}}}}$ = {gamma_t * 100:.4f}%\n'
                 rf"d = {d:.4f}, $p'_{{\mathrm{{m0}}}}$ = {p0[j]:.2f} kPa",
             )
 

@@ -672,8 +672,8 @@ class Site_Factors:
 
         for j, ref_point in enumerate(ref_points):
             label = (
-                f'{int(ref_point[0])} m/s, {int(ref_point[1])} m, '
-                f'{ref_point[2]:.2g}g'
+                f'{int(ref_point[0])} m/s, {int(ref_point[1])} m,'
+                f' {ref_point[2]:.2g}g'
             )
             if phase_flag:
                 ax1.semilogx(T_or_freq, amps[j], alpha=alpha)
@@ -711,8 +711,8 @@ class Site_Factors:
             )
 
         fig.suptitle(
-            f'$V_{{S30}}$ = {int(query_point[0])} m/s, '
-            f'$z_1$ = {int(query_point[1])} m, PGA = {query_point[2]:.2g}$g$'
+            f'$V_{{S30}}$ = {int(query_point[0])} m/s,'
+            f' $z_1$ = {int(query_point[1])} m, PGA = {query_point[2]:.2g}$g$'
         )
 
         bbox_anchor_loc = (1.0, 0.02, 1.0, 1.02)

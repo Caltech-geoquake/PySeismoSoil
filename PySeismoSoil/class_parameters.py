@@ -84,8 +84,8 @@ class Parameter(collections.UserDict):
 
         if param_dict.keys() != allowable_keys:
             raise KeyError(
-                'Invalid keys exist in your input data. We only '
-                f'allow {allowable_keys}.',
+                'Invalid keys exist in your input data. We only'
+                f' allow {allowable_keys}.',
             )
 
         self.allowable_keys = allowable_keys

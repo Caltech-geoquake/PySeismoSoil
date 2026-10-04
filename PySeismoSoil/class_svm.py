@@ -386,8 +386,8 @@ class SVM:
 
         if fixed_thk is not None and Vs_increment is not None:
             msg = (
-                'Please only provide `fixed_thk` or `Vs_increment`; '
-                'do not provide both.'
+                'Please only provide `fixed_thk` or `Vs_increment`;'
+                ' do not provide both.'
             )
             raise ValueError(msg)
 
@@ -401,8 +401,8 @@ class SVM:
             max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
                 raise ValueError(
-                    f'`Vs_increment` needs to < {max_Vs:.2g} m/s (the '
-                    'max Vs of the smooth profile)',
+                    f'`Vs_increment` needs to < {max_Vs:.2g} m/s (the'
+                    ' max Vs of the smooth profile)',
                 )
 
             n_layers = self._base_profile.shape[0]

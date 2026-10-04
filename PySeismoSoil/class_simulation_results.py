@@ -149,16 +149,16 @@ class Simulation_Results:
 
         if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
             raise TypeError(
-                '`trans_func` needs to be either None or of '
-                'Frequency_Spectrum type.',
+                '`trans_func` needs to be either None or of'
+                ' Frequency_Spectrum type.',
             )
 
         if not isinstance(
             trans_func_smoothed, (Frequency_Spectrum, type(None))
         ):
             raise TypeError(
-                '`trans_func_smoothed` should be either None or of '
-                'Frequency_Spectrum type.',
+                '`trans_func_smoothed` should be either None or of'
+                ' Frequency_Spectrum type.',
             )
 
         n_layer = rediscretized_profile.n_layer

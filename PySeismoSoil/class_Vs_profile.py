@@ -142,8 +142,8 @@ class Vs_Profile:
                 print(
                     'Warning in initializing Vs_Profile: surface layer '
                     f'thickness lower than 1.0 m (user provided = {thk[0]}).',
-                    'May result in unrealistic surface layer overburden '
-                    'pressure.',
+                    'May result in unrealistic surface layer overburden'
+                    ' pressure.',
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))

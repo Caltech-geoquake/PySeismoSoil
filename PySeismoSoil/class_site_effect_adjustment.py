@@ -184,8 +184,8 @@ class Site_Effect_Adjustment:
             accel_out, fig, ax = result
             ax[0].set_ylabel('Accel. [m/s/s]')
             ax[0].set_title(
-                f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_1$={self.z1:.1f}m, '
-                rf'$\mathrm{{PGA}}_{{\mathrm{{input}}}}$={self.PGA_in_g:.3g}$g$',
+                f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_1$={self.z1:.1f}m,'
+                rf' $\mathrm{{PGA}}_{{\mathrm{{input}}}}$={self.PGA_in_g:.3g}$g$',
             )
             ax[1].set_ylabel('Amplif. factor')
             ax[2].set_ylabel('Phase factor [rad]')

@@ -1576,8 +1576,8 @@ class Multiple_GGmax_Damping_Curves:
             if data.shape[1] % 4 != 0:
                 raise ValueError(
                     'The number of columns of `data` needs '
-                    'to be a multiple of 4. However, your '
-                    f'`data` has {data.shape[1]} columns.',
+                    'to be a multiple of 4. However, your'
+                    f' `data` has {data.shape[1]} columns.',
                 )
 
             self.data = data

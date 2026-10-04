@@ -85,8 +85,8 @@ class Batch_Simulation:
 
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
-                'All the elements of `list_of_simulations` should be of '
-                'the same type.',
+                'All the elements of `list_of_simulations` should be of'
+                ' the same type.',
             )
 
         n_simulations = len(list_of_simulations)

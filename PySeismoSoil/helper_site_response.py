@@ -252,8 +252,8 @@ def query_Vs_given_thk(  # noqa: N802
     else:  # need to construct an array
         if not isinstance(n_layers, (int, np.integer)):
             raise TypeError(
-                'If `thk` is a scalar, you need to provide `n_layers` as an '
-                'integer.',
+                'If `thk` is a scalar, you need to provide `n_layers` as an'
+                ' integer.',
             )
 
         if n_layers <= 0:
@@ -2500,8 +2500,8 @@ def fit_all_damping_curves(
     elif isinstance(curves, list):
         if not all(isinstance(_, np.ndarray) for _ in curves):
             msg = (
-                'If `curves` is a list, all its elements needs to be 2D '
-                'numpy arrays.'
+                'If `curves` is a list, all its elements needs to be 2D'
+                ' numpy arrays.'
             )
             raise TypeError(msg)
 
@@ -2570,8 +2570,8 @@ def fit_all_damping_curves(
     if save_txt:
         if func_serialize is None:
             raise ValueError(
-                'Please provide a function to serialize the parameters into a '
-                'lists.',
+                'Please provide a function to serialize the parameters into a'
+                ' lists.',
             )
 
         data_for_file = [func_serialize(param) for param in params]

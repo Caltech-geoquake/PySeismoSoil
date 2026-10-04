@@ -152,8 +152,8 @@ class Frequency_Spectrum:
 
     def __repr__(self) -> str:
         return (
-            f'df = {self.raw_df:.2f} Hz, n_pts = {int(self.n_pts)}, '
-            f'f_min = {self.fmin:.2f} Hz, f_max = {self.fmax:.2f} Hz'
+            f'df = {self.raw_df:.2f} Hz, n_pts = {int(self.n_pts)},'
+            f' f_min = {self.fmin:.2f} Hz, f_max = {self.fmax:.2f} Hz'
         )
 
     def plot(

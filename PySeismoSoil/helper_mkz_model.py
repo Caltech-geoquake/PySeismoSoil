@@ -437,8 +437,8 @@ def fit_MKZ(  # noqa: N802
             plt.legend(loc='lower left')
             plt.grid(ls=':', lw=0.5)
             plt.title(
-                rf'$\gamma_{{\mathrm{{ref}}}}$ = {ref_strain[k]:.3g}, '
-                rf's = {s_value[k]:.3g}, $\beta$ = {beta[k]:.3g}',
+                rf'$\gamma_{{\mathrm{{ref}}}}$ = {ref_strain[k]:.3g},'
+                rf' s = {s_value[k]:.3g}, $\beta$ = {beta[k]:.3g}',
             )
         # END FOR
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)

@@ -212,8 +212,8 @@ def _filter_kernel(  # noqa: C901, PLR0915
             )
     else:
         raise ValueError(
-            '`filter_type` must be in '
-            "{'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
+            '`filter_type` must be in'
+            " {'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
         )
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
@@ -790,8 +790,8 @@ def log_smooth(
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', "
-            "or 'blackman'",
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett',"
+            " or 'blackman'",
         )
 
     if lin_space and (fmin is None or fmax is None):
@@ -900,8 +900,8 @@ def lin_smooth(
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', "
-            "or 'blackman'",
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett',"
+            " or 'blackman'",
         )
 
     if window == 'flat':  # moving average

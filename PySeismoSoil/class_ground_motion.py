@@ -215,10 +215,10 @@ class Ground_Motion:
     def __repr__(self) -> str:
         """Return basic information of a ground motion."""
         return (
-            f'n_pts={self.npts:d}, dt={self.dt:.4g}s, '
-            f'PGA={self.pga_in_g:.3g}g={self.pga_in_gal:.3g}gal, '
-            f'PGV={self.pgv_in_cm_s:.3g}cm/s, PGD={self.pgd_in_cm:.3g}cm, '
-            f'T5_95={self.T5_95:.3g}s'
+            f'n_pts={self.npts:d}, dt={self.dt:.4g}s,'
+            f' PGA={self.pga_in_g:.3g}g={self.pga_in_gal:.3g}gal,'
+            f' PGV={self.pgv_in_cm_s:.3g}cm/s, PGD={self.pgd_in_cm:.3g}cm,'
+            f' T5_95={self.T5_95:.3g}s'
         )
 
     def summary(self) -> None:
