@@ -80,24 +80,22 @@ class Simulation:
     xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
     GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None
 
-    # fmt: off
     def __init__(
             self,
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            G_param: (
+            G_param: (  # noqa: N803
                 HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
             ) = None,
             xi_param: (
                 HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
             ) = None,
-            GGmax_and_damping_curves: (
+            GGmax_and_damping_curves: (  # noqa: N803
                 Multiple_GGmax_Damping_Curves | None
             ) = None,
     ) -> None:
-    # fmt: on
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
 
@@ -145,7 +143,7 @@ class Simulation:
         self.GGmax_and_damping_curves = GGmax_and_damping_curves
 
 
-class Linear_Simulation(Simulation):
+class Linear_Simulation(Simulation):  # noqa: N801
     """
     Linear site response simulation.
 
@@ -179,15 +177,15 @@ class Linear_Simulation(Simulation):
 
     def run(
             self,
-            every_layer: bool = True,
-            deconv: bool = False,
-            show_fig: bool = False,
-            save_fig: bool = False,
+            every_layer: bool = True,  # noqa: FBT001, FBT002
+            deconv: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
+            save_fig: bool = False,  # noqa: FBT001, FBT002
             motion_name: str | None = None,
-            save_txt: bool = False,
-            save_full_time_history: bool = False,
+            save_txt: bool = False,  # noqa: FBT001, FBT002
+            save_full_time_history: bool = False,  # noqa: FBT001, FBT002
             output_dir: str | None = None,
-            verbose: bool = True,
+            verbose: bool = True,  # noqa: FBT001, FBT002
     ) -> Simulation_Results:
         """
         Run linear simulation.
@@ -218,7 +216,7 @@ class Linear_Simulation(Simulation):
             histories (i.e., every time step, every depth) of the acceleration,
             velocity, displacement, stress, and strain. Only effective if
             ``every_layer`` is ``True``.
-        output_dir : str, default=None
+        output_dir : str | None, default=None
             Directory for saving the figures and/or result files.
         verbose : bool, default=True
             Whether to show simulation progress.
@@ -297,7 +295,7 @@ class Linear_Simulation(Simulation):
         return sim_results
 
 
-class Equiv_Linear_Simulation(Simulation):
+class Equiv_Linear_Simulation(Simulation):  # noqa: N801
     """
     Equivalent linear site response simulation.
 
@@ -327,7 +325,7 @@ class Equiv_Linear_Simulation(Simulation):
             self,
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
-            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves,
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves,  # noqa: N803
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:
         if GGmax_and_damping_curves is None:
@@ -346,12 +344,12 @@ class Equiv_Linear_Simulation(Simulation):
 
     def run(
             self,
-            verbose: bool = True,
-            show_fig: bool = False,
-            save_fig: bool = False,
+            verbose: bool = True,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
+            save_fig: bool = False,  # noqa: FBT001, FBT002
             motion_name: str | None = None,
-            save_txt: bool = False,
-            save_full_time_history: bool = False,
+            save_txt: bool = False,  # noqa: FBT001, FBT002
+            save_full_time_history: bool = False,  # noqa: FBT001, FBT002
             output_dir: str | None = None,
     ) -> Simulation_Results:
         """
@@ -440,7 +438,7 @@ class Equiv_Linear_Simulation(Simulation):
         return sim_results
 
 
-class Nonlinear_Simulation(Simulation):
+class Nonlinear_Simulation(Simulation):  # noqa: N801
     """
     Nonlinear site response simulation.
 
@@ -492,7 +490,7 @@ class Nonlinear_Simulation(Simulation):
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
-            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,
+            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,  # noqa: N803
             xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:
@@ -511,16 +509,16 @@ class Nonlinear_Simulation(Simulation):
         )
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
-    def run(
+    def run(  # noqa: C901, PLR0915
             self,
             sim_dir: str | None = None,
             motion_name: str | None = None,
-            save_txt: bool = False,
-            save_full_time_history: bool = True,
-            show_fig: bool = False,
-            save_fig: bool = False,
-            remove_sim_dir: bool = False,
-            verbose: bool = True,
+            save_txt: bool = False,  # noqa: FBT001, FBT002
+            save_full_time_history: bool = True,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
+            save_fig: bool = False,  # noqa: FBT001, FBT002
+            remove_sim_dir: bool = False,  # noqa: FBT001, FBT002
+            verbose: bool = True,  # noqa: FBT001, FBT002
     ) -> Simulation_Results:
         """
         Start nonlinear simulation.
@@ -596,8 +594,8 @@ class Nonlinear_Simulation(Simulation):
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
         n_dt = 30  # number of sub-steps in one time step
-        N_spr = 120  # number of Iwan springs
-        N_obs = 50  # number of strain points in a curve
+        N_spr = 120  # number of Iwan springs  # noqa: N806
+        N_obs = 50  # number of strain points in a curve  # noqa: N806
         n_ma = self.G_param.n_layer
         strain_in_pct = np.geomspace(0.0001, 6, num=N_obs)
 
@@ -651,7 +649,7 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        import PySeismoSoil
+        import PySeismoSoil  # noqa: PLC0415
 
         package_path = importlib.resources.files(PySeismoSoil)
         dir_exec_files = str(package_path / 'exec_files')

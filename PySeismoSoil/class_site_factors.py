@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Site_Factors:
+class Site_Factors:  # noqa: N801
     """
     Class implementation of site response factors.
 
@@ -39,13 +39,13 @@ class Site_Factors:
 
     Attributes
     ----------
-    Vs30_array : list[int]
+    Vs30_array : ClassVar[list[int]], default=[175, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950]
         Valid Vs30 values (class attribute). The values are [175, 200, 250,
         300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950].
-    z1_array : list[int]
+    z1_array : ClassVar[list[int]], default=[8, 16, 24, 36, 75, 150, 300, 450, 600, 900]
         Valid z1 values (class attribute). The values are [8, 16, 24, 36, 75,
         150, 300, 450, 600, 900].
-    PGA_array : list[float]
+    PGA_array : ClassVar[list[float]], default=[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5]
         Valid PGA values (class attribute). The values are [0.01, 0.05, 0.1,
         0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.25, 1.5].
     Vs30 : float
@@ -63,7 +63,7 @@ class Site_Factors:
     ------
     ValueError
         When the combination of Vs30 and z1 values is invalid
-    """
+    """  # noqa: E501
 
     Vs30_array: ClassVar[list[int]] = [
         175,
@@ -118,12 +118,12 @@ class Site_Factors:
 
     def __init__(
             self,
-            Vs30_in_meter_per_sec: float,
+            Vs30_in_meter_per_sec: float,  # noqa: N803
             z1_in_m: float,
-            PGA_in_g: float,
-            lenient: bool = False,
+            PGA_in_g: float,  # noqa: N803
+            lenient: bool = False,  # noqa: FBT001, FBT002
     ) -> None:
-        import PySeismoSoil
+        import PySeismoSoil  # noqa: PLC0415
 
         package_path = importlib.resources.files(PySeismoSoil)
         self.dir_amplif = str(package_path / 'data' / 'amplification')
@@ -137,19 +137,19 @@ class Site_Factors:
             if not lenient:
                 raise ValueError('Vs30 should be between [175, 950] m/s')
 
-            Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950
+            Vs30_in_meter_per_sec = 175 if Vs30_in_meter_per_sec < 175 else 950  # noqa: N806, PLR2004
 
         if 'z1 out of range' in status:
             if not lenient:
                 raise ValueError('z1_in_m should be between [8, 900] m')
 
-            z1_in_m = 8 if z1_in_m < 8 else 900
+            z1_in_m = 8 if z1_in_m < 8 else 900  # noqa: PLR2004
 
         if 'PGA out of range' in status:
             if not lenient:
                 raise ValueError('PGA should be between [0.01g, 1.5g]')
 
-            PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5
+            PGA_in_g = 0.01 if PGA_in_g < 0.01 else 1.5  # noqa: N806, PLR2004
 
         # TODO: think about whether to add leniency  # noqa: TD003
         if 'Invalid Vs30-z1 combination' in status:
@@ -165,8 +165,8 @@ class Site_Factors:
     def get_amplification(
             self,
             method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
-            Fourier: bool = True,
-            show_interp_plots: bool = False,
+            Fourier: bool = True,  # noqa: FBT001, FBT002, N803
+            show_interp_plots: bool = False,  # noqa: FBT001, FBT002
     ) -> Frequency_Spectrum:
         """
         Get site amplification factors.
@@ -222,7 +222,7 @@ class Site_Factors:
     def get_phase_shift(
             self,
             method: Literal['eq_hh'] = 'eq_hh',
-            show_interp_plots: bool = False,
+            show_interp_plots: bool = False,  # noqa: FBT001, FBT002
     ) -> Frequency_Spectrum:
         """
         Get site phase-shift factors.
@@ -261,7 +261,7 @@ class Site_Factors:
     def get_both_amplf_and_phase(
             self,
             method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
-            show_interp_plots: bool = False,
+            show_interp_plots: bool = False,  # noqa: FBT001, FBT002
     ) -> tuple[Frequency_Spectrum, Frequency_Spectrum]:
         """
         Get both amplification and phase-shift factors.
@@ -296,8 +296,8 @@ class Site_Factors:
             amplif_or_phase: Literal['amplif', 'phase'],
             data_dir: str,
             method: Literal['nl_hh', 'eq_hh', 'eq_kz'] = 'nl_hh',
-            Fourier: bool = True,
-            show_interp_plots: bool = False,
+            Fourier: bool = True,  # noqa: FBT001, FBT002, N803
+            show_interp_plots: bool = False,  # noqa: FBT001, FBT002
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Get amplification or phase results.
@@ -325,18 +325,18 @@ class Site_Factors:
         y_interp : np.ndarray
             Amplification or phase shift, interpolated.
         """
-        Vs30 = self.Vs30
+        Vs30 = self.Vs30  # noqa: N806
         z1 = self.z1
-        PGA = self.PGA
+        PGA = self.PGA  # noqa: N806
 
         combinations = self._locate_grids()
 
         points = []  # to hold reference (Vs30, z1, PGA) points
         y_list = []  # to hold values at these reference points
-        for Vs30_i, z1_i, PGA_i in combinations:
-            Vs30_grid = Site_Factors.Vs30_array[Vs30_i]
+        for Vs30_i, z1_i, PGA_i in combinations:  # noqa: N806
+            Vs30_grid = Site_Factors.Vs30_array[Vs30_i]  # noqa: N806
             z1_grid = Site_Factors.z1_array[z1_i]
-            PGA_grid = Site_Factors.PGA_array[PGA_i]
+            PGA_grid = Site_Factors.PGA_array[PGA_i]  # noqa: N806
             x, y = Site_Factors._query(
                 amplif_or_phase,
                 Vs30_grid,
@@ -373,10 +373,10 @@ class Site_Factors:
     @staticmethod
     def _query(
             amplif_or_phase: Literal['amplif', 'phase'],
-            Vs30: float,
+            Vs30: float,  # noqa: N803
             z1: float,
-            PGA: float,
-            Fourier: bool = True,
+            PGA: float,  # noqa: N803
+            Fourier: bool = True,  # noqa: FBT001, FBT002, N803
             method: Literal['nl_hh', 'eq_hh', 'eq_kz'] = 'nl_hh',
             data_dir: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
@@ -384,8 +384,8 @@ class Site_Factors:
         Query amplification or phase factors from pre-computed .csv files.
 
         The given Vs30, z1_in_m, and PGA_in_g values need to match the
-        pre-defined values (see ``Vs30_array``, ``z1_array``, and
-        ``PGA_array`` at the top of this file).
+        pre-defined values (see ``Vs30_array``, ``z1_array``, and ``PGA_array``
+        at the top of this file).
 
         Parameters
         ----------
@@ -448,8 +448,8 @@ class Site_Factors:
 
         y = np.genfromtxt(Path(data_dir) / y_filename, delimiter=',')
         x = np.genfromtxt(Path(data_dir) / x_filename, delimiter=',')
-        PGA_index = np.argwhere(np.array(Site_Factors.PGA_array) == PGA)[0][0]
-        y_values_at_given_PGA = y[PGA_index, :]
+        PGA_index = np.argwhere(np.array(Site_Factors.PGA_array) == PGA)[0][0]  # noqa: N806
+        y_values_at_given_PGA = y[PGA_index, :]  # noqa: N806
 
         return x, y_values_at_given_PGA
 
@@ -462,20 +462,22 @@ class Site_Factors:
 
         Return all possible combinations of Vs30, z1, and PGA values.
         """
-        Vs30_loc, z1_loc, PGA_loc = Site_Factors._find_neighbors(
+        Vs30_loc, z1_loc, PGA_loc = Site_Factors._find_neighbors(  # noqa: N806
             self.Vs30,
             self.z1,
             self.PGA,
         )
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
-        assert len(list(combinations)) == 8
+        assert len(list(combinations)) == 8  # noqa: PLR2004
 
         return combinations
 
     @staticmethod
     def _find_neighbors(
-            Vs30_in_mps: float, z1_in_m: float, PGA_in_g: float
+            Vs30_in_mps: float,  # noqa: N803
+            z1_in_m: float,
+            PGA_in_g: float,  # noqa: N803
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         """
         Find the indices of Vs30, z1, and PGA that surround given values.
@@ -485,13 +487,13 @@ class Site_Factors:
 
         The three inputs need to already within the correct range.
         """
-        Vs30_loc: tuple[int, int] = Site_Factors._search_sorted(
+        Vs30_loc: tuple[int, int] = Site_Factors._search_sorted(  # noqa: N806
             Vs30_in_mps, Site_Factors.Vs30_array
         )
         z1_loc: tuple[int, int] = Site_Factors._search_sorted(
             z1_in_m, Site_Factors.z1_array
         )
-        PGA_loc: tuple[int, int] = Site_Factors._search_sorted(
+        PGA_loc: tuple[int, int] = Site_Factors._search_sorted(  # noqa: N806
             PGA_in_g, Site_Factors.PGA_array
         )
 
@@ -578,9 +580,9 @@ class Site_Factors:
         assert isinstance(ref_points, list)
         assert isinstance(values, list)
         assert isinstance(interp_points, tuple)
-        assert len(ref_points) == 8
+        assert len(ref_points) == 8  # noqa: PLR2004
         assert len(ref_points) == len(values)
-        assert len(interp_points) == 3  # 3D coordinate
+        assert len(interp_points) == 3  # 3D coordinate  # noqa: PLR2004
 
         values = np.array(values)
 
@@ -601,12 +603,12 @@ class Site_Factors:
     def _plot_interp(
             ref_points: list[tuple[float, float, float]],
             query_point: tuple[float, float, float],
-            T_or_freq: np.ndarray,
+            T_or_freq: np.ndarray,  # noqa: N803
             amps: list[np.ndarray],
             amp_interp: np.ndarray,
             phases: list[np.ndarray] | None = None,
             phase_interp: np.ndarray | None = None,
-            Fourier: bool = True,
+            Fourier: bool = True,  # noqa: FBT001, FBT002, N803
     ) -> tuple[Figure, Axes, Axes | None]:
         """
         Show a plot of the amplification and/or phase shift factors.
@@ -643,7 +645,7 @@ class Site_Factors:
             phase factors, then two subplots are produced, and ``ax1`` and
             ``ax2`` are the axes objects of the two subplots.
         """
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt  # noqa: PLC0415
 
         if phases is not None and phase_interp is not None:
             phase_flag = True
@@ -716,9 +718,9 @@ class Site_Factors:
 
     @staticmethod
     def _range_check(
-            Vs30_in_mps: float,
+            Vs30_in_mps: float,  # noqa: N803
             z1_in_m: float,
-            PGA_in_g: float,
+            PGA_in_g: float,  # noqa: N803
     ) -> list[str]:
         """
         Check if the provided Vs30, z1_in_m, and PGA_in_g values are valid.
@@ -739,24 +741,24 @@ class Site_Factors:
 
         status = []
 
-        if Vs30_in_mps < 175 or Vs30_in_mps > 950:
+        if Vs30_in_mps < 175 or Vs30_in_mps > 950:  # noqa: PLR2004
             status.append('Vs30 out of range')
 
-        if z1_in_m < 8 or z1_in_m > 900:
+        if z1_in_m < 8 or z1_in_m > 900:  # noqa: PLR2004
             status.append('z1 out of range')
 
-        if PGA_in_g < 0.01 or PGA_in_g > 1.5:
+        if PGA_in_g < 0.01 or PGA_in_g > 1.5:  # noqa: PLR2004
             status.append('PGA out of range')
 
         if (
-            (Vs30_in_mps > 400 and z1_in_m > 750)
-            or (Vs30_in_mps > 450 and z1_in_m > 600)
-            or (Vs30_in_mps > 550 and z1_in_m > 450)
-            or (Vs30_in_mps > 600 and z1_in_m > 300)
-            or (Vs30_in_mps > 650 and z1_in_m > 150)
-            or (Vs30_in_mps > 750 and z1_in_m > 75)
-            or (Vs30_in_mps > 800 and z1_in_m > 36)
-            or (Vs30_in_mps > 850 and z1_in_m > 16)
+            (Vs30_in_mps > 400 and z1_in_m > 750)  # noqa: PLR0916, PLR2004
+            or (Vs30_in_mps > 450 and z1_in_m > 600)  # noqa: PLR2004
+            or (Vs30_in_mps > 550 and z1_in_m > 450)  # noqa: PLR2004
+            or (Vs30_in_mps > 600 and z1_in_m > 300)  # noqa: PLR2004
+            or (Vs30_in_mps > 650 and z1_in_m > 150)  # noqa: PLR2004
+            or (Vs30_in_mps > 750 and z1_in_m > 75)  # noqa: PLR2004
+            or (Vs30_in_mps > 800 and z1_in_m > 36)  # noqa: PLR2004
+            or (Vs30_in_mps > 850 and z1_in_m > 16)  # noqa: PLR2004
         ):
             status.append('Invalid Vs30-z1 combination')
 

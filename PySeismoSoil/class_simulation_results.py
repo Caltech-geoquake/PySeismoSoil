@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Simulation_Results:
+class Simulation_Results:  # noqa: N801
     """
     Site response simulation results.
 
@@ -116,7 +116,7 @@ class Simulation_Results:
     motion_name: str
     output_dir: str
 
-    def __init__(
+    def __init__(  # noqa: PLR0915
             self,
             input_accel: Ground_Motion,
             accel_on_surface: Ground_Motion,
@@ -226,11 +226,11 @@ class Simulation_Results:
         self.output_dir = output_dir
 
     # fmt: off
-    def plot(
+    def plot(  # noqa: PLR0915
             self,
             dpi: float = 100,
-            save_fig: bool = False,
-            amplif_func_ylog: bool = True,
+            save_fig: bool = False,  # noqa: FBT001, FBT002
+            amplif_func_ylog: bool = True,  # noqa: FBT001, FBT002
             output_dir: str | None = None,
     ) -> tuple[
         tuple[Figure, Figure | None], tuple[Axes, tuple[Axes | None, ...]]
@@ -280,7 +280,7 @@ class Simulation_Results:
         else:
             ampl_func_smoothed = None
 
-        fig1, axes1 = sr._plot_site_amp(
+        fig1, axes1 = sr._plot_site_amp(  # noqa: SLF001
             accel_in,
             accel_out,
             freq,
@@ -401,16 +401,15 @@ class Simulation_Results:
 
     def to_txt(
             self,
-            save_full_time_history: bool = True,
-            verbose: bool = False,
+            save_full_time_history: bool = True,  # noqa: FBT001, FBT002
+            verbose: bool = False,  # noqa: FBT001, FBT002
             output_dir: str | None = None,
     ) -> None:
         """
         Save simulation results as text files to the hard drive.
 
-        The results include output time history, transfer function, the
-        profile of maximum acceleration/velocity/displacement/stress/train,
-        etc.
+        The results include output time history, transfer function, the profile
+        of maximum acceleration/velocity/displacement/stress/train, etc.
 
         Parameters
         ----------
@@ -435,8 +434,8 @@ class Simulation_Results:
         od_path = pathlib.Path(od)
         motion_name = self.motion_name
 
-        fn_TF_raw = od_path / f'{motion_name}_nonlinear_TF_raw.txt'
-        fn_TF_smoothed = od_path / f'{motion_name}_nonlinear_TF_smoothed.txt'
+        fn_TF_raw = od_path / f'{motion_name}_nonlinear_TF_raw.txt'  # noqa: N806
+        fn_TF_smoothed = od_path / f'{motion_name}_nonlinear_TF_smoothed.txt'  # noqa: N806
         fn_surface_accel = od_path / f'{motion_name}_accel_on_surface.txt'
         fn_new_profile = od_path / f'{motion_name}_re-discretized_profile.txt'
         fn_out_a = od_path / f'{motion_name}_time_history_accel.txt'

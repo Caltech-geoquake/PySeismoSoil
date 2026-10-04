@@ -13,7 +13,7 @@ checks that:
    In other words, the notebook was re-run in the current branch.
 
 The check is skipped on ``main`` itself.
-"""
+"""  # noqa: INP001
 
 from __future__ import annotations
 

@@ -33,13 +33,20 @@ to have the changes merged.
 
 You can run tests with the `tox` command.
 
-And you can run auto-formatting with the command `pre-commit run -a`. The
-pre-commit hooks include `muff-format` (the code formatter, configured in
-`muff.toml`) and `format-docstring`.
+And you can run auto-formatting and auto-fixing with the command
+`pre-commit run -a`. The pre-commit hooks include `muff-check` (the linter,
+which auto-fixes what it can) and `muff-format` (the code formatter), both
+configured in `muff.toml`, and `format-docstring`. Files in `tests/` are
+excluded from all the hooks.
 
 Docstrings use the NumPy style and are checked with `pydoclint`
-(`tox -e pydoclint`). To check formatting without modifying any files, run
-`tox -e muff-format`.
+(`tox -e pydoclint`). To check linting and formatting without modifying any
+files, run `tox -e muff-check` and `tox -e muff-format`.
+
+Some rules (e.g., naming rules such as `N802`/`N803`/`N806`, and `FBT001`/
+`FBT002`) conflict with this library's public API and with the notation used in
+geotechnical earthquake engineering (e.g., `Vs`, `Gmax`). Where we can't
+satisfy such a rule, silence it on that line only, with `# noqa: <rule>`.
 
 ## 4. Re-run the example notebooks in every PR
 

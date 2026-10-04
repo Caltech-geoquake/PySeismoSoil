@@ -1,4 +1,4 @@
-"""Vs profile class."""
+"""Vs profile class."""  # noqa: N999
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from matplotlib.lines import Line2D
 
 
-class Vs_Profile:
+class Vs_Profile:  # noqa: N801
     r"""
     Class implementation of a Vs profile.
 
@@ -45,7 +45,7 @@ class Vs_Profile:
 
     damping_unit : Literal['1', '%'], default='1'
         The unit for the damping ratio.
-    density_unit : {'kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'}, default='kg/m^3'
+    density_unit : Literal['kg/m^3', 'g/cm^3', 'kg/m3', 'g/cm3'], default='kg/m^3'
         The unit for the mass density of soils.
     sep : str, default='\t'
         Delimiter character for reading the text file. If ``data`` is supplied
@@ -87,7 +87,7 @@ class Vs_Profile:
         When the value of ``data`` is not a string or numpy array
     ValueError
         When the value of input arguments is incorrect or invalid
-    """
+    """  # noqa: E501
 
     vs_profile: np.ndarray
     vs30: float
@@ -96,7 +96,7 @@ class Vs_Profile:
     z_max: float
     n_layer: int
 
-    def __init__(
+    def __init__(  # noqa: C901, PLR0915
             self,
             data: str | np.ndarray,
             *,
@@ -130,7 +130,7 @@ class Vs_Profile:
         vs = data_[:, 1]
         n_layer_tmp, n_col = data_.shape
 
-        if n_col == 2:
+        if n_col == 2:  # noqa: PLR2004
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if thk[-1] == 0:  # last layer is an "infinity" layer
                 material_number = np.append(np.arange(1, n_layer_tmp), [0])
@@ -147,10 +147,10 @@ class Vs_Profile:
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
-        elif n_col == 5:
+        elif n_col == 5:  # noqa: PLR2004
             xi = data_[:, 2]
             rho = data_[:, 3]
-            if density_unit in {'kg/m^3', 'kg/m3'} and min(rho) <= 1000:
+            if density_unit in {'kg/m^3', 'kg/m3'} and min(rho) <= 1000:  # noqa: PLR2004
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '
                     'lower than 1,000 kg/m^3. Possible error.',
@@ -281,7 +281,7 @@ class Vs_Profile:
 
     def get_ampl_function(
             self,
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             freq_resolution: float = 0.05,
             fmax: float = 30.0,
     ) -> tuple[Frequency_Spectrum, Frequency_Spectrum, Frequency_Spectrum]:
@@ -312,14 +312,14 @@ class Vs_Profile:
             fmax=fmax,
             freq_resolution=freq_resolution,
         )
-        af_RO = Frequency_Spectrum(np.column_stack((freq, af_ro)))
-        af_BH = Frequency_Spectrum(np.column_stack((freq, af_bh)))
-        af_IN = Frequency_Spectrum(np.column_stack((freq, af_in)))
+        af_RO = Frequency_Spectrum(np.column_stack((freq, af_ro)))  # noqa: N806
+        af_BH = Frequency_Spectrum(np.column_stack((freq, af_bh)))  # noqa: N806
+        af_IN = Frequency_Spectrum(np.column_stack((freq, af_in)))  # noqa: N806
         return af_RO, af_BH, af_IN
 
     def get_transfer_function(
             self,
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             freq_resolution: float = 0.05,
             fmax: float = 30.0,
     ) -> tuple[Frequency_Spectrum, Frequency_Spectrum, Frequency_Spectrum]:
@@ -351,12 +351,12 @@ class Vs_Profile:
             freq_resolution=freq_resolution,
         )
 
-        tf_RO = Frequency_Spectrum(np.column_stack((freq, tf_ro)))
-        tf_BH = Frequency_Spectrum(np.column_stack((freq, tf_bh)))
-        tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))
+        tf_RO = Frequency_Spectrum(np.column_stack((freq, tf_ro)))  # noqa: N806
+        tf_BH = Frequency_Spectrum(np.column_stack((freq, tf_bh)))  # noqa: N806
+        tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))  # noqa: N806
         return tf_RO, tf_BH, tf_IN
 
-    def get_f0_RO(self) -> float:
+    def get_f0_RO(self) -> float:  # noqa: N802
         """
         Return the rock-outcrop fundamental frequency.
 
@@ -367,7 +367,7 @@ class Vs_Profile:
         """
         return self.get_ampl_function(show_fig=False)[0].get_f0()
 
-    def get_f0_BH(self) -> float:
+    def get_f0_BH(self) -> float:  # noqa: N802
         """
         Return the borehole fundamental frequency.
 
@@ -390,7 +390,9 @@ class Vs_Profile:
         return sr.thk2dep(self._thk)
 
     def truncate(
-            self, depth: float | None = None, Vs: float = 1000.0
+            self,
+            depth: float | None = None,
+            Vs: float = 1000.0,  # noqa: N803
     ) -> Vs_Profile:
         """
         Truncate Vs profile at a given ``depth``.
@@ -455,17 +457,17 @@ class Vs_Profile:
 
         return Vs_Profile(profile_)
 
-    def query_Vs_at_depth(
+    def query_Vs_at_depth(  # noqa: N802
             self,
             depth: float | np.ndarray,
-            as_profile: bool = False,
-            show_fig: bool = False,
+            as_profile: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> float | np.ndarray | Vs_Profile:
         """
         Query Vs values at given ``depth`` values.
 
-        If the given depth values happen to be at layer interfaces, return
-        the Vs of the layer *below* the interface.
+        If the given depth values happen to be at layer interfaces, return the
+        Vs of the layer *below* the interface.
 
         Parameters
         ----------
@@ -535,14 +537,14 @@ class Vs_Profile:
 
         return vs_queried
 
-    def query_Vs_given_thk(
+    def query_Vs_given_thk(  # noqa: N802
             self,
             thk: float | np.ndarray,
             n_layers: int | None = None,
-            as_profile: bool = False,
-            at_midpoint: bool = True,
-            add_halfspace: bool = True,
-            show_fig: bool = False,
+            as_profile: bool = False,  # noqa: FBT001, FBT002
+            at_midpoint: bool = True,  # noqa: FBT001, FBT002
+            add_halfspace: bool = True,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> np.ndarray | Vs_Profile:
         """
         Query Vs values from a thickness layer ``thk``.
@@ -600,7 +602,7 @@ class Vs_Profile:
 
         return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
-    def _plot_queried_Vs(
+    def _plot_queried_Vs(  # noqa: N802
             self,
             vs_queried: float | np.ndarray,
             depth: float | np.ndarray,
@@ -624,7 +626,7 @@ class Vs_Profile:
         if np.max(y_lim) <= np.max(depth):
             ax.set_ylim((np.max(depth), np.min(y_lim)))
 
-    def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:
+    def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:  # noqa: N803
         """
         Query the depth of the basin as indicated in the Vs profile data.
 
@@ -711,7 +713,7 @@ class Vs_Profile:
             File name (including path).
         sep : str, default='\t'
             Delimiter for the output file.
-        precision : tuple[str, ...]
+        precision : tuple[str, str, str, str, str], default=('%.2f', '%.2f', '%.4g', '%.5g', '%d')
             A list of precision specifiers, each for the five columns of the Vs
             profile. Default is ``('%.2f', '%.2f', '%.4g', '%.5g', '%d')``.
 
@@ -721,11 +723,11 @@ class Vs_Profile:
             When ``precision`` is not a list
         ValueError
             When the length of ``precision`` is not 5
-        """
+        """  # noqa: E501
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
 
-        if len(precision) != 5:
+        if len(precision) != 5:  # noqa: PLR2004
             raise ValueError('Length of precision must be 5.')
 
         np.savetxt(fname, self.vs_profile, fmt=precision, delimiter=sep)

@@ -9,13 +9,13 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
 
-def tau_MKZ(
+def tau_MKZ(  # noqa: N802
         gamma: np.ndarray,
         *,
         gamma_ref: float,
         beta: float,
         s: float,
-        Gmax: float,
+        Gmax: float,  # noqa: N803
 ) -> np.ndarray:
     """
     Calculate the MKZ shear stress.
@@ -59,7 +59,7 @@ def tau_MKZ(
     return Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
 
 
-def fit_H4_x_single_layer(
+def fit_H4_x_single_layer(  # noqa: N802
         damping_data_in_pct: np.ndarray,
         *,
         use_scipy: bool = True,
@@ -134,7 +134,7 @@ def fit_H4_x_single_layer(
     damping_data_in_unit_1 = damping_data_in_pct / 100  # unit: percent --> 1
 
     n_param = 3  # number of MKZ model parameters; do not change this
-    N = 122  # denser strain array for more accurate damping calculation
+    N = 122  # denser strain array for more accurate damping calculation  # noqa: N806
     strain_dense = np.logspace(-6, -1, N)
     damping_dense = np.interp(
         strain_dense,
@@ -173,13 +173,13 @@ def fit_H4_x_single_layer(
     best_param['Gmax'] = 1.0
 
     if show_fig:
-        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_MKZ)
+        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_MKZ)  # noqa: SLF001
 
     return best_param
 
 
 def damping_misfit(
-        param_without_Gmax: tuple[float, float, float],
+        param_without_Gmax: tuple[float, float, float],  # noqa: N803
         damping_data: np.ndarray,
 ) -> float:
     """
@@ -208,19 +208,19 @@ def damping_misfit(
     gamma_ref = 10**gamma_ref_
     beta = 10**beta_
     s = 10**s_
-    Gmax = 1.0  # does not affect damping, because it gets cancels out
+    Gmax = 1.0  # does not affect damping, because it gets cancels out  # noqa: N806
 
     strain = damping_data[:, 0]
     damping_true = damping_data[:, 1]
 
-    Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
+    Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)  # noqa: N806
     damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
     return hlp.mean_absolute_error(damping_true, damping_pred)
 
 
 def serialize_params_to_array(
         param: dict[str, float],
-        to_files: bool = False,
+        to_files: bool = False,  # noqa: FBT001, FBT002
 ) -> np.ndarray:
     """
     Convert the MKZ parameters from a dictionary to an array.
@@ -244,7 +244,7 @@ def serialize_params_to_array(
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
-    assert len(param) == 4
+    assert len(param) == 4  # noqa: PLR2004
     order = ['gamma_ref', 's', 'beta', 'Gmax']
     param_array = [param[key] for key in order]
 
@@ -256,7 +256,7 @@ def serialize_params_to_array(
 
 def deserialize_array_to_params(
         array: np.ndarray,
-        from_files: bool = False,
+        from_files: bool = False,  # noqa: FBT001, FBT002
 ) -> dict[str, float]:
     """
     Reconstruct a MKZ model parameter dictionary from an array of values.
@@ -286,7 +286,7 @@ def deserialize_array_to_params(
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 4
+    assert len(array) == 4  # noqa: PLR2004
 
     if from_files:
         param = {}
@@ -304,10 +304,10 @@ def deserialize_array_to_params(
     return param
 
 
-def fit_MKZ(
+def fit_MKZ(  # noqa: N802
         curve_data: np.ndarray,
-        show_fig: bool = False,
-        verbose: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
+        verbose: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Fit MKZ model to G/Gmax curves.
@@ -339,7 +339,7 @@ def fit_MKZ(
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.
     """
-    from scipy.optimize import curve_fit
+    from scipy.optimize import curve_fit  # noqa: PLC0415
 
     hlp.assert_2D_numpy_array(curve_data, name='`curve_data`')
 
@@ -354,13 +354,13 @@ def fit_MKZ(
     beta = np.zeros(n_ma)
 
     gamma = np.zeros((length, n_ma))
-    GGmax = np.zeros((length, n_ma))
+    GGmax = np.zeros((length, n_ma))  # noqa: N806
     for k in range(n_ma):
         gamma[:, k] = curve_data[:, k * 4 + 0] / 100.0  # percent --> 1
         GGmax[:, k] = curve_data[:, k * 4 + 1]
 
     gamma_ = np.geomspace(1e-6, 0.1, num=nr)  # unit: 1
-    GGmax_ = np.zeros((nr, n_ma))
+    GGmax_ = np.zeros((nr, n_ma))  # noqa: N806
     damping_ = np.zeros((nr, n_ma))
 
     # -------------- Curve-fitting, layer by layer ----------------------------
@@ -397,14 +397,14 @@ def fit_MKZ(
     # ------------ Calculate the fitted curve ---------------------------------
     for k in range(n_ma):
         param_k = param[k, :]
-        T_MKZ = tau_MKZ(
+        T_MKZ = tau_MKZ(  # noqa: N806
             gamma_,
             gamma_ref=param_k[0],
             s=param_k[2],
             beta=param_k[3],
             Gmax=1.0,
         )
-        GGmax_k = sr.calc_GGmax_from_stress_strain(gamma_, T_MKZ, Gmax=1.0)
+        GGmax_k = sr.calc_GGmax_from_stress_strain(gamma_, T_MKZ, Gmax=1.0)  # noqa: N806
         GGmax_[:, k] = GGmax_k
 
     # ------------ Plotting ---------------------------------------------------

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Site_Effect_Adjustment:
+class Site_Effect_Adjustment:  # noqa: N801
     """
     Adjusts rock-outcrop ground motions by applying site effect adjustment
     using the SAG19 site factors.
@@ -68,10 +68,10 @@ class Site_Effect_Adjustment:
     def __init__(
             self,
             input_motion: Ground_Motion,
-            Vs30_in_meter_per_sec: float,
+            Vs30_in_meter_per_sec: float,  # noqa: N803
             z1_in_m: float | None = None,
             ampl_method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
-            lenient: bool = False,
+            lenient: bool = False,  # noqa: FBT001, FBT002
     ) -> None:
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
@@ -92,7 +92,7 @@ class Site_Effect_Adjustment:
         if z1_in_m is None:
             z1_in_m = sr.calc_z1_from_Vs30(Vs30_in_meter_per_sec)
 
-        PGA_in_g = input_motion.pga_in_g
+        PGA_in_g = input_motion.pga_in_g  # noqa: N806
 
         site_factor = Site_Factors(
             Vs30_in_meter_per_sec,
@@ -111,8 +111,8 @@ class Site_Effect_Adjustment:
 
     def run(
             self,
-            show_fig: bool = False,
-            return_fig_obj: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
+            return_fig_obj: bool = False,  # noqa: FBT001, FBT002
             **kwargs_to_plot: dict[Any, Any],
     ) -> tuple[Ground_Motion, Figure | None, Axes | None]:
         """

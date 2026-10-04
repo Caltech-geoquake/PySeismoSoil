@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Frequency_Spectrum:
+class Frequency_Spectrum:  # noqa: N801
     r"""
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
@@ -32,7 +32,7 @@ class Frequency_Spectrum:
         The data can have one column (which contains the spectrum) or two
         columns (0st column: freq; 1st column: spectrum). If only one column is
         supplied, another input parameter ``df`` must also be supplied.
-    df : float, default=None
+    df : float | None, default=None
         Frequency interval. Not necessary if ``data`` has two columns (with the
         0th column being the frequency information). If ``data`` has one
         column, it is assumed that the values in ``data`` correspond to a
@@ -162,9 +162,9 @@ class Frequency_Spectrum:
             ax: Axes | None = None,
             figsize: tuple[float, float] | None = None,
             dpi: float = 100,
-            logx: bool = True,
-            logy: bool = False,
-            plot_abs: bool = False,
+            logx: bool = True,  # noqa: FBT001, FBT002
+            logy: bool = False,  # noqa: FBT001, FBT002
+            plot_abs: bool = False,  # noqa: FBT001, FBT002
             **kwargs_plot: dict[Any, Any],
     ) -> tuple[Figure, Axes]:
         """
@@ -176,7 +176,7 @@ class Frequency_Spectrum:
             Figure object. If None, a new figure will be created.
         ax : Axes | None, default=None
             Axes object. If None, a new axes will be created.
-        figsize : tuple[float, float], default=None
+        figsize : tuple[float, float] | None, default=None
             Figure size in inches, as a tuple of two numbers. The figure size
             of ``fig`` (if not ``None``) will override this parameter.
         dpi : float, default=100
@@ -198,7 +198,7 @@ class Frequency_Spectrum:
         ax : Axes
             The axes object being created or being passed into this function.
         """
-        fig, ax = hlp._process_fig_ax_objects(
+        fig, ax = hlp._process_fig_ax_objects(  # noqa: SLF001
             fig, ax, figsize=figsize, dpi=dpi
         )
 
@@ -224,7 +224,7 @@ class Frequency_Spectrum:
     def get_smoothed(
             self,
             win_len: int = 15,
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             *,
             log_scale: bool,
             **kwargs: dict[Any, Any],
@@ -291,7 +291,7 @@ class Frequency_Spectrum:
         """
         return sr.find_f0(self.amplitude_2col)
 
-    def get_unwrapped_phase(self, robust: bool = True) -> Frequency_Spectrum:
+    def get_unwrapped_phase(self, robust: bool = True) -> Frequency_Spectrum:  # noqa: FBT001, FBT002
         """
         Unwrpped the phase component of the spectrum.
 

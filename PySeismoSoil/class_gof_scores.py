@@ -8,7 +8,7 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_gof_scores as gof
 
 
-class GOF_Scores:
+class GOF_Scores:  # noqa: N801
     """
     Class implementation of the goodness-of-fit scoring.
 
@@ -109,7 +109,7 @@ class GOF_Scores:
         """
         return self.scores
 
-    def calc_scores(
+    def calc_scores(  # noqa: C901
             self,
             fmin: float | None = None,
             fmax: float | None = None,
@@ -287,7 +287,7 @@ class GOF_Scores:
         return scores
 
 
-class Batch_GOF_Scores:
+class Batch_GOF_Scores:  # noqa: N801
     """Run goodness-of-fit scoring in batch."""
 
     def __init__(self, list_of_scores: list[GOF_Scores]) -> None:
@@ -304,7 +304,7 @@ class Batch_GOF_Scores:
 
     def run(
             self,
-            parallel: bool = False,
+            parallel: bool = False,  # noqa: FBT001, FBT002
             n_cores: int | None = 1,
             options: dict[str, Any] | None = None,
     ) -> list[GOF_Scores]:
@@ -328,7 +328,7 @@ class Batch_GOF_Scores:
         """
         options = {} if options is None else options
 
-        N = self.n_scores
+        N = self.n_scores  # noqa: N806
 
         score_results = []
         if not parallel:

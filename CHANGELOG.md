@@ -7,6 +7,11 @@
     `muff-format`, `pydoclint`, and an updated set of pre-commit hooks (same as
     in [bootstrap2](https://github.com/jsh9/bootstrap2))
   - Auto-formatted code and docstrings with the new formatters
+  - Added the `muff-check` linter (with auto-fix) to pre-commit, `tox`, and CI
+    (`tests/` is excluded), and fixed the lint violations in the library, the
+    example notebooks, `scripts/`, and `docs/`. Where the public API or the
+    domain notation prevents a fix (naming, boolean positional arguments, magic
+    values), the line has a `# noqa: <rule>` comment
   - Minimum numpy version is now 2.4.0
   - `SVM.get_randomized_profile()` no longer calls `np.random.seed()`, so it
     leaves numpy's global random state alone, with or without a `seed`. Code

@@ -146,7 +146,7 @@ class Parameter(collections.UserDict):
         hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
         return self.func_stress(strain_in_pct / 100.0, **self.data)
 
-    def get_GGmax(
+    def get_GGmax(  # noqa: N802
             self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
     ) -> np.ndarray:
         """
@@ -167,7 +167,7 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
 
-        Gmax = self.data['Gmax']
+        Gmax = self.data['Gmax']  # noqa: N806
         strain_in_1 = strain_in_pct / 100.0
         return sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
 
@@ -210,7 +210,7 @@ class Parameter(collections.UserDict):
 
         Parameters
         ----------
-        figsize : tuple[float, float], default=None
+        figsize : tuple[float, float] | None, default=None
             Figure size in inches, as a tuple of two numbers. If ``None``, use
             (3, 6).
         dpi : float, default=100
@@ -226,7 +226,7 @@ class Parameter(collections.UserDict):
             A list of two axes objects.
         """
         strain = np.logspace(-4, 1)  # unit: percent
-        GGmax = self.get_GGmax(strain)
+        GGmax = self.get_GGmax(strain)  # noqa: N806
         damping = self.get_damping(strain)
 
         if figsize is None:
@@ -254,7 +254,7 @@ class Parameter(collections.UserDict):
         return fig, ax
 
 
-class HH_Param(Parameter):
+class HH_Param(Parameter):  # noqa: N801
     """
     Class implementation of the HH model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
@@ -302,7 +302,7 @@ class HH_Param(Parameter):
         return hh.serialize_params_to_array(self.data)
 
 
-class MKZ_Param(Parameter):
+class MKZ_Param(Parameter):  # noqa: N801
     """
     Class implementation of the MKZ model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
@@ -340,7 +340,7 @@ class MKZ_Param(Parameter):
         return mkz.serialize_params_to_array(self.data)
 
 
-class Param_Multi_Layer:
+class Param_Multi_Layer:  # noqa: N801
     """
     Class implementation of multiple curves.
 
@@ -360,7 +360,7 @@ class Param_Multi_Layer:
     list_of_param_data : list[dict[str, float]] | list[Parameter]
         List of dict or a list of valid parameter class (such as ``HH_Param``),
         which contain data for parameters of each layer.
-    element_class : Type[Parameter]
+    element_class : type[Parameter]
         A class name, such as ``HH_Param``. Each element of
         ``list_of_param_dict`` will be used to initialize an object of
         ``element_class``.
@@ -442,13 +442,13 @@ class Param_Multi_Layer:
 
         Returns
         -------
-        mgc : 'Multiple_GGmax_Curves'
+        mgc : Multiple_GGmax_Curves
             G/Gmax curves for each soil layer.
-        mdc : 'Multiple_Damping_Curves'
+        mdc : Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
         # Importing within the method to avoid circular imports
-        from PySeismoSoil.class_curves import (
+        from PySeismoSoil.class_curves import (  # noqa: PLC0415
             Multiple_Damping_Curves,
             Multiple_GGmax_Curves,
             Multiple_GGmax_Damping_Curves,
@@ -456,7 +456,7 @@ class Param_Multi_Layer:
 
         curves = None
         for param in self.param_list:
-            GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
+            GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)  # noqa: N806
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
                 curves = np.column_stack((
@@ -471,7 +471,7 @@ class Param_Multi_Layer:
                 )
 
         if curve_type == 'ggmax':
-            GGmax_curve_list, _ = hlp.extract_from_curve_format(
+            GGmax_curve_list, _ = hlp.extract_from_curve_format(  # noqa: N806
                 curves,
                 ensure_non_negative=False,
             )
@@ -490,7 +490,7 @@ class Param_Multi_Layer:
 
         return mgc, mdc
 
-    def serialize_to_2D_array(self) -> np.ndarray:
+    def serialize_to_2D_array(self) -> np.ndarray:  # noqa: N802
         """
         Serialize the parameter data to a 2D numpy array.
 
@@ -527,7 +527,7 @@ class Param_Multi_Layer:
         **kw_to_savetxt : dict[Any, Any]
             Additional keyword arguments to pass to ``numpy.savetxt()``.
         """
-        param_2D_array = self.serialize_to_2D_array()
+        param_2D_array = self.serialize_to_2D_array()  # noqa: N806
         np.savetxt(
             filename,
             param_2D_array,
@@ -537,7 +537,7 @@ class Param_Multi_Layer:
         )
 
 
-class HH_Param_Multi_Layer(Param_Multi_Layer):
+class HH_Param_Multi_Layer(Param_Multi_Layer):  # noqa: N801
     r"""
     Class implementation of multiple sets of HH parameters for multiple layers.
 
@@ -629,7 +629,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
         )
 
 
-class MKZ_Param_Multi_Layer(Param_Multi_Layer):
+class MKZ_Param_Multi_Layer(Param_Multi_Layer):  # noqa: N801
     r"""
     Class implementation of multiple sets of MKZ parameters for multiple
     layers.

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-def detect_OS() -> str:
+def detect_OS() -> str:  # noqa: N802
     """
     Check which operating system is currently running.
 
@@ -26,7 +26,7 @@ def detect_OS() -> str:
     return platform.system()
 
 
-def get_current_time(for_filename: bool = True) -> str:
+def get_current_time(for_filename: bool = True) -> str:  # noqa: FBT001, FBT002
     """
     Get current time as a string (e.g., 2001-01-01 23:59:59).
 
@@ -99,7 +99,7 @@ def _process_fig_ax_objects(
             'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'
         ]
         | None = None,
-        bypass_ax_creation: bool = False,
+        bypass_ax_creation: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[Figure, Axes]:
     """
     Process figure and axes objects.
@@ -120,7 +120,7 @@ def _process_fig_ax_objects(
     dpi : float | None, default=None
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    ax_proj : str | None, default=None
+    ax_proj : Literal['aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'] | None, default=None
         The projection type of the axes. One of 'aitoff', 'hammer', 'lambert',
         'mollweide', 'polar', 'rectilinear'. The default None results in a
         'rectilinear' projection.
@@ -133,7 +133,7 @@ def _process_fig_ax_objects(
         The figure object being created or being passed into this function.
     ax : Axes
         The axes object being created or being passed into this function.
-    """
+    """  # noqa: E501
     if fig is None:  # if a figure handle is not provided, create new figure
         fig = plt.figure(figsize=figsize, dpi=dpi)
     else:  # if provided, plot to the specified figure
@@ -201,7 +201,7 @@ def read_two_column_stuff(
     else:
         raise TypeError('`data` must be a file name or a numpy array.')
 
-    if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):
+    if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):  # noqa: PLR2004
         if delta is None:
             raise ValueError(
                 '`delta` (such as dt or df) is needed for one-column `data`.',
@@ -209,12 +209,12 @@ def read_two_column_stuff(
 
         n = len(data_)
         col1 = np.linspace(delta, n * delta, num=n)
-        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
+        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8  # noqa: PLR2004
         data_ = np.column_stack((col1, data_))
-    elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
+    elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns  # noqa: PLR2004
         col1 = data_[:, 0]
         delta = col1[1] - col1[0]
-    elif data_.shape[1] != 2:
+    elif data_.shape[1] != 2:  # noqa: PLR2004
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
             'array, or a one-column array with a `delta` value.',
@@ -225,7 +225,7 @@ def read_two_column_stuff(
     return data_, delta
 
 
-def assert_1D_numpy_array(something: object, name: str | None = None) -> None:
+def assert_1D_numpy_array(something: object, name: str | None = None) -> None:  # noqa: N802
     """
     Assert that ``something`` is a 1D numpy array.
 
@@ -289,7 +289,7 @@ def extend_scalar(
 
     Parameters
     ----------
-    scalar : float | int | np.number
+    scalar : float | np.number
         A single number.
     length : int
         The length of the desired output.
@@ -349,7 +349,7 @@ def check_length_or_extend_to_array(
     return array
 
 
-def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
+def assert_2D_numpy_array(something: object, name: str | None = None) -> None:  # noqa: N802
     """
     Assert that ``something`` is a 2D numpy array.
 
@@ -366,7 +366,7 @@ def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
     TypeError
         When ``something`` is not a 2D numpy array
     """
-    if not isinstance(something, np.ndarray) or something.ndim != 2:
+    if not isinstance(something, np.ndarray) or something.ndim != 2:  # noqa: PLR2004
         name = '`something`' if name is None else name
         raise TypeError(f'{name} must be a 2D numpy array.')
 
@@ -374,8 +374,8 @@ def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
 def check_two_column_format(
         something: object,
         name: str | None = None,
-        ensure_non_negative: bool = False,
-        at_least_two_columns: bool = False,
+        ensure_non_negative: bool = False,  # noqa: FBT001, FBT002
+        at_least_two_columns: bool = False,  # noqa: FBT001, FBT002
 ) -> None:
     """
     Check that ``something`` is a 2D numpy array with two columns.
@@ -408,27 +408,27 @@ def check_two_column_format(
     if not isinstance(something, np.ndarray):
         raise TypeError(f'{name} should be a numpy array.')
 
-    if something.ndim != 2:
+    if something.ndim != 2:  # noqa: PLR2004
         raise TypeError(f'{name} should be a 2D numpy array.')
 
-    if not at_least_two_columns and something.shape[1] != 2:
+    if not at_least_two_columns and something.shape[1] != 2:  # noqa: PLR2004
         raise TypeError(f'{name} should have two columns.')
 
-    if at_least_two_columns and something.shape[1] < 2:
+    if at_least_two_columns and something.shape[1] < 2:  # noqa: PLR2004
         raise TypeError(f'{name} should have >= 2 columns.')
 
     check_status = check_numbers_valid(something)
     if check_status == -1:
         raise ValueError(f'{name} should only contain numeric elements.')
 
-    if check_status == -2:
+    if check_status == -2:  # noqa: PLR2004
         raise ValueError(f'{name} should contain no NaN values.')
 
-    if ensure_non_negative and check_status == -3:
+    if ensure_non_negative and check_status == -3:  # noqa: PLR2004
         raise ValueError(f'{name} should have all non-negative values.')
 
 
-def check_Vs_profile_format(data: object) -> None:
+def check_Vs_profile_format(data: object) -> None:  # noqa: N802
     """
     Check that ``data`` is in a valid format as a Vs profile.
 
@@ -454,17 +454,17 @@ def check_Vs_profile_format(data: object) -> None:
     if check_status == -1:
         raise ValueError('`data` should only contain numeric elements.')
 
-    if check_status == -2:
+    if check_status == -2:  # noqa: PLR2004
         raise ValueError('`data` should contain no NaN values.')
 
-    if data.ndim != 2:
+    if data.ndim != 2:  # noqa: PLR2004
         raise ValueError('`data` should be a 2D numpy array.')
 
     if data.shape[1] not in {2, 5}:
         raise ValueError('`data` should have either 2 or 5 columns.')
 
     thk = data[:, 0]
-    Vs = data[:, 1]
+    Vs = data[:, 1]  # noqa: N806
     if np.any(thk[:-1] <= 0):
         raise ValueError(
             'The thickness column should be all positive, except for the '
@@ -477,7 +477,7 @@ def check_Vs_profile_format(data: object) -> None:
     if np.any(Vs <= 0):
         raise ValueError('The Vs column should be all positive.')
 
-    if data.shape[1] == 5:
+    if data.shape[1] == 5:  # noqa: PLR2004
         xi = data[:, 2]
         rho = data[:, 3]
         mat = data[:, 4]
@@ -569,7 +569,7 @@ def interpolate(
         n_pts: int,
         x_ref: np.ndarray,
         y_ref: np.ndarray,
-        log_scale: bool = True,
+        log_scale: bool = True,  # noqa: FBT001, FBT002
         **kwargs_to_interp: dict[Any, Any],
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -644,7 +644,7 @@ def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 def extract_from_curve_format(
         curves: np.ndarray,
-        ensure_non_negative: bool = True,
+        ensure_non_negative: bool = True,  # noqa: FBT001, FBT002
 ) -> tuple[list[np.ndarray], list[np.ndarray]]:
     """
     Extract G/Gmax and damping curves from a "curve formatted" 2D numpy array.
@@ -690,7 +690,7 @@ def extract_from_curve_format(
     if not isinstance(curves, np.ndarray):
         raise TypeError('`curves` needs to be a numpy array.')
 
-    if curves.ndim != 2:
+    if curves.ndim != 2:  # noqa: PLR2004
         raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
 
     if curves.shape[1] % 4 != 0:
@@ -701,10 +701,10 @@ def extract_from_curve_format(
 
     n_layer = curves.shape[1] // 4
 
-    GGmax_curves_list = []
+    GGmax_curves_list = []  # noqa: N806
     damping_curves_list = []
     for j in range(n_layer):
-        GGmax = curves[:, j * 4 + 0 : j * 4 + 2]
+        GGmax = curves[:, j * 4 + 0 : j * 4 + 2]  # noqa: N806
         damping = curves[:, j * 4 + 2 : j * 4 + 4]
         check_two_column_format(
             GGmax,
@@ -756,7 +756,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
     TypeError
         When the input has invalid types
     """
-    if not isinstance(params, np.ndarray) or params.ndim != 2:
+    if not isinstance(params, np.ndarray) or params.ndim != 2:  # noqa: PLR2004
         raise TypeError('`params` needs to be a 2D numpy array.')
 
     n_layer = params.shape[1]
@@ -764,7 +764,8 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
 
 
 def merge_curve_matrices(
-        GGmax_matrix: np.ndarray, xi_matrix: np.ndarray
+        GGmax_matrix: np.ndarray,  # noqa: N803
+        xi_matrix: np.ndarray,
 ) -> np.ndarray:
     """
     Merge G/Gmax curves matrix and damping curves matrix.

@@ -16,7 +16,7 @@ from PySeismoSoil import helper_site_response as sr
 def lowpass(
         orig_signal: np.ndarray,
         cutoff_freq: float,
-        show_fig: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -57,7 +57,7 @@ def lowpass(
 def highpass(
         orig_signal: np.ndarray,
         cutoff_freq: float,
-        show_fig: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -98,7 +98,7 @@ def highpass(
 def bandpass(
         orig_signal: np.ndarray,
         cutoff_freq: tuple[float, float],
-        show_fig: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -139,7 +139,7 @@ def bandpass(
 def bandstop(
         orig_signal: np.ndarray,
         cutoff_freq: tuple[float, float],
-        show_fig: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -177,11 +177,11 @@ def bandstop(
     )
 
 
-def _filter_kernel(
+def _filter_kernel(  # noqa: C901, PLR0915
         orig_signal: np.ndarray,
         cutoff_freq: float,
         filter_type: str,
-        show_fig: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -192,7 +192,7 @@ def _filter_kernel(
                 '`cutoff_freq` must be a list, tuple, or numpy array.'
             )
 
-        if len(cutoff_freq) != 2:
+        if len(cutoff_freq) != 2:  # noqa: PLR2004
             raise ValueError('`cutoff_freq` must have length 2.')
 
         if cutoff_freq[1] <= cutoff_freq[0]:
@@ -220,7 +220,7 @@ def _filter_kernel(
     sampling_rate = 1.0 / dt
     f_nyquist = sampling_rate / 2.0
     df = 1.0 / (len(x) * dt)
-    Wn = np.array(cutoff_freq) / f_nyquist
+    Wn = np.array(cutoff_freq) / f_nyquist  # noqa: N806
 
     if filter_type == 'highpass' and cutoff_freq <= 0:
         return orig_signal
@@ -335,9 +335,9 @@ def _filter_kernel(
     return np.column_stack((time, y))
 
 
-def baseline(
+def baseline(  # noqa: PLR0915
         orig_signal: np.ndarray,
-        show_fig: bool = False,
+        show_fig: bool = False,  # noqa: FBT001, FBT002
         cutoff_freq: float = 0.20,
 ) -> np.ndarray:
     """
@@ -526,24 +526,24 @@ def fourier_transform(
 
     time_array = signal_[:, 0]
     x = signal_[:, 1]
-    N = len(time_array)
+    N = len(time_array)  # noqa: N806
 
     dt = float(time_array[1] - time_array[0])
 
-    X = scipy.fftpack.fft(x)
+    X = scipy.fftpack.fft(x)  # noqa: N806
 
     if not double_sided:
         freq_array = np.arange(1, int(np.ceil(N / 2.0)) + 1, 1) / (N * dt)
         if real_val:  # absolute Fourier spectra
-            X = abs(X[0 : int(np.ceil(N / 2.0))])
+            X = abs(X[0 : int(np.ceil(N / 2.0))])  # noqa: N806
             spectrum = X
         else:  # complex Fourier spectra
-            X = X[0 : int(np.ceil(N / 2.0))]
+            X = X[0 : int(np.ceil(N / 2.0))]  # noqa: N806
             spectrum = X
     else:
         freq_array = np.arange(1, N + 1, 1) / (N * dt)
         if real_val:  # absolute Fourier spectra
-            X = abs(X)
+            X = abs(X)  # noqa: N806
             spectrum = X
         else:  # complex Fourier spectra
             spectrum = X
@@ -574,7 +574,7 @@ def fourier_transform(
     return np.column_stack((freq_array, spectrum))
 
 
-def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
+def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:  # noqa: N802
     """
     Taper a time-domain signal on both ends with a Tukey window.
 
@@ -598,7 +598,7 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
 
-    if input_signal.ndim == 2:  # if input_signal has two columns
+    if input_signal.ndim == 2:  # if input_signal has two columns  # noqa: PLR2004
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
         ll = len(time_array)
@@ -667,8 +667,8 @@ def calc_transfer_function(
             'Time intervals of the input and output should match.'
         )
 
-    N_in = input_signal.shape[0]
-    N_out = output_signal.shape[0]
+    N_in = input_signal.shape[0]  # noqa: N806
+    N_out = output_signal.shape[0]  # noqa: N806
     if N_in != N_out:
         raise ValueError(
             'Length of the input and output signals should match.'
@@ -719,11 +719,11 @@ def log_smooth(
             'bartlett',
             'blackman',
         ] = 'hanning',
-        lin_space: bool = True,
+        lin_space: bool = True,  # noqa: FBT001, FBT002
         fmin: float | None = None,
         fmax: float | None = None,
         n_pts: int | None = None,
-        fix_ends: bool = True,
+        fix_ends: bool = True,  # noqa: FBT001, FBT002
         beta1: float = 0.9,
         beta2: float = 0.9,
 ) -> np.ndarray:
@@ -736,7 +736,7 @@ def log_smooth(
         The signal to be smoothed. Must be a 1D numpy array.
     win_len : int, default=15
         The length of the convolution window.
-    window : str, default='hanning'
+    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
         The name of the window. One of 'flat', 'hanning', 'hamming',
         'bartlett', 'blackman'.
     lin_space : bool, default=True
@@ -748,7 +748,7 @@ def log_smooth(
     fmax : float | None, default=None
         Maximum frequency (in Hz) that the signal is spaced within. Only
         effective when ``lin_space`` is ``True``.
-    n_pts : int, default=None
+    n_pts : int | None, default=None
         The number of points of the logarithmically interpolated the signal.
         Only effective when ``lin_space`` is ``True``.
     fix_ends : bool, default=True
@@ -773,12 +773,12 @@ def log_smooth(
     ------
     ValueError
         When the input values are not entirely valid
-    """
+    """  # noqa: E501
     hlp.assert_1D_numpy_array(signal, name='`signal`')
     if signal.size < win_len:
         raise ValueError('Input vector needs to be bigger than window size.')
 
-    if win_len < 3:
+    if win_len < 3:  # noqa: PLR2004
         return signal
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
@@ -849,7 +849,7 @@ def lin_smooth(
         The input signal. Should be a 1D numpy array
     window_len : int, default=15
         The dimension of the smoothing window; should be an odd integer
-    window : str, default='hanning'
+    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
         The type of window. One of 'flat', 'hanning', 'hamming', 'bartlett',
         'blackman'. A 'flat' window will produce a moving average smoothing.
 
@@ -881,14 +881,14 @@ def lin_smooth(
     >>> t = linspace(-2, 2, 0.1)
     >>> x = sin(t) + randn(len(t)) * 0.1
     >>> y = lin_smooth(x)
-    """
+    """  # noqa: E501
     if x.ndim != 1:
         raise ValueError('smooth only accepts one-dimensional arrays.')
 
     if x.size < window_len:
         raise ValueError('Input vector needs to be bigger than window size.')
 
-    if window_len < 3:
+    if window_len < 3:  # noqa: PLR2004
         return x
 
     if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
@@ -924,7 +924,7 @@ def sine_smooth(
     freqs = signal[:, 0]
 
     df = freqs[1] - freqs[0]
-    T = 1 / df
+    T = 1 / df  # noqa: N806
 
     udf = 1.854305 / window_span * df
 
@@ -947,7 +947,7 @@ def sine_smooth(
     lt = (ll - 1) * 2 + nfold
     le = lt - lmax + 1
 
-    if lt > 4497:
+    if lt > 4497:  # noqa: PLR2004
         g1 = np.zeros(lt)
         g2 = np.zeros(lt)
     else:

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 STRAIN_RANGE_PCT = np.logspace(-3, 1)
 
 
-class Damping_Calibration:
+class Damping_Calibration:  # noqa: N801
     """
     A class to generate damping curves (and associated soil model parameters)
     from a given Vs profile.
@@ -32,8 +32,8 @@ class Damping_Calibration:
     def get_damping_curves(
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
-            use_Darendeli_Dmin: bool = False,
-            show_fig: bool = False,
+            use_Darendeli_Dmin: bool = False,  # noqa: FBT001, FBT002, N803
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> Multiple_Damping_Curves:
         """
         Calculate damping curves using empirical formulas by Darendeli (2001).
@@ -58,18 +58,18 @@ class Damping_Calibration:
             rock halfspace at the bottom).
         """
         h = self.vs_profile.vs_profile[:-1, 0]
-        Vs = self.vs_profile.vs_profile[:-1, 1]
+        Vs = self.vs_profile.vs_profile[:-1, 1]  # noqa: N806
         n_layer = len(Vs)
 
         # there can only be 5 or 2 columns
-        if self.vs_profile.vs_profile.shape[1] == 5:
+        if self.vs_profile.vs_profile.shape[1] == 5:  # noqa: PLR2004
             rho = self.vs_profile.vs_profile[:-1, 3]
         else:  # only 2 columns
-            rho = hhc._calc_rho(h, Vs)
+            rho = hhc._calc_rho(h, Vs)  # noqa: SLF001
 
-        sigma_v0 = hhc._calc_vertical_stress(h, rho)
-        OCR = hhc._calc_OCR(Vs, rho, sigma_v0)
-        PI = hhc._calc_PI(Vs)
+        sigma_v0 = hhc._calc_vertical_stress(h, rho)  # noqa: SLF001
+        OCR = hhc._calc_OCR(Vs, rho, sigma_v0)  # noqa: N806, SLF001
+        PI = hhc._calc_PI(Vs)  # noqa: N806, SLF001
         phi = 30
         _, xi, _ = hhc.produce_Darendeli_curves(
             sigma_v0,
@@ -104,7 +104,7 @@ class Damping_Calibration:
 
         return mdc
 
-    def get_HH_x_param(self, **kwargs: dict[Any, Any]) -> HH_Param_Multi_Layer:
+    def get_HH_x_param(self, **kwargs: dict[Any, Any]) -> HH_Param_Multi_Layer:  # noqa: N802
         """
         Obtain HH_x parameters for each layer (i.e., HH model parameters that
         best fit given damping values, for each layer).
@@ -128,7 +128,7 @@ class Damping_Calibration:
         )
         return mdc.get_all_HH_x_params(**kwargs)
 
-    def get_H4_x_param(
+    def get_H4_x_param(  # noqa: N802
             self, **kwargs: dict[Any, Any]
     ) -> MKZ_Param_Multi_Layer:
         """

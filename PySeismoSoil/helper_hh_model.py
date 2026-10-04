@@ -7,8 +7,13 @@ from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
 
-def tau_FKZ(
-        gamma: np.ndarray, *, Gmax: float, mu: float, d: float, Tmax: float
+def tau_FKZ(  # noqa: N802
+        gamma: np.ndarray,
+        *,
+        Gmax: float,  # noqa: N803
+        mu: float,
+        d: float,
+        Tmax: float,  # noqa: N803
 ) -> np.ndarray:
     """
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
@@ -81,12 +86,12 @@ def transition_function(
     # 1e(a very large number) or 1e(a very small number)
     w = np.zeros(gamma.shape)
     for ix, g in enumerate(gamma):
-        intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (
+        intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (  # noqa: N806
             -1.036
         )
-        if -a * intermediateValue > 305:
+        if -a * intermediateValue > 305:  # noqa: PLR2004
             w[ix] = 1.0
-        elif -a * intermediateValue < -305:
+        elif -a * intermediateValue < -305:  # noqa: PLR2004
             w[ix] = 0.0
         else:
             w[ix] = 1 - 1.0 / (
@@ -100,7 +105,7 @@ def transition_function(
     return w
 
 
-def tau_HH(
+def tau_HH(  # noqa: N802
         gamma: np.ndarray,
         *,
         gamma_t: float,
@@ -108,9 +113,9 @@ def tau_HH(
         gamma_ref: float,
         beta: float,
         s: float,
-        Gmax: float,
+        Gmax: float,  # noqa: N803
         mu: float,
-        Tmax: float,
+        Tmax: float,  # noqa: N803
         d: float,
 ) -> np.ndarray:
     """
@@ -147,13 +152,13 @@ def tau_HH(
         same unit as ``Gmax``.
     """
     w = transition_function(gamma, a=a, gamma_t=gamma_t)
-    T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
-    T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)
+    T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)  # noqa: N806
+    T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)  # noqa: N806
 
     return w * T_MKZ + (1 - w) * T_FKZ
 
 
-def fit_HH_x_single_layer(
+def fit_HH_x_single_layer(  # noqa: N802
         damping_data_in_pct: np.ndarray,
         *,
         use_scipy: bool = True,
@@ -233,7 +238,7 @@ def fit_HH_x_single_layer(
     # number of HH model parameters; do not change this for HH model
     n_param = 9
 
-    N = 122  # denser strain array for more accurate damping calculation
+    N = 122  # denser strain array for more accurate damping calculation  # noqa: N806
     strain_dense = np.logspace(-6, -1, N)  # unit: 1
     damping_dense = np.interp(
         strain_dense,
@@ -277,7 +282,7 @@ def fit_HH_x_single_layer(
     best_param['d'] = 10 ** result[8]
 
     if show_fig:
-        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_HH)
+        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_HH)  # noqa: SLF001
 
     return best_param
 
@@ -306,22 +311,22 @@ def _damping_misfit(
         The mean absolute error between the true damping values and the
         predicted damping values at each strain level.
     """
-    gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
+    gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param  # noqa: N806
 
     gamma_t = 10**gamma_t_
     a = 10**a_
     gamma_ref = 10**gamma_ref_
     beta = 10**beta_
     s = 10**s_
-    Gmax = 10**Gmax_
+    Gmax = 10**Gmax_  # noqa: N806
     mu = 10**mu_
-    Tmax = 10**Tmax_
+    Tmax = 10**Tmax_  # noqa: N806
     d = 10**d_
 
     strain = damping_data[:, 0]
     damping_true = damping_data[:, 1]
 
-    Tau_HH = tau_HH(
+    Tau_HH = tau_HH(  # noqa: N806
         strain,
         gamma_t=gamma_t,
         a=a,
@@ -353,7 +358,7 @@ def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
-    assert len(param) == 9
+    assert len(param) == 9  # noqa: PLR2004
     order = [
         'gamma_t',
         'a',
@@ -389,7 +394,7 @@ def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 9
+    assert len(array) == 9  # noqa: PLR2004
 
     param = {}
     param['gamma_t'] = array[0]

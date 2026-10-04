@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     import numpy as np
 
 
-class HH_Calibration:
+class HH_Calibration:  # noqa: N801
     """
     Class implementation of the "HH calibration procedure" (HHC procedure). The
     HHC procedure generates parameters of each soil layer for the HH model. The
@@ -64,8 +64,8 @@ class HH_Calibration:
             self,
             vs_profile: Vs_Profile,
             *,
-            GGmax_curves: Multiple_GGmax_Curves | None = None,
-            Tmax_profile: np.ndarray | None = None,
+            GGmax_curves: Multiple_GGmax_Curves | None = None,  # noqa: N803
+            Tmax_profile: np.ndarray | None = None,  # noqa: N803
     ) -> None:
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
@@ -98,13 +98,13 @@ class HH_Calibration:
 
     def fit(
             self,
-            show_fig: bool = False,
-            save_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
+            save_fig: bool = False,  # noqa: FBT001, FBT002
             fig_output_dir: str | None = None,
-            save_HH_G_file: bool = False,
-            HH_G_file_dir: str | None = None,
+            save_HH_G_file: bool = False,  # noqa: FBT001, FBT002, N803
+            HH_G_file_dir: str | None = None,  # noqa: N803
             profile_name: str | None = None,
-            verbose: bool = True,
+            verbose: bool = True,  # noqa: FBT001, FBT002
     ) -> HH_Param_Multi_Layer:
         """
         Calculate the HH parameters with the given Vs profile and/or G/Gmax
@@ -150,10 +150,10 @@ class HH_Calibration:
             'verbose': verbose,
         }
         if self.GGmax_curves is None:
-            HH_G_param_ = hhc.hh_param_from_profile(vs_profile, **options)
+            HH_G_param_ = hhc.hh_param_from_profile(vs_profile, **options)  # noqa: N806
         else:
             curves = self.GGmax_curves.get_curve_matrix()
-            HH_G_param_ = hhc.hh_param_from_curves(
+            HH_G_param_ = hhc.hh_param_from_curves(  # noqa: N806
                 vs_profile, curves, **options
             )
 

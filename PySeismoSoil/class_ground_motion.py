@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Ground_Motion:
+class Ground_Motion:  # noqa: N801
     r"""
     Class implementation of an earthquake ground motion.
 
@@ -122,7 +122,7 @@ class Ground_Motion:
     pgd_in_cm: float
     Arias_Intensity: np.ndarray
     Arias_Intensity_normalized: np.ndarray
-    peak_Arias_Intensity: float
+    peak_Arias_Intensity: float  # noqa: N815
     T5_95: float
     rms_accel: float
     rms_veloc: float
@@ -160,6 +160,7 @@ class Ground_Motion:
                 raise ValueError(
                     "Please use '/s/s' instead of 's^2' in `unit`."
                 )
+
             raise ValueError(
                 f'Invalid `unit` name. Valid names are: {valid_unit_name}',
             )
@@ -225,11 +226,11 @@ class Ground_Motion:
         print(self)
         self.plot()
 
-    def get_Fourier_spectrum(
+    def get_Fourier_spectrum(  # noqa: N802
             self,
-            real_val: bool = True,
-            double_sided: bool = False,
-            show_fig: bool = False,
+            real_val: bool = True,  # noqa: FBT001, FBT002
+            double_sided: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> Frequency_Spectrum:
         """
         Get Fourier spectrum of the ground motion.
@@ -260,12 +261,12 @@ class Ground_Motion:
 
     def get_response_spectra(
             self,
-            T_min: float = 0.01,
-            T_max: float = 10,
+            T_min: float = 0.01,  # noqa: N803
+            T_max: float = 10,  # noqa: N803
             n_pts: int = 60,
             damping: float = 0.05,
-            show_fig: bool = True,
-            parallel: bool = False,
+            show_fig: bool = True,  # noqa: FBT001, FBT002
+            parallel: bool = False,  # noqa: FBT001, FBT002
             n_cores: int | None = None,
             subsample_interval: int = 1,
     ) -> tuple[np.ndarray, ...]:
@@ -384,8 +385,8 @@ class Ground_Motion:
         """
         Convert the unit of acceleration.
 
-        "In-place" conversion is not allowed, because ground motions are
-        always stored in SI units internally.
+        "In-place" conversion is not allowed, because ground motions are always
+        stored in SI units internally.
 
         Parameters
         ----------
@@ -418,7 +419,7 @@ class Ground_Motion:
 
         return accel
 
-    def __calc_RMS(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def __calc_RMS(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:  # noqa: N802
         """Return RMS acceleration, velocity, and displacement. Unit: SI."""
         acc = self.accel
         vel, dis = sr.num_int(acc)
@@ -431,7 +432,7 @@ class Ground_Motion:
     def __arias_time_bounds(
             self,
             t: np.ndarray | None,
-            Ia_normalized: np.ndarray | None,
+            Ia_normalized: np.ndarray | None,  # noqa: N803
             low_lim: float,
             high_lim: float,
     ) -> tuple[float, float]:
@@ -448,7 +449,7 @@ class Ground_Motion:
             t = self.accel[:, 0]
 
         if Ia_normalized is None:
-            Ia_normalized = self.Arias_Intensity_normalized[:, 1]
+            Ia_normalized = self.Arias_Intensity_normalized[:, 1]  # noqa: N806
 
         if len(t) != len(Ia_normalized):
             raise ValueError('Ia_normalized and t must have the same length.')
@@ -469,10 +470,10 @@ class Ground_Motion:
 
         return t_low, t_high
 
-    def __calc_Arias(
+    def __calc_Arias(  # noqa: N802
             self,
             motion: str = 'accel',
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> tuple[np.ndarray, np.ndarray, float, float]:
         """
         Calculate Arias intensity.
@@ -495,19 +496,19 @@ class Ground_Motion:
         n = len(a)
 
         dt = t[1] - t[0]
-        Ia_1col = np.zeros(n)
+        Ia_1col = np.zeros(n)  # noqa: N806
         a_sq = a**2.0
 
         for i in range(1, n):
             Ia_1col[i] = Ia_1col[i - 1] + np.pi / (2 * g) * a_sq[i - 1] * dt
 
-        Ia_peak = float(Ia_1col[-1])
-        Ia = np.column_stack((t, Ia_1col))
-        Ia_norm_1col = Ia_1col / Ia_peak  # normalized
-        Ia_norm = np.column_stack((t, Ia_norm_1col))
+        Ia_peak = float(Ia_1col[-1])  # noqa: N806
+        Ia = np.column_stack((t, Ia_1col))  # noqa: N806
+        Ia_norm_1col = Ia_1col / Ia_peak  # normalized  # noqa: N806
+        Ia_norm = np.column_stack((t, Ia_norm_1col))  # noqa: N806
 
         t_low, t_high = self.__arias_time_bounds(t, Ia_norm_1col, 0.05, 0.95)
-        T5_95 = t_high - t_low
+        T5_95 = t_high - t_low  # noqa: N806
 
         if show_fig:
             plt.figure()
@@ -528,7 +529,7 @@ class Ground_Motion:
     def scale_motion(
             self,
             factor: float = 1.0,
-            target_PGA_in_g: float | None = None,
+            target_PGA_in_g: float | None = None,  # noqa: N803
     ) -> Ground_Motion:
         """
         Scale ground motion.
@@ -559,12 +560,12 @@ class Ground_Motion:
         acc_scaled = acc * factor
         return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
 
-    def truncate(
+    def truncate(  # noqa: PLR0915
             self,
             limit: tuple[float, float],
-            arias: bool = True,
+            arias: bool = True,  # noqa: FBT001, FBT002
             extend: tuple[float, float] = (0, 0),
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> tuple[Ground_Motion, Figure | None, Axes | None, tuple[int, int]]:
         """
         Truncate ground motion, removing data points in the head and/or tail.
@@ -607,13 +608,13 @@ class Ground_Motion:
         if not isinstance(limit, (tuple, list)):
             raise TypeError('`limit` must be a list/tuple of  two elements.')
 
-        if len(limit) != 2:
+        if len(limit) != 2:  # noqa: PLR2004
             raise ValueError('Length of `limit` must be 2.')
 
         if not isinstance(extend, (tuple, list)):
             raise TypeError('`extend` must be a list/tuple of  two elements.')
 
-        if len(extend) != 2:
+        if len(extend) != 2:  # noqa: PLR2004
             raise ValueError('Length of `extend` must be 2.')
 
         if extend[0] < 0 or extend[1] < 0:
@@ -688,12 +689,12 @@ class Ground_Motion:
     def amplify_by_tf(
             self,
             transfer_function: Frequency_Spectrum,
-            taper: bool = False,
-            extrap_tf: bool = True,
-            deconv: bool = False,
-            show_fig: bool = False,
+            taper: bool = False,  # noqa: FBT001, FBT002
+            extrap_tf: bool = True,  # noqa: FBT001, FBT002
+            deconv: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             dpi: float = 100,
-            return_fig_obj: bool = False,
+            return_fig_obj: bool = False,  # noqa: FBT001, FBT002
     ) -> tuple[Ground_Motion, Figure | None, Axes | None]:
         """
         Amplify (or de-amplify) ground motions in the frequency domain.
@@ -779,7 +780,7 @@ class Ground_Motion:
             self,
             soil_profile: Vs_Profile,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> Ground_Motion:
         """
         Amplify the ground motion via a 1D soil profile.
@@ -823,8 +824,8 @@ class Ground_Motion:
     def compare(
             self,
             another_ground_motion: Ground_Motion,
-            this_ground_motion_as_input: bool = True,
-            smooth: bool = True,
+            this_ground_motion_as_input: bool = True,  # noqa: FBT001, FBT002
+            smooth: bool = True,  # noqa: FBT001, FBT002
             input_accel_label: str = 'Input',
             output_accel_label: str = 'Output',
     ) -> tuple[Figure, Axes]:
@@ -897,7 +898,7 @@ class Ground_Motion:
             self,
             soil_profile: Vs_Profile,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> Ground_Motion:
         """
         Deconvolve the ground motion.
@@ -940,7 +941,9 @@ class Ground_Motion:
         return Ground_Motion(response, unit='m')
 
     def baseline_correct(
-            self, cutoff_freq: float = 0.20, show_fig: bool = False
+            self,
+            cutoff_freq: float = 0.20,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
     ) -> Ground_Motion:
         """
         Baseline-correct the acceleration.
@@ -968,7 +971,7 @@ class Ground_Motion:
     def lowpass(
             self,
             cutoff_freq: float,
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             filter_order: int = 4,
             padlen: int = 150,
     ) -> Ground_Motion:
@@ -1006,7 +1009,7 @@ class Ground_Motion:
     def highpass(
             self,
             cutoff_freq: float,
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             filter_order: int = 4,
             padlen: int = 150,
     ) -> Ground_Motion:
@@ -1044,7 +1047,7 @@ class Ground_Motion:
     def bandpass(
             self,
             cutoff_freq: tuple[float, float],
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             filter_order: int = 4,
             padlen: int = 150,
     ) -> Ground_Motion:
@@ -1082,7 +1085,7 @@ class Ground_Motion:
     def bandstop(
             self,
             cutoff_freq: tuple[float, float],
-            show_fig: bool = False,
+            show_fig: bool = False,  # noqa: FBT001, FBT002
             filter_order: int = 4,
             padlen: int = 150,
     ) -> Ground_Motion:
