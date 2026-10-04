@@ -15,6 +15,10 @@ from PySeismoSoil.class_simulation import (
 if TYPE_CHECKING:
     from PySeismoSoil.class_simulation_results import Simulation_Results
 
+SimulationTypeName = Literal[
+    'Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation'
+]
+
 
 class Batch_Simulation:
     """
@@ -41,8 +45,10 @@ class Batch_Simulation:
         Same as the input parameter ``list_of_simulations``.
     n_simulations : int
         Number of simulations in the list.
-    sim_type : Literal['Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation']
-        The object type of the site response simulations.
+    sim_type : SimulationTypeName
+        The object type of the site response simulations: one of
+        'Linear_Simulation', 'Equiv_Linear_Simulation', or
+        'Nonlinear_Simulation'.
 
     Raises
     ------
@@ -50,13 +56,11 @@ class Batch_Simulation:
         When ``list_of_simulations`` is not a list
     ValueError
         When ``list_of_simulations`` has length 0
-    """  # noqa: E501
+    """
 
     list_of_simulations: list[Simulation_Results]
     n_simulations: int
-    sim_type: Literal[
-        'Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation'
-    ]
+    sim_type: SimulationTypeName
 
     def __init__(
             self,

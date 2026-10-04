@@ -948,7 +948,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
         Produce a full "curve matrix" based on the damping data defined in
         objects of this class.
 
-        The "curve matrix" will be in the following format:
+        The "curve matrix" will be in the following format (the four columns
+        repeat for each soil layer):
             +------------+--------+------------+-------------+-----+
             | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
             +============+========+============+=============+=====+
@@ -972,7 +973,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
         -------
         curve_matrix : np.ndarray
             A matrix containing damping curves in the above-mentioned format.
-        """  # noqa: E501
+        """
         # lengths of strain array of each layer
         lengths = [len(curve_.strain) for curve_ in self.curves]
 
@@ -1413,7 +1414,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         Produce a full "curve matrix" based on the G/Gmax data defined in
         objects of this class.
 
-        The full "curve matrix" will be in the following format:
+        The full "curve matrix" will be in the following format (the four
+        columns repeat for each soil layer):
             +------------+--------+------------+-------------+-----+
             | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
             +============+========+============+=============+=====+
@@ -1437,7 +1439,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         -------
         curve_matrix : np.ndarray
             A matrix containing G/Gmax curves in the above-mentioned format.
-        """  # noqa: E501
+        """
         # lengths of strain array of each layer
         lengths = [len(curve_.strain) for curve_ in self.curves]
 
@@ -1466,6 +1468,10 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         return curve_matrix
 
 
+# A tuple of the G/Gmax curves and the damping curves of the same soil layers
+MgcMdcPair = tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]
+
+
 class Multiple_GGmax_Damping_Curves:
     """
     A "parent" class that holds both G/Gmax curves and damping curves
@@ -1477,12 +1483,14 @@ class Multiple_GGmax_Damping_Curves:
 
     Parameters
     ----------
-    mgc_and_mdc : tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves] | None, default=None
-        A tuple of two elements, which are the G/Gmax curve information and the
-        damping curve information, respectively. The two objects needs to have
-        the same ``n_layer`` attribute.
+    mgc_and_mdc : MgcMdcPair | None, default=None
+        A tuple of two elements, which are the G/Gmax curve information (a
+        ``Multiple_GGmax_Curves`` object) and the damping curve information (a
+        ``Multiple_Damping_Curves`` object), respectively. The two objects
+        needs to have the same ``n_layer`` attribute.
     data : np.ndarray | str | None, default=None
-        A 2D numpy array of the following format:
+        A 2D numpy array of the following format (the four columns repeat for
+        each soil layer):
             +------------+--------+------------+-------------+-----+
             | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
             +============+========+============+=============+=====+
@@ -1511,7 +1519,10 @@ class Multiple_GGmax_Damping_Curves:
         When the type of ``mgc_and_mdc`` is wrong
     ValueError
         When both input arguments are ``None``, or neither of them are ``None``
-    """  # noqa: E501
+    """
+
+    # A ``(mgc, mdc)`` tuple must have exactly two elements
+    N_ELEMENTS_IN_MGC_MDC_TUPLE: ClassVar[int] = 2
 
     mgc: Multiple_GGmax_Curves
     mdc: Multiple_Damping_Curves
@@ -1521,8 +1532,7 @@ class Multiple_GGmax_Damping_Curves:
     def __init__(
             self,
             *,
-            mgc_and_mdc: tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]
-            | None = None,
+            mgc_and_mdc: MgcMdcPair | None = None,
             data: np.ndarray | str | None = None,
     ) -> None:
         if mgc_and_mdc is None and data is None:
@@ -1541,7 +1551,7 @@ class Multiple_GGmax_Damping_Curves:
             if not isinstance(mgc_and_mdc, tuple):
                 raise TypeError('`mgc_and_mdc` needs to be a tuple.')
 
-            if len(mgc_and_mdc) != 2:  # noqa: PLR2004
+            if len(mgc_and_mdc) != self.N_ELEMENTS_IN_MGC_MDC_TUPLE:
                 raise ValueError('Length of `mgc_and_mdc` needs to be 2.')
 
             if not isinstance(mgc_and_mdc[0], Multiple_GGmax_Curves):
@@ -1621,13 +1631,14 @@ class Multiple_GGmax_Damping_Curves:
         Returns
         -------
         curve_matrix : np.ndarray
-            A 2D numpy array with the following format::
+            A 2D numpy array with the following format (the four columns repeat
+            for each soil layer)::
                 +------------+--------+------------+-------------+-----+
                 | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
                 +============+========+============+=============+=====+
                 |    ...     |  ...   |    ...     |    ...      | ... |
                 +------------+--------+------------+-------------+-----+
-        """  # noqa: E501
+        """
         if self.data is not None:
             return self.data
 

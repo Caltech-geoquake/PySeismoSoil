@@ -53,8 +53,8 @@ from PySeismoSoil import helper_site_response as sr
 N_COLUMNS_FULL_VS_PROFILE = 5
 
 # Thresholds (in terms of "mu") below which the empirical mu is increased by
-# 3, 2, and 1 times the standard error (0.236, in log10 scale) suggested by
-# Vardanega & Bolton (2011)
+# 3, 2, and 1 times the standard error (0.236, in log10 scale) suggested in
+# the 2011 paper by Vardanega and Bolton
 MU_THRESHOLD_THREE_STD_ERR_BOOST = 0.02
 MU_THRESHOLD_TWO_STD_ERR_BOOST = 0.03
 MU_THRESHOLD_ONE_STD_ERR_BOOST = 0.04

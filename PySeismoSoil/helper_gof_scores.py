@@ -580,7 +580,7 @@ def getAbsPeak(x: np.ndarray) -> float:  # noqa: N802
     """
     if x.shape[1] == 1:
         peak = np.max(np.abs(x))
-    elif x.shape[1] == 2:  # noqa: PLR2004
+    elif x.shape[1] == hlp.N_COLUMNS_TWO_COL_DATA:
         peak = np.max(np.abs(x[:, 1]))
     else:
         raise TypeError('Dimension error.')

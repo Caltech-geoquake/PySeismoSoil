@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -54,6 +54,12 @@ class Ground_Motion:
 
     Attributes
     ----------
+    N_ELEMENTS_IN_LIMIT : ClassVar[int], default=2
+        Number of elements (lower and upper bounds) that the ``limit`` argument
+        of ``truncate()`` must have (class attribute).
+    N_ELEMENTS_IN_EXTEND : ClassVar[int], default=2
+        Number of elements (amounts to extend before and after) that the
+        ``extend`` argument of ``truncate()`` must have (class attribute).
     dt : float
         Recording time interval of the motion.
     time : np.ndarray
@@ -106,6 +112,9 @@ class Ground_Motion:
     ValueError
         When ``motion_type`` has invalid values
     """
+
+    N_ELEMENTS_IN_LIMIT: ClassVar[int] = 2
+    N_ELEMENTS_IN_EXTEND: ClassVar[int] = 2
 
     dt: float
     time: np.ndarray
@@ -612,13 +621,13 @@ class Ground_Motion:
         if not isinstance(limit, (tuple, list)):
             raise TypeError('`limit` must be a list/tuple of  two elements.')
 
-        if len(limit) != 2:  # noqa: PLR2004
+        if len(limit) != self.N_ELEMENTS_IN_LIMIT:
             raise ValueError('Length of `limit` must be 2.')
 
         if not isinstance(extend, (tuple, list)):
             raise TypeError('`extend` must be a list/tuple of  two elements.')
 
-        if len(extend) != 2:  # noqa: PLR2004
+        if len(extend) != self.N_ELEMENTS_IN_EXTEND:
             raise ValueError('Length of `extend` must be 2.')
 
         if extend[0] < 0 or extend[1] < 0:

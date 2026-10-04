@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import json
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
@@ -13,8 +14,6 @@ from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
 if TYPE_CHECKING:  # to avoid circular imports
-    from collections.abc import Callable
-
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
@@ -24,6 +23,13 @@ if TYPE_CHECKING:  # to avoid circular imports
     )
 
 STRAIN_RANGE_PCT = np.logspace(-2, 1)
+
+# A function that calculates shear stress from the model parameters
+StressFunction = Callable[[dict[str, float], ...], np.ndarray]
+
+# Valid ways of initializing HH_Param_Multi_Layer and MKZ_Param_Multi_Layer
+HHParamInput = str | np.ndarray | list[dict[str, float]] | list['HH_Param']
+MKZParamInput = str | np.ndarray | list[dict[str, float]] | list['MKZ_Param']
 
 
 class Parameter(collections.UserDict):
@@ -42,7 +48,7 @@ class Parameter(collections.UserDict):
         Name-value pairs of the parameters.
     allowable_keys : set[str] | None, default=None
         The allowable parameter names of the constitutive model.
-    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None, default=None
+    func_stress : StressFunction | None, default=None
         A function to calculate shear stress from the parameters.
 
     Attributes
@@ -51,7 +57,7 @@ class Parameter(collections.UserDict):
         The original data, stored as a regular dictionary.
     allowable_keys : set[str] | None
         Same as the input parameter.
-    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None
+    func_stress : StressFunction | None
         A function to calculate shear stress from the parameters.
 
     Raises
@@ -60,19 +66,18 @@ class Parameter(collections.UserDict):
         When input arguments have invalid types
     KeyError
         When keys outside ``allowable_keys`` exist in ``param_dict``
-    """  # noqa: E501
+    """
 
     data: dict[str, float]
     allowable_keys: set[str] | None
-    func_stress: Callable[[dict[str, float], ...], np.ndarray] | None
+    func_stress: StressFunction | None
 
     def __init__(
             self,
             param_dict: dict[str, float],
             *,
             allowable_keys: set[str] | None = None,
-            func_stress: Callable[[dict[str, float], ...], np.ndarray]
-            | None = None,
+            func_stress: StressFunction | None = None,
     ) -> None:
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
@@ -554,7 +559,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : str | np.ndarray | list[dict[str, float]] | list[HH_Param]
+    filename_or_data : HHParamInput
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -584,17 +589,14 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     ------
     TypeError
         When the type of ``filename_or_data`` is not valid
-    """  # noqa: E501
+    """
 
     param_list: list[HH_Param]
     n_layer: int
 
     def __init__(
             self,
-            filename_or_data: str
-            | np.ndarray
-            | list[dict[str, float]]
-            | list[HH_Param],
+            filename_or_data: HHParamInput,
             *,
             sep: str = '\t',
     ) -> None:
@@ -647,7 +649,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : str | np.ndarray | list[dict[str, float]] | list[HH_Param]
+    filename_or_data : MKZParamInput
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -677,17 +679,14 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     ------
     TypeError
         When then type of ``filename_or_data`` is not valid
-    """  # noqa: E501
+    """
 
     param_list: list[MKZ_Param]
     n_layer: int
 
     def __init__(
             self,
-            filename_or_data: str
-            | np.ndarray
-            | list[dict[str, float]]
-            | list[HH_Param],
+            filename_or_data: MKZParamInput,
             *,
             sep: str = '\t',
     ) -> None:

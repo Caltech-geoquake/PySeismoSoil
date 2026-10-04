@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
+from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_calibration as hhc
 from PySeismoSoil.class_curves import Damping_Curve, Multiple_Damping_Curves
 from PySeismoSoil.class_Vs_profile import Vs_Profile
@@ -63,7 +64,8 @@ class Damping_Calibration:
         n_layer = len(Vs)
 
         # there can only be 5 or 2 columns
-        if self.vs_profile.vs_profile.shape[1] == 5:  # noqa: PLR2004
+        n_columns = self.vs_profile.vs_profile.shape[1]
+        if n_columns == hlp.N_COLUMNS_FULL_VS_PROFILE:
             rho = self.vs_profile.vs_profile[:-1, 3]
         else:  # only 2 columns
             rho = hhc._calc_rho(h, Vs)  # noqa: SLF001

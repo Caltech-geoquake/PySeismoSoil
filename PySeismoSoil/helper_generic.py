@@ -13,6 +13,20 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
+AxesProjection = Literal[
+    'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'
+]
+
+NDIM_2D_ARRAY = 2
+N_COLUMNS_TWO_COL_DATA = 2
+N_COLUMNS_FULL_VS_PROFILE = 5
+DELTA_UNIFORMITY_REL_TOL = 1e-8
+
+# Status codes returned by ``check_numbers_valid()`` (0 means all valid)
+CHECK_STATUS_NON_NUMERIC = -1
+CHECK_STATUS_NOT_FINITE = -2
+CHECK_STATUS_NEGATIVE = -3
+
 
 def detect_OS() -> str:  # noqa: N802
     """
@@ -95,10 +109,7 @@ def _process_fig_ax_objects(
         ax: Axes | None,
         figsize: tuple[float, float] | None = None,
         dpi: float | None = None,
-        ax_proj: Literal[
-            'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'
-        ]
-        | None = None,
+        ax_proj: AxesProjection | None = None,
         *,
         bypass_ax_creation: bool = False,
 ) -> tuple[Figure, Axes]:
@@ -121,7 +132,7 @@ def _process_fig_ax_objects(
     dpi : float | None, default=None
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    ax_proj : Literal['aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'] | None, default=None
+    ax_proj : AxesProjection | None, default=None
         The projection type of the axes. One of 'aitoff', 'hammer', 'lambert',
         'mollweide', 'polar', 'rectilinear'. The default None results in a
         'rectilinear' projection.
@@ -134,7 +145,7 @@ def _process_fig_ax_objects(
         The figure object being created or being passed into this function.
     ax : Axes
         The axes object being created or being passed into this function.
-    """  # noqa: E501
+    """
     if fig is None:  # if a figure handle is not provided, create new figure
         fig = plt.figure(figsize=figsize, dpi=dpi)
     else:  # if provided, plot to the specified figure
@@ -202,7 +213,9 @@ def read_two_column_stuff(
     else:
         raise TypeError('`data` must be a file name or a numpy array.')
 
-    if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):  # noqa: PLR2004
+    if data_.ndim == 1 or (
+        data_.ndim == NDIM_2D_ARRAY and min(data_.shape) == 1
+    ):
         if delta is None:
             raise ValueError(
                 '`delta` (such as dt or df) is needed for one-column `data`.',
@@ -210,12 +223,18 @@ def read_two_column_stuff(
 
         n = len(data_)
         col1 = np.linspace(delta, n * delta, num=n)
-        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8  # noqa: PLR2004
+        assert (
+            np.abs(col1[1] - col1[0] - delta) / delta
+            <= DELTA_UNIFORMITY_REL_TOL
+        )
         data_ = np.column_stack((col1, data_))
-    elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns  # noqa: PLR2004
+    elif (
+        data_.ndim == NDIM_2D_ARRAY
+        and data_.shape[1] == N_COLUMNS_TWO_COL_DATA
+    ):  # two columns
         col1 = data_[:, 0]
         delta = col1[1] - col1[0]
-    elif data_.shape[1] != 2:  # noqa: PLR2004
+    elif data_.shape[1] != N_COLUMNS_TWO_COL_DATA:
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
             'array, or a one-column array with a `delta` value.',
@@ -367,7 +386,10 @@ def assert_2D_numpy_array(something: object, name: str | None = None) -> None:  
     TypeError
         When ``something`` is not a 2D numpy array
     """
-    if not isinstance(something, np.ndarray) or something.ndim != 2:  # noqa: PLR2004
+    if (
+        not isinstance(something, np.ndarray)
+        or something.ndim != NDIM_2D_ARRAY
+    ):
         name = '`something`' if name is None else name
         raise TypeError(f'{name} must be a 2D numpy array.')
 
@@ -410,23 +432,26 @@ def check_two_column_format(
     if not isinstance(something, np.ndarray):
         raise TypeError(f'{name} should be a numpy array.')
 
-    if something.ndim != 2:  # noqa: PLR2004
+    if something.ndim != NDIM_2D_ARRAY:
         raise TypeError(f'{name} should be a 2D numpy array.')
 
-    if not at_least_two_columns and something.shape[1] != 2:  # noqa: PLR2004
+    if (
+        not at_least_two_columns
+        and something.shape[1] != N_COLUMNS_TWO_COL_DATA
+    ):
         raise TypeError(f'{name} should have two columns.')
 
-    if at_least_two_columns and something.shape[1] < 2:  # noqa: PLR2004
+    if at_least_two_columns and something.shape[1] < N_COLUMNS_TWO_COL_DATA:
         raise TypeError(f'{name} should have >= 2 columns.')
 
     check_status = check_numbers_valid(something)
-    if check_status == -1:
+    if check_status == CHECK_STATUS_NON_NUMERIC:
         raise ValueError(f'{name} should only contain numeric elements.')
 
-    if check_status == -2:  # noqa: PLR2004
+    if check_status == CHECK_STATUS_NOT_FINITE:
         raise ValueError(f'{name} should contain no NaN values.')
 
-    if ensure_non_negative and check_status == -3:  # noqa: PLR2004
+    if ensure_non_negative and check_status == CHECK_STATUS_NEGATIVE:
         raise ValueError(f'{name} should have all non-negative values.')
 
 
@@ -453,16 +478,19 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
         raise TypeError('`data` should be a numpy array.')
 
     check_status = check_numbers_valid(data)
-    if check_status == -1:
+    if check_status == CHECK_STATUS_NON_NUMERIC:
         raise ValueError('`data` should only contain numeric elements.')
 
-    if check_status == -2:  # noqa: PLR2004
+    if check_status == CHECK_STATUS_NOT_FINITE:
         raise ValueError('`data` should contain no NaN values.')
 
-    if data.ndim != 2:  # noqa: PLR2004
+    if data.ndim != NDIM_2D_ARRAY:
         raise ValueError('`data` should be a 2D numpy array.')
 
-    if data.shape[1] not in {2, 5}:
+    if data.shape[1] not in {
+        N_COLUMNS_TWO_COL_DATA,
+        N_COLUMNS_FULL_VS_PROFILE,
+    }:
         raise ValueError('`data` should have either 2 or 5 columns.')
 
     thk = data[:, 0]
@@ -479,7 +507,7 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
     if np.any(Vs <= 0):
         raise ValueError('The Vs column should be all positive.')
 
-    if data.shape[1] == 5:  # noqa: PLR2004
+    if data.shape[1] == N_COLUMNS_FULL_VS_PROFILE:
         xi = data[:, 2]
         rho = data[:, 3]
         mat = data[:, 4]
@@ -554,13 +582,13 @@ def check_numbers_valid(array: np.ndarray) -> int:
     assert isinstance(array, np.ndarray)
 
     if not np.issubdtype(array.dtype, np.number):
-        return -1
+        return CHECK_STATUS_NON_NUMERIC
 
     if not np.isfinite(array).all():
-        return -2
+        return CHECK_STATUS_NOT_FINITE
 
     if np.any(array < 0):
-        return -3
+        return CHECK_STATUS_NEGATIVE
 
     return 0
 
@@ -694,7 +722,7 @@ def extract_from_curve_format(
     if not isinstance(curves, np.ndarray):
         raise TypeError('`curves` needs to be a numpy array.')
 
-    if curves.ndim != 2:  # noqa: PLR2004
+    if curves.ndim != NDIM_2D_ARRAY:
         raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
 
     if curves.shape[1] % 4 != 0:
@@ -760,7 +788,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
     TypeError
         When the input has invalid types
     """
-    if not isinstance(params, np.ndarray) or params.ndim != 2:  # noqa: PLR2004
+    if not isinstance(params, np.ndarray) or params.ndim != NDIM_2D_ARRAY:
         raise TypeError('`params` needs to be a 2D numpy array.')
 
     n_layer = params.shape[1]
