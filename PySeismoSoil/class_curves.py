@@ -310,6 +310,10 @@ class Damping_Curve(Curve):
 
     Attributes
     ----------
+    MAX_POSSIBLE_DAMPING_PCT : ClassVar[int], default=100
+        Upper bound of valid damping values, in percent (class attribute).
+    MIN_POSSIBLE_DAMPING : ClassVar[int], default=0
+        Lower bound of valid damping values (class attribute).
     raw_data : np.ndarray
         The raw data that the user passed in.
     strain : np.ndarray
@@ -1496,6 +1500,10 @@ class Multiple_GGmax_Damping_Curves:
 
     Attributes
     ----------
+    NUM_ELEMENTS_IN_MGC_MDC_TUPLE : ClassVar[int], default=2
+        Number of elements that the ``mgc_and_mdc`` tuple must have: a
+        ``Multiple_GGmax_Curves`` object and a ``Multiple_Damping_Curves``
+        object (class attribute).
     mgc : Multiple_GGmax_Curves
         Object containing information of G/Gmax curves. It will be ``None`` if
         ``mgc_and_mdc`` is not provided.

@@ -60,6 +60,45 @@ class SVM:
 
     Attributes
     ----------
+    MIN_APPLICABLE_VS30_M_S : ClassVar[float], default=173.1
+        Lower bound of the Vs30 range where the SVM is applicable, in m/s
+        (class attribute).
+    MAX_APPLICABLE_VS30_M_S : ClassVar[float], default=1000
+        Upper bound of the Vs30 range where the SVM is applicable, in m/s
+        (class attribute).
+    MIN_TRIAL_VS30_M_S : ClassVar[float], default=130
+        Lower bound of the "trial Vs30" values allowed in the Vs30 iteration,
+        in m/s (class attribute).
+    MAX_TRIAL_VS30_M_S : ClassVar[float], default=1000
+        Upper bound of the "trial Vs30" values allowed in the Vs30 iteration,
+        in m/s (class attribute).
+    TOP_HOMOGENEOUS_LAYER_THICKNESS_M : ClassVar[float], default=2.5
+        Thickness of the homogeneous layer at the top of the Vs profile, in
+        meters (class attribute).
+    BEDROCK_VS_M_S : ClassVar[float], default=1000
+        Bedrock Vs, in m/s, that is added at the bottom of a randomized Vs
+        profile if the profile does not reach this value (class attribute).
+    VS30_COMPLIANCE_TOL_M_S : ClassVar[float], default=25.0
+        Tolerance of the Vs30 of a randomized profile to be "compliant" with
+        the base profile, in m/s (class attribute).
+    LAST_VS_COMPLIANCE_REL_TOL : ClassVar[float], default=0.05
+        Relative tolerance of the last-layer Vs of a randomized profile to be
+        "compliant" with the base profile (class attribute).
+    Z1_COMPLIANCE_REL_TOL : ClassVar[float], default=0.20
+        Relative tolerance of the z1 of a randomized profile to be "compliant"
+        with the base profile (class attribute).
+    SITE_CLASS_E_UPPER_VS30_M_S : ClassVar[float], default=180
+        Upper bound of Vs30 (exclusive) of NEHRP site class E, in m/s (class
+        attribute).
+    SITE_CLASS_D_UPPER_VS30_M_S : ClassVar[float], default=360
+        Upper bound of Vs30 (exclusive) of NEHRP site class D, in m/s (class
+        attribute).
+    SITE_CLASS_C_UPPER_VS30_M_S : ClassVar[float], default=760
+        Upper bound of Vs30 (exclusive) of NEHRP site class C, in m/s (class
+        attribute).
+    TORO_CORRELATION_REF_DEPTH_M : ClassVar[float], default=200.0
+        Depth, in meters, beyond which the inter-layer correlation coefficient
+        in Toro (1995) is a constant (class attribute).
     Vs30 : float
         The target Vs30 value, in m/s.
     z1 : float

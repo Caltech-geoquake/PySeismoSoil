@@ -75,6 +75,16 @@ class Vs_Profile:
 
     Attributes
     ----------
+    NUM_COLUMNS_THICKNESS_AND_VS : ClassVar[int], default=2
+        Number of columns of a Vs profile that only has the thickness and Vs
+        columns (class attribute).
+    NUM_COLUMNS_OF_FULL_VS_PROFILE : ClassVar[int], default=5
+        Number of columns of a full Vs profile: thickness, Vs, damping,
+        density, and material number (class attribute).
+    MIN_PLAUSIBLE_DENSITY_KG_M3 : ClassVar[int], default=1000
+        If the minimum density of a profile (in kg/m^3) is at or below this
+        value, a warning is printed because the density is likely given in a
+        wrong unit (class attribute).
     vs_profile : np.ndarray
         The full 5-column Vs profile data. If the supplied Vs profile only has
         2 columns, damping and density and material numbers are automatically
