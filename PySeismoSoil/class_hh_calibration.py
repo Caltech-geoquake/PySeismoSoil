@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_calibration as hhc
 from PySeismoSoil.class_curves import Multiple_GGmax_Curves
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 class HH_Calibration:
@@ -154,5 +157,4 @@ class HH_Calibration:
                 vs_profile, curves, **options
             )
 
-        HH_G_param = HH_Param_Multi_Layer(HH_G_param_)
-        return HH_G_param
+        return HH_Param_Multi_Layer(HH_G_param_)

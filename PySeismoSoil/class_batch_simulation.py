@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import multiprocessing as mp
 import os
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil.class_simulation import (
@@ -11,7 +11,9 @@ from PySeismoSoil.class_simulation import (
     Linear_Simulation,
     Nonlinear_Simulation,
 )
-from PySeismoSoil.class_simulation_results import Simulation_Results
+
+if TYPE_CHECKING:
+    from PySeismoSoil.class_simulation_results import Simulation_Results
 
 
 class Batch_Simulation:
@@ -149,14 +151,15 @@ class Batch_Simulation:
 
         if base_output_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
+            base_output_dir = os.path.join('./', f'batch_sim_{current_time}')
 
         other_params = [n_digits, base_output_dir, catch_errors, options]
 
         if not parallel:
-            sim_results = []
-            for i in range(self.n_simulations):
-                sim_results.append(self._run_single_sim([i, other_params]))
+            sim_results = [
+                self._run_single_sim([i, other_params])
+                for i in range(self.n_simulations)
+            ]
             # END FOR
         else:
             sim_results = []

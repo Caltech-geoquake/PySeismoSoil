@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from PySeismoSoil import helper_hh_calibration as hhc
 from PySeismoSoil.class_curves import Damping_Curve, Multiple_Damping_Curves
-from PySeismoSoil.class_parameters import (
-    HH_Param_Multi_Layer,
-    MKZ_Param_Multi_Layer,
-)
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from PySeismoSoil.class_parameters import (
+        HH_Param_Multi_Layer,
+        MKZ_Param_Multi_Layer,
+    )
 
 STRAIN_RANGE_PCT = np.logspace(-3, 1)
 
@@ -124,8 +126,7 @@ class Damping_Calibration:
             strain_in_pct=np.geomspace(1e-4, 15, 100),
             show_fig=False,
         )
-        HH_x_param = mdc.get_all_HH_x_params(**kwargs)
-        return HH_x_param
+        return mdc.get_all_HH_x_params(**kwargs)
 
     def get_H4_x_param(
             self, **kwargs: dict[Any, Any]
@@ -151,5 +152,4 @@ class Damping_Calibration:
             strain_in_pct=np.geomspace(1e-4, 15, 100),
             show_fig=False,
         )
-        H4_x_param = mdc.get_all_HH_x_params(**kwargs)
-        return H4_x_param
+        return mdc.get_all_HH_x_params(**kwargs)

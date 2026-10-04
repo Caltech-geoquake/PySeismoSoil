@@ -3,14 +3,16 @@ from __future__ import annotations
 import importlib.resources
 import itertools
 import os
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from scipy.interpolate import griddata
 
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Site_Factors:
@@ -227,7 +229,7 @@ class Site_Factors:
         ValueError
             When the value of ``method`` is not 'eq_hh'
         """
-        if method not in {'eq_hh'}:
+        if method != 'eq_hh':
             raise ValueError("Currently, only 'eq_hh' is valid.")
 
         freq, phase_shift = self._get_results(
@@ -401,17 +403,15 @@ class Site_Factors:
             When values of some input arguments are not correct
         """
         if Vs30 not in Site_Factors.Vs30_array:
-            raise ValueError(
-                '`Vs30` should be in %s.' % Site_Factors.Vs30_array
-            )
+            raise ValueError(f'`Vs30` should be in {Site_Factors.Vs30_array}.')
 
         if z1 not in Site_Factors.z1_array:
-            raise ValueError('`z1` should be in %s.' % Site_Factors.z1_array)
+            raise ValueError(f'`z1` should be in {Site_Factors.z1_array}.')
 
         if PGA not in Site_Factors.PGA_array:
-            raise ValueError('`PGA` should be in %s.' % Site_Factors.PGA_array)
+            raise ValueError(f'`PGA` should be in {Site_Factors.PGA_array}.')
 
-        if method not in ['nl_hh', 'eq_kz', 'eq_hh']:
+        if method not in {'nl_hh', 'eq_kz', 'eq_hh'}:
             raise ValueError(
                 "`method` must be within {'nl_hh', 'eq_kz', 'eq_hh'}"
             )
@@ -716,23 +716,16 @@ class Site_Factors:
         if PGA_in_g < 0.01 or PGA_in_g > 1.5:
             status.append('PGA out of range')
 
-        if Vs30_in_mps > 400 and z1_in_m > 750:
+        if (
+            (Vs30_in_mps > 400 and z1_in_m > 750)
+            or (Vs30_in_mps > 450 and z1_in_m > 600)
+            or (Vs30_in_mps > 550 and z1_in_m > 450)
+            or (Vs30_in_mps > 600 and z1_in_m > 300)
+            or (Vs30_in_mps > 650 and z1_in_m > 150)
+            or (Vs30_in_mps > 750 and z1_in_m > 75)
+            or (Vs30_in_mps > 800 and z1_in_m > 36)
+            or (Vs30_in_mps > 850 and z1_in_m > 16)
+        ):
             status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 450 and z1_in_m > 600:
-            status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 550 and z1_in_m > 450:
-            status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 600 and z1_in_m > 300:
-            status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 650 and z1_in_m > 150:
-            status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 750 and z1_in_m > 75:
-            status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 800 and z1_in_m > 36:
-            status.append('Invalid Vs30-z1 combination')
-        elif Vs30_in_mps > 850 and z1_in_m > 16:
-            status.append('Invalid Vs30-z1 combination')
-        else:
-            pass
 
         return status

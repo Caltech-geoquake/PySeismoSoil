@@ -52,9 +52,7 @@ def tau_MKZ(
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_MKZ = Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
-
-    return T_MKZ
+    return Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
 
 
 def fit_H4_x_single_layer(
@@ -211,9 +209,7 @@ def damping_misfit(
 
     Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
     damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
-    error = hlp.mean_absolute_error(damping_true, damping_pred)
-
-    return error
+    return hlp.mean_absolute_error(damping_true, damping_pred)
 
 
 def serialize_params_to_array(
@@ -243,9 +239,7 @@ def serialize_params_to_array(
     """
     assert len(param) == 4
     order = ['gamma_ref', 's', 'beta', 'Gmax']
-    param_array = []
-    for key in order:
-        param_array.append(param[key])
+    param_array = [param[key] for key in order]
 
     if to_files:
         param_array = [param_array[0], 0.0, param_array[1], param_array[2]]
@@ -428,8 +422,7 @@ def fit_MKZ(
             plt.legend(loc='lower left')
             plt.grid(ls=':', lw=0.5)
             plt.title(
-                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g'
-                % (ref_strain[k], s_value[k], beta[k]),
+                rf'$\gamma_{{\mathrm{{ref}}}}$ = {ref_strain[k]:.3g}, s = {s_value[k]:.3g}, $\beta$ = {beta[k]:.3g}',
             )
         # END FOR
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)

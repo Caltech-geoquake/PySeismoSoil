@@ -44,10 +44,7 @@ def S_(
         meas = np.max((meas, np.finfo(np.float64).eps))
         simu = np.max((simu, np.finfo(np.float64).eps))
 
-        if meas < eps2:
-            rela_diff = simu - meas
-        else:
-            rela_diff = (simu - meas) / meas
+        rela_diff = simu - meas if meas < eps2 else (simu - meas) / meas
     else:
         meas[meas < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
         simu[simu < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
@@ -55,8 +52,7 @@ def S_(
         rela_diff = (simu - meas) / meas
         rela_diff[meas < eps2] = simu[meas < eps2] - meas[meas < eps2]
 
-    score = scipy.special.erf(rela_diff * 1) * 10
-    return score
+    return scipy.special.erf(rela_diff * 1) * 10
 
 
 def d_1234(
@@ -537,9 +533,7 @@ def baseline_wavelet(
     mra[-1, :] = np.zeros_like(mra[-1, :])
 
     y = np.sum(mra, axis=0)
-    y = np.column_stack((t, y))
-
-    return y
+    return np.column_stack((t, y))
 
 
 def calc_rms(x: np.ndarray) -> float:
@@ -557,8 +551,7 @@ def calc_rms(x: np.ndarray) -> float:
     rms : float
         The RMS value of ``x``.
     """
-    rms = np.sqrt(np.mean(x[:, 1] ** 2.0))
-    return rms
+    return np.sqrt(np.mean(x[:, 1] ** 2.0))
 
 
 def getAbsPeak(x: np.ndarray) -> float:
@@ -954,15 +947,14 @@ def circular_convolve_mra(h_j_o, w_j):
 def circular_convolve_d(h_t, v_j_1, j):
     """Code from: https://github.com/pistonly/modwtpy"""
     N = len(v_j_1)
-    w_j = np.zeros(N)
+    np.zeros(N)
     ker = np.zeros(len(h_t) * 2 ** (j - 1))
 
     # make kernel
     for i, h in enumerate(h_t):
         ker[i * 2 ** (j - 1)] = h
 
-    w_j = convolve1d(v_j_1, ker, mode='wrap', origin=-len(ker) // 2)
-    return w_j
+    return convolve1d(v_j_1, ker, mode='wrap', origin=-len(ker) // 2)
 
 
 def modwt(x, filters, level):

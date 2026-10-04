@@ -1,18 +1,23 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal
+import math
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
 from numba import jit
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.lines import Line2D
 
 
 def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
@@ -24,8 +29,7 @@ def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
     Earthquake Ground Motion Modeling." PhD thesis, California Institute of
     Technology
     """
-    z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
-    return z1_in_m
+    return 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
 
 
 def stratify(vs_profile: np.ndarray) -> np.ndarray:
@@ -337,7 +341,7 @@ def plot_motion(
     lw = 1.00
     vl = 'top' if a[pga_index] > 0 else 'bottom'
 
-    if unit not in ['m', 'cm']:
+    if unit not in {'m', 'cm'}:
         raise ValueError('"unit" can only be "m" or "cm".')
 
     accel_unit = 'gal' if unit == 'cm' else unit + '/s/s'
@@ -348,7 +352,7 @@ def plot_motion(
     ax1.plot(t, a, 'b', linewidth=lw)
     ax1.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
     t_ = t[int(np.min((pga_index + np.round(np.size(t) / 40.0), np.size(t))))]
-    ax1.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
+    ax1.text(t_, a[pga_index], f'PGA = {PGA:.3g} ' + accel_unit, va=vl)
     ax1.grid(ls=':')
     ax1.set_xlim(np.min(t), np.max(t))
     ax1.set_ylabel('Acceleration [' + accel_unit + ']')
@@ -358,14 +362,14 @@ def plot_motion(
     ax2.plot(t, v[:, 1], 'b', linewidth=lw)
     ax2.grid(ls=':')
     ax2.set_xlim(np.min(t), np.max(t))
-    ax2.set_ylabel('Velocity [%s]' % veloc_unit)
+    ax2.set_ylabel(f'Velocity [{veloc_unit}]')
 
     ax3 = fig.add_subplot(313)
     ax3.plot(t, u[:, 1], 'b', linewidth=lw)
     ax3.set_xlabel('Time [sec]')
     ax3.grid(ls=':')
     ax3.set_xlim(np.min(t), np.max(t))
-    ax3.set_ylabel('Displacement [%s]' % displ_unit)
+    ax3.set_ylabel(f'Displacement [{displ_unit}]')
 
     fig.tight_layout(pad=0.3)
 
@@ -427,9 +431,7 @@ def num_diff(veloc: np.ndarray) -> np.ndarray:
 
     a = np.diff(v) / np.diff(t)
     a = np.append(np.array([0]), a)
-    accel = np.column_stack((t, a))
-
-    return accel
+    return np.column_stack((t, a))
 
 
 def find_f0(x: np.ndarray) -> float:
@@ -477,9 +479,7 @@ def find_f0(x: np.ndarray) -> float:
     if i == ll - 2:  # if the loop above finishes without breaking
         i = i + 1
 
-    f0 = freq[i]
-
-    return f0
+    return freq[i]
 
 
 def response_spectra(
@@ -569,8 +569,8 @@ def response_spectra(
     # A, B, C, and D in Table 5.2.1, page 169
     A = np.exp(-xi * wn * dt) * (
         xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt)
-    )  # noqa: E226,E501
-    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))  # noqa: E226,E501
+    )
+    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))
     C = (
         1.0
         / wn**2.0
@@ -583,7 +583,7 @@ def response_spectra(
                 - (1 + 2.0 * xi / wn / dt) * np.cos(wd * dt)
             )
         )
-    )  # noqa: E226,E501
+    )
     D = (
         1.0
         / wn**2.0
@@ -596,15 +596,15 @@ def response_spectra(
                 + 2.0 * xi / wn / dt * np.cos(wd * dt)
             )
         )
-    )  # noqa: E226,E501
+    )
 
     # A', B', C', and D' in Table 5.2.1, page 169
     A_ = -np.exp(-xi * wn * dt) * (
         wn / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
-    )  # noqa: E226,E501
+    )
     B_ = np.exp(-xi * wn * dt) * (
         np.cos(wd * dt) - xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
-    )  # noqa: E226,E501
+    )
     C_ = (
         1.0
         / wn**2.0
@@ -620,7 +620,7 @@ def response_spectra(
                 + 1.0 / dt * np.cos(wd * dt)
             )
         )
-    )  # noqa: E226,E501
+    )
     D_ = (
         1.0
         / wn**2.0
@@ -630,7 +630,7 @@ def response_spectra(
             - np.exp(-xi * wn * dt)
             * (xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt))
         )
-    )  # noqa: E226,E501
+    )
 
     if parallel:
         p = mp.Pool(n_cores)
@@ -676,7 +676,7 @@ def response_spectra(
             )
 
     # transpose list of tuples
-    utdd_max, ud_max, u_max, PSA, PSV = zip(*result)
+    utdd_max, ud_max, u_max, PSA, PSV = zip(*result, strict=False)
 
     SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration
     SV = np.array(ud_max)  # (Relative) spectral velocity
@@ -718,7 +718,7 @@ def response_spectra(
 @jit(nopython=True, nogil=True)
 def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
     """Step forward in time to calculate velocity, displacements, etc."""
-    i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a = para
+    i, len_a, A, B, C, D, A_, B_, C_, D_, wn, _wd, xi, a = para
 
     u_ = np.zeros(len_a)
     ud_ = np.zeros(len_a)
@@ -728,13 +728,13 @@ def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
             + ud_[j] * B[i]
             + (-1) * a[j] * C[i]
             + (-1) * a[j + 1] * D[i]
-        )  # noqa: E226
+        )
         ud_[j + 1] = (
             u_[j] * A_[i]
             + ud_[j] * B_[i]
             + (-1) * a[j] * C_[i]
             + (-1) * a[j + 1] * D_[i]
-        )  # noqa: E226
+        )
 
     udd_ = -(2.0 * wn[i] * xi * ud_ + wn[i] ** 2.0 * u_ + a)
     utdd_ = udd_ + a
@@ -815,9 +815,9 @@ def get_xi_rho(
             + 34.7 * Vs_**4.0
             - 5.29 * Vs_**5.0
             + 0.31 * Vs_**6.0
-        )  # noqa: E501, E226
+        )
 
-        # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501, E226
+        # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501
         Qs[np.where(Qs == 0)] = 0.5
         xi = 1.0 / (2.0 * Qs)
     elif formula_type == 3:
@@ -945,13 +945,12 @@ def calc_Vs30(
     -----
     Rewritten into Python from MATLAB on 3/4/2017.
     """
-    Vs30 = calc_VsZ(
+    return calc_VsZ(
         profile,
         30.0,
-        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,  # noqa: LN001
+        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,
         verbose=verbose,
     )
-    return Vs30
 
 
 def plot_Vs_profile(
@@ -960,7 +959,7 @@ def plot_Vs_profile(
         ax: Axes | None = None,
         figsize: tuple[float, float] = (2.6, 3.2),
         dpi: float = 100,
-        title: str = None,
+        title: str | None = None,
         label: str | None = None,
         c: list[float] | str = 'k',
         lw: float = 1.75,
@@ -1020,10 +1019,7 @@ def plot_Vs_profile(
 
     thk = vs_profile[:, 0]
     vs = vs_profile[:, 1]
-    if not max_depth:
-        zmax = np.sum(thk) + thk[0]
-    else:
-        zmax = max_depth
+    zmax = max_depth or np.sum(thk) + thk[0]
 
     x, y = _gen_profile_plot_array(thk, vs, zmax)
 
@@ -1377,7 +1373,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_ro,
+            rf'$\mathregular{{f_0}}$ = {f0_ro:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1391,7 +1387,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_in,
+            rf'$\mathregular{{f_0}}$ = {f0_in:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1406,7 +1402,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$= %.2f Hz' % f0_bh,
+            rf'$\mathregular{{f_0}}$= {f0_bh:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1639,18 +1635,12 @@ def amplify_motion(
     tf_ds = np.append(tf_ss, tf_append)  # should have identical length as 'a'
 
     # ------------Fourier spectrum of the input motion-----------------
-    if taper:
-        a_tapered = sig.taper_Tukey(a)
-    else:
-        a_tapered = a
+    a_tapered = sig.taper_Tukey(a) if taper else a
 
     A = scipy.fftpack.fft(a_tapered)
 
     # ------------Multiplication---------------------------------------
-    if not deconv:
-        RESP = A * tf_ds
-    else:
-        RESP = A / tf_ds
+    RESP = A * tf_ds if not deconv else A / tf_ds
 
     # ---------Inverse Fourier transform to get the response time history------
     # truncate imaginary part (very small)
@@ -2051,8 +2041,7 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     n_time = int(np.ceil(max(tmax1, tmax2) / dt))
     tmax = dt * n_time  # use the larger end time of the two as the end time
 
-    t_output = np.linspace(dt, tmax, num=n_time)
-    return t_output
+    return np.linspace(dt, tmax, num=n_time)
 
 
 def _get_freq_interval(
@@ -2100,10 +2089,7 @@ def _get_freq_interval(
     n = len(a)
     df = fs / float(n)  # freq resolution
 
-    if n % 2 == 1:
-        half_n = int(np.ceil(n / 2.0))
-    else:
-        half_n = int(n / 2.0 + 1)
+    half_n = int(np.ceil(n / 2.0)) if n % 2 == 1 else int(n / 2.0 + 1)
 
     fmax = half_n * df
     f_array = np.linspace(df, fmax, num=half_n)
@@ -2112,7 +2098,7 @@ def _get_freq_interval(
 
 
 def robust_unwrap(
-        signal: np.ndarray, discont: float | None = 3.141592653589793
+        signal: np.ndarray, discont: float | None = math.pi
 ) -> np.ndarray:
     """
     Unwrap a phase signal in a robust way.
@@ -2189,9 +2175,7 @@ def robust_unwrap(
             steps = float(j - i1)
             signal_[j] = signal_[i1] + steps / length * scale
 
-    unwrapped = np.unwrap(signal_, discont=discont)
-
-    return unwrapped
+    return np.unwrap(signal_, discont=discont)
 
 
 def calc_damping_from_param(
@@ -2228,11 +2212,9 @@ def calc_damping_from_param(
     hlp.assert_1D_numpy_array(strain_in_unit_1)
 
     Tau = func_stress(strain_in_unit_1, **param)
-    damping = calc_damping_from_stress_strain(
+    return calc_damping_from_stress_strain(
         strain_in_unit_1, Tau, param['Gmax']
     )
-
-    return damping
 
 
 def calc_damping_from_stress_strain(
@@ -2274,8 +2256,7 @@ def calc_damping_from_stress_strain(
             2.0 / np.pi * (2 * area[i] / G_Gmax[i] / strain[i] ** 2 - 1)
         )
 
-    damping = np.maximum(damping, 0.0)  # make sure all damping values are >= 0
-    return damping
+    return np.maximum(damping, 0.0)  # make sure all damping values are >= 0
 
 
 def calc_GGmax_from_stress_strain(
@@ -2319,9 +2300,7 @@ def calc_GGmax_from_stress_strain(
         Gmax = stress[0] / strain_in_unit_1[0]
 
     G = stress / strain_in_unit_1  # secant modulus
-    GGmax = G / Gmax
-
-    return GGmax
+    return G / Gmax
 
 
 def _plot_damping_curve_fit(
@@ -2412,7 +2391,7 @@ def fit_all_damping_curves(
         save_txt: bool = False,
         txt_filename: str | None = None,
         sep: str = '\t',
-        func_serialize: Callable[[Any, ...], Any] = None,
+        func_serialize: Callable[[Any, ...], Any] | None = None,
 ) -> list[dict[str, float]]:
     r"""
     Perform damping curve fitting for multiple damping curves using the genetic
@@ -2573,9 +2552,7 @@ def fit_all_damping_curves(
                 'Please provide a function to serialize the parameters into a lists.',
             )
 
-        data_for_file = []
-        for param in params:
-            data_for_file.append(func_serialize(param))
+        data_for_file = [func_serialize(param) for param in params]
 
         data_for_file__ = np.column_stack(tuple(data_for_file))
         np.savetxt(txt_filename, data_for_file__, fmt='%.6g', delimiter=sep)
@@ -2607,7 +2584,7 @@ def _fit_single_layer_loop(param):
         verbose,
     ) = other_params
 
-    best_para = func_fit_single_layer(
+    return func_fit_single_layer(
         damping_curve,
         use_scipy=use_scipy,
         n_gen=n_gen,
@@ -2620,8 +2597,6 @@ def _fit_single_layer_loop(param):
         verbose=verbose,
         parallel=False,  # no par. within layers
     )
-
-    return best_para
 
 
 def ga_optimization(
@@ -2750,7 +2725,7 @@ def ga_optimization(
         )
         if verbose:
             status = 'successful' if result.success else 'not successful'
-            print('\nOptimization status: %s.' % status)
+            print(f'\nOptimization status: {status}.')
 
         opt_result = result.x
 
@@ -2767,12 +2742,9 @@ def ga_optimization(
 
         def uniform(low, up, size=None):
             try:
-                return [random.uniform(a, b) for a, b in zip(low, up)]
+                return list(map(random.uniform, low, up))
             except TypeError:
-                return [
-                    random.uniform(a, b)
-                    for a, b in zip([low] * size, [up] * size)
-                ]
+                return list(map(random.uniform, [low] * size, [up] * size))
 
         LB = lower_bound
         UB = upper_bound

@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import scipy.fftpack
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
-from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
-from PySeismoSoil.class_parameters import (
-    HH_Param_Multi_Layer,
-    MKZ_Param_Multi_Layer,
-)
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+    from PySeismoSoil.class_parameters import (
+        HH_Param_Multi_Layer,
+        MKZ_Param_Multi_Layer,
+    )
+    from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 def check_layer_count(
@@ -56,7 +58,7 @@ def check_layer_count(
 
     if (
         GGmax_and_damping_curves is not None
-        and GGmax_and_damping_curves.n_layer < max_mat_num  # noqa: W503
+        and GGmax_and_damping_curves.n_layer < max_mat_num
     ):
         raise ValueError(
             'Not enough sets of curves in `GGmax_and_damping_curves` for `vs_profile`.',
@@ -141,12 +143,12 @@ def linear(
         freq,
         new_profile,
         h,
-        vs,
+        _vs,
         D,
         rho,
-        mat_nr,
+        _mat_nr,
         n_layer,
-        Gmax,
+        _Gmax,
         G,
         t,
         dt,
@@ -311,7 +313,7 @@ def equiv_linear(
         freq,
         new_profile,
         h,
-        vs,
+        _vs,
         D,
         rho,
         mat_nr,
@@ -394,11 +396,7 @@ def equiv_linear(
         D_matrix[:, i_iter + 1] = D_new
         if verbose:
             print(
-                '  G_diff = %7.2f%%, D_diff = %7.2f%%'
-                % (
-                    np.max(G_relative_diff) * 100,
-                    np.max(D_relative_diff) * 100,
-                ),
+                f'  G_diff = {np.max(G_relative_diff) * 100:7.2f}%, D_diff = {np.max(D_relative_diff) * 100:7.2f}%',
             )
 
         # --------- Check convergence ------------------------------------------
@@ -521,7 +519,7 @@ def _prepare_inputs(
 
     ACCEL_IN = scipy.fftpack.fft(accel_in)
     N = len(ACCEL_IN)
-    assert N == n
+    assert n == N
     assert N % 2 == 1
 
     freq = np.arange(1, N + 1, 1) / (N * dt)  # frequency

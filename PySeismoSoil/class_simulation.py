@@ -3,6 +3,7 @@ from __future__ import annotations
 import glob
 import importlib.resources
 import os
+import pathlib
 import shutil
 import stat
 import subprocess
@@ -88,8 +89,8 @@ class Simulation:
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
             G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
-            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,  # noqa: LN001
-            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,  # noqa: LN001
+            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,
     ) -> None:
     # fmt: on  # noqa: E115
         if not isinstance(soil_profile, Vs_Profile):
@@ -98,7 +99,7 @@ class Simulation:
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
 
-        if boundary not in ['elastic', 'rigid']:
+        if boundary not in {'elastic', 'rigid'}:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
 
         if type(G_param) != type(xi_param):  # noqa: E721
@@ -180,7 +181,7 @@ class Linear_Simulation(Simulation):
             motion_name: str | None = None,
             save_txt: bool = False,
             save_full_time_history: bool = False,
-            output_dir: str = None,
+            output_dir: str | None = None,
             verbose: bool = True,
     ) -> Simulation_Results:
         """
@@ -573,19 +574,18 @@ class Nonlinear_Simulation(Simulation):
 
         if sim_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            sim_dir = './nonlinear_sim_%s' % current_time
+            sim_dir = f'./nonlinear_sim_{current_time}'
 
-        if os.path.exists(sim_dir):
+        if pathlib.Path(sim_dir).exists():
             sim_dir += '_'
 
-        os.makedirs(sim_dir)
-        os.chmod(
-            sim_dir,
+        pathlib.Path(sim_dir).mkdir(parents=True)
+        pathlib.Path(sim_dir).chmod(
             stat.S_IRWXU
             | stat.S_IRGRP
             | stat.S_IXGRP
             | stat.S_IROTH
-            | stat.S_IXOTH,
+            | stat.S_IXOTH
         )
 
         f_max = 30  # maximum frequency modeled, unit is Hz
@@ -650,27 +650,14 @@ class Nonlinear_Simulation(Simulation):
 
         package_path = importlib.resources.files(PySeismoSoil)
         dir_exec_files = str(package_path / 'exec_files')
-        shutil.copy(
-            os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir
-        )
+        shutil.copy(os.path.join(dir_exec_files, f'NLHH.{exec_ext}'), sim_dir)
         np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
         # -------- Prepare control.dat file ------------------------------------
-        with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
-            fp.write(
-                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
-                % (
-                    f_max,
-                    ppw,
-                    n_dt,
-                    n_bound,
-                    n_layer,
-                    nt_out,
-                    n_ma,
-                    N_spr,
-                    N_obs,
-                ),
-            )
+        pathlib.Path(os.path.join(sim_dir, 'control.dat')).write_text(
+            f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f} {n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f} {N_obs:6.0f}',
+            encoding='utf-8',
+        )
 
         # -------- Write data to files for the Fortran kernel to read ----------
         np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
@@ -686,22 +673,20 @@ class Nonlinear_Simulation(Simulation):
         )
 
         # ------- Execute Fortran kernel ---------------------------------------
-        cwd = os.getcwd()
+        cwd = pathlib.Path.cwd()
         os.chdir(sim_dir)
         if hlp.detect_OS() == 'Windows':
             subprocess.run('NLHH.exe')
         elif hlp.detect_OS() == 'Darwin':
             current_status = os.stat('NLHH.mac').st_mode
-            os.chmod(
-                'NLHH.mac',
-                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+            pathlib.Path('NLHH.mac').chmod(
+                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
             )
             subprocess.run('./NLHH.mac', stdout=True)
         elif hlp.detect_OS() == 'Linux':
             current_status = os.stat('NLHH.unix').st_mode
-            os.chmod(
-                'NLHH.unix',
-                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+            pathlib.Path('NLHH.unix').chmod(
+                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
             )
             if verbose:
                 subprocess.run('./NLHH.unix', stdout=True)
@@ -724,14 +709,14 @@ class Nonlinear_Simulation(Simulation):
 
         dat_files = glob.glob('*.dat')
         for dat_file in dat_files:
-            os.remove(dat_file)
+            pathlib.Path(dat_file).unlink()
 
         if hlp.detect_OS() == 'Windows':
-            os.remove('NLHH.exe')
+            pathlib.Path('NLHH.exe').unlink()
         elif hlp.detect_OS() == 'Darwin':
-            os.remove('NLHH.mac')
+            pathlib.Path('NLHH.mac').unlink()
         elif hlp.detect_OS() == 'Linux':
-            os.remove('NLHH.unix')
+            pathlib.Path('NLHH.unix').unlink()
         else:
             raise ValueError('Unknown operating system.')
 
@@ -793,6 +778,6 @@ class Nonlinear_Simulation(Simulation):
         if not save_txt and not save_fig and remove_sim_dir:
             os.removedirs(sim_dir)
             if verbose:
-                print('`sim_dir` (%s) removed.' % sim_dir)
+                print(f'`sim_dir` ({sim_dir}) removed.')
 
         return sim_results

@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import platform
 from datetime import datetime
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 def detect_OS() -> str:
@@ -93,14 +95,9 @@ def _process_fig_ax_objects(
         figsize: tuple[float, float] | None = None,
         dpi: float | None = None,
         ax_proj: Literal[
-            None,
-            'aitoff',
-            'hammer',
-            'lambert',
-            'mollweide',
-            'polar',
-            'rectilinear',
-        ] = None,
+            'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'
+        ]
+        | None = None,
         bypass_ax_creation: bool = False,
 ) -> tuple[Figure, Axes]:
     """
@@ -214,7 +211,7 @@ def read_two_column_stuff(
     elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
         col1 = data_[:, 0]
         delta = col1[1] - col1[0]
-    elif data_.shape[1] != 2:  # noqa: R506
+    elif data_.shape[1] != 2:
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
             'array, or a one-column array with a `delta` value.',
@@ -244,7 +241,7 @@ def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     if not isinstance(something, np.ndarray) or something.ndim != 1:
         name = '`something`' if name is None else name
-        raise TypeError('%s must be a 1D numpy array.' % name)
+        raise TypeError(f'{name} must be a 1D numpy array.')
 
 
 def assert_array_length(
@@ -279,7 +276,7 @@ def assert_array_length(
 
 
 def extend_scalar(
-        scalar: float | int | np.number,
+        scalar: float | np.number,
         length: int,
 ) -> np.ndarray:
     """
@@ -309,8 +306,7 @@ def extend_scalar(
             '`scalar` must be a float, int, or a numpy.number type.'
         )
 
-    array = scalar * np.ones(length)
-    return array
+    return scalar * np.ones(length)
 
 
 def check_length_or_extend_to_array(
@@ -367,7 +363,7 @@ def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     if not isinstance(something, np.ndarray) or something.ndim != 2:
         name = '`something`' if name is None else name
-        raise TypeError('%s must be a 2D numpy array.' % name)
+        raise TypeError(f'{name} must be a 2D numpy array.')
 
 
 def check_two_column_format(
@@ -404,26 +400,26 @@ def check_two_column_format(
         name = '`something`'
 
     if not isinstance(something, np.ndarray):
-        raise TypeError('%s should be a numpy array.' % name)
+        raise TypeError(f'{name} should be a numpy array.')
 
     if something.ndim != 2:
-        raise TypeError('%s should be a 2D numpy array.' % name)
+        raise TypeError(f'{name} should be a 2D numpy array.')
 
     if not at_least_two_columns and something.shape[1] != 2:
-        raise TypeError('%s should have two columns.' % name)
+        raise TypeError(f'{name} should have two columns.')
 
     if at_least_two_columns and something.shape[1] < 2:
-        raise TypeError('%s should have >= 2 columns.' % name)
+        raise TypeError(f'{name} should have >= 2 columns.')
 
     check_status = check_numbers_valid(something)
     if check_status == -1:
-        raise ValueError('%s should only contain numeric elements.' % name)
+        raise ValueError(f'{name} should only contain numeric elements.')
 
     if check_status == -2:
-        raise ValueError('%s should contain no NaN values.' % name)
+        raise ValueError(f'{name} should contain no NaN values.')
 
     if ensure_non_negative and check_status == -3:
-        raise ValueError('%s should have all non-negative values.' % name)
+        raise ValueError(f'{name} should have all non-negative values.')
 
 
 def check_Vs_profile_format(data: Any) -> None:
@@ -456,7 +452,7 @@ def check_Vs_profile_format(data: Any) -> None:
     if data.ndim != 2:
         raise ValueError('`data` should be a 2D numpy array.')
 
-    if data.shape[1] not in [2, 5]:
+    if data.shape[1] not in {2, 5}:
         raise ValueError('`data` should have either 2 or 5 columns.')
 
     thk = data[:, 0]
@@ -629,8 +625,7 @@ def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     assert_1D_numpy_array(y_true, name='`y_true`')
     assert_1D_numpy_array(y_pred, name='`y_pred`')
-    mae = np.mean(np.abs(y_true - y_pred))
-    return mae
+    return np.mean(np.abs(y_true - y_pred))
 
 
 def extract_from_curve_format(
@@ -750,11 +745,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
         raise TypeError('`params` needs to be a 2D numpy array.')
 
     n_layer = params.shape[1]
-    param_list = []
-    for j in range(n_layer):
-        param_list.append(params[:, j])
-
-    return param_list
+    return [params[:, j] for j in range(n_layer)]
 
 
 def merge_curve_matrices(

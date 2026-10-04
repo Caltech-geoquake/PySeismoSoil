@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Literal, Type
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
@@ -17,6 +15,10 @@ from PySeismoSoil.class_parameters import (
     MKZ_Param,
     MKZ_Param_Multi_Layer,
 )
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Curve:
@@ -103,7 +105,7 @@ class Curve:
         else:
             strain, values = data[:, 0], data[:, 1]
 
-        if strain_unit not in ['1', '%']:
+        if strain_unit not in {'1', '%'}:
             raise ValueError("`strain_unit` must be '1' or '%'.")
 
         if strain_unit == '1':
@@ -114,7 +116,7 @@ class Curve:
         self.values = values
 
     def __repr__(self) -> str:
-        return '{} object:\n{}'.format(self.__class__, str(self.raw_data))
+        return f'{self.__class__} object:\n{self.raw_data!s}'
 
     def plot(
             self,
@@ -252,7 +254,7 @@ class GGmax_Curve(Curve):
             n_pts: int = 50,
             log_scale: bool = True,
             check_values: bool = True,
-    ):
+    ) -> None:
         super().__init__(
             data,
             strain_unit=strain_unit,
@@ -356,7 +358,7 @@ class Damping_Curve(Curve):
         )
         self.damping = self.values
 
-        if damping_unit not in ['1', '%']:
+        if damping_unit not in {'1', '%'}:
             raise ValueError("`damping_unit` must be '1' or '%'.")
 
         if damping_unit == '1':
@@ -382,7 +384,7 @@ class Damping_Curve(Curve):
             verbose: bool = False,
             parallel: bool = False,
             n_cores: int | None = None,
-    ) -> 'HH_Param':
+    ) -> HH_Param:
         """
         Obtain the HH_x parameters from the damping curve data, using the
         genetic algorithm provided in DEAP.
@@ -606,7 +608,7 @@ class Stress_Curve(Curve):
         )
         self.stress = self.values
 
-        if stress_unit not in ['Pa', 'kPa', 'MPa', 'GPa']:
+        if stress_unit not in {'Pa', 'kPa', 'MPa', 'GPa'}:
             raise ValueError(
                 "`stress_unit` must be {'Pa', 'kPa', 'MPa', 'GPa'}."
             )
@@ -661,15 +663,15 @@ class Multiple_Curves:
         When any element in ``list_of_curves`` has invalid type
     """
 
-    element_class: Type[Curve]
-    curves: list[Type[Curve]]
+    element_class: type[Curve]
+    curves: list[type[Curve]]
     n_layer: int
 
     def __init__(
             self,
             list_of_curves: list[np.ndarray] | list[Curve],
             *,
-            element_class: Type[Curve] = Curve,
+            element_class: type[Curve] = Curve,
     ) -> None:
         curves = []
         for curve in list_of_curves:
@@ -698,7 +700,7 @@ class Multiple_Curves:
     def __setitem__(self, i, item) -> None:
         if not isinstance(item, self.element_class):
             raise TypeError(
-                'The new `item` must be of type %s.' % self.element_class
+                f'The new `item` must be of type {self.element_class}.'
             )
 
         self.curves[i] = item
@@ -711,7 +713,7 @@ class Multiple_Curves:
             # return an object of the same class, filled with the sliced data
             return self.__class__(self.curves[i])
 
-        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+        raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
     def __delitem__(self, i) -> None:
         del self.curves[i]
@@ -721,7 +723,7 @@ class Multiple_Curves:
         """Append another curve item to the curves."""
         if not isinstance(item, self.element_class):
             raise TypeError(
-                'The new `item` must be of type %s.' % self.element_class
+                f'The new `item` must be of type {self.element_class}.'
             )
 
         self.curves.append(item)
@@ -959,9 +961,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
         curve_matrix : np.ndarray
             A matrix containing damping curves in the above-mentioned format.
         """
-        lengths = []  # lengths of strain array of each layer
-        for curve_ in self.curves:
-            lengths.append(len(curve_.strain))
+        # lengths of strain array of each layer
+        lengths = [len(curve_.strain) for curve_ in self.curves]
 
         max_length = np.max(lengths)
 
@@ -1255,16 +1256,11 @@ class Multiple_Damping_Curves(Multiple_Curves):
                 'name to work with.',
             )
 
-        path_name, file_name = os.path.split(self._filename)
+        _path_name, file_name = os.path.split(self._filename)
         file_name_, _ = os.path.splitext(file_name)
-        if 'curve_' in file_name_:
-            site_name = file_name_[6:]
-        else:
-            site_name = file_name_
+        site_name = file_name_[6:] if 'curve_' in file_name_ else file_name_
 
-        new_file_name = '{}_x_{}.{}'.format(prefix, site_name, extension)
-
-        return new_file_name
+        return f'{prefix}_x_{site_name}.{extension}'
 
 
 class Multiple_GGmax_Curves(Multiple_Curves):
@@ -1427,9 +1423,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         curve_matrix : np.ndarray
             A matrix containing G/Gmax curves in the above-mentioned format.
         """
-        lengths = []  # lengths of strain array of each layer
-        for curve_ in self.curves:
-            lengths.append(len(curve_.strain))
+        # lengths of strain array of each layer
+        lengths = [len(curve_.strain) for curve_ in self.curves]
 
         max_length = np.max(lengths)
 

@@ -10,11 +10,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
+import pathlib
 import sys
 
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, pathlib.Path.cwd())
+sys.path.insert(0, pathlib.Path('../').resolve())
 
 
 # -- Project information -----------------------------------------------------
@@ -90,10 +90,10 @@ def find_mod_objs_patched(*args, **kwargs):
     return find_mod_objs(args[0], onlylocals=True)
 
 
-def patch_automodapi(app):
+def patch_automodapi(app) -> None:
     """Monkey-patch the automodapi extension to exclude imported members"""
     automodsumm.find_mod_objs = find_mod_objs_patched
 
 
-def setup(app):
+def setup(app) -> None:
     app.connect('builder-inited', patch_automodapi)

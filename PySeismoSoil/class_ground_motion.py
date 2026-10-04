@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
 from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Ground_Motion:
@@ -152,27 +154,25 @@ class Ground_Motion:
             'g',
         ]
         if unit not in valid_unit_name:
-            if 's^2' in unit:  # noqa: R506
+            if 's^2' in unit:
                 raise ValueError(
                     "Please use '/s/s' instead of 's^2' in `unit`."
                 )
-            else:
-                raise ValueError(
-                    'Invalid `unit` name. Valid names are: %s'
-                    % valid_unit_name,
-                )
+            raise ValueError(
+                f'Invalid `unit` name. Valid names are: {valid_unit_name}',
+            )
 
-        if motion_type not in ['accel', 'veloc', 'displ']:
+        if motion_type not in {'accel', 'veloc', 'displ'}:
             raise ValueError(
                 "`motion_type` must be in {'accel', 'veloc', 'displ'}"
             )
 
-        if (unit == 'g' or unit == 'gal') and motion_type != 'accel':
+        if (unit in {'g', 'gal'}) and motion_type != 'accel':
             raise ValueError(
                 "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
             )
 
-        if unit in ['cm', 'cm/s', 'cm/s/s', 'gal']:
+        if unit in {'cm', 'cm/s', 'cm/s/s', 'gal'}:
             data_[:, 1] = data_[:, 1] / 100.0  # cm --> m
         elif unit == 'g':
             data_[:, 1] = data_[:, 1] * 9.81  # g --> m/s/s
@@ -211,7 +211,7 @@ class Ground_Motion:
 
     def __repr__(self) -> None:
         """Return basic information of a ground motion."""
-        text = (
+        return (
             'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'
             % (
                 self.npts,
@@ -223,7 +223,6 @@ class Ground_Motion:
                 self.T5_95,
             )
         )
-        return text
 
     def summary(self) -> None:
         """Show a brief summary of the ground motion."""
@@ -261,8 +260,7 @@ class Ground_Motion:
             double_sided=double_sided,
             show_fig=show_fig,
         )
-        fs = Frequency_Spectrum(x)
-        return fs
+        return Frequency_Spectrum(x)
 
     def get_response_spectra(
             self,
@@ -361,10 +359,7 @@ class Ground_Motion:
         ValueError
             When the value of ``show_as_unit`` is invalid
         """
-        if self._file_name:
-            title = self._file_name
-        else:
-            title = ''
+        title = self._file_name or ''
 
         if show_as_unit == 'm':
             accel_ = self.accel
@@ -413,7 +408,7 @@ class Ground_Motion:
 
         if unit == 'm/s/s':
             pass
-        elif unit in ['cm/s/s', 'gal']:
+        elif unit in {'cm/s/s', 'gal'}:
             accel[:, 1] *= 100  # m/s/s --> cm/s/s
         elif unit == 'g':
             accel[:, 1] /= 9.81  # m/s/s --> g
@@ -635,11 +630,9 @@ class Ground_Motion:
         n1 = int(t1 / self.dt)
         n2 = int(t2 / self.dt)
 
-        if n1 < 0:
-            n1 = 0
+        n1 = max(n1, 0)
 
-        if n2 > self.npts:
-            n2 = self.npts
+        n2 = min(n2, self.npts)
 
         time_trunc = self.accel[: n2 - n1, 0]
         accel_trunc = self.accel[n1:n2, 1]
@@ -819,8 +812,7 @@ class Ground_Motion:
             boundary=boundary,
             show_fig=show_fig,
         )[0]
-        output_motion = Ground_Motion(response, unit='m')
-        return output_motion
+        return Ground_Motion(response, unit='m')
 
     def compare(
             self,
@@ -936,8 +928,7 @@ class Ground_Motion:
             boundary=boundary,
             show_fig=show_fig,
         )[0]
-        deconv_motion = Ground_Motion(response, unit='m')
-        return deconv_motion
+        return Ground_Motion(response, unit='m')
 
     def baseline_correct(
             self, cutoff_freq: float = 0.20, show_fig: bool = False
@@ -1147,7 +1138,7 @@ class Ground_Motion:
             pass
         elif unit == 'g':
             data[:, 1] = data[:, 1] / 9.81
-        elif unit in ['gal', 'cm/s/s']:
+        elif unit in {'gal', 'cm/s/s'}:
             data[:, 1] = data[:, 1] * 100.0
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)

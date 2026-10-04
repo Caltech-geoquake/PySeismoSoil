@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import os
+import pathlib
+from typing import TYPE_CHECKING
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Simulation_Results:
@@ -196,10 +200,10 @@ class Simulation_Results:
 
         current_time = hlp.get_current_time(for_filename=True)
         if motion_name is None:
-            motion_name = 'accel_%s' % current_time
+            motion_name = f'accel_{current_time}'
 
         if output_dir is None:
-            output_dir = os.path.join('./', 'sim_%s' % current_time)
+            output_dir = os.path.join('./', f'sim_{current_time}')
 
         self.input_accel = input_accel
         self.accel_on_surface = accel_on_surface
@@ -369,16 +373,16 @@ class Simulation_Results:
             if output_dir is None:
                 output_dir = self.output_dir
 
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+            if not pathlib.Path(output_dir).exists():
+                pathlib.Path(output_dir).mkdir(parents=True)
 
             fn_fig1 = os.path.join(
                 output_dir,
-                '%s_ground_motions.png' % self.motion_name,
+                f'{self.motion_name}_ground_motions.png',
             )
             fn_fig2 = os.path.join(
                 self.output_dir,
-                '%s_max_profiles.png' % self.motion_name,
+                f'{self.motion_name}_max_profiles.png',
             )
             fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')
             if fig2 is not None:
@@ -413,33 +417,33 @@ class Simulation_Results:
         if output_dir is None:
             output_dir = self.output_dir
 
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        if not pathlib.Path(output_dir).exists():
+            pathlib.Path(output_dir).mkdir(parents=True)
 
         od = output_dir  # shorten the variable name
         motion_name = self.motion_name
 
-        fn_TF_raw = os.path.join(od, '%s_nonlinear_TF_raw.txt' % motion_name)
+        fn_TF_raw = os.path.join(od, f'{motion_name}_nonlinear_TF_raw.txt')
         fn_TF_smoothed = os.path.join(
-            od, '%s_nonlinear_TF_smoothed.txt' % motion_name
+            od, f'{motion_name}_nonlinear_TF_smoothed.txt'
         )
         fn_surface_accel = os.path.join(
-            od, '%s_accel_on_surface.txt' % motion_name
+            od, f'{motion_name}_accel_on_surface.txt'
         )
         fn_new_profile = os.path.join(
-            od, '%s_re-discretized_profile.txt' % motion_name
+            od, f'{motion_name}_re-discretized_profile.txt'
         )
-        fn_out_a = os.path.join(od, '%s_time_history_accel.txt' % motion_name)
-        fn_out_v = os.path.join(od, '%s_time_history_veloc.txt' % motion_name)
-        fn_out_d = os.path.join(od, '%s_time_history_displ.txt' % motion_name)
+        fn_out_a = os.path.join(od, f'{motion_name}_time_history_accel.txt')
+        fn_out_v = os.path.join(od, f'{motion_name}_time_history_veloc.txt')
+        fn_out_d = os.path.join(od, f'{motion_name}_time_history_displ.txt')
         fn_out_gamma = os.path.join(
-            od, '%s_time_history_strain.txt' % motion_name
+            od, f'{motion_name}_time_history_strain.txt'
         )
         fn_out_tau = os.path.join(
-            od, '%s_time_history_stress.txt' % motion_name
+            od, f'{motion_name}_time_history_stress.txt'
         )
-        fn_max_avd = os.path.join(od, '%s_max_a_v_d.txt' % motion_name)
-        fn_max_gt = os.path.join(od, '%s_max_gamma_tau.txt' % motion_name)
+        fn_max_avd = os.path.join(od, f'{motion_name}_max_a_v_d.txt')
+        fn_max_gt = os.path.join(od, f'{motion_name}_max_gamma_tau.txt')
 
         fmt_dict = {'delimiter': '\t', 'fmt': '%.6g'}
 
@@ -481,4 +485,4 @@ class Simulation_Results:
             )
 
         if verbose:
-            print('Simulation results saved to %s' % od)
+            print(f'Simulation results saved to {od}')

@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import collections
 import json
-from typing import TYPE_CHECKING, Any, Callable, Type
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
@@ -15,6 +13,11 @@ from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
 if TYPE_CHECKING:  # to avoid circular imports
+    from collections.abc import Callable
+
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
     from PySeismoSoil.class_curves import (
         Multiple_Damping_Curves,
         Multiple_GGmax_Curves,
@@ -82,7 +85,7 @@ class Parameter(collections.UserDict):
         if param_dict.keys() != allowable_keys:
             raise KeyError(
                 'Invalid keys exist in your input data. We only '
-                'allow %s.' % allowable_keys,
+                f'allow {allowable_keys}.',
             )
 
         self.allowable_keys = allowable_keys
@@ -94,7 +97,7 @@ class Parameter(collections.UserDict):
 
     def __setitem__(self, key, item) -> None:
         if key not in self.allowable_keys:
-            raise KeyError("The model does not have a '%s' parameter." % key)
+            raise KeyError(f"The model does not have a '{key}' parameter.")
 
         self.data[key] = item
 
@@ -115,7 +118,7 @@ class Parameter(collections.UserDict):
             Serialized parameters.
         """
         param_array = []
-        for _, val in self.data.items():
+        for val in self.data.values():
             param_array.append(val)
 
         return np.array(param_array)
@@ -168,8 +171,7 @@ class Parameter(collections.UserDict):
 
         Gmax = self.data['Gmax']
         strain_in_1 = strain_in_pct / 100.0
-        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
-        return GGmax
+        return sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
 
     def get_damping(
             self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
@@ -201,7 +203,7 @@ class Parameter(collections.UserDict):
 
     def plot_curves(
             self,
-            figsize: tuple[float, float] = None,
+            figsize: tuple[float, float] | None = None,
             dpi: float = 100,
             **kwargs_to_matplotlib: dict[Any, Any],
     ) -> tuple[Figure, list[Axes]]:
@@ -385,7 +387,7 @@ class Param_Multi_Layer:
             self,
             list_of_param_data: list[dict[str, float]] | list[Parameter],
             *,
-            element_class: Type[Parameter],
+            element_class: type[Parameter],
     ) -> None:
         param_list: list[Parameter] = []
         for param_data in list_of_param_data:
@@ -418,7 +420,7 @@ class Param_Multi_Layer:
             # return an object of the same class, filled with the sliced data
             return self.__class__(self.param_list[i])
 
-        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+        raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
     def __delitem__(self, i) -> None:
         del self.param_list[i]
@@ -428,7 +430,7 @@ class Param_Multi_Layer:
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
             curve_type: str | None = None,
-    ) -> tuple['Multiple_GGmax_Curves', 'Multiple_Damping_Curves']:
+    ) -> tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]:
         """
         Construct G/Gmax and damping curves from parameter values.
 
@@ -504,8 +506,7 @@ class Param_Multi_Layer:
             param_array = param_single_layer.serialize()
             output.append(param_array)
 
-        param_2D_array = np.array(output).T
-        return param_2D_array
+        return np.array(output).T
 
     def save_txt(
             self,

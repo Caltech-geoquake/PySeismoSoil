@@ -49,9 +49,7 @@ def tau_FKZ(
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    T_FKZ = mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
-
-    return T_FKZ
+    return mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
 
 
 def transition_function(
@@ -152,9 +150,7 @@ def tau_HH(
     T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
     T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)
 
-    T_HH = w * T_MKZ + (1 - w) * T_FKZ
-
-    return T_HH
+    return w * T_MKZ + (1 - w) * T_FKZ
 
 
 def fit_HH_x_single_layer(
@@ -338,9 +334,7 @@ def _damping_misfit(
         d=d,
     )
     damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_HH, Gmax)
-    error = hlp.mean_absolute_error(damping_true, damping_pred)
-
-    return error
+    return hlp.mean_absolute_error(damping_true, damping_pred)
 
 
 def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
@@ -371,9 +365,7 @@ def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
         'Tmax',
         'd',
     ]
-    param_array = []
-    for key in order:
-        param_array.append(param[key])
+    param_array = [param[key] for key in order]
 
     return np.array(param_array)
 

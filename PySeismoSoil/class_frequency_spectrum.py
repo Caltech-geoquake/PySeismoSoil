@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
 from PySeismoSoil import helper_site_response as sr
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Frequency_Spectrum:
@@ -103,7 +105,7 @@ class Frequency_Spectrum:
             self,
             data: str | np.ndarray,
             *,
-            df: float = None,
+            df: float | None = None,
             interpolate: bool = False,
             fmin: float = 0.1,
             fmax: float = 30,
@@ -149,19 +151,18 @@ class Frequency_Spectrum:
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
     def __repr__(self) -> str:
-        text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' % (
+        return 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' % (
             self.raw_df,
             self.n_pts,
             self.fmin,
             self.fmax,
         )
-        return text
 
     def plot(
             self,
             fig: Figure | None = None,
             ax: Axes | None = None,
-            figsize: tuple[float, float] = None,
+            figsize: tuple[float, float] | None = None,
             dpi: float = 100,
             logx: bool = True,
             logy: bool = False,
@@ -314,7 +315,4 @@ class Frequency_Spectrum:
             unwrapped_phase = np.unwrap(self.phase)
 
         data_1col = self.amplitude * np.exp(1j * unwrapped_phase)
-        unwrapped = Frequency_Spectrum(
-            data_1col, df=self.raw_df, interpolate=False
-        )
-        return unwrapped
+        return Frequency_Spectrum(data_1col, df=self.raw_df, interpolate=False)

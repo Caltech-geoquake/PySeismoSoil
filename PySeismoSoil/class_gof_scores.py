@@ -332,8 +332,10 @@ class Batch_GOF_Scores:
 
         score_results = []
         if not parallel:
-            for i in range(self.n_scores):
-                score_results.append(self._run_single_score([i, options]))
+            score_results.extend(
+                self._run_single_score([i, options])
+                for i in range(self.n_scores)
+            )
             # END FOR
         else:
             p = mp.Pool(n_cores)

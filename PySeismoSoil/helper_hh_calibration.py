@@ -154,7 +154,7 @@ def hh_param_from_profile(
             profile_name = hlp.get_current_time(for_filename=True)
 
         np.savetxt(
-            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            os.path.join(HH_G_file_dir, f'HH_G_{profile_name}.txt'),
             HH_G_param,
             delimiter='\t',
             fmt='%.6g',
@@ -297,7 +297,7 @@ def hh_param_from_curves(
             profile_name = hlp.get_current_time(for_filename=True)
 
         np.savetxt(
-            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            os.path.join(HH_G_file_dir, f'HH_G_{profile_name}.txt'),
             HH_G_param,
             delimiter='\t',
             fmt='%.6g',
@@ -318,7 +318,7 @@ def produce_HH_G_param(
         phi: float | np.ndarray | None = None,
         show_fig: bool = False,
         save_fig: bool = False,
-        fig_output_dir: str = None,
+        fig_output_dir: str | None = None,
         verbose: bool = True,
 ) -> np.ndarray:
     """
@@ -479,7 +479,7 @@ def produce_HH_G_param(
         # softer soil: use Vardanega & Bolton (2011) CGJ formula
         mu[j] = 1.0 / (
             0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
-        )  # noqa: E226
+        )
 
         # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
         if mu[j] <= 0.02:
@@ -603,7 +603,7 @@ def produce_HH_G_param(
             plt.legend(loc='upper left')
 
             title_txt = f'$V_S$ = {Vs[j]:.1f} m/s, '
-            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'  # noqa: ISC003
+            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'
             title_txt += r'$\tau_{\mathrm{ff}}$ = '
             title_txt += f'{Tmax[j] / 1e3:.3f} kPa, '
             title_txt += r'$\gamma_{\mathrm{ref}}$ = '
@@ -628,7 +628,7 @@ def produce_HH_G_param(
             plt.plot(
                 strain_j,
                 mu[j]
-                / (1 + Gmax[j] / Tmax[j] * mu[j] * np.abs(strain_j / 100.0)),  # noqa: E226
+                / (1 + Gmax[j] / Tmax[j] * mu[j] * np.abs(strain_j / 100.0)),
                 c=muted_green,
                 lw=lw * 1.75,
             )
@@ -638,9 +638,8 @@ def produce_HH_G_param(
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
-                '$\\mu$ = %.3f, a = %.1f, $\\gamma_{\\mathrm{t}}$ = %.4f%%\n'
-                r"d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
-                % (mu[j], a, gamma_t * 100, d, p0[j]),
+                f'$\\mu$ = {mu[j]:.3f}, a = {a:.1f}, $\\gamma_{{\\mathrm{{t}}}}$ = {gamma_t * 100:.4f}%\n'
+                rf"d = {d:.4f}, $p'_{{\mathrm{{m0}}}}$ = {p0[j]:.2f} kPa",
             )
 
             fig.tight_layout(pad=0.5, h_pad=1.2, w_pad=0.3)
@@ -664,8 +663,8 @@ def _calc_shear_strength(
         Vs: np.ndarray,
         OCR: np.ndarray,
         sigma_v0: np.ndarray,
-        K0: float | int | np.ndarray | None = None,
-        phi: float | int | np.ndarray = 30.0,
+        K0: float | np.ndarray | None = None,
+        phi: float | np.ndarray = 30.0,
 ) -> np.ndarray:
     """
     Calculate shear strength of soils.
@@ -741,8 +740,7 @@ def _calc_Gmax(Vs: np.ndarray, rho: np.ndarray) -> np.ndarray:
     Gmax : np.ndarray
         1D array of initial stiffness. Unit: Pa
     """
-    Gmax = rho * Vs**2
-    return Gmax
+    return rho * Vs**2
 
 
 def _calc_OCR(
@@ -771,13 +769,12 @@ def _calc_OCR(
         1D array of OCR value, for each soil layer. (Unitless.)
     """
     # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from seismic piezocone tests"
-    sigma_p0 = 0.106 * Vs**1.47  # noqa: E501,E226
+    sigma_p0 = 0.106 * Vs**1.47
     sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
-    OCR = np.minimum(
+    return np.minimum(
         OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit
     )
-    return OCR
 
 
 def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
@@ -891,7 +888,7 @@ def _calc_PI(Vs: np.ndarray) -> np.ndarray:
 
 
 def _calc_K0(
-        OCR: float | int | np.ndarray, phi: float | int | np.ndarray = 30.0
+        OCR: float | np.ndarray, phi: float | np.ndarray = 30.0
 ) -> float | np.ndarray:
     """
     Calculate K0 (lateral earth pressure coefficient at rest) from OCR using
@@ -913,16 +910,15 @@ def _calc_K0(
         K0 value(s). If either ``OCR`` or ``phi`` is an array, ``K0`` will be
         an array of the same length.
     """
-    K0 = (1 - np.sin(np.deg2rad(phi))) * OCR ** np.sin(np.deg2rad(phi))
-    return K0
+    return (1 - np.sin(np.deg2rad(phi))) * OCR ** np.sin(np.deg2rad(phi))
 
 
 def produce_Darendeli_curves(
         sigma_v0: np.ndarray,
-        PI: int | float | np.ndarray = 20.0,
-        OCR: int | float | np.ndarray = 1.0,
-        K0: int | float | np.ndarray | None = 0.5,
-        phi: int | float | np.ndarray = 30.0,
+        PI: float | np.ndarray = 20.0,
+        OCR: float | np.ndarray = 1.0,
+        K0: float | np.ndarray | None = 0.5,
+        phi: float | np.ndarray = 30.0,
         strain_in_pct: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -1060,8 +1056,7 @@ def _calc_mean_confining_stress(
     sigma_m0 : np.ndarray
         Mean effective confining stress (of three directions). Unit: Pa.
     """
-    sigma_m0 = (2 * K0 + 1) / 3.0 * sigma_v0
-    return sigma_m0
+    return (2 * K0 + 1) / 3.0 * sigma_v0
 
 
 def _optimization_kernel(

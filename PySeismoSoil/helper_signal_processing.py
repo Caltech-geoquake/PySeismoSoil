@@ -183,7 +183,7 @@ def _filter_kernel(
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
-    if filter_type in ['bandpass', 'bandstop']:
+    if filter_type in {'bandpass', 'bandstop'}:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
             raise TypeError(
@@ -198,7 +198,7 @@ def _filter_kernel(
                 '`cutoff_freq` must be two values from smaller to larger.'
             )
 
-    elif filter_type in ['highpass', 'lowpass']:
+    elif filter_type in {'highpass', 'lowpass'}:
         if not isinstance(cutoff_freq, (float, int, np.number)):
             raise TypeError(
                 '`cutoff_freq` must be float, int, or numpy.number.'
@@ -370,31 +370,19 @@ def baseline(
     cross_bound_left = 0
     cross_bound_right = len(a)
 
-    if a[0] >= 0:
-        flag1 = 1
-    else:
-        flag1 = -1
+    flag1 = 1 if a[0] >= 0 else -1
 
     for i in range(1, len(a)):
-        if a[i] >= 0:
-            flag2 = 1
-        else:
-            flag2 = -1
+        flag2 = 1 if a[i] >= 0 else -1
 
         if flag1 * flag2 < 0:
             cross_bound_left = i
             break
 
-    if a[-1] >= 0:
-        glaf1 = 1
-    else:
-        glaf1 = -1
+    glaf1 = 1 if a[-1] >= 0 else -1
 
     for j in range(len(a) - 2, -1, -1):
-        if a[j] >= 0:
-            glaf2 = 1
-        else:
-            glaf2 = -1
+        glaf2 = 1 if a[j] >= 0 else -1
 
         if glaf1 * glaf2 < 0:
             cross_bound_right = j
@@ -661,10 +649,10 @@ def calc_transfer_function(
     """
     hlp.check_two_column_format(input_signal, name='`input_signal`')
     hlp.check_two_column_format(output_signal, name='`output_signal`')
-    if hlp.check_numbers_valid(input_signal) in [-1, -2]:
+    if hlp.check_numbers_valid(input_signal) in {-1, -2}:
         raise ValueError('`input_signal` contains invalid values.')
 
-    if hlp.check_numbers_valid(output_signal) in [-1, -2]:
+    if hlp.check_numbers_valid(output_signal) in {-1, -2}:
         raise ValueError('`output_signal` contains invalid values.')
 
     dt_in = input_signal[1, 0] - input_signal[0, 0]
@@ -729,7 +717,7 @@ def log_smooth(
         lin_space: bool = True,
         fmin: float | None = None,
         fmax: float | None = None,
-        n_pts: int = None,
+        n_pts: int | None = None,
         fix_ends: bool = True,
         beta1: float = 0.9,
         beta2: float = 0.9,
@@ -787,7 +775,7 @@ def log_smooth(
     if win_len < 3:
         return signal
 
-    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+    if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
             "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
         )
@@ -826,8 +814,7 @@ def log_smooth(
         for j in range(len(y) - 2, len(y) - n - 1, -1):
             y[j] = beta2 * y[j + 1] + (1 - beta2) * x[j]
 
-    smoothed_signal = y
-    return smoothed_signal
+    return y
 
 
 def lin_smooth(
@@ -897,7 +884,7 @@ def lin_smooth(
     if window_len < 3:
         return x
 
-    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+    if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
             "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
         )
@@ -907,8 +894,7 @@ def lin_smooth(
     else:
         w = eval('np.' + window + '(window_len)')
 
-    y = np.convolve(w / w.sum(), x, mode='same')
-    return y
+    return np.convolve(w / w.sum(), x, mode='same')
 
 
 def sine_smooth(

@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
 from scipy.optimize import fsolve
 
 from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.lines import Line2D
 
 
 class SVM:
@@ -125,9 +127,9 @@ class SVM:
         p2 = 0.5182
         p3 = 69.452
 
-        # q1 = 8.4562e-09  # noqa: E800
-        # q2 = 2.9981  # noqa: E800
-        # q3 = 0.03073  # noqa: E800
+        # q1 = 8.4562e-09
+        # q2 = 2.9981
+        # q3 = 0.03073
 
         # updated on 2018/1/2: improved curve fitting accuracy for k_
         r1 = -59.67
@@ -203,7 +205,7 @@ class SVM:
                         if (Vs30_temp < 130) or (Vs30_temp > 1000):
                             iteration_flag = False  # end iteration
                             if verbose is True:
-                                print('')
+                                print()
                         else:
                             Vs30 = Vs30_temp  # use the "trial Vs30" as the new Vs30
                     # END OF ACTUAL_VS30 WITHIN [TARGET_VS30-10, TARGER_VS30+10] CHECK
@@ -286,7 +288,7 @@ class SVM:
             self.bedrock_Vs = None
 
     def __repr__(self) -> str:
-        return 'Vs30 = {:.2g} m/s, z1 = {:.2g} m'.format(self.Vs30, self.z1)
+        return f'Vs30 = {self.Vs30:.2g} m/s, z1 = {self.z1:.2g} m'
 
     def plot(
             self,
@@ -324,9 +326,7 @@ class SVM:
         h_line : Line2D
             The line object.
         """
-        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
-            self.Vs30, self.z1
-        )
+        title = f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_{{1}}$={self.z1:.1f}m'
         fig, ax, h_line = sr.plot_Vs_profile(
             self._base_profile,
             title=title,
@@ -341,8 +341,8 @@ class SVM:
     def get_discretized_profile(
             self,
             *,
-            fixed_thk: float = None,
-            Vs_increment: float = None,
+            fixed_thk: float | None = None,
+            Vs_increment: float | None = None,
             at_midpoint: bool = True,
             show_fig: bool = False,
     ) -> Vs_Profile:
@@ -391,8 +391,8 @@ class SVM:
             max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
                 raise ValueError(
-                    '`Vs_increment` needs to < %.2g m/s (the '
-                    'max Vs of the smooth profile)' % max_Vs,
+                    f'`Vs_increment` needs to < {max_Vs:.2g} m/s (the '
+                    'max Vs of the smooth profile)',
                 )
 
             n_layers = self._base_profile.shape[0]
@@ -455,9 +455,7 @@ class SVM:
         label : str
             Label of the additional profile, to be shown in the legend.
         """
-        title = '$V_{{S30}}$={:.1f}m/s, $z_{{1}}$={:.1f}m'.format(
-            self.Vs30, self.z1
-        )
+        title = f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_{{1}}$={self.z1:.1f}m'
         fig, ax, _ = sr.plot_Vs_profile(self._base_profile, label='Smooth')
         sr.plot_Vs_profile(
             addtl_profile,
@@ -562,7 +560,7 @@ class SVM:
                 if condition_1 and condition_2 and condition_3:
                     iterate = False
                     if verbose:
-                        print('')
+                        print()
                 else:
                     iterate = True
                     counter += 1
@@ -578,7 +576,7 @@ class SVM:
 
     def _helper_get_rand_profile(
             self,
-            seed: int = None,
+            seed: int | None = None,
             show_fig: bool = False,
             use_Toros_layering: bool = False,
             use_Toros_std: bool = False,
@@ -656,7 +654,7 @@ class SVM:
 
                     # keeps trying until fzero() properly converges
                     while ier != 1:
-                        mean_thk, info, ier, msg = fsolve(
+                        mean_thk, _info, ier, _msg = fsolve(
                             func,
                             z_top[-1] + 4.0,
                             full_output=True,
@@ -770,7 +768,7 @@ class SVM:
         Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
         rng = np.random.RandomState([2 * seed])
 
-        for i in range(0, len(thk)):  # loop through layers
+        for i in range(len(thk)):  # loop through layers
             index_value, __ = SVM._find_index_closest(z_array_analyt, z_mid[i])
 
             # query sigma value where z = z_mid[j]:
