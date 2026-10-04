@@ -49,9 +49,9 @@ class Parameter(collections.UserDict):
     allowable_keys : set[str] | None, default=None
         The allowable parameter names of the constitutive model.
     func_stress : StressFunction | None, default=None
-        A function to calculate shear stress from the parameters. (The type
-        ``StressFunction`` is ``Callable[[dict[str, float], ...],
-        np.ndarray]``.)
+        A function to calculate shear stress from the parameters. It is called
+        as ``func_stress(strain, **params)``, where ``strain`` is a numpy array
+        (in absolute value, not in %), and returns a numpy array.
 
     Attributes
     ----------

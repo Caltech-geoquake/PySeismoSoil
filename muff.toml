@@ -68,12 +68,12 @@ ignore = [
   "D104",
   "D105",
   "D107",
-  "N801", # class names follow the domain convention, e.g., `Vs_Profile`
-  "N806", # variable names follow the domain notation, e.g., `Vs`, `Gmax`
-  "N999", # module/package names (e.g., `PySeismoSoil`) are part of the API
   "D200",
   "D205",
   "D400",
+  "N801", # class names follow the domain convention, e.g., `Vs_Profile`
+  "N806", # variable names follow the domain notation, e.g., `Vs`, `Gmax`
+  "N999", # module/package names (e.g., `PySeismoSoil`) are part of the API
   "PLC1901", # compare with empty string
   "S101",
   "S110",

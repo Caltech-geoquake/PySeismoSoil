@@ -11,8 +11,8 @@
     (`tests/` is excluded), and fixed the lint violations in the library, the
     example notebooks, `scripts/`, and `docs/`
   - Boolean arguments (e.g., `show_fig`, `verbose`, `parallel`) of functions
-    and methods are now keyword-only, so they must be passed by name (this
-    also makes the arguments that follow them keyword-only)
+    and methods are now keyword-only, so they must be passed by name (this also
+    makes the arguments that follow them keyword-only)
   - `Batch_Simulation.run()` writes to `batch_sim_<time>` (instead of
     `./batch_sim_<time>`) by default, which is the same location
   - `get_current_time()` returns a timezone-aware local time (same format)
