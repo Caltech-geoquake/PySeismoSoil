@@ -244,7 +244,7 @@ def serialize_params_to_array(
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
-    assert len(param) == 4  # noqa: S101
+    assert len(param) == 4
     order = ['gamma_ref', 's', 'beta', 'Gmax']
     param_array = [param[key] for key in order]
 
@@ -286,7 +286,7 @@ def deserialize_array_to_params(
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 4  # noqa: S101
+    assert len(array) == 4
 
     if from_files:
         param = {}

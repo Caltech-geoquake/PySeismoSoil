@@ -20,7 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
+import subprocess  # noqa: S404
 import sys
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path

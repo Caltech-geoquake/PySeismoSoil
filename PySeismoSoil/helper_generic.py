@@ -209,7 +209,7 @@ def read_two_column_stuff(
 
         n = len(data_)
         col1 = np.linspace(delta, n * delta, num=n)
-        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8  # noqa: S101
+        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
         data_ = np.column_stack((col1, data_))
     elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
         col1 = data_[:, 0]
@@ -549,7 +549,7 @@ def check_numbers_valid(array: np.ndarray) -> int:
     error_flag : int
         Flag indicating type of errors.
     """
-    assert isinstance(array, np.ndarray)  # noqa: S101
+    assert isinstance(array, np.ndarray)
 
     if not np.issubdtype(array.dtype, np.number):
         return -1
