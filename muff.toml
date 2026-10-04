@@ -72,7 +72,10 @@ ignore = [
   "D205",
   "D400",
   "N801", # class names follow the domain convention, e.g., `Vs_Profile`
+  "N802", # function names follow the domain convention, e.g., `get_HH_x_param`
+  "N803", # argument names follow the domain notation, e.g., `Vs`, `Gmax`
   "N806", # variable names follow the domain notation, e.g., `Vs`, `Gmax`
+  "N815", # attribute names follow the domain notation, e.g., `peak_Arias_Intensity`
   "N999", # module/package names (e.g., `PySeismoSoil`) are part of the API
   "PLC1901", # compare with empty string
   "S101",

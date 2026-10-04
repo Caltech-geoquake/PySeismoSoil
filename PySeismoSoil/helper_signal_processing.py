@@ -17,10 +17,10 @@ from PySeismoSoil import helper_site_response as sr
 WindowName = Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
 
 # Band-pass and band-stop filters need two cut-off frequencies (low and high)
-N_CUTOFF_FREQS_BAND_FILTER = 2
+NUM_CUTOFF_FREQS_BAND_FILTER = 2
 
 # Number of dimensions of a two-column signal (time and value)
-N_DIMS_TWO_COL_SIGNAL = 2
+NUM_DIMS_TWO_COL_SIGNAL = 2
 
 # Smoothing windows shorter than this (number of points) have no effect
 MIN_SMOOTHING_WINDOW_LEN = 3
@@ -213,7 +213,7 @@ def _filter_kernel(  # noqa: C901, PLR0915
                 '`cutoff_freq` must be a list, tuple, or numpy array.'
             )
 
-        if len(cutoff_freq) != N_CUTOFF_FREQS_BAND_FILTER:
+        if len(cutoff_freq) != NUM_CUTOFF_FREQS_BAND_FILTER:
             raise ValueError('`cutoff_freq` must have length 2.')
 
         if cutoff_freq[1] <= cutoff_freq[0]:
@@ -596,7 +596,7 @@ def fourier_transform(
     return np.column_stack((freq_array, spectrum))
 
 
-def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:  # noqa: N802
+def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     """
     Taper a time-domain signal on both ends with a Tukey window.
 
@@ -620,7 +620,7 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:  #
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
 
-    if input_signal.ndim == N_DIMS_TWO_COL_SIGNAL:  # two columns
+    if input_signal.ndim == NUM_DIMS_TWO_COL_SIGNAL:  # two columns
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
         ll = len(time_array)

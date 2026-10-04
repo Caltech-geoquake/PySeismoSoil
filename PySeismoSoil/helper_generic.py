@@ -18,8 +18,8 @@ AxesProjection = Literal[
 ]
 
 NDIM_2D_ARRAY = 2
-N_COLUMNS_TWO_COL_DATA = 2
-N_COLUMNS_FULL_VS_PROFILE = 5
+NUM_COLUMNS_TWO_COL_DATA = 2
+NUM_COLUMNS_OF_FULL_VS_PROFILE = 5
 DELTA_UNIFORMITY_REL_TOL = 1e-8
 
 # Status codes returned by ``check_numbers_valid()`` (0 means all valid)
@@ -28,7 +28,7 @@ CHECK_STATUS_NOT_FINITE = -2
 CHECK_STATUS_NEGATIVE = -3
 
 
-def detect_OS() -> str:  # noqa: N802
+def detect_OS() -> str:
     """
     Check which operating system is currently running.
 
@@ -230,11 +230,11 @@ def read_two_column_stuff(
         data_ = np.column_stack((col1, data_))
     elif (
         data_.ndim == NDIM_2D_ARRAY
-        and data_.shape[1] == N_COLUMNS_TWO_COL_DATA
+        and data_.shape[1] == NUM_COLUMNS_TWO_COL_DATA
     ):  # two columns
         col1 = data_[:, 0]
         delta = col1[1] - col1[0]
-    elif data_.shape[1] != N_COLUMNS_TWO_COL_DATA:
+    elif data_.shape[1] != NUM_COLUMNS_TWO_COL_DATA:
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
             'array, or a one-column array with a `delta` value.',
@@ -245,7 +245,7 @@ def read_two_column_stuff(
     return data_, delta
 
 
-def assert_1D_numpy_array(something: object, name: str | None = None) -> None:  # noqa: N802
+def assert_1D_numpy_array(something: object, name: str | None = None) -> None:
     """
     Assert that ``something`` is a 1D numpy array.
 
@@ -369,7 +369,7 @@ def check_length_or_extend_to_array(
     return array
 
 
-def assert_2D_numpy_array(something: object, name: str | None = None) -> None:  # noqa: N802
+def assert_2D_numpy_array(something: object, name: str | None = None) -> None:
     """
     Assert that ``something`` is a 2D numpy array.
 
@@ -437,11 +437,11 @@ def check_two_column_format(
 
     if (
         not at_least_two_columns
-        and something.shape[1] != N_COLUMNS_TWO_COL_DATA
+        and something.shape[1] != NUM_COLUMNS_TWO_COL_DATA
     ):
         raise TypeError(f'{name} should have two columns.')
 
-    if at_least_two_columns and something.shape[1] < N_COLUMNS_TWO_COL_DATA:
+    if at_least_two_columns and something.shape[1] < NUM_COLUMNS_TWO_COL_DATA:
         raise TypeError(f'{name} should have >= 2 columns.')
 
     check_status = check_numbers_valid(something)
@@ -455,7 +455,7 @@ def check_two_column_format(
         raise ValueError(f'{name} should have all non-negative values.')
 
 
-def check_Vs_profile_format(data: object) -> None:  # noqa: N802
+def check_Vs_profile_format(data: object) -> None:
     """
     Check that ``data`` is in a valid format as a Vs profile.
 
@@ -488,8 +488,8 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
         raise ValueError('`data` should be a 2D numpy array.')
 
     if data.shape[1] not in {
-        N_COLUMNS_TWO_COL_DATA,
-        N_COLUMNS_FULL_VS_PROFILE,
+        NUM_COLUMNS_TWO_COL_DATA,
+        NUM_COLUMNS_OF_FULL_VS_PROFILE,
     }:
         raise ValueError('`data` should have either 2 or 5 columns.')
 
@@ -507,7 +507,7 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
     if np.any(Vs <= 0):
         raise ValueError('The Vs column should be all positive.')
 
-    if data.shape[1] == N_COLUMNS_FULL_VS_PROFILE:
+    if data.shape[1] == NUM_COLUMNS_OF_FULL_VS_PROFILE:
         xi = data[:, 2]
         rho = data[:, 3]
         mat = data[:, 4]
@@ -689,11 +689,11 @@ def extract_from_curve_format(
     curves : np.ndarray
         A 2D numpy array that follows the following format:
 
-            +------------+--------+------------+-------------+-----+
-            | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
-            +============+========+============+=============+=====+
-            |    ...     |  ...   |    ...     |    ...      | ... |
-            +------------+--------+------------+-------------+-----+
+            +------------+--------+------------+-------------+-------------+--------+-----+
+            | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+            +============+========+============+=============+=============+========+=====+
+            |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+            +------------+--------+------------+-------------+-------------+--------+-----+
 
         Such an array can be constructed by hand, or by directly imported from
         a "curve_STATION_NAME.txt" file.
@@ -718,7 +718,7 @@ def extract_from_curve_format(
         When the input has unexpected type
     ValueError
         When the input has unexpected value
-    """
+    """  # noqa: E501
     if not isinstance(curves, np.ndarray):
         raise TypeError('`curves` needs to be a numpy array.')
 
@@ -796,7 +796,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
 
 
 def merge_curve_matrices(
-        GGmax_matrix: np.ndarray,  # noqa: N803
+        GGmax_matrix: np.ndarray,
         xi_matrix: np.ndarray,
 ) -> np.ndarray:
     """
@@ -804,11 +804,11 @@ def merge_curve_matrices(
 
     Both matrices need to have the following format:
 
-        +------------+--------+------------+-------------+-----+
-        | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
-        +============+========+============+=============+=====+
-        |    ...     |  ...   |    ...     |    ...      | ... |
-        +------------+--------+------------+-------------+-----+
+        +------------+--------+------------+-------------+-------------+--------+-----+
+        | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+        +============+========+============+=============+=============+========+=====+
+        |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+        +------------+--------+------------+-------------+-------------+--------+-----+
 
     They need to have the same shape. This function will take the G/Gmax
     information from ``GGmax_matrix`` and the damping information from
@@ -830,7 +830,7 @@ def merge_curve_matrices(
     ------
     ValueError
         When the input has invalid values
-    """
+    """  # noqa: E501
     assert_2D_numpy_array(GGmax_matrix, name='`GGmax_matrix`')
     assert_2D_numpy_array(xi_matrix, name='`xi_matrix`')
     if GGmax_matrix.shape[1] % 4 != 0:
@@ -873,5 +873,5 @@ def merge_curve_matrices(
                 xi_matrix[:, k * 4 + 2 : k * 4 + 4],
             ),
         )
-    # END FOR
+
     return merged

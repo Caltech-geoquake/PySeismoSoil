@@ -153,7 +153,7 @@ class Parameter(collections.UserDict):
         hlp.assert_1D_numpy_array(strain_in_pct, name='`strain_in_pct`')
         return self.func_stress(strain_in_pct / 100.0, **self.data)
 
-    def get_GGmax(  # noqa: N802
+    def get_GGmax(
             self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
     ) -> np.ndarray:
         """
@@ -497,7 +497,7 @@ class Param_Multi_Layer:
 
         return mgc, mdc
 
-    def serialize_to_2D_array(self) -> np.ndarray:  # noqa: N802
+    def serialize_to_2D_array(self) -> np.ndarray:
         """
         Serialize the parameter data to a 2D numpy array.
 

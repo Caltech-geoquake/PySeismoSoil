@@ -94,10 +94,10 @@ class Site_Factors:
         Lower bound of the valid PGA range, in g (class attribute).
     MAX_PGA_G : ClassVar[float], default=1.5
         Upper bound of the valid PGA range, in g (class attribute).
-    N_REFERENCE_GRIDS : ClassVar[int], default=8
+    NUM_REFERENCE_GRIDS : ClassVar[int], default=8
         Number of reference grids (corners of the cuboid in the (Vs30, z1, PGA)
         space) surrounding the query point (class attribute).
-    N_INTERP_DIMENSIONS : ClassVar[int], default=3
+    NUM_INTERP_DIMENSIONS : ClassVar[int], default=3
         Number of coordinates (Vs30, z1, and PGA) of the interpolation point
         (class attribute).
     Vs30 : float
@@ -131,8 +131,8 @@ class Site_Factors:
     # Interpolation takes place within a cuboid in the (Vs30, z1, PGA) space,
     # which has 8 corners (the "reference grids"), and the query point has 3
     # coordinates.
-    N_REFERENCE_GRIDS: ClassVar[int] = 8
-    N_INTERP_DIMENSIONS: ClassVar[int] = 3
+    NUM_REFERENCE_GRIDS: ClassVar[int] = 8
+    NUM_INTERP_DIMENSIONS: ClassVar[int] = 3
 
     # Each pair is (Vs30 in m/s, z1 in m). A site whose Vs30 and z1 both
     # exceed those of any pair (i.e., a stiff site with a deep basin) is
@@ -156,9 +156,9 @@ class Site_Factors:
 
     def __init__(
             self,
-            Vs30_in_meter_per_sec: float,  # noqa: N803
+            Vs30_in_meter_per_sec: float,
             z1_in_m: float,
-            PGA_in_g: float,  # noqa: N803
+            PGA_in_g: float,
             *,
             lenient: bool = False,
     ) -> None:
@@ -214,7 +214,7 @@ class Site_Factors:
             self,
             method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
             *,
-            Fourier: bool = True,  # noqa: N803
+            Fourier: bool = True,
             show_interp_plots: bool = False,
     ) -> Frequency_Spectrum:
         """
@@ -348,7 +348,7 @@ class Site_Factors:
             data_dir: str,
             method: Literal['nl_hh', 'eq_hh', 'eq_kz'] = 'nl_hh',
             *,
-            Fourier: bool = True,  # noqa: N803
+            Fourier: bool = True,
             show_interp_plots: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -425,11 +425,11 @@ class Site_Factors:
     @staticmethod
     def _query(
             amplif_or_phase: Literal['amplif', 'phase'],
-            Vs30: float,  # noqa: N803
+            Vs30: float,
             z1: float,
-            PGA: float,  # noqa: N803
+            PGA: float,
             *,
-            Fourier: bool = True,  # noqa: N803
+            Fourier: bool = True,
             method: Literal['nl_hh', 'eq_hh', 'eq_kz'] = 'nl_hh',
             data_dir: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
@@ -522,15 +522,15 @@ class Site_Factors:
         )
 
         combinations = list(itertools.product(Vs30_loc, z1_loc, PGA_loc))
-        assert len(list(combinations)) == self.N_REFERENCE_GRIDS
+        assert len(list(combinations)) == self.NUM_REFERENCE_GRIDS
 
         return combinations
 
     @staticmethod
     def _find_neighbors(
-            Vs30_in_mps: float,  # noqa: N803
+            Vs30_in_mps: float,
             z1_in_m: float,
-            PGA_in_g: float,  # noqa: N803
+            PGA_in_g: float,
     ) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
         """
         Find the indices of Vs30, z1, and PGA that surround given values.
@@ -633,9 +633,9 @@ class Site_Factors:
         assert isinstance(ref_points, list)
         assert isinstance(values, list)
         assert isinstance(interp_points, tuple)
-        assert len(ref_points) == Site_Factors.N_REFERENCE_GRIDS
+        assert len(ref_points) == Site_Factors.NUM_REFERENCE_GRIDS
         assert len(ref_points) == len(values)
-        assert len(interp_points) == Site_Factors.N_INTERP_DIMENSIONS
+        assert len(interp_points) == Site_Factors.NUM_INTERP_DIMENSIONS
 
         values = np.array(values)
 
@@ -656,13 +656,13 @@ class Site_Factors:
     def _plot_interp(
             ref_points: list[tuple[float, float, float]],
             query_point: tuple[float, float, float],
-            T_or_freq: np.ndarray,  # noqa: N803
+            T_or_freq: np.ndarray,
             amps: list[np.ndarray],
             amp_interp: np.ndarray,
             phases: list[np.ndarray] | None = None,
             phase_interp: np.ndarray | None = None,
             *,
-            Fourier: bool = True,  # noqa: N803
+            Fourier: bool = True,
     ) -> tuple[Figure, Axes, Axes | None]:
         """
         Show a plot of the amplification and/or phase shift factors.
@@ -772,9 +772,9 @@ class Site_Factors:
 
     @staticmethod
     def _range_check(
-            Vs30_in_mps: float,  # noqa: N803
+            Vs30_in_mps: float,
             z1_in_m: float,
-            PGA_in_g: float,  # noqa: N803
+            PGA_in_g: float,
     ) -> list[str]:
         """
         Check if the provided Vs30, z1_in_m, and PGA_in_g values are valid.

@@ -8,20 +8,20 @@ from PySeismoSoil import helper_site_response as sr
 
 # Number of parameters in the HH model: gamma_t, a, gamma_ref, beta, s, Gmax,
 # mu, Tmax, d
-N_HH_PARAMS = 9
+NUM_HH_PARAMS = 9
 
 # Largest exponent (base 10) that is safe for ``np.power(10, ...)`` without
 # overflowing (or underflowing to zero) in float64 numbers
 MAX_SAFE_LOG10_EXPONENT = 305
 
 
-def tau_FKZ(  # noqa: N802
+def tau_FKZ(
         gamma: np.ndarray,
         *,
-        Gmax: float,  # noqa: N803
+        Gmax: float,
         mu: float,
         d: float,
-        Tmax: float,  # noqa: N803
+        Tmax: float,
 ) -> np.ndarray:
     """
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
@@ -113,7 +113,7 @@ def transition_function(
     return w
 
 
-def tau_HH(  # noqa: N802
+def tau_HH(
         gamma: np.ndarray,
         *,
         gamma_t: float,
@@ -121,9 +121,9 @@ def tau_HH(  # noqa: N802
         gamma_ref: float,
         beta: float,
         s: float,
-        Gmax: float,  # noqa: N803
+        Gmax: float,
         mu: float,
-        Tmax: float,  # noqa: N803
+        Tmax: float,
         d: float,
 ) -> np.ndarray:
     """
@@ -166,7 +166,7 @@ def tau_HH(  # noqa: N802
     return w * T_MKZ + (1 - w) * T_FKZ
 
 
-def fit_HH_x_single_layer(  # noqa: N802
+def fit_HH_x_single_layer(
         damping_data_in_pct: np.ndarray,
         *,
         use_scipy: bool = True,
@@ -366,7 +366,7 @@ def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
-    assert len(param) == N_HH_PARAMS
+    assert len(param) == NUM_HH_PARAMS
     order = [
         'gamma_t',
         'a',
@@ -402,7 +402,7 @@ def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == N_HH_PARAMS
+    assert len(array) == NUM_HH_PARAMS
 
     param = {}
     param['gamma_t'] = array[0]

@@ -54,10 +54,10 @@ class Ground_Motion:
 
     Attributes
     ----------
-    N_ELEMENTS_IN_LIMIT : ClassVar[int], default=2
+    NUM_ELEMENTS_IN_LIMIT_ARG : ClassVar[int], default=2
         Number of elements (lower and upper bounds) that the ``limit`` argument
         of ``truncate()`` must have (class attribute).
-    N_ELEMENTS_IN_EXTEND : ClassVar[int], default=2
+    NUM_ELEMENTS_IN_EXTEND_ARG : ClassVar[int], default=2
         Number of elements (amounts to extend before and after) that the
         ``extend`` argument of ``truncate()`` must have (class attribute).
     dt : float
@@ -113,8 +113,8 @@ class Ground_Motion:
         When ``motion_type`` has invalid values
     """
 
-    N_ELEMENTS_IN_LIMIT: ClassVar[int] = 2
-    N_ELEMENTS_IN_EXTEND: ClassVar[int] = 2
+    NUM_ELEMENTS_IN_LIMIT_ARG: ClassVar[int] = 2
+    NUM_ELEMENTS_IN_EXTEND_ARG: ClassVar[int] = 2
 
     dt: float
     time: np.ndarray
@@ -131,7 +131,7 @@ class Ground_Motion:
     pgd_in_cm: float
     Arias_Intensity: np.ndarray
     Arias_Intensity_normalized: np.ndarray
-    peak_Arias_Intensity: float  # noqa: N815
+    peak_Arias_Intensity: float
     T5_95: float
     rms_accel: float
     rms_veloc: float
@@ -184,6 +184,8 @@ class Ground_Motion:
                 "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
             )
 
+        # Not `/=` or `*=`: `data_` can be an integer array, which in-place
+        # true division or multiplication by a float would reject
         if unit in {'cm', 'cm/s', 'cm/s/s', 'gal'}:
             data_[:, 1] = data_[:, 1] / 100.0  # noqa: PLR6104  # cm --> m
         elif unit == 'g':
@@ -235,7 +237,7 @@ class Ground_Motion:
         print(self)
         self.plot()
 
-    def get_Fourier_spectrum(  # noqa: N802
+    def get_Fourier_spectrum(
             self,
             *,
             real_val: bool = True,
@@ -271,8 +273,8 @@ class Ground_Motion:
 
     def get_response_spectra(
             self,
-            T_min: float = 0.01,  # noqa: N803
-            T_max: float = 10,  # noqa: N803
+            T_min: float = 0.01,
+            T_max: float = 10,
             n_pts: int = 60,
             damping: float = 0.05,
             *,
@@ -430,7 +432,7 @@ class Ground_Motion:
 
         return accel
 
-    def __calc_RMS(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:  # noqa: N802
+    def __calc_RMS(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Return RMS acceleration, velocity, and displacement. Unit: SI."""
         acc = self.accel
         vel, dis = sr.num_int(acc)
@@ -443,7 +445,7 @@ class Ground_Motion:
     def __arias_time_bounds(
             self,
             t: np.ndarray | None,
-            Ia_normalized: np.ndarray | None,  # noqa: N803
+            Ia_normalized: np.ndarray | None,
             low_lim: float,
             high_lim: float,
     ) -> tuple[float, float]:
@@ -481,7 +483,7 @@ class Ground_Motion:
 
         return t_low, t_high
 
-    def __calc_Arias(  # noqa: N802
+    def __calc_Arias(
             self,
             motion: str = 'accel',
             *,
@@ -541,7 +543,7 @@ class Ground_Motion:
     def scale_motion(
             self,
             factor: float = 1.0,
-            target_PGA_in_g: float | None = None,  # noqa: N803
+            target_PGA_in_g: float | None = None,
     ) -> Ground_Motion:
         """
         Scale ground motion.
@@ -621,13 +623,13 @@ class Ground_Motion:
         if not isinstance(limit, (tuple, list)):
             raise TypeError('`limit` must be a list/tuple of  two elements.')
 
-        if len(limit) != self.N_ELEMENTS_IN_LIMIT:
+        if len(limit) != self.NUM_ELEMENTS_IN_LIMIT_ARG:
             raise ValueError('Length of `limit` must be 2.')
 
         if not isinstance(extend, (tuple, list)):
             raise TypeError('`extend` must be a list/tuple of  two elements.')
 
-        if len(extend) != self.N_ELEMENTS_IN_EXTEND:
+        if len(extend) != self.NUM_ELEMENTS_IN_EXTEND_ARG:
             raise ValueError('Length of `extend` must be 2.')
 
         if extend[0] < 0 or extend[1] < 0:
@@ -882,7 +884,6 @@ class Ground_Motion:
             raise TypeError(
                 '`another_ground_motion` must be a `Ground_Motion`.'
             )
-        # END IF
 
         if this_ground_motion_as_input:
             accel_in = self.accel
@@ -890,7 +891,6 @@ class Ground_Motion:
         else:
             accel_in = another_ground_motion.accel
             accel_out = self.accel
-        # END IF-ELSE
 
         amp_ylabel = (
             f'Amplification\n({input_accel_label} ➡ {output_accel_label})'
@@ -1169,11 +1169,13 @@ class Ground_Motion:
         fmt = [t_prec, motion_prec]
         data = self.accel
 
+        # Not `/=` or `*=`: `data` can be an integer array, which in-place
+        # true division or multiplication by a float would reject
         if unit == 'm/s/s':
             pass
         elif unit == 'g':
-            data[:, 1] = data[:, 1] / 9.81  # noqa: PLR6104 (may be int dtype)
+            data[:, 1] = data[:, 1] / 9.81  # noqa: PLR6104
         elif unit in {'gal', 'cm/s/s'}:
-            data[:, 1] = data[:, 1] * 100.0  # noqa: PLR6104 (may be int dtype)
+            data[:, 1] = data[:, 1] * 100.0  # noqa: PLR6104
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)

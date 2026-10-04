@@ -11,7 +11,7 @@ from PySeismoSoil import helper_signal_processing as sp
 from PySeismoSoil import helper_site_response as sr
 
 
-def S_(  # noqa: N802
+def S_(
         meas: float | np.ndarray, simu: float | np.ndarray
 ) -> float | np.ndarray:
     """
@@ -252,8 +252,8 @@ def d_1234(  # noqa: PLR0915
     return (d1, d2, d3, d4)
 
 
-def calc_AriasIntensity(  # noqa: N802
-        accel_in_SI_unit: np.ndarray,  # noqa: N803
+def calc_AriasIntensity(
+        accel_in_SI_unit: np.ndarray,
 ) -> tuple[np.ndarray, float]:
     """
     Compute Arias intensity for scoring.
@@ -558,7 +558,7 @@ def calc_rms(x: np.ndarray) -> float:
     return np.sqrt(np.mean(x[:, 1] ** 2.0))
 
 
-def getAbsPeak(x: np.ndarray) -> float:  # noqa: N802
+def getAbsPeak(x: np.ndarray) -> float:
     """
     Get the peak value of the absolute value of a signal ``x``.
 
@@ -580,7 +580,7 @@ def getAbsPeak(x: np.ndarray) -> float:  # noqa: N802
     """
     if x.shape[1] == 1:
         peak = np.max(np.abs(x))
-    elif x.shape[1] == hlp.N_COLUMNS_TWO_COL_DATA:
+    elif x.shape[1] == hlp.NUM_COLUMNS_TWO_COL_DATA:
         peak = np.max(np.abs(x[:, 1]))
     else:
         raise TypeError('Dimension error.')
@@ -910,7 +910,7 @@ def d_10(
     return d10
 
 
-def upArrow_op(  # noqa: N802
+def upArrow_op(
         li: np.ndarray | list[float],
         j: int,
 ) -> np.ndarray | list[int]:
@@ -926,7 +926,7 @@ def upArrow_op(  # noqa: N802
     return li_n
 
 
-def period_list(li: np.ndarray | list[float], N: int) -> np.ndarray:  # noqa: N803
+def period_list(li: np.ndarray | list[float], N: int) -> np.ndarray:
     """Code from: https://github.com/pistonly/modwtpy."""
     n = len(li)
 

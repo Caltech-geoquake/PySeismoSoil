@@ -111,15 +111,15 @@ class SVM:
     Vs30: float
     z1: float
     base_profile: Vs_Profile
-    bedrock_Vs: float  # noqa: N815
-    has_bedrock_Vs: bool  # noqa: N815
+    bedrock_Vs: float
+    has_bedrock_Vs: bool
 
     def __init__(  # noqa: C901, PLR0915
             self,
-            target_Vs30: float,  # noqa: N803
+            target_Vs30: float,
             *,
             z1: float | None = None,
-            Vs_cap: bool | float = True,  # noqa: N803
+            Vs_cap: bool | float = True,
             eta: float = 0.90,
             show_fig: bool = False,
             iterate: bool = False,
@@ -246,9 +246,6 @@ class SVM:
                         else:
                             # use the "trial Vs30" as the new Vs30
                             Vs30 = Vs30_temp
-                    # END OF ACTUAL_VS30 WITHIN [TARGET_VS30 +/- 10] CHECK
-
-            # END OF WHILE LOOP (ITERATION UNTIL CONVERGENCE)
 
             # the homogeneous layer with Vs = Vs0
             array1 = np.array([thk_addl_layer, Vs_analyt[0]])
@@ -288,7 +285,6 @@ class SVM:
                         Vs_analyt[i] = Vs_cap * eta + Vs_cap * (1 - eta) / (
                             end_index - idx_eta_Vs_cap
                         ) * (i - idx_eta_Vs_cap)
-                    # END
 
                 # thickness (including a 0-m "phantom" layer)
                 array3 = np.append(th_array_analyt[:-1], 0.0)
@@ -303,9 +299,6 @@ class SVM:
                 vs_profile = np.vstack((array1, array5))
             else:  # if Vs profile is not to be capped
                 vs_profile = np.copy(temp_Vs_profile)
-            # END OF VS_CAP TRUE/FALSE CHECKING
-
-        # END OF "IF Z1000 <= 2.5" CHECK
 
         # ----------  Show figure  -----------------
         if show_fig is True:
@@ -382,7 +375,7 @@ class SVM:
             self,
             *,
             fixed_thk: float | None = None,
-            Vs_increment: float | None = None,  # noqa: N803
+            Vs_increment: float | None = None,
             at_midpoint: bool = True,
             show_fig: bool = False,
     ) -> Vs_Profile:
@@ -466,7 +459,6 @@ class SVM:
 
                     thk_tmp = 0
                     layer_bottom_depth_array.append(current_depth)
-            # END "for j in range(n_layers):"
 
             thk_array = sr.dep2thk(
                 np.array(layer_bottom_depth_array),
@@ -477,7 +469,6 @@ class SVM:
                 as_profile=True,
                 at_midpoint=at_midpoint,
             )
-        # END "if fixed_thk is not None:"
 
         discr_prof = discr_prof.truncate(depth=self.z1, Vs=self.bedrock_Vs)
         prof_ = discr_prof.vs_profile
@@ -519,8 +510,8 @@ class SVM:
             seed: float | None = None,
             *,
             show_fig: bool = False,
-            use_Toros_layering: bool = False,  # noqa: N803
-            use_Toros_std: bool = False,  # noqa: N803
+            use_Toros_layering: bool = False,
+            use_Toros_std: bool = False,
             vs30_z1_compliance: bool = False,
             verbose: bool = True,
     ) -> Vs_Profile:
@@ -619,11 +610,9 @@ class SVM:
                     counter += 1
                     if verbose:
                         print('.', end='\n' if counter % 80 == 0 else '')
-                # END IF
-            # END WHILE
+
             if show_fig:
                 self._plot_additional_profile(Vs_profile, 'Stochastic')
-        # END IF
 
         return Vs_Profile(Vs_profile)
 
@@ -632,8 +621,8 @@ class SVM:
             seed: int | None = None,
             *,
             show_fig: bool = False,
-            use_Toros_layering: bool = False,  # noqa: N803
-            use_Toros_std: bool = False,  # noqa: N803
+            use_Toros_layering: bool = False,
+            use_Toros_std: bool = False,
     ) -> np.ndarray:
         """
         Get randomized 1D profile.
@@ -689,7 +678,6 @@ class SVM:
                 thk_rand = -1
                 while thk_rand <= 0:  # to ensure thickness is always positive
                     thk_rand = rng.poisson(lamda_)  # draw random sample
-                # END
             else:
 
                 def func(x: np.ndarray | float) -> np.ndarray:
@@ -705,7 +693,6 @@ class SVM:
                             z_top[-1] + 4.0,
                             full_output=True,
                         )
-                    # END
                 else:  # the rest of the layers
                     ier = -6  # exit flag
 
@@ -716,8 +703,6 @@ class SVM:
                             z_top[-1] + 4.0,
                             full_output=True,
                         )
-                    # END
-                # END
 
                 # Take the 0th element because the return value is an array:
                 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fsolve.html
@@ -730,7 +715,6 @@ class SVM:
 
                 # randomized thickness based on mean and std
                 thk_rand = rng.normal(mean_thk, std_thk)
-            # END IF
 
             # make sure each layer is at least 2 meters thick; too thin
             # layers are not realistic
@@ -744,7 +728,6 @@ class SVM:
             z_mid.append(z_top[-1] + thk_rand / 2.0)
             z_bot.append(z_top[-1] + thk_rand)
             z_top.append(z_top[-1] + thk_rand)
-        # END WHILE
 
         # adjust thickness of last layer so that sum(thk) = z1
         thk[-1] = self.z1 - np.sum(thk[:-1])

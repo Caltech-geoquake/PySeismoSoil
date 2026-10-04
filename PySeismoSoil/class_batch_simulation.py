@@ -15,7 +15,7 @@ from PySeismoSoil.class_simulation import (
 if TYPE_CHECKING:
     from PySeismoSoil.class_simulation_results import Simulation_Results
 
-SimulationTypeName = Literal[
+SimulationType = Literal[
     'Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation'
 ]
 
@@ -45,7 +45,7 @@ class Batch_Simulation:
         Same as the input parameter ``list_of_simulations``.
     n_simulations : int
         Number of simulations in the list.
-    sim_type : SimulationTypeName
+    sim_type : SimulationType
         The object type of the site response simulations: one of
         'Linear_Simulation', 'Equiv_Linear_Simulation', or
         'Nonlinear_Simulation'.
@@ -60,7 +60,7 @@ class Batch_Simulation:
 
     list_of_simulations: list[Simulation_Results]
     n_simulations: int
-    sim_type: SimulationTypeName
+    sim_type: SimulationType
 
     def __init__(
             self,
@@ -167,7 +167,6 @@ class Batch_Simulation:
                 self._run_single_sim([i, other_params])
                 for i in range(self.n_simulations)
             ]
-            # END FOR
         else:
             sim_results = []
 
@@ -201,9 +200,6 @@ class Batch_Simulation:
             if options.get('show_fig', False):
                 for sim_result in sim_results:
                     sim_result.plot(save_fig=options.get('save_fig', False))
-                # END FOR
-            # END IF
-        # END IF
 
         return sim_results
 

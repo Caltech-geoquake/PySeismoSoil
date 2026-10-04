@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 def check_layer_count(
         vs_profile: Vs_Profile,
         *,
-        GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves = None,  # noqa: N803
-        G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer = None,  # noqa: N803
+        GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves = None,
+        G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer = None,
         xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer = None,
 ) -> None:
     """
@@ -93,11 +93,11 @@ def linear(
         Shear-wave velocity profile, as a 2D numpy array. It should have the
         following columns:
 
-        +------------+----------+---------+------------------+--------------+
-        | Thick. [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
-        +============+==========+=========+==================+==============+
-        |    ...     |   ...    |   ...   |       ...        |      ...     |
-        +------------+----------+---------+------------------+--------------+
+         +---------------+----------+---------+------------------+--------------+
+         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
+         +===============+==========+=========+==================+==============+
+         |      ...      |   ...    |   ...   |       ...        |      ...     |
+         +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
 
     input_motion : np.ndarray
@@ -137,7 +137,7 @@ def linear(
           the shaking process, of each layer. Shape: ``(n_layer, )``.
         - ``max_gt``: Maximum shear strain and shear stress during the shaking
           process, of each layer. Shape: ``(n_layer - 1, )``.
-    """
+    """  # noqa: E501
     hlp.check_Vs_profile_format(vs_profile)
     hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
 
@@ -226,7 +226,7 @@ def equiv_linear(
         curve_matrix: np.ndarray,
         boundary: Literal['elastic', 'rigid'] = 'elastic',
         tol: float = 0.075,
-        R_gamma: float = 0.65,  # noqa: N803
+        R_gamma: float = 0.65,
         max_iter: int = 10,
         *,
         verbose: bool = True,
@@ -240,11 +240,11 @@ def equiv_linear(
         Shear-wave velocity profile, as a 2D numpy array. It should have the
         following columns:
 
-        +------------+----------+---------+------------------+--------------+
-        | Thick. [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
-        +============+==========+=========+==================+==============+
-        |    ...     |   ...    |   ...   |       ...        |      ...     |
-        +------------+----------+---------+------------------+--------------+
+         +---------------+----------+---------+------------------+--------------+
+         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
+         +===============+==========+=========+==================+==============+
+         |      ...      |   ...    |   ...   |       ...        |      ...     |
+         +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
 
     input_motion : np.ndarray
@@ -256,11 +256,11 @@ def equiv_linear(
     curve_matrix : np.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-         +------------+--------+------------+-------------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
-         +============+========+============+=============+=====+
-         |    ...     |  ...   |    ...     |    ...      | ... |
-         +------------+--------+------------+-------------+-----+
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
     boundary : Literal['elastic', 'rigid'], default='elastic'
         Boundary condition. 'Elastic' means that the input motion is the "rock
@@ -307,7 +307,7 @@ def equiv_linear(
     Notes
     -----
     Based on the MATLAB function written by Wei Li and Jian Shi.
-    """
+    """  # noqa: E501
     hlp.check_Vs_profile_format(vs_profile)
     hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
     hlp.assert_2D_numpy_array(curve_matrix, name='`curve_matrix`')
@@ -393,7 +393,7 @@ def equiv_linear(
             #            and eventually to 0.
 
             D_new[k] = np.interp(eff_strain[k], strain_D_, D_vector_)
-        # END FOR
+
         G_relative_diff = np.abs(G[:-1] - G_new) / G_new
         D_relative_diff = np.abs(D[:-1] - D_new) / D_new
         G[:-1] = G_new
@@ -414,8 +414,6 @@ def equiv_linear(
         ):
             print('---------- Convergence achieved ---------------')
             break
-        # END IF
-    # END FOR
 
     # --------- Part 3: Calculate stress from strain --------------------------
     stress, half_N = _calc_stress(
@@ -522,7 +520,6 @@ def _prepare_inputs(
         n += 1
     else:
         flag = 1
-    # END IF
 
     ACCEL_IN = scipy.fftpack.fft(accel_in)
     N = len(ACCEL_IN)
@@ -568,15 +565,15 @@ def _lin_resp_every_layer(
         *,
         dt: float,
         freq: np.ndarray,
-        N: int,  # noqa: N803
+        N: int,
         n_layer: int,
         h: np.ndarray,
-        G: np.ndarray,  # noqa: N803
-        D: np.ndarray,  # noqa: N803
+        G: np.ndarray,
+        D: np.ndarray,
         rho: np.ndarray,
         boundary: Literal['elastic', 'rigid'],
-        ACCEL_IN: np.ndarray,  # noqa: N803
-        R_gamma: float = 0.65,  # noqa: N803
+        ACCEL_IN: np.ndarray,
+        R_gamma: float = 0.65,
 ) -> tuple[
     np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
 ]:
@@ -693,7 +690,6 @@ def _lin_resp_every_layer(
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
         H_ss[0, k] = np.real(H_ss[0, k])  # see Note (1) below
         H_append[:, k] = np.conj(np.flipud(H_ss[1:, k]))
-    # END FOR
 
     H = np.vstack((H_ss, H_append))
 
@@ -746,16 +742,15 @@ def _lin_resp_every_layer(
     for k in range(n_layer - 1):  # layer by layer
         strain[:, k] = (displ[:, k] - displ[:, k + 1]) / h[k]  # unit: 1
         eff_strain[k] = R_gamma * np.max(np.abs(strain[:, k]))  # unit: 1
-    # END FOR
 
     return H, accel_out, veloc, displ, strain, eff_strain
 
 
 def _calc_stress(
         *,
-        G: np.ndarray,  # noqa: N803
-        D: np.ndarray,  # noqa: N803
-        N: int,  # noqa: N803
+        G: np.ndarray,
+        D: np.ndarray,
+        N: int,
         n_layer: int,
         strain: np.ndarray,
 ) -> tuple[np.ndarray, int]:
@@ -801,8 +796,8 @@ def _post_processing(
         *,
         flag: Literal[0, 1],
         freq: np.ndarray,
-        half_N: int,  # noqa: N803
-        H: np.ndarray,  # noqa: N803
+        half_N: int,
+        H: np.ndarray,
         t: np.ndarray,
         accel_out: np.ndarray,
         veloc: np.ndarray,

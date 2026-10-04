@@ -9,16 +9,16 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
 # Number of parameters in the MKZ model: gamma_ref, s, beta, Gmax
-N_MKZ_PARAMS = 4
+NUM_MKZ_PARAMS = 4
 
 
-def tau_MKZ(  # noqa: N802
+def tau_MKZ(
         gamma: np.ndarray,
         *,
         gamma_ref: float,
         beta: float,
         s: float,
-        Gmax: float,  # noqa: N803
+        Gmax: float,
 ) -> np.ndarray:
     """
     Calculate the MKZ shear stress.
@@ -62,7 +62,7 @@ def tau_MKZ(  # noqa: N802
     return Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
 
 
-def fit_H4_x_single_layer(  # noqa: N802
+def fit_H4_x_single_layer(
         damping_data_in_pct: np.ndarray,
         *,
         use_scipy: bool = True,
@@ -182,7 +182,7 @@ def fit_H4_x_single_layer(  # noqa: N802
 
 
 def damping_misfit(
-        param_without_Gmax: tuple[float, float, float],  # noqa: N803
+        param_without_Gmax: tuple[float, float, float],
         damping_data: np.ndarray,
 ) -> float:
     """
@@ -248,7 +248,7 @@ def serialize_params_to_array(
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
-    assert len(param) == N_MKZ_PARAMS
+    assert len(param) == NUM_MKZ_PARAMS
     order = ['gamma_ref', 's', 'beta', 'Gmax']
     param_array = [param[key] for key in order]
 
@@ -291,7 +291,7 @@ def deserialize_array_to_params(
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == N_MKZ_PARAMS
+    assert len(array) == NUM_MKZ_PARAMS
 
     if from_files:
         param = {}
@@ -309,7 +309,7 @@ def deserialize_array_to_params(
     return param
 
 
-def fit_MKZ(  # noqa: N802
+def fit_MKZ(
         curve_data: np.ndarray,
         *,
         show_fig: bool = False,
@@ -323,11 +323,11 @@ def fit_MKZ(  # noqa: N802
     curve_data : np.ndarray
         A 2D numpy array that represents G/Gmax and damping curves of each
         layer, in the following format:
-         +------------+--------+------------+-------------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
-         +============+========+============+=============+=====+
-         |    ...     |  ...   |    ...     |    ...      | ... |
-         +------------+--------+------------+-------------+-----+
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         The damping information is neglected in this function, so users can
         supply some dummy values.
@@ -344,7 +344,7 @@ def fit_MKZ(  # noqa: N802
     fitted_curves : np.ndarray
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.
-    """
+    """  # noqa: E501
     from scipy.optimize import curve_fit  # noqa: PLC0415
 
     hlp.assert_2D_numpy_array(curve_data, name='`curve_data`')
@@ -443,7 +443,7 @@ def fit_MKZ(  # noqa: N802
                 rf'$\gamma_{{\mathrm{{ref}}}}$ = {ref_strain[k]:.3g},'
                 rf' s = {s_value[k]:.3g}, $\beta$ = {beta[k]:.3g}',
             )
-        # END FOR
+
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
 
     # ---------- Produce fitting curves ---------------------------------------

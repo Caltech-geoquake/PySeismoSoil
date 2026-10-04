@@ -93,11 +93,9 @@ class Simulation:
             input_motion: Ground_Motion,
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            G_param: OptionalModelParams = None,  # noqa: N803
+            G_param: OptionalModelParams = None,
             xi_param: OptionalModelParams = None,
-            GGmax_and_damping_curves: (  # noqa: N803
-                OptionalGGmaxDampingCurves
-            ) = None,
+            GGmax_and_damping_curves: (OptionalGGmaxDampingCurves) = None,
     ) -> None:
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
@@ -272,7 +270,6 @@ class Linear_Simulation(Simulation):
             )
             if show_fig:
                 sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
-            # END IF
         else:  # `every_layer` is `False`
             response, tf = sr.linear_site_resp(
                 self.soil_profile.vs_profile,
@@ -291,7 +288,6 @@ class Linear_Simulation(Simulation):
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history)
-        # END IF
 
         if verbose:
             print('done.')
@@ -329,7 +325,7 @@ class Equiv_Linear_Simulation(Simulation):
             self,
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
-            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves,  # noqa: N803
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:
         if GGmax_and_damping_curves is None:
@@ -497,7 +493,7 @@ class Nonlinear_Simulation(Simulation):
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
-            G_param: OptionalModelParams,  # noqa: N803
+            G_param: OptionalModelParams,
             xi_param: OptionalModelParams,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:

@@ -337,14 +337,12 @@ class Batch_GOF_Scores:
                 self._run_single_score([i, options])
                 for i in range(self.n_scores)
             )
-            # END FOR
         else:
             p = mp.Pool(n_cores)
             score_results = p.map(
                 self._run_single_score,
                 itertools.product(range(N), [options]),
             )
-        # END IF
 
         return score_results
 

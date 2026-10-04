@@ -64,8 +64,8 @@ class HH_Calibration:
             self,
             vs_profile: Vs_Profile,
             *,
-            GGmax_curves: Multiple_GGmax_Curves | None = None,  # noqa: N803
-            Tmax_profile: np.ndarray | None = None,  # noqa: N803
+            GGmax_curves: Multiple_GGmax_Curves | None = None,
+            Tmax_profile: np.ndarray | None = None,
     ) -> None:
         if not isinstance(vs_profile, Vs_Profile):
             raise TypeError('`vs_profile` must be of type Vs_Profile.')
@@ -102,8 +102,8 @@ class HH_Calibration:
             show_fig: bool = False,
             save_fig: bool = False,
             fig_output_dir: str | None = None,
-            save_HH_G_file: bool = False,  # noqa: N803
-            HH_G_file_dir: str | None = None,  # noqa: N803
+            save_HH_G_file: bool = False,
+            HH_G_file_dir: str | None = None,
             profile_name: str | None = None,
             verbose: bool = True,
     ) -> HH_Param_Multi_Layer:

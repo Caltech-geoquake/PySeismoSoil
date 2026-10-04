@@ -102,8 +102,8 @@ class Vs_Profile:
 
     # A Vs profile can have 2 columns (thickness and Vs only) or 5 columns
     # (thickness, Vs, damping, density, and material number)
-    N_COLS_THICKNESS_AND_VS: ClassVar[int] = 2
-    N_COLS_FULL_PROFILE: ClassVar[int] = 5
+    NUM_COLUMNS_THICKNESS_AND_VS: ClassVar[int] = 2
+    NUM_COLUMNS_OF_FULL_VS_PROFILE: ClassVar[int] = 5
 
     # If the min. density of a profile (in kg/m^3) is at or below this value, a
     # warning is printed because the density is likely to be in a wrong unit
@@ -148,7 +148,7 @@ class Vs_Profile:
         vs = data_[:, 1]
         n_layer_tmp, n_col = data_.shape
 
-        if n_col == self.N_COLS_THICKNESS_AND_VS:
+        if n_col == self.NUM_COLUMNS_THICKNESS_AND_VS:
             xi, rho = sr.get_xi_rho(vs, formula_type=xi_rho_formula)
             if thk[-1] == 0:  # last layer is an "infinity" layer
                 material_number = np.append(np.arange(1, n_layer_tmp), [0])
@@ -165,7 +165,7 @@ class Vs_Profile:
                 )
 
             full_data = np.column_stack((thk, vs, xi, rho, material_number))
-        elif n_col == self.N_COLS_FULL_PROFILE:
+        elif n_col == self.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             xi = data_[:, 2]
             rho = data_[:, 3]
             if (
@@ -379,7 +379,7 @@ class Vs_Profile:
         tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))
         return tf_RO, tf_BH, tf_IN
 
-    def get_f0_RO(self) -> float:  # noqa: N802
+    def get_f0_RO(self) -> float:
         """
         Return the rock-outcrop fundamental frequency.
 
@@ -390,7 +390,7 @@ class Vs_Profile:
         """
         return self.get_ampl_function(show_fig=False)[0].get_f0()
 
-    def get_f0_BH(self) -> float:  # noqa: N802
+    def get_f0_BH(self) -> float:
         """
         Return the borehole fundamental frequency.
 
@@ -415,7 +415,7 @@ class Vs_Profile:
     def truncate(
             self,
             depth: float | None = None,
-            Vs: float = 1000.0,  # noqa: N803
+            Vs: float = 1000.0,
     ) -> Vs_Profile:
         """
         Truncate Vs profile at a given ``depth``.
@@ -480,7 +480,7 @@ class Vs_Profile:
 
         return Vs_Profile(profile_)
 
-    def query_Vs_at_depth(  # noqa: N802
+    def query_Vs_at_depth(
             self,
             depth: float | np.ndarray,
             *,
@@ -561,7 +561,7 @@ class Vs_Profile:
 
         return vs_queried
 
-    def query_Vs_given_thk(  # noqa: N802
+    def query_Vs_given_thk(
             self,
             thk: float | np.ndarray,
             n_layers: int | None = None,
@@ -627,7 +627,7 @@ class Vs_Profile:
 
         return Vs_Profile(vs_, add_halfspace=add_halfspace)
 
-    def _plot_queried_Vs(  # noqa: N802
+    def _plot_queried_Vs(
             self,
             vs_queried: float | np.ndarray,
             depth: float | np.ndarray,
@@ -651,7 +651,7 @@ class Vs_Profile:
         if np.max(y_lim) <= np.max(depth):
             ax.set_ylim((np.max(depth), np.min(y_lim)))
 
-    def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:  # noqa: N803
+    def get_basin_depth(self, bedrock_Vs: float = 1000.0) -> float:
         """
         Query the depth of the basin as indicated in the Vs profile data.
 
@@ -748,7 +748,7 @@ class Vs_Profile:
         if not isinstance(precision, list):
             raise TypeError('precision must be a list.')
 
-        if len(precision) != self.N_COLS_FULL_PROFILE:
+        if len(precision) != self.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             raise ValueError('Length of precision must be 5.')
 
         np.savetxt(fname, self.vs_profile, fmt=precision, delimiter=sep)

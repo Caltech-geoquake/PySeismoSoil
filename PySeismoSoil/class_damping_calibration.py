@@ -34,7 +34,7 @@ class Damping_Calibration:
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
             *,
-            use_Darendeli_Dmin: bool = False,  # noqa: N803
+            use_Darendeli_Dmin: bool = False,
             show_fig: bool = False,
     ) -> Multiple_Damping_Curves:
         """
@@ -65,7 +65,7 @@ class Damping_Calibration:
 
         # there can only be 5 or 2 columns
         n_columns = self.vs_profile.vs_profile.shape[1]
-        if n_columns == hlp.N_COLUMNS_FULL_VS_PROFILE:
+        if n_columns == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             rho = self.vs_profile.vs_profile[:-1, 3]
         else:  # only 2 columns
             rho = hhc._calc_rho(h, Vs)  # noqa: SLF001
@@ -107,7 +107,7 @@ class Damping_Calibration:
 
         return mdc
 
-    def get_HH_x_param(self, **kwargs: dict[Any, Any]) -> HH_Param_Multi_Layer:  # noqa: N802
+    def get_HH_x_param(self, **kwargs: dict[Any, Any]) -> HH_Param_Multi_Layer:
         """
         Obtain HH_x parameters for each layer (i.e., HH model parameters that
         best fit given damping values, for each layer).
@@ -131,7 +131,7 @@ class Damping_Calibration:
         )
         return mdc.get_all_HH_x_params(**kwargs)
 
-    def get_H4_x_param(  # noqa: N802
+    def get_H4_x_param(
             self, **kwargs: dict[Any, Any]
     ) -> MKZ_Param_Multi_Layer:
         """

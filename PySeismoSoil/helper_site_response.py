@@ -21,15 +21,15 @@ if TYPE_CHECKING:
 
 # A basic Vs profile has two columns: [thickness, Vs]. (The 5-column format
 # additionally has damping, density, and material number.)
-N_COLUMNS_BASIC_VS_PROFILE = 2
+NUM_COLUMNS_BASIC_VS_PROFILE = 2
 
 # A single-sided transfer function is given as a tuple of (frequency, TF),
 # where the TF can be either a complex array or a tuple of (amplitude, phase).
-N_ITEMS_FREQ_AND_TF_TUPLE = 2
-N_ITEMS_AMPLITUDE_AND_PHASE_TUPLE = 2
+NUM_ITEMS_FREQ_AND_TF_TUPLE = 2
+NUM_ITEMS_AMPLITUDE_AND_PHASE_TUPLE = 2
 
 # A time array needs at least 2 points to define a time step.
-MIN_N_POINTS_IN_TIME_ARRAY = 2
+MIN_NUM_POINTS_IN_TIME_ARRAY = 2
 
 # Max allowed deviation among time steps of an "evenly spaced" time array.
 TIME_STEP_UNIFORMITY_TOL_SEC = 1e-7
@@ -56,7 +56,7 @@ RHO_VS_STEPS_LOW_THRESHOLD_M_S = 200
 RHO_VS_STEPS_HIGH_THRESHOLD_M_S = 800
 
 
-def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:  # noqa: N802, N803
+def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
     """
     Calculate z1 (basin depth) from Vs30. The correlation used here is z1 =
     140.511 * exp(-0.00303 * Vs30), where the units of z1 and Vs30 are both SI
@@ -89,7 +89,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
 
     h = vs_profile[:, 0]
     Vs = vs_profile[:, 1]
-    if vs_profile.shape[1] > N_COLUMNS_BASIC_VS_PROFILE:
+    if vs_profile.shape[1] > NUM_COLUMNS_BASIC_VS_PROFILE:
         five_columns = True
         xi = vs_profile[:, 2]
         rho = vs_profile[:, 3]
@@ -162,7 +162,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
     return new_profile
 
 
-def query_Vs_at_depth(  # noqa: N802
+def query_Vs_at_depth(
         vs_profile: np.ndarray, depth: float | np.ndarray
 ) -> tuple[float | np.ndarray, bool, bool, bool]:
     """
@@ -237,7 +237,7 @@ def query_Vs_at_depth(  # noqa: N802
     return vs_queried, is_scalar, has_duplicate_values, is_sorted
 
 
-def query_Vs_given_thk(  # noqa: N802
+def query_Vs_given_thk(
         vs_profile: np.ndarray,
         thk: float | np.ndarray,
         n_layers: int | None = None,
@@ -353,12 +353,11 @@ def plot_motion(
     if isinstance(accel, str):
         if not title:
             title = accel
-        # END
+
         accel = np.loadtxt(accel)
     elif isinstance(accel, np.ndarray):
         if title is None:
             title = 'Ground motion'
-        # END
     else:
         raise TypeError('"accel" must be a str or a 2-columned numpy array.')
 
@@ -522,8 +521,8 @@ def find_f0(x: np.ndarray) -> float:
 
 def response_spectra(  # noqa: PLR0915
         accel: np.ndarray,
-        T_min: float = 0.01,  # noqa: N803
-        T_max: float = 10,  # noqa: N803
+        T_min: float = 0.01,
+        T_max: float = 10,
         n_pts: int = 60,
         damping: float = 0.05,
         *,
@@ -789,7 +788,7 @@ def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
 
 
 def get_xi_rho(
-        Vs: np.ndarray,  # noqa: N803
+        Vs: np.ndarray,
         formula_type: Literal[1, 2, 3] = 3,
 ) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
@@ -884,10 +883,10 @@ def get_xi_rho(
     return xi, rho
 
 
-def calc_VsZ(  # noqa: N802
+def calc_VsZ(
         profile: np.ndarray,
-        Z: float,  # noqa: N803
-        option_for_profile_shallower_than_Z: Literal[1, 2] = 1,  # noqa: N803
+        Z: float,
+        option_for_profile_shallower_than_Z: Literal[1, 2] = 1,
         *,
         verbose: bool = False,
 ) -> float:
@@ -958,7 +957,7 @@ def calc_VsZ(  # noqa: N802
     return VsZ
 
 
-def calc_Vs30(  # noqa: N802
+def calc_Vs30(
         profile: np.ndarray,
         option_for_profile_shallower_than_30m: Literal[1, 2] = 1,
         *,
@@ -998,7 +997,7 @@ def calc_Vs30(  # noqa: N802
     )
 
 
-def plot_Vs_profile(  # noqa: N802
+def plot_Vs_profile(
         vs_profile: np.ndarray,
         fig: Figure | None = None,
         ax: Axes | None = None,
@@ -1094,7 +1093,7 @@ def plot_Vs_profile(  # noqa: N802
 
 def calc_basin_depth(
         vs_profile: np.ndarray,
-        bedrock_Vs: float = 1000.0,  # noqa: N803
+        bedrock_Vs: float = 1000.0,
 ) -> float:
     """
     Query the depth of the basin as indicated in ``vs_profile``. The basin is
@@ -1598,7 +1597,7 @@ def amplify_motion(  # noqa: PLR0915
     motion at all.
     """
     assert isinstance(transfer_function_single_sided, tuple)
-    assert len(transfer_function_single_sided) == N_ITEMS_FREQ_AND_TF_TUPLE
+    assert len(transfer_function_single_sided) == NUM_ITEMS_FREQ_AND_TF_TUPLE
 
     f_array, tf_ss = transfer_function_single_sided
     hlp.assert_1D_numpy_array(f_array, name='`f_array`')
@@ -1609,7 +1608,7 @@ def amplify_motion(  # noqa: PLR0915
         amp_ss = np.abs(tf_ss)
         phase_ss = robust_unwrap(np.angle(tf_ss))
     elif isinstance(tf_ss, tuple):
-        assert len(tf_ss) == N_ITEMS_AMPLITUDE_AND_PHASE_TUPLE
+        assert len(tf_ss) == NUM_ITEMS_AMPLITUDE_AND_PHASE_TUPLE
         amp_ss, phase_ss = tf_ss
         assert amp_ss.ndim == 1
         assert phase_ss.ndim == 1
@@ -1737,11 +1736,11 @@ def linear_site_resp(
         1D Vs profile. If it is a string, it means the file name that contains
         the data. If it is a 2D array, it has the following format:
 
-         +---------------+----------+---------+------------------+----------+
-         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Mat. No. |
-         +===============+==========+=========+==================+==========+
-         |      ...      |   ...    |   ...   |       ...        |   ...    |
-         +---------------+----------+---------+------------------+----------+
+         +---------------+----------+---------+------------------+--------------+
+         | Thickness [m] | Vs [m/s] | Damping | Density [kg/m^3] | Material No. |
+         +===============+==========+=========+==================+==============+
+         |      ...      |   ...    |   ...   |       ...        |      ...     |
+         +---------------+----------+---------+------------------+--------------+
         (Damping unit: 1)
     input_motion : np.ndarray | str
         Input motion in the time domain (with two columns). If it is a string,
@@ -1785,7 +1784,7 @@ def linear_site_resp(
 
     (Original version in MATLAB: June 2013. Translated into Python on
     4/5/2018.)
-    """
+    """  # noqa: E501
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
 
@@ -2057,7 +2056,6 @@ def compare_two_accel(
         amp_func_smoothed = sig.log_smooth(amp_func, lin_space=False)
     else:
         amp_func_smoothed = None
-    # END IF-ELSE
 
     fig, ax = _plot_site_amp(
         a_in_2col,
@@ -2080,11 +2078,10 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     hlp.assert_1D_numpy_array(t2)
 
     if (
-        len(t1) < MIN_N_POINTS_IN_TIME_ARRAY
-        or len(t2) < MIN_N_POINTS_IN_TIME_ARRAY
+        len(t1) < MIN_NUM_POINTS_IN_TIME_ARRAY
+        or len(t2) < MIN_NUM_POINTS_IN_TIME_ARRAY
     ):
         raise ValueError('Both time arrays need to have at least 2 elements.')
-    # END IF
 
     dt1 = t1[1] - t1[0]
     dt2 = t2[1] - t2[0]
@@ -2275,7 +2272,7 @@ def calc_damping_from_param(
 def calc_damping_from_stress_strain(
         strain_in_unit_1: np.ndarray,
         stress: np.ndarray,
-        Gmax: float,  # noqa: N803
+        Gmax: float,
 ) -> np.ndarray:
     """
     Calculate the damping curve from the given stress-strain curve.
@@ -2316,10 +2313,10 @@ def calc_damping_from_stress_strain(
     return np.maximum(damping, 0.0)  # make sure all damping values are >= 0
 
 
-def calc_GGmax_from_stress_strain(  # noqa: N802
+def calc_GGmax_from_stress_strain(
         strain_in_unit_1: np.ndarray,
         stress: np.ndarray,
-        Gmax: float | None = None,  # noqa: N803
+        Gmax: float | None = None,
 ) -> np.ndarray:
     """
     Calculate G/Gmax curve from stress-strain curve.
@@ -2460,13 +2457,11 @@ def fit_all_damping_curves(
     curves : np.ndarray | list[np.ndarray]
         Can either be a 2D array in the "curve" format, or a list of individual
         damping curves. The "curve" format is as follows:
-         +------------+--------+------------+-------------+-----+
-         | strain [%] | G/Gmax | strain [%] | damping [%] | ... |
-         +============+========+============+=============+=====+
-         |    ...     |  ...   |    ...     |    ...      | ... |
-         +------------+--------+------------+-------------+-----+
-
-        (The four columns above are repeated for each layer.)
+         +------------+--------+------------+-------------+-------------+--------+-----+
+         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
+         +============+========+============+=============+=============+========+=====+
+         |    ...     |  ...   |    ...     |    ...      |    ...      |  ...   | ... |
+         +------------+--------+------------+-------------+-------------+--------+-----+
 
         The G/Gmax information is redundant for this function.
 
@@ -2536,7 +2531,7 @@ def fit_all_damping_curves(
         The type of the input parameter is incorrect
     ValueError
         No function for serialization
-    """
+    """  # noqa: E501
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)
     elif isinstance(curves, list):

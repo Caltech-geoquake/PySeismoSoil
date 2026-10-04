@@ -68,7 +68,7 @@ class Site_Effect_Adjustment:
     def __init__(
             self,
             input_motion: Ground_Motion,
-            Vs30_in_meter_per_sec: float,  # noqa: N803
+            Vs30_in_meter_per_sec: float,
             z1_in_m: float | None = None,
             ampl_method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
             *,
