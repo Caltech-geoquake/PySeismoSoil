@@ -49,7 +49,9 @@ class Parameter(collections.UserDict):
     allowable_keys : set[str] | None, default=None
         The allowable parameter names of the constitutive model.
     func_stress : StressFunction | None, default=None
-        A function to calculate shear stress from the parameters.
+        A function to calculate shear stress from the parameters. (The type
+        ``StressFunction`` is ``Callable[[dict[str, float], ...],
+        np.ndarray]``.)
 
     Attributes
     ----------
@@ -573,7 +575,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
             +----------------+-----------------+-----------------+-----+
 
         or a 2D numpy array containing the data of the format above, or a list
-        containing HH parameter data.
+        containing HH parameter data (dictionaries or ``HH_Param`` objects).
     sep : str, default='\t'
         Delimiter of the file to be imported. If ``filename_or_data`` is not a
         file name, ``sep`` has no effect.
@@ -663,7 +665,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             +----------------+-----------------+-----------------+-----+
 
         or a 2D numpy array containing the data of the format above, or a list
-        containing MKZ parameter data.
+        containing MKZ parameter data (dictionaries or ``MKZ_Param`` objects).
     sep : str, default='\t'
         Delimiter of the file to be imported. If ``filename_or_data`` is not a
         file name, ``sep`` has no effect.
