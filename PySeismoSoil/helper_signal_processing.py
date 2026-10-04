@@ -16,7 +16,8 @@ from PySeismoSoil import helper_site_response as sr
 def lowpass(
         orig_signal: np.ndarray,
         cutoff_freq: float,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -57,7 +58,8 @@ def lowpass(
 def highpass(
         orig_signal: np.ndarray,
         cutoff_freq: float,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -98,7 +100,8 @@ def highpass(
 def bandpass(
         orig_signal: np.ndarray,
         cutoff_freq: tuple[float, float],
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -139,7 +142,8 @@ def bandpass(
 def bandstop(
         orig_signal: np.ndarray,
         cutoff_freq: tuple[float, float],
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -181,7 +185,8 @@ def _filter_kernel(  # noqa: C901, PLR0915
         orig_signal: np.ndarray,
         cutoff_freq: float,
         filter_type: str,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
@@ -220,7 +225,7 @@ def _filter_kernel(  # noqa: C901, PLR0915
     sampling_rate = 1.0 / dt
     f_nyquist = sampling_rate / 2.0
     df = 1.0 / (len(x) * dt)
-    Wn = np.array(cutoff_freq) / f_nyquist  # noqa: N806
+    Wn = np.array(cutoff_freq) / f_nyquist
 
     if filter_type == 'highpass' and cutoff_freq <= 0:
         return orig_signal
@@ -337,7 +342,8 @@ def _filter_kernel(  # noqa: C901, PLR0915
 
 def baseline(  # noqa: PLR0915
         orig_signal: np.ndarray,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
         cutoff_freq: float = 0.20,
 ) -> np.ndarray:
     """
@@ -526,24 +532,24 @@ def fourier_transform(
 
     time_array = signal_[:, 0]
     x = signal_[:, 1]
-    N = len(time_array)  # noqa: N806
+    N = len(time_array)
 
     dt = float(time_array[1] - time_array[0])
 
-    X = scipy.fftpack.fft(x)  # noqa: N806
+    X = scipy.fftpack.fft(x)
 
     if not double_sided:
         freq_array = np.arange(1, int(np.ceil(N / 2.0)) + 1, 1) / (N * dt)
         if real_val:  # absolute Fourier spectra
-            X = abs(X[0 : int(np.ceil(N / 2.0))])  # noqa: N806
+            X = abs(X[0 : int(np.ceil(N / 2.0))])
             spectrum = X
         else:  # complex Fourier spectra
-            X = X[0 : int(np.ceil(N / 2.0))]  # noqa: N806
+            X = X[0 : int(np.ceil(N / 2.0))]
             spectrum = X
     else:
         freq_array = np.arange(1, N + 1, 1) / (N * dt)
         if real_val:  # absolute Fourier spectra
-            X = abs(X)  # noqa: N806
+            X = abs(X)
             spectrum = X
         else:  # complex Fourier spectra
             spectrum = X
@@ -667,8 +673,8 @@ def calc_transfer_function(
             'Time intervals of the input and output should match.'
         )
 
-    N_in = input_signal.shape[0]  # noqa: N806
-    N_out = output_signal.shape[0]  # noqa: N806
+    N_in = input_signal.shape[0]
+    N_out = output_signal.shape[0]
     if N_in != N_out:
         raise ValueError(
             'Length of the input and output signals should match.'
@@ -719,11 +725,12 @@ def log_smooth(
             'bartlett',
             'blackman',
         ] = 'hanning',
-        lin_space: bool = True,  # noqa: FBT001, FBT002
+        *,
+        lin_space: bool = True,
         fmin: float | None = None,
         fmax: float | None = None,
         n_pts: int | None = None,
-        fix_ends: bool = True,  # noqa: FBT001, FBT002
+        fix_ends: bool = True,
         beta1: float = 0.9,
         beta2: float = 0.9,
 ) -> np.ndarray:
@@ -924,7 +931,7 @@ def sine_smooth(
     freqs = signal[:, 0]
 
     df = freqs[1] - freqs[0]
-    T = 1 / df  # noqa: N806
+    T = 1 / df
 
     udf = 1.854305 / window_span * df
 

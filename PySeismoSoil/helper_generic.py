@@ -26,7 +26,7 @@ def detect_OS() -> str:  # noqa: N802
     return platform.system()
 
 
-def get_current_time(for_filename: bool = True) -> str:  # noqa: FBT001, FBT002
+def get_current_time(*, for_filename: bool = True) -> str:
     """
     Get current time as a string (e.g., 2001-01-01 23:59:59).
 
@@ -99,7 +99,8 @@ def _process_fig_ax_objects(
             'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'
         ]
         | None = None,
-        bypass_ax_creation: bool = False,  # noqa: FBT001, FBT002
+        *,
+        bypass_ax_creation: bool = False,
 ) -> tuple[Figure, Axes]:
     """
     Process figure and axes objects.
@@ -374,8 +375,9 @@ def assert_2D_numpy_array(something: object, name: str | None = None) -> None:  
 def check_two_column_format(
         something: object,
         name: str | None = None,
-        ensure_non_negative: bool = False,  # noqa: FBT001, FBT002
-        at_least_two_columns: bool = False,  # noqa: FBT001, FBT002
+        *,
+        ensure_non_negative: bool = False,
+        at_least_two_columns: bool = False,
 ) -> None:
     """
     Check that ``something`` is a 2D numpy array with two columns.
@@ -464,7 +466,7 @@ def check_Vs_profile_format(data: object) -> None:  # noqa: N802
         raise ValueError('`data` should have either 2 or 5 columns.')
 
     thk = data[:, 0]
-    Vs = data[:, 1]  # noqa: N806
+    Vs = data[:, 1]
     if np.any(thk[:-1] <= 0):
         raise ValueError(
             'The thickness column should be all positive, except for the '
@@ -569,7 +571,8 @@ def interpolate(
         n_pts: int,
         x_ref: np.ndarray,
         y_ref: np.ndarray,
-        log_scale: bool = True,  # noqa: FBT001, FBT002
+        *,
+        log_scale: bool = True,
         **kwargs_to_interp: dict[Any, Any],
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -644,7 +647,8 @@ def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 def extract_from_curve_format(
         curves: np.ndarray,
-        ensure_non_negative: bool = True,  # noqa: FBT001, FBT002
+        *,
+        ensure_non_negative: bool = True,
 ) -> tuple[list[np.ndarray], list[np.ndarray]]:
     """
     Extract G/Gmax and damping curves from a "curve formatted" 2D numpy array.
@@ -701,10 +705,10 @@ def extract_from_curve_format(
 
     n_layer = curves.shape[1] // 4
 
-    GGmax_curves_list = []  # noqa: N806
+    GGmax_curves_list = []
     damping_curves_list = []
     for j in range(n_layer):
-        GGmax = curves[:, j * 4 + 0 : j * 4 + 2]  # noqa: N806
+        GGmax = curves[:, j * 4 + 0 : j * 4 + 2]
         damping = curves[:, j * 4 + 2 : j * 4 + 4]
         check_two_column_format(
             GGmax,

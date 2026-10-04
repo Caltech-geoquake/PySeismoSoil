@@ -167,7 +167,7 @@ class Parameter(collections.UserDict):
             print('You did not provide a function to calculate shear stress.')
             return None
 
-        Gmax = self.data['Gmax']  # noqa: N806
+        Gmax = self.data['Gmax']
         strain_in_1 = strain_in_pct / 100.0
         return sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
 
@@ -226,7 +226,7 @@ class Parameter(collections.UserDict):
             A list of two axes objects.
         """
         strain = np.logspace(-4, 1)  # unit: percent
-        GGmax = self.get_GGmax(strain)  # noqa: N806
+        GGmax = self.get_GGmax(strain)
         damping = self.get_damping(strain)
 
         if figsize is None:
@@ -254,7 +254,7 @@ class Parameter(collections.UserDict):
         return fig, ax
 
 
-class HH_Param(Parameter):  # noqa: N801
+class HH_Param(Parameter):
     """
     Class implementation of the HH model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
@@ -302,7 +302,7 @@ class HH_Param(Parameter):  # noqa: N801
         return hh.serialize_params_to_array(self.data)
 
 
-class MKZ_Param(Parameter):  # noqa: N801
+class MKZ_Param(Parameter):
     """
     Class implementation of the MKZ model parameters. After initialization, you
     can access/modify individual parameter values just like a dictionary.
@@ -340,7 +340,7 @@ class MKZ_Param(Parameter):  # noqa: N801
         return mkz.serialize_params_to_array(self.data)
 
 
-class Param_Multi_Layer:  # noqa: N801
+class Param_Multi_Layer:
     """
     Class implementation of multiple curves.
 
@@ -456,7 +456,7 @@ class Param_Multi_Layer:  # noqa: N801
 
         curves = None
         for param in self.param_list:
-            GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)  # noqa: N806
+            GGmax = param.get_GGmax(strain_in_pct=strain_in_pct)
             damping = param.get_damping(strain_in_pct=strain_in_pct)
             if curves is None:
                 curves = np.column_stack((
@@ -471,7 +471,7 @@ class Param_Multi_Layer:  # noqa: N801
                 )
 
         if curve_type == 'ggmax':
-            GGmax_curve_list, _ = hlp.extract_from_curve_format(  # noqa: N806
+            GGmax_curve_list, _ = hlp.extract_from_curve_format(
                 curves,
                 ensure_non_negative=False,
             )
@@ -527,7 +527,7 @@ class Param_Multi_Layer:  # noqa: N801
         **kw_to_savetxt : dict[Any, Any]
             Additional keyword arguments to pass to ``numpy.savetxt()``.
         """
-        param_2D_array = self.serialize_to_2D_array()  # noqa: N806
+        param_2D_array = self.serialize_to_2D_array()
         np.savetxt(
             filename,
             param_2D_array,
@@ -537,7 +537,7 @@ class Param_Multi_Layer:  # noqa: N801
         )
 
 
-class HH_Param_Multi_Layer(Param_Multi_Layer):  # noqa: N801
+class HH_Param_Multi_Layer(Param_Multi_Layer):
     r"""
     Class implementation of multiple sets of HH parameters for multiple layers.
 
@@ -629,7 +629,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):  # noqa: N801
         )
 
 
-class MKZ_Param_Multi_Layer(Param_Multi_Layer):  # noqa: N801
+class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     r"""
     Class implementation of multiple sets of MKZ parameters for multiple
     layers.

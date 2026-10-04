@@ -147,17 +147,17 @@ class SVM:
             z1 = sr.calc_z1_from_Vs30(target_Vs30)
 
         if z1 <= 2.5:  # this is a rare case, but it does happen sometimes...  # noqa: PLR2004
-            Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3  # noqa: N806
+            Vs0_ = p1 * target_Vs30**2.0 + p2 * target_Vs30 + p3
 
             # just one layer
             vs_profile = np.array([[z1, Vs0_], [0.0, 1000.0]])
         else:  # this is most of the cases...
-            Vs30 = target_Vs30  # noqa: N806
+            Vs30 = target_Vs30
             iteration_flag = True
 
             while iteration_flag is True:
                 # --------  Calculate analytical Vs profile from Vs30  -------
-                Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3  # noqa: N806
+                Vs0_ = p1 * Vs30**2.0 + p2 * Vs30 + p3
 
                 k_ = np.exp(r1 * Vs30**r2 + r3)  # updated on 2018/1/2
                 n_ = np.max([
@@ -172,7 +172,7 @@ class SVM:
                 th_array_analyt = sr.dep2thk(z_array_analyt)
 
                 # analytical Vs ( = Vs0*(1+k*z)^(1/n) )
-                Vs_analyt = Vs0_ * (1.0 + k_ * z_array_analyt) ** (1.0 / n_)  # noqa: N806
+                Vs_analyt = Vs0_ * (1.0 + k_ * z_array_analyt) ** (1.0 / n_)
 
                 # the homogeneous layer with Vs = Vs0:
                 array1 = np.array([thk_addl_layer, Vs_analyt[0]])
@@ -181,14 +181,14 @@ class SVM:
                 array2 = np.column_stack((th_array_analyt, Vs_analyt))
 
                 # stack the homogeneous layer on top
-                temp_Vs_profile = np.vstack((array1, array2))  # noqa: N806
+                temp_Vs_profile = np.vstack((array1, array2))
 
                 if iterate is False:
                     # abort while loop after only one run
                     iteration_flag = False
                 else:
                     # -------  Check if actual Vs30 matches target Vs30 -------
-                    actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)  # noqa: N806
+                    actual_Vs30 = sr.calc_Vs30(temp_Vs_profile)
                     if verbose is True:  # print iteration progress
                         print(
                             f'  {actual_Vs30:.1f} --> {target_Vs30:.1f} |',
@@ -201,7 +201,7 @@ class SVM:
                             print('|')
                     else:
                         # update the "trial Vs30" to offset the difference
-                        Vs30_temp = Vs30 - (actual_Vs30 - target_Vs30) / 5.0  # noqa: N806
+                        Vs30_temp = Vs30 - (actual_Vs30 - target_Vs30) / 5.0
 
                         # if the "trial Vs30" is out of range
                         if (Vs30_temp < 130) or (Vs30_temp > 1000):  # noqa: PLR2004
@@ -210,7 +210,7 @@ class SVM:
                                 print()
                         else:
                             # use the "trial Vs30" as the new Vs30
-                            Vs30 = Vs30_temp  # noqa: N806
+                            Vs30 = Vs30_temp
                     # END OF ACTUAL_VS30 WITHIN [TARGET_VS30 +/- 10] CHECK
 
             # END OF WHILE LOOP (ITERATION UNTIL CONVERGENCE)
@@ -222,29 +222,29 @@ class SVM:
             array2 = np.column_stack((th_array_analyt, Vs_analyt))
 
             # stack the homogeneous layer on top
-            temp_Vs_profile = np.vstack((array1, array2))  # noqa: N806
+            temp_Vs_profile = np.vstack((array1, array2))
 
             # ---------   Prepare output variables  ---------------
             # if we need to "cap" the Vs profile somehow
             if Vs_cap is not False:
                 # if Vs_cap value not specified (i.e., user inputs "True")
                 if Vs_cap is True:
-                    Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap  # noqa: N806
+                    Vs_cap = 1000.0  # use 1000.0 m/s as Vs_cap
 
                 # if Vs_analyt eventually exceeds Vs_cap
                 if np.where(Vs_analyt > Vs_cap)[0].size > 0:
                     # find the index from which Vs_analyt exceeds Vs_cap
-                    index_Vs_cap = np.where(Vs_analyt > Vs_cap)[0][0]  # noqa: N806
+                    index_Vs_cap = np.where(Vs_analyt > Vs_cap)[0][0]
                 else:
                     # use NaN to denote the alternative situation
-                    index_Vs_cap = np.nan  # noqa: N806
+                    index_Vs_cap = np.nan
 
                 # total number of layers in the smooth profile (Vs_analyt)
                 end_index = len(Vs_analyt)
 
                 if not np.isnan(index_Vs_cap):  # if index_Vs_cap is not NaN
                     # where Vs_analyt exceeds eta*Vs_cap
-                    idx_eta_Vs_cap = np.where(Vs_analyt > Vs_cap * eta)[0][0]  # noqa: N806
+                    idx_eta_Vs_cap = np.where(Vs_analyt > Vs_cap * eta)[0][0]
 
                     # change Vs value where Vs > eta * Vs_cap
                     for i in range(idx_eta_Vs_cap, end_index):
@@ -398,7 +398,7 @@ class SVM:
                 at_midpoint=at_midpoint,
             )
         else:  # Vs_increment is not None
-            max_Vs = np.max(self._base_profile[:, 1])  # noqa: N806
+            max_Vs = np.max(self._base_profile[:, 1])
             if Vs_increment >= max_Vs:
                 raise ValueError(
                     f'`Vs_increment` needs to < {max_Vs:.2g} m/s (the '
@@ -406,14 +406,14 @@ class SVM:
                 )
 
             n_layers = self._base_profile.shape[0]
-            discr_Vs_previous_layer = self._base_profile[0, 1]  # noqa: N806
+            discr_Vs_previous_layer = self._base_profile[0, 1]
             layer_bottom_depth_array = [0]
             thk_tmp = 0
             current_depth = 0
             for j in range(n_layers):
                 thk = self._base_profile[j, 0]
                 current_depth += thk
-                base_Vs_j_th_layer = self._base_profile[j, 1]  # noqa: N806
+                base_Vs_j_th_layer = self._base_profile[j, 1]
                 if base_Vs_j_th_layer < discr_Vs_previous_layer + Vs_increment:
                     thk_tmp += thk
                 else:
@@ -425,9 +425,9 @@ class SVM:
                     #     increment of the base profile --- we need to use
                     #     the natural increment as the Vs increment
                     if thk_tmp != 0:  # the first case
-                        discr_Vs_previous_layer += Vs_increment  # noqa: N806
+                        discr_Vs_previous_layer += Vs_increment
                     else:  # the second case
-                        discr_Vs_previous_layer = base_Vs_j_th_layer  # noqa: N806
+                        discr_Vs_previous_layer = base_Vs_j_th_layer
 
                     thk_tmp = 0
                     layer_bottom_depth_array.append(current_depth)
@@ -482,11 +482,12 @@ class SVM:
     def get_randomized_profile(
             self,
             seed: float | None = None,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            use_Toros_layering: bool = False,  # noqa: FBT001, FBT002, N803
-            use_Toros_std: bool = False,  # noqa: FBT001, FBT002, N803
-            vs30_z1_compliance: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = True,  # noqa: FBT001, FBT002
+            *,
+            show_fig: bool = False,
+            use_Toros_layering: bool = False,  # noqa: N803
+            use_Toros_std: bool = False,  # noqa: N803
+            vs30_z1_compliance: bool = False,
+            verbose: bool = True,
     ) -> Vs_Profile:
         """
         Return a randomized a 1D profile.
@@ -540,7 +541,7 @@ class SVM:
         }
 
         if not vs30_z1_compliance:
-            Vs_profile = self._helper_get_rand_profile(**options)  # noqa: N806
+            Vs_profile = self._helper_get_rand_profile(**options)
         else:
             iterate = True
             counter = 0
@@ -550,15 +551,15 @@ class SVM:
             while iterate:
                 seed_ = None if seed is None else seed + counter
                 options.update({'seed': seed_, 'show_fig': False})
-                Vs_profile = self._helper_get_rand_profile(**options)  # noqa: N806
-                rand_Vs30 = sr.calc_Vs30(  # noqa: N806
+                Vs_profile = self._helper_get_rand_profile(**options)
+                rand_Vs30 = sr.calc_Vs30(
                     Vs_profile,
                     option_for_profile_shallower_than_30m=1,
                 )
-                rand_Vs_last = Vs_profile[-1, 1]  # noqa: N806
+                rand_Vs_last = Vs_profile[-1, 1]
                 rand_z1 = sr.calc_z1(Vs_profile)
-                base_Vs30 = self.Vs30  # noqa: N806
-                base_Vs_last = self._base_profile[-1, 1]  # noqa: N806
+                base_Vs30 = self.Vs30
+                base_Vs_last = self._base_profile[-1, 1]
                 base_z1 = sr.calc_z1(self._base_profile)
 
                 condition_1 = np.abs(rand_Vs30 - base_Vs30) < 25.0  # noqa: PLR2004
@@ -587,9 +588,10 @@ class SVM:
     def _helper_get_rand_profile(  # noqa: C901, PLR0915
             self,
             seed: int | None = None,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            use_Toros_layering: bool = False,  # noqa: FBT001, FBT002, N803
-            use_Toros_std: bool = False,  # noqa: FBT001, FBT002, N803
+            *,
+            show_fig: bool = False,
+            use_Toros_layering: bool = False,  # noqa: N803
+            use_Toros_std: bool = False,  # noqa: N803
     ) -> np.ndarray:
         """
         Get randomized 1D profile.
@@ -711,8 +713,8 @@ class SVM:
 
         # ----------------   Part 2   ------------------------------------
         # Calculate baseline Vs profile based on layering & smooth profile
-        baseline_Vs = np.zeros(len(thk))  # noqa: N806
-        Vs_analyt = self._base_profile[:, 1]  # noqa: N806
+        baseline_Vs = np.zeros(len(thk))
+        Vs_analyt = self._base_profile[:, 1]
         thk_array_analyt = self._base_profile[:, 0]
         z_array_analyt = sr.thk2dep(thk_array_analyt, midpoint=False)
 
@@ -731,23 +733,23 @@ class SVM:
         # ******** These values come from Table 5 of Toro (1995) or Table 2.3
         # ******** of Kamai, Abrahamson, Silva (2013) PEER report.
         if self.Vs30 < 180:  # site class E  # noqa: PLR2004
-            sigma_lnV = 0.37  # noqa: N806
+            sigma_lnV = 0.37
             rho_0 = 0
-            Delta = 5.0  # noqa: N806
+            Delta = 5.0
             rho_200 = 0.50
             z_0 = 0
             b = 0.744
         elif self.Vs30 < 360:  # site class D  # noqa: PLR2004
-            sigma_lnV = 0.31  # noqa: N806
+            sigma_lnV = 0.31
             rho_0 = 0.99
-            Delta = 3.9  # noqa: N806
+            Delta = 3.9
             rho_200 = 0.98
             z_0 = 0
             b = 0.344
         elif self.Vs30 < 760:  # site class C  # noqa: PLR2004
-            sigma_lnV = 0.27  # noqa: N806
+            sigma_lnV = 0.27
             rho_0 = 0.97
-            Delta = 3.8  # noqa: N806
+            Delta = 3.8
             rho_200 = 1.00
             z_0 = 0
             b = 0.293
@@ -755,9 +757,9 @@ class SVM:
             # Site classes B and A (These values are intended for class B
             # only, but you can still produce a result for a class A profile.
             # The result just won't make sense.)
-            sigma_lnV = 0.36  # noqa: N806
+            sigma_lnV = 0.36
             rho_0 = 0.95
-            Delta = 3.4  # noqa: N806
+            Delta = 3.4
             rho_200 = 0.42
             z_0 = 0
             b = 0.063
@@ -767,7 +769,7 @@ class SVM:
         #     deviation of Vs, but rather the two parameters of the log-normal
         #     distribution that Vs is assumed to follow.)
         if not use_Toros_std:
-            sigma_lognormal_Vs = (  # noqa: N806
+            sigma_lognormal_Vs = (
                 -7.769e-10 * Vs_analyt**3
                 + 1.597e-06 * Vs_analyt**2
                 - 0.0008724 * Vs_analyt
@@ -775,11 +777,11 @@ class SVM:
             )
         else:
             # From page 8 of Toro (1995):
-            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)  # noqa: N806
+            sigma_lognormal_Vs = sigma_lnV * np.ones(Vs_analyt.shape)
 
         # ****** 3.3. Generate random Vs values based on Toro's equations  ****
-        Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values  # noqa: N806
-        Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)  # noqa: N806
+        Vs_hat = np.zeros([len(thk), 1])  # randomly realized Vs values
+        Y = np.zeros([len(thk), 1])  # this "Y" here is the "Z" in Toro (1995)
         rng = np.random.RandomState([2 * seed])
 
         for i in range(len(thk)):  # loop through layers
@@ -794,7 +796,7 @@ class SVM:
                 rho_z = rho_200 * ((z_mid[i] + z_0) / (200.0 + z_0)) ** b
 
             rho_thk = rho_0 * np.exp(-thk[i] / Delta)
-            rho_1L = (1 - rho_z) * rho_thk + rho_z  # noqa: N806
+            rho_1L = (1 - rho_z) * rho_thk + rho_z
 
             if i == 0:  # for the first layer
                 # generate a 1-by-nr_of_rand_profiles vector
@@ -809,9 +811,9 @@ class SVM:
         # -------------  Part 4: Adjust Vs_profile  ----------------
         #     If the last layer of Vs_profile is less than 1000 m/s, add a
         #     1000 m/s layer at the very bottom.  '''
-        Vs_profile = np.column_stack((thk, Vs_hat))  # noqa: N806
+        Vs_profile = np.column_stack((thk, Vs_hat))
         if Vs_profile[-1, 1] < 1000:  # noqa: PLR2004
-            Vs_profile = np.vstack((Vs_profile, [0, 1000]))  # noqa: N806
+            Vs_profile = np.vstack((Vs_profile, [0, 1000]))
 
         # -------------  Part 5: Plot Vs profile (optional) ---------------
         if show_fig is True:

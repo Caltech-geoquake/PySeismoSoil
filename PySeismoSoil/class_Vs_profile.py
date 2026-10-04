@@ -1,4 +1,4 @@
-"""Vs profile class."""  # noqa: N999
+"""Vs profile class."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from matplotlib.lines import Line2D
 
 
-class Vs_Profile:  # noqa: N801
+class Vs_Profile:
     r"""
     Class implementation of a Vs profile.
 
@@ -281,7 +281,8 @@ class Vs_Profile:  # noqa: N801
 
     def get_ampl_function(
             self,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            show_fig: bool = False,
             freq_resolution: float = 0.05,
             fmax: float = 30.0,
     ) -> tuple[Frequency_Spectrum, Frequency_Spectrum, Frequency_Spectrum]:
@@ -312,14 +313,15 @@ class Vs_Profile:  # noqa: N801
             fmax=fmax,
             freq_resolution=freq_resolution,
         )
-        af_RO = Frequency_Spectrum(np.column_stack((freq, af_ro)))  # noqa: N806
-        af_BH = Frequency_Spectrum(np.column_stack((freq, af_bh)))  # noqa: N806
-        af_IN = Frequency_Spectrum(np.column_stack((freq, af_in)))  # noqa: N806
+        af_RO = Frequency_Spectrum(np.column_stack((freq, af_ro)))
+        af_BH = Frequency_Spectrum(np.column_stack((freq, af_bh)))
+        af_IN = Frequency_Spectrum(np.column_stack((freq, af_in)))
         return af_RO, af_BH, af_IN
 
     def get_transfer_function(
             self,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            show_fig: bool = False,
             freq_resolution: float = 0.05,
             fmax: float = 30.0,
     ) -> tuple[Frequency_Spectrum, Frequency_Spectrum, Frequency_Spectrum]:
@@ -351,9 +353,9 @@ class Vs_Profile:  # noqa: N801
             freq_resolution=freq_resolution,
         )
 
-        tf_RO = Frequency_Spectrum(np.column_stack((freq, tf_ro)))  # noqa: N806
-        tf_BH = Frequency_Spectrum(np.column_stack((freq, tf_bh)))  # noqa: N806
-        tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))  # noqa: N806
+        tf_RO = Frequency_Spectrum(np.column_stack((freq, tf_ro)))
+        tf_BH = Frequency_Spectrum(np.column_stack((freq, tf_bh)))
+        tf_IN = Frequency_Spectrum(np.column_stack((freq, tf_in)))
         return tf_RO, tf_BH, tf_IN
 
     def get_f0_RO(self) -> float:  # noqa: N802
@@ -460,8 +462,9 @@ class Vs_Profile:  # noqa: N801
     def query_Vs_at_depth(  # noqa: N802
             self,
             depth: float | np.ndarray,
-            as_profile: bool = False,  # noqa: FBT001, FBT002
-            show_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            as_profile: bool = False,
+            show_fig: bool = False,
     ) -> float | np.ndarray | Vs_Profile:
         """
         Query Vs values at given ``depth`` values.
@@ -541,10 +544,11 @@ class Vs_Profile:  # noqa: N801
             self,
             thk: float | np.ndarray,
             n_layers: int | None = None,
-            as_profile: bool = False,  # noqa: FBT001, FBT002
-            at_midpoint: bool = True,  # noqa: FBT001, FBT002
-            add_halfspace: bool = True,  # noqa: FBT001, FBT002
-            show_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            as_profile: bool = False,
+            at_midpoint: bool = True,
+            add_halfspace: bool = True,
+            show_fig: bool = False,
     ) -> np.ndarray | Vs_Profile:
         """
         Query Vs values from a thickness layer ``thk``.

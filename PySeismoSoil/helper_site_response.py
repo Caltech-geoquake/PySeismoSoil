@@ -52,7 +52,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
     hlp.check_Vs_profile_format(vs_profile)
 
     h = vs_profile[:, 0]
-    Vs = vs_profile[:, 1]  # noqa: N806
+    Vs = vs_profile[:, 1]
     if vs_profile.shape[1] > 2:  # noqa: PLR2004
         five_columns = True
         xi = vs_profile[:, 2]
@@ -63,9 +63,9 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
 
     if h[-1] == 0:
         flag = True
-        Vs_end = Vs[-1]  # noqa: N806
+        Vs_end = Vs[-1]
         h = h[:-1]
-        Vs = Vs[:-1]  # noqa: N806
+        Vs = Vs[:-1]
         if five_columns:
             xi_end = xi[-1]
             rho_end = rho[-1]
@@ -80,7 +80,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
     h_temp = Vs / 225.0  # max freq = 15 Hz, and 15 points per wavelength
 
     h2 = []
-    Vs2 = []  # noqa: N806
+    Vs2 = []
     xi2 = []
     rho2 = []
     mtrl2 = []
@@ -205,7 +205,8 @@ def query_Vs_given_thk(  # noqa: N802
         vs_profile: np.ndarray,
         thk: float | np.ndarray,
         n_layers: int | None = None,
-        at_midpoint: bool = True,  # noqa: FBT001, FBT002
+        *,
+        at_midpoint: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Query Vs values from a thickness array "``thk``". The starting point of
@@ -330,7 +331,7 @@ def plot_motion(
     t = accel[:, 0]
     a = accel[:, 1]
 
-    PGA = np.max(np.abs(a))  # noqa: N806
+    PGA = np.max(np.abs(a))
     pga_index = np.argmax(np.abs(a))
 
     v, u = num_int(np.column_stack((t, a)))
@@ -489,8 +490,9 @@ def response_spectra(  # noqa: PLR0915
         T_max: float = 10,  # noqa: N803
         n_pts: int = 60,
         damping: float = 0.05,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
-        parallel: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
+        parallel: bool = False,
         n_cores: int | None = None,
         subsample_interval: int = 1,
 ) -> tuple[np.ndarray, ...]:
@@ -555,7 +557,7 @@ def response_spectra(  # noqa: PLR0915
     dt = float(t[1] - t[0])
     len_a = len(a)
 
-    Tn = np.logspace(np.log10(T_min), np.log10(T_max), n_pts)  # noqa: N806
+    Tn = np.logspace(np.log10(T_min), np.log10(T_max), n_pts)
     wn = 2.0 * np.pi / Tn  # [rad/sec] Natural freq
     xi = damping  # damping ratio in decimal
     wd = wn * np.sqrt(1.0 - xi**2.0)  # damped freq.
@@ -564,15 +566,15 @@ def response_spectra(  # noqa: PLR0915
     u_max = np.zeros(len_wd)
     ud_max = np.zeros(len_wd)
     utdd_max = np.zeros(len_wd)
-    PSV = np.zeros(len_wd)  # noqa: N806
-    PSA = np.zeros(len_wd)  # noqa: N806
+    PSV = np.zeros(len_wd)
+    PSA = np.zeros(len_wd)
 
     # A, B, C, and D in Table 5.2.1, page 169
-    A = np.exp(-xi * wn * dt) * (  # noqa: N806
+    A = np.exp(-xi * wn * dt) * (
         xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt)
     )
-    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))  # noqa: N806
-    C = (  # noqa: N806
+    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))
+    C = (
         1.0
         / wn**2.0
         * (
@@ -585,7 +587,7 @@ def response_spectra(  # noqa: PLR0915
             )
         )
     )
-    D = (  # noqa: N806
+    D = (
         1.0
         / wn**2.0
         * (
@@ -600,13 +602,13 @@ def response_spectra(  # noqa: PLR0915
     )
 
     # A', B', C', and D' in Table 5.2.1, page 169
-    A_ = -np.exp(-xi * wn * dt) * (  # noqa: N806
+    A_ = -np.exp(-xi * wn * dt) * (
         wn / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
     )
-    B_ = np.exp(-xi * wn * dt) * (  # noqa: N806
+    B_ = np.exp(-xi * wn * dt) * (
         np.cos(wd * dt) - xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
     )
-    C_ = (  # noqa: N806
+    C_ = (
         1.0
         / wn**2.0
         * (
@@ -622,7 +624,7 @@ def response_spectra(  # noqa: PLR0915
             )
         )
     )
-    D_ = (  # noqa: N806
+    D_ = (
         1.0
         / wn**2.0
         / dt
@@ -677,13 +679,13 @@ def response_spectra(  # noqa: PLR0915
             )
 
     # transpose list of tuples
-    utdd_max, ud_max, u_max, PSA, PSV = zip(*result, strict=False)  # noqa: N806
+    utdd_max, ud_max, u_max, PSA, PSV = zip(*result, strict=False)
 
-    SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration  # noqa: N806
-    SV = np.array(ud_max)  # (Relative) spectral velocity  # noqa: N806
-    SD = np.array(u_max)  # (Relative) spectral displacement  # noqa: N806
-    PSA = np.array(PSA)  # (Total) pseudo-spectral acceleration  # noqa: N806
-    PSV = np.array(PSV)  # (Relative) pseudo-spectral velocity  # noqa: N806
+    SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration
+    SV = np.array(ud_max)  # (Relative) spectral velocity
+    SD = np.array(u_max)  # (Relative) spectral displacement
+    PSA = np.array(PSA)  # (Total) pseudo-spectral acceleration
+    PSV = np.array(PSV)  # (Relative) pseudo-spectral velocity
 
     fn = 1.0 / Tn
 
@@ -719,7 +721,7 @@ def response_spectra(  # noqa: PLR0915
 @jit(nopython=True, nogil=True)
 def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
     """Step forward in time to calculate velocity, displacements, etc."""
-    i, len_a, A, B, C, D, A_, B_, C_, D_, wn, _wd, xi, a = para  # noqa: N806
+    i, len_a, A, B, C, D, A_, B_, C_, D_, wn, _wd, xi, a = para
 
     u_ = np.zeros(len_a)
     ud_ = np.zeros(len_a)
@@ -743,8 +745,8 @@ def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
     u_max = np.max(np.abs(u_))
     ud_max = np.max(np.abs(ud_))
     utdd_max = np.max(np.abs(utdd_))
-    PSV = u_max * wn[i]  # noqa: N806
-    PSA = PSV * wn[i]  # noqa: N806
+    PSV = u_max * wn[i]
+    PSA = PSV * wn[i]
 
     return utdd_max, ud_max, u_max, PSA, PSV
 
@@ -796,7 +798,7 @@ def get_xi_rho(
 
     nr = len(Vs)  # number of Vs layers
     xi = np.zeros(nr)
-    Qs = np.zeros(nr)  # noqa: N806
+    Qs = np.zeros(nr)
     rho = np.zeros(nr)
 
     if formula_type == 1:
@@ -808,8 +810,8 @@ def get_xi_rho(
             else:
                 xi[i] = 0.01
     elif formula_type == 2:  # noqa: PLR2004
-        Vs_ = Vs / 1000.0  # unit conversion: from m/s to km/s  # noqa: N806
-        Qs = (  # noqa: N806
+        Vs_ = Vs / 1000.0  # unit conversion: from m/s to km/s
+        Qs = (
             10.5
             - 16 * Vs_
             + 153 * Vs_**2.0
@@ -848,7 +850,8 @@ def calc_VsZ(  # noqa: N802
         profile: np.ndarray,
         Z: float,  # noqa: N803
         option_for_profile_shallower_than_Z: Literal[1, 2] = 1,  # noqa: N803
-        verbose: bool = False,  # noqa: FBT001, FBT002
+        *,
+        verbose: bool = False,
 ) -> float:
     """
     Calculate VsZ from the given Vs profile, where VsZ is the reciprocal of the
@@ -906,12 +909,12 @@ def calc_VsZ(  # noqa: N802
                 )
 
             cumul_sl += sl[-1] * (Z - total_thickness)
-            VsZ = float(Z) / cumul_sl  # noqa: N806
+            VsZ = float(Z) / cumul_sl
         else:
-            VsZ = float(Z) / cumul_sl  # noqa: N806
+            VsZ = float(Z) / cumul_sl
 
     if option_for_profile_shallower_than_Z == 2:  # only use actual depth  # noqa: PLR2004
-        VsZ = np.min([total_thickness, Z]) / float(cumul_sl)  # noqa: N806
+        VsZ = np.min([total_thickness, Z]) / float(cumul_sl)
 
     return VsZ
 
@@ -919,7 +922,8 @@ def calc_VsZ(  # noqa: N802
 def calc_Vs30(  # noqa: N802
         profile: np.ndarray,
         option_for_profile_shallower_than_30m: Literal[1, 2] = 1,
-        verbose: bool = False,  # noqa: FBT001, FBT002
+        *,
+        verbose: bool = False,
 ) -> float:
     """
     Calculate Vs30 from the given Vs profile, where Vs30 is the reciprocal of
@@ -1129,7 +1133,7 @@ def _gen_profile_plot_array(
     hlp.assert_1D_numpy_array(thk, name='`thk`')
     hlp.assert_1D_numpy_array(vs, name='`vs`')
 
-    N = len(vs)  # noqa: N806
+    N = len(vs)
     x = np.zeros(2 * N)
     y = np.zeros(2 * N)
 
@@ -1145,7 +1149,7 @@ def _gen_profile_plot_array(
     return x, y
 
 
-def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:  # noqa: FBT001, FBT002
+def thk2dep(thk: np.ndarray, *, midpoint: bool = False) -> np.ndarray:
     """
     Convert a soil layer thickness array into depth array.
 
@@ -1164,7 +1168,7 @@ def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:  # noqa: FBT
     """
     hlp.assert_1D_numpy_array(thk, name='`thk`')
 
-    L = len(thk)  # noqa: N806
+    L = len(thk)
     z_top = np.zeros(L)  # create an array with same length as h
     z_mid = np.zeros(L)
 
@@ -1188,7 +1192,8 @@ def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:  # noqa: FBT
 
 def dep2thk(
         depth_array_starting_from_0: np.ndarray,
-        include_halfspace: bool = True,  # noqa: FBT001, FBT002
+        *,
+        include_halfspace: bool = True,
 ) -> np.ndarray:
     """
     Convert a soil layer depth array into thickness array.
@@ -1234,7 +1239,8 @@ def dep2thk(
 
 def linear_tf(  # noqa: PLR0915
         vs_profile: np.ndarray,
-        show_fig: bool = True,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = True,
         freq_resolution: float = 0.05,
         fmax: float = 30.0,
 ) -> tuple[
@@ -1294,7 +1300,7 @@ def linear_tf(  # noqa: PLR0915
     hlp.check_Vs_profile_format(vs_profile)
 
     h = vs_profile[:, 0]
-    Vs = vs_profile[:, 1]  # noqa: N806
+    Vs = vs_profile[:, 1]
     try:
         xi = vs_profile[:, 2]  # damping ratio (unit: 1, not percent)
         rho = vs_profile[:, 3]  # mass density (unit: kg/m/m/m)
@@ -1312,25 +1318,25 @@ def linear_tf(  # noqa: PLR0915
         )
 
     # length of transfer function
-    TF_size = int(np.floor_divide(fmax, freq_resolution))  # noqa: N806
+    TF_size = int(np.floor_divide(fmax, freq_resolution))
 
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
     )
 
-    TF_ro = np.ones(TF_size, dtype=np.complex128)  # noqa: N806
-    TF_in = np.ones(TF_size, dtype=np.complex128)  # noqa: N806
-    TF_bh = np.ones(TF_size, dtype=np.complex128)  # noqa: N806
+    TF_ro = np.ones(TF_size, dtype=np.complex128)
+    TF_in = np.ones(TF_size, dtype=np.complex128)
+    TF_bh = np.ones(TF_size, dtype=np.complex128)
     j_index = np.arange(h_length - 2, -1, -1)
 
     for i, f in enumerate(freq_array):
         omega = 2 * np.pi * f
         k_star = np.divide(omega, vs_star)
-        D = np.zeros(  # noqa: N806
+        D = np.zeros(
             2 * 2 * (h_length - 1),
             dtype=np.complex128,
         ).reshape(2, 2, h_length - 1)
-        E = np.zeros(4, dtype=np.complex128).reshape(2, 2)  # noqa: N806
+        E = np.zeros(4, dtype=np.complex128).reshape(2, 2)
         E[0, 0] = 1
         E[1, 1] = 1
         for j in j_index:
@@ -1346,23 +1352,23 @@ def linear_tf(  # noqa: PLR0915
             D[1, 1, j] = 0.5 * (
                 (1 + alpha_star[j]) * np.exp(-1j * k_star[j] * h[j])
             )
-            E = np.dot(E, D[:, :, j])  # noqa: N806
+            E = np.dot(E, D[:, :, j])
 
         TF_ro[i] = 1.0 / (E[0, 0] + E[0, 1])
         TF_in[i] = 2.0 / (E[0, 0] + E[0, 1])
         TF_bh[i] = 2.0 / (E[0, 0] + E[1, 0] + E[0, 1] + E[1, 1])
 
-    AF_ro = np.absolute(TF_ro)  # noqa: N806
-    AF_in = np.absolute(TF_in)  # noqa: N806
-    AF_bh = np.absolute(TF_bh)  # noqa: N806
+    AF_ro = np.absolute(TF_ro)
+    AF_in = np.absolute(TF_in)
+    AF_bh = np.absolute(TF_bh)
 
     f0_ro = find_f0(np.column_stack((freq_array, AF_ro)))
     f0_in = find_f0(np.column_stack((freq_array, AF_in)))
     f0_bh = find_f0(np.column_stack((freq_array, AF_bh)))
 
     if show_fig:
-        xSize = 12  # noqa: N806
-        ySize = 6  # noqa: N806
+        xSize = 12
+        ySize = 6
         fig = plt.figure(figsize=(xSize, ySize), edgecolor='k', facecolor='w')
 
         x_limits = [0, fmax]
@@ -1480,12 +1486,13 @@ def linear_tf(  # noqa: PLR0915
 def amplify_motion(  # noqa: PLR0915
         input_motion: np.ndarray,
         transfer_function_single_sided: tuple[np.ndarray, np.ndarray],
-        taper: bool = False,  # noqa: FBT001, FBT002
-        extrap_tf: bool = True,  # noqa: FBT001, FBT002
-        deconv: bool = False,  # noqa: FBT001, FBT002
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        taper: bool = False,
+        extrap_tf: bool = True,
+        deconv: bool = False,
+        show_fig: bool = False,
         dpi: int = 100,
-        return_fig_obj: bool = False,  # noqa: FBT001, FBT002
+        return_fig_obj: bool = False,
 ) -> tuple[np.ndarray, Figure | None, Axes | None]:
     """
     Amplify (or de-amplify) ground motions in the frequency domain. The
@@ -1640,10 +1647,10 @@ def amplify_motion(  # noqa: PLR0915
     # ------------Fourier spectrum of the input motion-----------------
     a_tapered = sig.taper_Tukey(a) if taper else a
 
-    A = scipy.fftpack.fft(a_tapered)  # noqa: N806
+    A = scipy.fftpack.fft(a_tapered)
 
     # ------------Multiplication---------------------------------------
-    RESP = A * tf_ds if not deconv else A / tf_ds  # noqa: N806
+    RESP = A * tf_ds if not deconv else A / tf_ds
 
     # ---------Inverse Fourier transform to get the response time history------
     # truncate imaginary part (very small)
@@ -1678,8 +1685,9 @@ def linear_site_resp(
         soil_profile: np.ndarray | str,
         input_motion: np.ndarray | str,
         boundary: Literal['elastic', 'rigid'] = 'elastic',
-        show_fig: bool = False,  # noqa: FBT001, FBT002
-        deconv: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
+        deconv: bool = False,
 ) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]:
     """
     Perform linear site response analysis.
@@ -1784,7 +1792,8 @@ def _plot_site_amp(  # noqa: PLR0915
         fig: Figure | None = None,
         figsize: tuple[float, float] = (8, 4.5),
         dpi: float = 100,
-        amplif_func_ylog: bool = True,  # noqa: FBT001, FBT002
+        *,
+        amplif_func_ylog: bool = True,
         input_accel_label: str = 'Input',
         output_accel_label: str = 'Output',
         amplification_ylabel: str = 'Amplification',
@@ -1923,8 +1932,8 @@ def _plot_site_amp(  # noqa: PLR0915
         plt.grid(ls=':')
         ax.append(ax_)
 
-    freq_in, ACCEL_IN = sig.fourier_transform(accel_in_2col).T  # noqa: N806
-    freq_out, ACCEL_OUT = sig.fourier_transform(accel_out_2col).T  # noqa: N806
+    freq_in, ACCEL_IN = sig.fourier_transform(accel_in_2col).T
+    freq_out, ACCEL_OUT = sig.fourier_transform(accel_out_2col).T
 
     ax_ = plt.subplot2grid((2, 3), (1, 2), fig=fig)
     plt.loglog(freq_out, ACCEL_OUT, c=blue, label=output_accel_label)
@@ -1943,7 +1952,8 @@ def _plot_site_amp(  # noqa: PLR0915
 def compare_two_accel(
         input_accel: np.ndarray,
         output_accel: np.ndarray,
-        smooth: bool = True,  # noqa: FBT001, FBT002
+        *,
+        smooth: bool = True,
         input_accel_label: str = 'Input',
         output_accel_label: str = 'Output',
         amplification_ylabel: str = 'Amplification',
@@ -2214,7 +2224,7 @@ def calc_damping_from_param(
 
     hlp.assert_1D_numpy_array(strain_in_unit_1)
 
-    Tau = func_stress(strain_in_unit_1, **param)  # noqa: N806
+    Tau = func_stress(strain_in_unit_1, **param)
     return calc_damping_from_stress_strain(
         strain_in_unit_1, Tau, param['Gmax']
     )
@@ -2246,7 +2256,7 @@ def calc_damping_from_stress_strain(
     strain = strain_in_unit_1
     n = len(strain)
 
-    G_Gmax = calc_GGmax_from_stress_strain(strain, stress, Gmax=Gmax)  # noqa: N806
+    G_Gmax = calc_GGmax_from_stress_strain(strain, stress, Gmax=Gmax)
 
     area = np.zeros(n)
     damping = np.zeros(n)
@@ -2302,9 +2312,9 @@ def calc_GGmax_from_stress_strain(  # noqa: N802
         )
 
     if Gmax is None:
-        Gmax = stress[0] / strain_in_unit_1[0]  # noqa: N806
+        Gmax = stress[0] / strain_in_unit_1[0]
 
-    G = stress / strain_in_unit_1  # secant modulus  # noqa: N806
+    G = stress / strain_in_unit_1  # secant modulus
     return G / Gmax
 
 
@@ -2379,21 +2389,22 @@ def fit_all_damping_curves(
         curves: np.ndarray | list[np.ndarray],
         func_fit_single_layer: Callable[[Any, ...], Any],
         func_stress: Callable[[Any, ...], Any],
-        use_scipy: bool = True,  # noqa: FBT001, FBT002
+        *,
+        use_scipy: bool = True,
         pop_size: int = 800,
         n_gen: int = 100,
         lower_bound_power: float = -4,
         upper_bound_power: float = 6,
         eta: float = 0.1,
         seed: int = 0,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
-        verbose: bool = False,  # noqa: FBT001, FBT002
-        parallel: bool = False,  # noqa: FBT001, FBT002
+        show_fig: bool = False,
+        verbose: bool = False,
+        parallel: bool = False,
         n_cores: int | None = None,
-        save_fig: bool = False,  # noqa: FBT001, FBT002
+        save_fig: bool = False,
         fig_filename: str | None = None,
         dpi: float = 100,
-        save_txt: bool = False,  # noqa: FBT001, FBT002
+        save_txt: bool = False,
         txt_filename: str | None = None,
         sep: str = '\t',
         func_serialize: Callable[[Any, ...], Any] | None = None,
@@ -2616,16 +2627,17 @@ def ga_optimization(
         upper_bound: float,
         loss_function: Callable[[float, ...], float],
         damping_data: np.ndarray,
-        use_scipy: bool = True,  # noqa: FBT001, FBT002
+        *,
+        use_scipy: bool = True,
         pop_size: int = 100,
         n_gen: int = 100,
         eta: float = 0.1,
         seed: int = 0,
         crossover_prob: float = 0.8,
         mutation_prob: float = 0.8,
-        suppress_warnings: bool = True,  # noqa: FBT001, FBT002
-        verbose: bool = False,  # noqa: FBT001, FBT002
-        parallel: bool = False,  # noqa: FBT001, FBT002
+        suppress_warnings: bool = True,
+        verbose: bool = False,
+        parallel: bool = False,
         n_cores: int | None = None,
 ) -> list[float] | np.ndarray:
     """
@@ -2769,8 +2781,8 @@ def ga_optimization(
                     map(random.uniform, [low] * size, [up] * size),  # noqa: S311
                 )
 
-        LB = lower_bound  # noqa: N806
-        UB = upper_bound  # noqa: N806
+        LB = lower_bound
+        UB = upper_bound
 
         deap.creator.create('FitnessMin', deap.base.Fitness, weights=(-1.0,))
         deap.creator.create(

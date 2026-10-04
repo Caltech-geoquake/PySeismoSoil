@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Frequency_Spectrum:  # noqa: N801
+class Frequency_Spectrum:
     r"""
     Class implementation of a frequency spectrum object. The user-supplied
     frequency spectrum is internally interpolated onto a reference frequency
@@ -162,9 +162,10 @@ class Frequency_Spectrum:  # noqa: N801
             ax: Axes | None = None,
             figsize: tuple[float, float] | None = None,
             dpi: float = 100,
-            logx: bool = True,  # noqa: FBT001, FBT002
-            logy: bool = False,  # noqa: FBT001, FBT002
-            plot_abs: bool = False,  # noqa: FBT001, FBT002
+            *,
+            logx: bool = True,
+            logy: bool = False,
+            plot_abs: bool = False,
             **kwargs_plot: dict[Any, Any],
     ) -> tuple[Figure, Axes]:
         """
@@ -224,8 +225,8 @@ class Frequency_Spectrum:  # noqa: N801
     def get_smoothed(
             self,
             win_len: int = 15,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
             *,
+            show_fig: bool = False,
             log_scale: bool,
             **kwargs: dict[Any, Any],
     ) -> tuple[np.ndarray | None, Figure, Axes]:
@@ -291,7 +292,9 @@ class Frequency_Spectrum:  # noqa: N801
         """
         return sr.find_f0(self.amplitude_2col)
 
-    def get_unwrapped_phase(self, robust: bool = True) -> Frequency_Spectrum:  # noqa: FBT001, FBT002
+    def get_unwrapped_phase(
+            self, *, robust: bool = True
+    ) -> Frequency_Spectrum:
         """
         Unwrpped the phase component of the spectrum.
 

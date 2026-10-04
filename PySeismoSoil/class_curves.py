@@ -120,7 +120,8 @@ class Curve:
 
     def plot(
             self,
-            plot_interpolated: bool = True,  # noqa: FBT001, FBT002
+            *,
+            plot_interpolated: bool = True,
             fig: Figure | None = None,
             ax: Axes | None = None,
             title: str | None = None,
@@ -186,7 +187,7 @@ class Curve:
         return fig, ax
 
 
-class GGmax_Curve(Curve):  # noqa: N801
+class GGmax_Curve(Curve):
     """
     Class implementation of a G/Gmax curve, as a function of shear strain.
 
@@ -273,7 +274,7 @@ class GGmax_Curve(Curve):  # noqa: N801
             )
 
 
-class Damping_Curve(Curve):  # noqa: N801
+class Damping_Curve(Curve):
     """
     Class implementation of a damping curve, as a function of shear strain.
 
@@ -373,16 +374,17 @@ class Damping_Curve(Curve):  # noqa: N801
 
     def get_HH_x_param(  # noqa: N802
             self,
-            use_scipy: bool = True,  # noqa: FBT001, FBT002
+            *,
+            use_scipy: bool = True,
             pop_size: int = 800,
             n_gen: int = 100,
             lower_bound_power: float = -4,
             upper_bound_power: float = 6,
             eta: float = 0.1,
             seed: float = 0,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = False,  # noqa: FBT001, FBT002
-            parallel: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,
+            verbose: bool = False,
+            parallel: bool = False,
             n_cores: int | None = None,
     ) -> HH_Param:
         """
@@ -435,7 +437,7 @@ class Damping_Curve(Curve):  # noqa: N801
         HH_x_param : HH_Param
             The best parameters found in the optimization.
         """
-        HH_x_param = hh.fit_HH_x_single_layer(  # noqa: N806
+        HH_x_param = hh.fit_HH_x_single_layer(
             self.raw_data,
             use_scipy=use_scipy,
             pop_size=pop_size,
@@ -455,16 +457,17 @@ class Damping_Curve(Curve):  # noqa: N801
 
     def get_H4_x_param(  # noqa: N802
             self,
-            use_scipy: bool = True,  # noqa: FBT001, FBT002
+            *,
+            use_scipy: bool = True,
             pop_size: int = 800,
             n_gen: int = 100,
             lower_bound_power: float = -4,
             upper_bound_power: float = 6,
             eta: float = 0.1,
             seed: float = 0,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = False,  # noqa: FBT001, FBT002
-            parallel: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,
+            verbose: bool = False,
+            parallel: bool = False,
             n_cores: int | None = None,
     ) -> MKZ_Param:
         """
@@ -517,7 +520,7 @@ class Damping_Curve(Curve):  # noqa: N801
         H4_x_param : MKZ_Param
             The best parameters found in the optimization.
         """
-        H4_x_param = mkz.fit_H4_x_single_layer(  # noqa: N806
+        H4_x_param = mkz.fit_H4_x_single_layer(
             self.raw_data,
             use_scipy=use_scipy,
             pop_size=pop_size,
@@ -536,7 +539,7 @@ class Damping_Curve(Curve):  # noqa: N801
         return self.H4_x_param
 
 
-class Stress_Curve(Curve):  # noqa: N801
+class Stress_Curve(Curve):
     """
     Class implementation of a stress curve, as a function of shear strain.
 
@@ -623,7 +626,7 @@ class Stress_Curve(Curve):  # noqa: N801
             self.stress *= 1e6
 
 
-class Multiple_Curves:  # noqa: N801
+class Multiple_Curves:
     """
     Class implementation of multiple curves.
 
@@ -731,7 +734,8 @@ class Multiple_Curves:  # noqa: N801
 
     def plot(
             self,
-            plot_interpolated: bool = True,  # noqa: FBT001, FBT002
+            *,
+            plot_interpolated: bool = True,
             fig: Figure | None = None,
             ax: Axes | None = None,
             title: str | None = None,
@@ -801,7 +805,7 @@ class Multiple_Curves:  # noqa: N801
         return fig, ax
 
 
-class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
+class Multiple_Damping_Curves(Multiple_Curves):
     r"""
     Class implementation of multiple damping curves.
 
@@ -869,7 +873,8 @@ class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
 
     def plot(
             self,
-            plot_interpolated: bool = True,  # noqa: FBT001, FBT002
+            *,
+            plot_interpolated: bool = True,
             fig: Figure | None = None,
             ax: Axes | None = None,
             title: str | None = None,
@@ -929,7 +934,8 @@ class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
     def get_curve_matrix(
             self,
             GGmax_filler_value: float = 1.0,  # noqa: N803
-            save_to_file: bool = False,  # noqa: ARG002, FBT001, FBT002
+            *,
+            save_to_file: bool = False,  # noqa: ARG002
             full_file_name: str | None = None,  # noqa: ARG002
     ) -> np.ndarray:
         """
@@ -978,7 +984,7 @@ class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
                 )
                 damping_ = np.interp(strain_, strain, curve_.damping)
             # END IF
-            GGmax = np.ones_like(strain_) * GGmax_filler_value  # noqa: N806
+            GGmax = np.ones_like(strain_) * GGmax_filler_value
             tmp_matrix = np.column_stack((strain_, GGmax, strain_, damping_))
             if curve_matrix is None:
                 curve_matrix = tmp_matrix
@@ -990,21 +996,22 @@ class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
 
     def get_all_HH_x_params(  # noqa: N802
             self,
-            use_scipy: bool = True,  # noqa: FBT001, FBT002
+            *,
+            use_scipy: bool = True,
             pop_size: int = 800,
             n_gen: int = 100,
             lower_bound_power: float = -4,
             upper_bound_power: float = 6,
             eta: float = 0.1,
             seed: float = 0,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = False,  # noqa: FBT001, FBT002
-            parallel: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,
+            verbose: bool = False,
+            parallel: bool = False,
             n_cores: int | None = None,
-            save_txt: bool = False,  # noqa: FBT001, FBT002
+            save_txt: bool = False,
             txt_filename: str | None = None,
             sep: str | None = None,
-            save_fig: bool = False,  # noqa: FBT001, FBT002
+            save_fig: bool = False,
             fig_filename: str | None = None,
             dpi: float = 100,
     ) -> HH_Param_Multi_Layer:
@@ -1108,21 +1115,22 @@ class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
 
     def get_all_H4_x_params(  # noqa: N802
             self,
-            use_scipy: bool = True,  # noqa: FBT001, FBT002
+            *,
+            use_scipy: bool = True,
             pop_size: int = 800,
             n_gen: int = 100,
             lower_bound_power: float = -4,
             upper_bound_power: float = 6,
             eta: float = 0.1,
             seed: float = 0,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = False,  # noqa: FBT001, FBT002
-            parallel: bool = False,  # noqa: FBT001, FBT002
+            show_fig: bool = False,
+            verbose: bool = False,
+            parallel: bool = False,
             n_cores: int | None = None,
-            save_txt: bool = False,  # noqa: FBT001, FBT002
+            save_txt: bool = False,
             txt_filename: str | None = None,
             sep: str | None = None,
-            save_fig: bool = False,  # noqa: FBT001, FBT002
+            save_fig: bool = False,
             fig_filename: str | None = None,
             dpi: float = 100,
     ) -> MKZ_Param_Multi_Layer:
@@ -1262,7 +1270,7 @@ class Multiple_Damping_Curves(Multiple_Curves):  # noqa: N801
         return f'{prefix}_x_{site_name}.{extension}'
 
 
-class Multiple_GGmax_Curves(Multiple_Curves):  # noqa: N801
+class Multiple_GGmax_Curves(Multiple_Curves):
     r"""
     Class implementation of multiple G/Gmax curves.
 
@@ -1311,10 +1319,10 @@ class Multiple_GGmax_Curves(Multiple_Curves):  # noqa: N801
     ) -> None:
         if isinstance(filename_or_list_of_curves, str):  # file name
             curves = np.genfromtxt(filename_or_list_of_curves, delimiter=sep)
-            list_of_GGmax_curves, _ = hlp.extract_from_curve_format(curves)  # noqa: N806
+            list_of_GGmax_curves, _ = hlp.extract_from_curve_format(curves)
             self._filename = filename_or_list_of_curves
         elif isinstance(filename_or_list_of_curves, list):
-            list_of_GGmax_curves = filename_or_list_of_curves  # noqa: N806
+            list_of_GGmax_curves = filename_or_list_of_curves
             self._filename = None
         else:
             raise TypeError(
@@ -1330,7 +1338,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):  # noqa: N801
 
     def plot(
             self,
-            plot_interpolated: bool = True,  # noqa: FBT001, FBT002
+            *,
+            plot_interpolated: bool = True,
             fig: Figure | None = None,
             ax: Axes | None = None,
             title: str | None = None,
@@ -1390,7 +1399,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):  # noqa: N801
     def get_curve_matrix(
             self,
             damping_filler_value: float = 1.0,
-            save_to_file: bool = False,  # noqa: ARG002, FBT001, FBT002
+            *,
+            save_to_file: bool = False,  # noqa: ARG002
             full_file_name: str | None = None,  # noqa: ARG002
     ) -> np.ndarray:
         """
@@ -1432,12 +1442,12 @@ class Multiple_GGmax_Curves(Multiple_Curves):  # noqa: N801
             strain = curve_.strain
             if len(curve_.strain) == max_length:
                 strain_ = strain  # we can use the original strain array
-                GGmax_ = curve_.GGmax  # noqa: N806
+                GGmax_ = curve_.GGmax
             else:  # otherwise we need a new strain array to match `max_length`
                 strain_ = np.geomspace(
                     np.min(strain), np.max(strain), max_length
                 )
-                GGmax_ = np.interp(strain_, strain, curve_.GGmax)  # noqa: N806
+                GGmax_ = np.interp(strain_, strain, curve_.GGmax)
             # END IF
             damping = np.ones_like(strain_) * damping_filler_value
             tmp_matrix = np.column_stack((strain_, GGmax_, strain_, damping))
@@ -1450,7 +1460,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):  # noqa: N801
         return curve_matrix
 
 
-class Multiple_GGmax_Damping_Curves:  # noqa: N801
+class Multiple_GGmax_Damping_Curves:
     """
     A "parent" class that holds both G/Gmax curves and damping curves
     information. The user can EITHER initialize this class by providing
@@ -1590,7 +1600,7 @@ class Multiple_GGmax_Damping_Curves:  # noqa: N801
             return self.mgc, self.mdc
 
         # the user provides a matrix containing curve information
-        GGmax_curve_list, damping_curves_list = hlp.extract_from_curve_format(  # noqa: N806
+        GGmax_curve_list, damping_curves_list = hlp.extract_from_curve_format(
             self.data,
             ensure_non_negative=False,
         )

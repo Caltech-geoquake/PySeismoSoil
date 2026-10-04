@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 STRAIN_RANGE_PCT = np.logspace(-3, 1)
 
 
-class Damping_Calibration:  # noqa: N801
+class Damping_Calibration:
     """
     A class to generate damping curves (and associated soil model parameters)
     from a given Vs profile.
@@ -32,8 +32,9 @@ class Damping_Calibration:  # noqa: N801
     def get_damping_curves(
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
-            use_Darendeli_Dmin: bool = False,  # noqa: FBT001, FBT002, N803
-            show_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            use_Darendeli_Dmin: bool = False,  # noqa: N803
+            show_fig: bool = False,
     ) -> Multiple_Damping_Curves:
         """
         Calculate damping curves using empirical formulas by Darendeli (2001).
@@ -58,7 +59,7 @@ class Damping_Calibration:  # noqa: N801
             rock halfspace at the bottom).
         """
         h = self.vs_profile.vs_profile[:-1, 0]
-        Vs = self.vs_profile.vs_profile[:-1, 1]  # noqa: N806
+        Vs = self.vs_profile.vs_profile[:-1, 1]
         n_layer = len(Vs)
 
         # there can only be 5 or 2 columns
@@ -68,8 +69,8 @@ class Damping_Calibration:  # noqa: N801
             rho = hhc._calc_rho(h, Vs)  # noqa: SLF001
 
         sigma_v0 = hhc._calc_vertical_stress(h, rho)  # noqa: SLF001
-        OCR = hhc._calc_OCR(Vs, rho, sigma_v0)  # noqa: N806, SLF001
-        PI = hhc._calc_PI(Vs)  # noqa: N806, SLF001
+        OCR = hhc._calc_OCR(Vs, rho, sigma_v0)  # noqa: SLF001
+        PI = hhc._calc_PI(Vs)  # noqa: SLF001
         phi = 30
         _, xi, _ = hhc.produce_Darendeli_curves(
             sigma_v0,

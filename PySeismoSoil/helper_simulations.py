@@ -144,24 +144,24 @@ def linear(
     # -------- Part 1: Data preparation -- soil profile and input motion -----
     (
         flag,
-        N,  # noqa: N806
+        N,
         freq,
         new_profile,
         h,
         _vs,
-        D,  # noqa: N806
+        D,
         rho,
         _mat_nr,
         n_layer,
-        _Gmax,  # noqa: N806
-        G,  # noqa: N806
+        _Gmax,
+        G,
         t,
         dt,
-        ACCEL_IN,  # noqa: N806
+        ACCEL_IN,
     ) = _prepare_inputs(vs_profile=vs_profile, input_motion=input_motion)
 
     # -------- Part 2: Start calculation -------------------------------------
-    H, accel_out, veloc, displ, strain, _ = _lin_resp_every_layer(  # noqa: N806
+    H, accel_out, veloc, displ, strain, _ = _lin_resp_every_layer(
         dt=dt,
         freq=freq,
         N=N,
@@ -175,7 +175,7 @@ def linear(
     )
 
     # --------- Part 3: Calculate stress from strain -------------------------
-    stress, half_N = _calc_stress(  # noqa: N806
+    stress, half_N = _calc_stress(
         G=G, D=D, strain=strain, N=N, n_layer=n_layer
     )
 
@@ -228,7 +228,8 @@ def equiv_linear(
         tol: float = 0.075,
         R_gamma: float = 0.65,  # noqa: N803
         max_iter: int = 10,
-        verbose: bool = True,  # noqa: FBT001, FBT002
+        *,
+        verbose: bool = True,
 ) -> tuple[np.ndarray, ...]:
     """
     Equivalent linear site response simulation.
@@ -314,28 +315,28 @@ def equiv_linear(
     # -------- Part 1.1: Data preparation -- soil profile and input motion ----
     (
         flag,
-        N,  # noqa: N806
+        N,
         freq,
         new_profile,
         h,
         _vs,
-        D,  # noqa: N806
+        D,
         rho,
         mat_nr,
         n_layer,
-        Gmax,  # noqa: N806
-        G,  # noqa: N806
+        Gmax,
+        G,
         t,
         dt,
-        ACCEL_IN,  # noqa: N806
+        ACCEL_IN,
     ) = _prepare_inputs(vs_profile=vs_profile, input_motion=input_motion)
 
     # -------- Part 1.2: Data preparation -- modulus/damping curves -----------
     n_obs = curve_matrix.shape[0]  # number of strain points in a curve
-    strain_G = np.zeros((n_obs, n_layer - 1))  # noqa: N806
-    G_vector = np.zeros((n_obs, n_layer - 1))  # noqa: N806
-    strain_D = np.zeros((n_obs, n_layer - 1))  # noqa: N806
-    D_vector = np.zeros((n_obs, n_layer - 1))  # noqa: N806
+    strain_G = np.zeros((n_obs, n_layer - 1))
+    G_vector = np.zeros((n_obs, n_layer - 1))
+    strain_D = np.zeros((n_obs, n_layer - 1))
+    D_vector = np.zeros((n_obs, n_layer - 1))
     for k in range(n_layer - 1):  # map original curves to new layers
         strain_G[:, k] = curve_matrix[:, mat_nr[k] * 4 + 0] / 100.0
         G_vector[:, k] = curve_matrix[:, mat_nr[k] * 4 + 1]
@@ -347,8 +348,8 @@ def equiv_linear(
 
     # -------- Part 2: Start iteration ----------------------------------------
     # to store G and D of all iterations
-    G_matrix = np.zeros((n_layer - 1, max_iter + 1))  # noqa: N806
-    D_matrix = np.zeros((n_layer - 1, max_iter + 1))  # noqa: N806
+    G_matrix = np.zeros((n_layer - 1, max_iter + 1))
+    D_matrix = np.zeros((n_layer - 1, max_iter + 1))
     G_matrix[:, 0] = G[:-1]  # initial values
     D_matrix[:, 0] = D[:-1]
 
@@ -356,7 +357,7 @@ def equiv_linear(
         if verbose:
             print(f'Iteration No.{i_iter + 1}.', end='')
 
-        H, accel_out, veloc, displ, strain, eff_strain = _lin_resp_every_layer(  # noqa: N806
+        H, accel_out, veloc, displ, strain, eff_strain = _lin_resp_every_layer(
             dt=dt,
             freq=freq,
             N=N,
@@ -371,17 +372,17 @@ def equiv_linear(
         )
 
         # ------- Update modulus and damping ----------------------------------
-        G_new = np.zeros(n_layer - 1)  # noqa: N806
-        D_new = np.zeros(n_layer - 1)  # noqa: N806
+        G_new = np.zeros(n_layer - 1)
+        D_new = np.zeros(n_layer - 1)
         for k in range(n_layer - 1):  # layer by layer
             # set upper/lower bounds for interpolation
-            strain_G_ = np.append(0, np.append(strain_G[:, k], 100))  # noqa: N806
-            G_vector_ = np.append(  # noqa: N806
+            strain_G_ = np.append(0, np.append(strain_G[:, k], 100))
+            G_vector_ = np.append(
                 1,
                 np.append(G_vector[:, k], np.min([1e-4, G_vector[-1, k]])),
             )
-            strain_D_ = np.append(0, np.append(strain_D[:, k], 100))  # noqa: N806
-            D_vector_ = np.append(  # noqa: N806
+            strain_D_ = np.append(0, np.append(strain_D[:, k], 100))
+            D_vector_ = np.append(
                 D_vector[0, k],
                 np.append(D_vector[:, k], D_vector[-1, k]),
             )
@@ -393,8 +394,8 @@ def equiv_linear(
 
             D_new[k] = np.interp(eff_strain[k], strain_D_, D_vector_)
         # END FOR
-        G_relative_diff = np.abs(G[:-1] - G_new) / G_new  # noqa: N806
-        D_relative_diff = np.abs(D[:-1] - D_new) / D_new  # noqa: N806
+        G_relative_diff = np.abs(G[:-1] - G_new) / G_new
+        D_relative_diff = np.abs(D[:-1] - D_new) / D_new
         G[:-1] = G_new
         D[:-1] = D_new
         G_matrix[:, i_iter + 1] = G_new
@@ -417,7 +418,7 @@ def equiv_linear(
     # END FOR
 
     # --------- Part 3: Calculate stress from strain --------------------------
-    stress, half_N = _calc_stress(  # noqa: N806
+    stress, half_N = _calc_stress(
         G=G, D=D, strain=strain, N=N, n_layer=n_layer
     )
 
@@ -523,8 +524,8 @@ def _prepare_inputs(
         flag = 1
     # END IF
 
-    ACCEL_IN = scipy.fftpack.fft(accel_in)  # noqa: N806
-    N = len(ACCEL_IN)  # noqa: N806
+    ACCEL_IN = scipy.fftpack.fft(accel_in)
+    N = len(ACCEL_IN)
     assert n == N
     assert N % 2 == 1
 
@@ -534,15 +535,15 @@ def _prepare_inputs(
     new_profile = sr.stratify(vs_profile)
     h = new_profile[:, 0]
     vs = new_profile[:, 1]
-    D = new_profile[:, 2]  # noqa: N806
+    D = new_profile[:, 2]
     rho = new_profile[:, 3]
     mat_nr = new_profile[:, 4].astype(int) - 1  # from 1-indexing to 0-indexing
 
     n_layer = len(h)  # includes the rock layer
-    Gmax = rho * vs**2.0  # noqa: N806
+    Gmax = rho * vs**2.0
 
     # initial value of G; Gmax cannot change, so needs a hard copy
-    G = Gmax.copy()  # noqa: N806
+    G = Gmax.copy()
 
     return (
         flag,
@@ -637,11 +638,11 @@ def _lin_resp_every_layer(
     max_f = np.max(freq)
     freq_oversample_factor = 15
     df_ = df / freq_oversample_factor
-    N_original = N  # noqa: N806
-    N = int(N * freq_oversample_factor)  # noqa: N806
+    N_original = N
+    N = int(N * freq_oversample_factor)
     freq = np.linspace(df_, max_f, num=N)
     omega = 2 * np.pi * freq  # angular frequency
-    half_N = int(N / 2 + 0.5)  # noqa: N806
+    half_N = int(N / 2 + 0.5)
 
     # (2) Complex impedance ratio between each layer
     alpha = np.zeros(n_layer - 1, dtype=np.complex128)
@@ -666,8 +667,8 @@ def _lin_resp_every_layer(
     assert k_star.shape == (half_N, n_layer)
 
     # (5) Compute A and B (Kramer's book, page 269)
-    A = np.zeros((half_N, n_layer), dtype=np.complex128)  # noqa: N806
-    B = np.zeros((half_N, n_layer), dtype=np.complex128)  # noqa: N806
+    A = np.zeros((half_N, n_layer), dtype=np.complex128)
+    B = np.zeros((half_N, n_layer), dtype=np.complex128)
     A[:, 0] = 1
     B[:, 0] = 1
     for k in range(n_layer - 1):  # layer by layer
@@ -683,10 +684,10 @@ def _lin_resp_every_layer(
 
     # (6) Compute linear transfer function
     # single-sided transfer function:
-    H_ss = np.zeros((half_N, n_layer), dtype=np.complex128)  # noqa: N806
+    H_ss = np.zeros((half_N, n_layer), dtype=np.complex128)
 
     # the other half:
-    H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex128)  # noqa: N806
+    H_append = np.zeros((half_N - 1, n_layer), dtype=np.complex128)
 
     for k in range(n_layer):
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
@@ -694,12 +695,12 @@ def _lin_resp_every_layer(
         H_append[:, k] = np.conj(np.flipud(H_ss[1:, k]))
     # END FOR
 
-    H = np.vstack((H_ss, H_append))  # noqa: N806
+    H = np.vstack((H_ss, H_append))
 
     # down-sample back to original resolution:
-    H = H[::freq_oversample_factor, :]  # noqa: N806
+    H = H[::freq_oversample_factor, :]
     freq = freq[::freq_oversample_factor]
-    N = N_original  # noqa: N806
+    N = N_original
 
     # Notes:
     #  (1) The value of transfer function when freq = 0 should be either 1
@@ -727,7 +728,7 @@ def _lin_resp_every_layer(
     #           -3.5 - 7.2678i  ----------|
 
     # ----- 2: Response motion of each layer ----------------------------------
-    ACCEL_OUT = H * ACCEL_IN.reshape(-1, 1)  # amplify accel. of each layer  # noqa: N806
+    ACCEL_OUT = H * ACCEL_IN.reshape(-1, 1)  # amplify accel. of each layer
     accel_out = np.real(scipy.fftpack.ifft(ACCEL_OUT, axis=0))  # column-wise
     veloc = np.cumsum(accel_out, axis=0) * dt
     displ = np.cumsum(veloc, axis=0) * dt
@@ -786,7 +787,7 @@ def _calc_stress(
     strain_fft = scipy.fftpack.fft(strain, axis=0)
     modulus = (G * (1 + 2 * 1j * D))[:-1]
 
-    half_N = int(N / 2 + 0.5)  # noqa: N806
+    half_N = int(N / 2 + 0.5)
     modulus_repmat = np.tile(modulus, (half_N, 1))
     stress_fft[:half_N, :] = strain_fft[:half_N, :] * modulus_repmat
     stress_fft[half_N:, :] = np.flipud(np.conj(stress_fft[1:half_N, :]))

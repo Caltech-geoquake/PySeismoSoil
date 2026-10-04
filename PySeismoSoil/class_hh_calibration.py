@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     import numpy as np
 
 
-class HH_Calibration:  # noqa: N801
+class HH_Calibration:
     """
     Class implementation of the "HH calibration procedure" (HHC procedure). The
     HHC procedure generates parameters of each soil layer for the HH model. The
@@ -98,13 +98,14 @@ class HH_Calibration:  # noqa: N801
 
     def fit(
             self,
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            save_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            show_fig: bool = False,
+            save_fig: bool = False,
             fig_output_dir: str | None = None,
-            save_HH_G_file: bool = False,  # noqa: FBT001, FBT002, N803
+            save_HH_G_file: bool = False,  # noqa: N803
             HH_G_file_dir: str | None = None,  # noqa: N803
             profile_name: str | None = None,
-            verbose: bool = True,  # noqa: FBT001, FBT002
+            verbose: bool = True,
     ) -> HH_Param_Multi_Layer:
         """
         Calculate the HH parameters with the given Vs profile and/or G/Gmax
@@ -150,10 +151,10 @@ class HH_Calibration:  # noqa: N801
             'verbose': verbose,
         }
         if self.GGmax_curves is None:
-            HH_G_param_ = hhc.hh_param_from_profile(vs_profile, **options)  # noqa: N806
+            HH_G_param_ = hhc.hh_param_from_profile(vs_profile, **options)
         else:
             curves = self.GGmax_curves.get_curve_matrix()
-            HH_G_param_ = hhc.hh_param_from_curves(  # noqa: N806
+            HH_G_param_ = hhc.hh_param_from_curves(
                 vs_profile, curves, **options
             )
 

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from PySeismoSoil.class_simulation_results import Simulation_Results
 
 
-class Batch_Simulation:  # noqa: N801
+class Batch_Simulation:
     """
     Run site response simulations in batch.
 
@@ -61,7 +61,8 @@ class Batch_Simulation:  # noqa: N801
     def __init__(
             self,
             list_of_simulations: list[Simulation_Results],
-            use_ctx: bool = False,  # noqa: FBT001, FBT002
+            *,
+            use_ctx: bool = False,
     ) -> None:
         if not isinstance(list_of_simulations, list):
             raise TypeError('`list_of_simulations` should be a list.')
@@ -106,11 +107,12 @@ class Batch_Simulation:  # noqa: N801
 
     def run(
             self,
-            parallel: bool = False,  # noqa: FBT001, FBT002
+            *,
+            parallel: bool = False,
             n_cores: int | None = 1,
             base_output_dir: str | None = None,
-            catch_errors: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = True,  # noqa: FBT001, FBT002
+            catch_errors: bool = False,
+            verbose: bool = True,
             options: dict[str, Any] | None = None,
     ) -> list[Simulation_Results]:
         """
@@ -147,7 +149,7 @@ class Batch_Simulation:  # noqa: N801
         """
         options = {} if options is None else options
 
-        N = self.n_simulations  # noqa: N806
+        N = self.n_simulations
         n_digits = len(str(N))
 
         if base_output_dir is None:

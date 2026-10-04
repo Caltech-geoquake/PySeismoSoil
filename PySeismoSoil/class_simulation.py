@@ -143,7 +143,7 @@ class Simulation:
         self.GGmax_and_damping_curves = GGmax_and_damping_curves
 
 
-class Linear_Simulation(Simulation):  # noqa: N801
+class Linear_Simulation(Simulation):
     """
     Linear site response simulation.
 
@@ -177,15 +177,16 @@ class Linear_Simulation(Simulation):  # noqa: N801
 
     def run(
             self,
-            every_layer: bool = True,  # noqa: FBT001, FBT002
-            deconv: bool = False,  # noqa: FBT001, FBT002
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            save_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            every_layer: bool = True,
+            deconv: bool = False,
+            show_fig: bool = False,
+            save_fig: bool = False,
             motion_name: str | None = None,
-            save_txt: bool = False,  # noqa: FBT001, FBT002
-            save_full_time_history: bool = False,  # noqa: FBT001, FBT002
+            save_txt: bool = False,
+            save_full_time_history: bool = False,
             output_dir: str | None = None,
-            verbose: bool = True,  # noqa: FBT001, FBT002
+            verbose: bool = True,
     ) -> Simulation_Results:
         """
         Run linear simulation.
@@ -295,7 +296,7 @@ class Linear_Simulation(Simulation):  # noqa: N801
         return sim_results
 
 
-class Equiv_Linear_Simulation(Simulation):  # noqa: N801
+class Equiv_Linear_Simulation(Simulation):
     """
     Equivalent linear site response simulation.
 
@@ -344,12 +345,13 @@ class Equiv_Linear_Simulation(Simulation):  # noqa: N801
 
     def run(
             self,
-            verbose: bool = True,  # noqa: FBT001, FBT002
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            save_fig: bool = False,  # noqa: FBT001, FBT002
+            *,
+            verbose: bool = True,
+            show_fig: bool = False,
+            save_fig: bool = False,
             motion_name: str | None = None,
-            save_txt: bool = False,  # noqa: FBT001, FBT002
-            save_full_time_history: bool = False,  # noqa: FBT001, FBT002
+            save_txt: bool = False,
+            save_full_time_history: bool = False,
             output_dir: str | None = None,
     ) -> Simulation_Results:
         """
@@ -438,7 +440,7 @@ class Equiv_Linear_Simulation(Simulation):  # noqa: N801
         return sim_results
 
 
-class Nonlinear_Simulation(Simulation):  # noqa: N801
+class Nonlinear_Simulation(Simulation):
     """
     Nonlinear site response simulation.
 
@@ -513,12 +515,13 @@ class Nonlinear_Simulation(Simulation):  # noqa: N801
             self,
             sim_dir: str | None = None,
             motion_name: str | None = None,
-            save_txt: bool = False,  # noqa: FBT001, FBT002
-            save_full_time_history: bool = True,  # noqa: FBT001, FBT002
-            show_fig: bool = False,  # noqa: FBT001, FBT002
-            save_fig: bool = False,  # noqa: FBT001, FBT002
-            remove_sim_dir: bool = False,  # noqa: FBT001, FBT002
-            verbose: bool = True,  # noqa: FBT001, FBT002
+            *,
+            save_txt: bool = False,
+            save_full_time_history: bool = True,
+            show_fig: bool = False,
+            save_fig: bool = False,
+            remove_sim_dir: bool = False,
+            verbose: bool = True,
     ) -> Simulation_Results:
         """
         Start nonlinear simulation.
@@ -594,8 +597,8 @@ class Nonlinear_Simulation(Simulation):  # noqa: N801
         f_max = 30  # maximum frequency modeled, unit is Hz
         ppw = 10  # points per wavelength
         n_dt = 30  # number of sub-steps in one time step
-        N_spr = 120  # number of Iwan springs  # noqa: N806
-        N_obs = 50  # number of strain points in a curve  # noqa: N806
+        N_spr = 120  # number of Iwan springs
+        N_obs = 50  # number of strain points in a curve
         n_ma = self.G_param.n_layer
         strain_in_pct = np.geomspace(0.0001, 6, num=N_obs)
 

@@ -117,23 +117,23 @@ def hh_param_from_profile(
 
     hlp.check_Vs_profile_format(vs_profile)
     h = vs_profile[:-1, 0]
-    Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)  # noqa: N806
+    Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
 
     n_layer = len(Vs)
     if Tmax is not None:
         hlp.assert_array_length(Tmax, n_layer)
 
     rho = _calc_rho(h, Vs)
-    Gmax = _calc_Gmax(Vs, rho)  # noqa: N806
+    Gmax = _calc_Gmax(Vs, rho)
     sigma_v0 = _calc_vertical_stress(h, rho)
-    OCR = _calc_OCR(Vs, rho, sigma_v0)  # noqa: N806
-    K0 = _calc_K0(OCR, phi=phi)  # noqa: N806
-    PI = _calc_PI(Vs)  # noqa: N806
+    OCR = _calc_OCR(Vs, rho, sigma_v0)
+    K0 = _calc_K0(OCR, phi=phi)
+    PI = _calc_PI(Vs)
 
     if Tmax is None:
-        Tmax = _calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)  # noqa: N806
+        Tmax = _calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)
 
-    HH_G_param = produce_HH_G_param(  # noqa: N806
+    HH_G_param = produce_HH_G_param(
         Vs,
         Gmax,
         Tmax,
@@ -244,7 +244,7 @@ def hh_param_from_curves(
 
     hlp.check_Vs_profile_format(vs_profile)
     h = vs_profile[:-1, 0]
-    Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)  # noqa: N806
+    Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
     n_layer = len(Vs)
 
     if vs_profile.shape[1] == 5:  # there can only be 5 or 2 columns  # noqa: PLR2004
@@ -257,13 +257,13 @@ def hh_param_from_curves(
     if Tmax is not None:
         hlp.assert_array_length(Tmax, n_layer)
 
-    Gmax = _calc_Gmax(Vs, rho)  # noqa: N806
+    Gmax = _calc_Gmax(Vs, rho)
     sigma_v0 = _calc_vertical_stress(h, rho)
-    OCR = _calc_OCR(Vs, rho, sigma_v0)  # noqa: N806
-    K0 = _calc_K0(OCR, phi=phi)  # noqa: N806
+    OCR = _calc_OCR(Vs, rho, sigma_v0)
+    K0 = _calc_K0(OCR, phi=phi)
 
     if Tmax is None:
-        Tmax = _calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)  # noqa: N806
+        Tmax = _calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)
 
     curves_old = curves.copy()
     curves_expanded = None
@@ -276,7 +276,7 @@ def hh_param_from_curves(
 
     curves = curves_expanded
 
-    HH_G_param = produce_HH_G_param(  # noqa: N806
+    HH_G_param = produce_HH_G_param(
         Vs,
         Gmax,
         Tmax,
@@ -319,10 +319,11 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
         curves: np.ndarray | None = None,
         PI: float | np.ndarray | None = None,  # noqa: N803
         phi: float | np.ndarray | None = None,
-        show_fig: bool = False,  # noqa: FBT001, FBT002
-        save_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        show_fig: bool = False,
+        save_fig: bool = False,
         fig_output_dir: str | None = None,
-        verbose: bool = True,  # noqa: FBT001, FBT002
+        verbose: bool = True,
 ) -> np.ndarray:
     """
     Produce HH_G parameters from profiles of Vs, Tmax, OCR, etc.
@@ -404,7 +405,7 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
     hlp.assert_array_length(OCR, n_layer, name='`OCR`')
     hlp.assert_array_length(sigma_v0, n_layer, name='`sigma_v0`')
 
-    K0 = hlp.check_length_or_extend_to_array(K0, n_layer, name='`K0`')  # noqa: N806
+    K0 = hlp.check_length_or_extend_to_array(K0, n_layer, name='`K0`')
     p0 = _calc_mean_confining_stress(sigma_v0, K0)
 
     if verbose:
@@ -421,7 +422,7 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
         # END
 
         strain_ = np.geomspace(1e-4, 10, 400)  # unit: percent
-        GGmax, _, gamma_ref = produce_Darendeli_curves(  # noqa: N806
+        GGmax, _, gamma_ref = produce_Darendeli_curves(
             sigma_v0,
             PI,
             OCR=OCR,
@@ -444,10 +445,10 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
 
         # ----------- Extract G/Gmax information ------------------------------
         strain = curves[:, 0::4]  # unit: percent
-        GGmax = curves[:, 1::4]  # noqa: N806
+        GGmax = curves[:, 1::4]
 
         # ----------- Fit MKZ parameters --------------------------------------
-        param_MKZ, _ = mkz.fit_MKZ(curves, show_fig=show_fig)  # noqa: N806
+        param_MKZ, _ = mkz.fit_MKZ(curves, show_fig=show_fig)
         gamma_ref = param_MKZ[:, 0]
         s = param_MKZ[:, 2]
         beta = param_MKZ[:, 3]
@@ -523,14 +524,14 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
                 f'gamma_t = {gamma_t * 100:.3f}%, d = {d:.3f}',
             )
 
-        T_FKZ = hh.tau_FKZ(  # noqa: N806
+        T_FKZ = hh.tau_FKZ(
             strain_j / 100.0,
             Gmax=Gmax[j],
             mu=mu[j],
             d=d,
             Tmax=Tmax[j],
         )
-        T_HH = hh.tau_HH(  # noqa: N806
+        T_HH = hh.tau_HH(
             strain_j / 100.0,
             gamma_t=gamma_t,
             a=a,
@@ -553,7 +554,7 @@ def produce_HH_G_param(  # noqa: C901, N802, PLR0915
         parameters[7, j] = Tmax[j]
         parameters[8, j] = d
 
-        GGmax_HH = T_HH / (Gmax[j] * (strain_j / 100.0))  # noqa: N806
+        GGmax_HH = T_HH / (Gmax[j] * (strain_j / 100.0))
 
         if show_fig:
             fig = plt.figure(figsize=(4.2, 6.0))
@@ -697,11 +698,11 @@ def _calc_shear_strength(
 
     phi = hlp.check_length_or_extend_to_array(phi, len(Vs), name='`phi`')
     if K0 is None:
-        K0 = _calc_K0(OCR, phi=phi)  # noqa: N806
+        K0 = _calc_K0(OCR, phi=phi)
     else:
-        K0 = hlp.check_length_or_extend_to_array(K0, len(Vs), name='`K0`')  # noqa: N806
+        K0 = hlp.check_length_or_extend_to_array(K0, len(Vs), name='`K0`')
 
-    Tmax = np.zeros(len(Vs))  # noqa: N806
+    Tmax = np.zeros(len(Vs))
     for j in range(len(Vs)):
         # for softer soils, calculate undrained shear strength
         if Vs[j] <= 760:  # noqa: PLR2004
@@ -776,7 +777,7 @@ def _calc_OCR(  # noqa: N802
     # seismic piezocone tests"
     sigma_p0 = 0.106 * Vs**1.47
     sigma_p0 *= 1000  # kPa --> Pa
-    OCR = sigma_p0 / sigma_v0  # noqa: N806
+    OCR = sigma_p0 / sigma_v0
     return np.minimum(
         OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit
     )
@@ -882,7 +883,7 @@ def _calc_PI(Vs: np.ndarray) -> np.ndarray:  # noqa: N802, N803
     PI : np.ndarray
         The plasticity index for each layer. Unit: %.
     """
-    PI = np.zeros_like(Vs)  # noqa: N806
+    PI = np.zeros_like(Vs)
     for j in range(len(Vs)):
         if Vs[j] <= 200:  # noqa: PLR2004
             PI[j] = 10
@@ -971,13 +972,13 @@ def produce_Darendeli_curves(  # noqa: N802
     n_layer = len(sigma_v0)
 
     phi = hlp.check_length_or_extend_to_array(phi, n_layer, name='`phi`')
-    PI = hlp.check_length_or_extend_to_array(PI, n_layer, name='`PI`')  # noqa: N806
-    OCR = hlp.check_length_or_extend_to_array(OCR, n_layer, name='`OCR`')  # noqa: N806
+    PI = hlp.check_length_or_extend_to_array(PI, n_layer, name='`PI`')
+    OCR = hlp.check_length_or_extend_to_array(OCR, n_layer, name='`OCR`')
 
     if K0 is None:
-        K0 = _calc_K0(OCR, phi=phi)  # noqa: N806
+        K0 = _calc_K0(OCR, phi=phi)
     else:
-        K0 = hlp.check_length_or_extend_to_array(K0, n_layer, name='`K0`')  # noqa: N806
+        K0 = hlp.check_length_or_extend_to_array(K0, n_layer, name='`K0`')
 
     if strain_in_pct is None:
         gamma = np.geomspace(1e-4, 10, 400)
@@ -987,7 +988,7 @@ def produce_Darendeli_curves(  # noqa: N802
     # Define all constants
     nr_cycle = 10
     frq = 1
-    N = nr_cycle  # noqa: N806
+    N = nr_cycle
 
     phi1 = 0.0352
     phi2 = 0.0010
@@ -1017,13 +1018,13 @@ def produce_Darendeli_curves(  # noqa: N802
     # Reference strain for each layer (Eq 9.1a). Unit: percent
     gamma_r = (phi1 + phi2 * PI * OCR**phi3) * sigma_0**phi4
 
-    GGmax = np.zeros((n_strain_pts, n_layer))  # noqa: N806
+    GGmax = np.zeros((n_strain_pts, n_layer))
     xi = np.zeros_like(GGmax)
     for i in range(n_layer):
         # G of i-th layer (Eq 9.2a)
         GGmax[:, i] = 1.0 / (1 + (gamma / gamma_r[i]) ** a)
 
-        D_masing_1 = (100.0 / np.pi) * (  # unit: % (page 226)  # noqa: N806
+        D_masing_1 = (100.0 / np.pi) * (  # unit: % (page 226)
             4
             * (gamma - gamma_r[i] * np.log((gamma + gamma_r[i]) / gamma_r[i]))
             / (gamma**2 / (gamma + gamma_r[i]))
@@ -1031,10 +1032,10 @@ def produce_Darendeli_curves(  # noqa: N802
         )
 
         # from page 226; unit of D_masing: %
-        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3  # noqa: N806
+        D_masing = c1 * D_masing_1 + c2 * D_masing_1**2 + c3 * D_masing_1**3
 
         # Eq 9.1c (page 221)
-        D_min = (  # noqa: N806
+        D_min = (
             (phi6 + phi7 * PI[i] * OCR[i] ** phi8)
             * sigma_0[i] ** phi9
             * (1 + phi10 * np.log(frq))
@@ -1114,22 +1115,22 @@ def _optimization_kernel(
     -----
     Based on optHybFKZ.m
     """
-    T_MKZ = mkz.tau_MKZ(x, gamma_ref=x_ref, beta=beta, s=s, Gmax=Gmax)  # noqa: N806
+    T_MKZ = mkz.tau_MKZ(x, gamma_ref=x_ref, beta=beta, s=s, Gmax=Gmax)
     # when mu is too small, there may be some numerical issues, therefore
     # gamma_t lower bound is relaxed
-    gamma_t_LB = 0.001 if mu <= 0.03 else 0.01  # noqa: N806, PLR2004
+    gamma_t_LB = 0.001 if mu <= 0.03 else 0.01  # noqa: PLR2004
 
-    gamma_t_UB = 3.0  # unit: percent  # noqa: N806
+    gamma_t_UB = 3.0  # unit: percent
 
-    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)  # noqa: N806
+    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
         # for very deep layers, tau_MKZ may be larger than tau_f at gamma_t_LB
-        gamma_t_LB = 0.005  # noqa: N806
+        gamma_t_LB = 0.005
 
     # do it again
-    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)  # noqa: N806
+    index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
-        gamma_t_LB = 0.001  # noqa: N806
+        gamma_t_LB = 0.001
 
     range_d = np.linspace(0.67, 1.39, 200)
     area = __calc_area(
@@ -1155,7 +1156,7 @@ def _optimization_kernel(
             )
         else:
             range_d = np.linspace(0.67, 1.39, 1000)  # increase grid density
-            new_gamma_t_LB = 0.005  # further relax  # noqa: N806
+            new_gamma_t_LB = 0.005  # further relax
             area = __calc_area(
                 range_d,
                 x,
@@ -1225,7 +1226,7 @@ def __find_x_t_and_d(
     """
     j_ = np.argmin(area)
     d = range_d[j_]
-    T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)  # noqa: N806
+    T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
     copt, _ = hlp.find_closest_index(np.abs(T_MKZ - T_FKZ), 0)
     x_t = x[copt]
 
@@ -1279,7 +1280,7 @@ def __calc_area(
     area = np.zeros_like(range_d)
     for j in range(len(range_d)):
         d = range_d[j]
-        T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)  # noqa: N806
+        T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
 
         # unitless
         range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
@@ -1289,7 +1290,7 @@ def __calc_area(
 
         gamma_t = x[copt]
         if (gamma_t >= range_gamma_t[0]) and (gamma_t <= range_gamma_t[-1]):
-            diff_T = np.abs(T_MKZ[: copt + 1] - T_FKZ[: copt + 1])  # noqa: N806
+            diff_T = np.abs(T_MKZ[: copt + 1] - T_FKZ[: copt + 1])
             area[j] = np.linalg.norm(diff_T) / (copt + 1.0)
         else:
             area[j] = np.inf

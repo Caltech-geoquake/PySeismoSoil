@@ -86,7 +86,7 @@ def transition_function(
     # 1e(a very large number) or 1e(a very small number)
     w = np.zeros(gamma.shape)
     for ix, g in enumerate(gamma):
-        intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (  # noqa: N806
+        intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (
             -1.036
         )
         if -a * intermediateValue > 305:  # noqa: PLR2004
@@ -152,8 +152,8 @@ def tau_HH(  # noqa: N802
         same unit as ``Gmax``.
     """
     w = transition_function(gamma, a=a, gamma_t=gamma_t)
-    T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)  # noqa: N806
-    T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)  # noqa: N806
+    T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
+    T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)
 
     return w * T_MKZ + (1 - w) * T_FKZ
 
@@ -238,7 +238,7 @@ def fit_HH_x_single_layer(  # noqa: N802
     # number of HH model parameters; do not change this for HH model
     n_param = 9
 
-    N = 122  # denser strain array for more accurate damping calculation  # noqa: N806
+    N = 122  # denser strain array for more accurate damping calculation
     strain_dense = np.logspace(-6, -1, N)  # unit: 1
     damping_dense = np.interp(
         strain_dense,
@@ -311,22 +311,22 @@ def _damping_misfit(
         The mean absolute error between the true damping values and the
         predicted damping values at each strain level.
     """
-    gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param  # noqa: N806
+    gamma_t_, a_, gamma_ref_, beta_, s_, Gmax_, mu_, Tmax_, d_ = param
 
     gamma_t = 10**gamma_t_
     a = 10**a_
     gamma_ref = 10**gamma_ref_
     beta = 10**beta_
     s = 10**s_
-    Gmax = 10**Gmax_  # noqa: N806
+    Gmax = 10**Gmax_
     mu = 10**mu_
-    Tmax = 10**Tmax_  # noqa: N806
+    Tmax = 10**Tmax_
     d = 10**d_
 
     strain = damping_data[:, 0]
     damping_true = damping_data[:, 1]
 
-    Tau_HH = tau_HH(  # noqa: N806
+    Tau_HH = tau_HH(
         strain,
         gamma_t=gamma_t,
         a=a,

@@ -8,7 +8,7 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_gof_scores as gof
 
 
-class GOF_Scores:  # noqa: N801
+class GOF_Scores:
     """
     Class implementation of the goodness-of-fit scoring.
 
@@ -192,8 +192,8 @@ class GOF_Scores:  # noqa: N801
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             for ind, sc in enumerate(scores0):
                 scores = np.append(scores, sc)
@@ -205,8 +205,8 @@ class GOF_Scores:  # noqa: N801
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             for ind, sc in enumerate(scores1):
                 scores = np.append(scores, sc)
@@ -218,8 +218,8 @@ class GOF_Scores:  # noqa: N801
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             for ind, sc in enumerate(scores2):
                 scores = np.append(scores, sc)
@@ -231,8 +231,8 @@ class GOF_Scores:  # noqa: N801
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             scores = np.append(scores, scores3)
             self.scores[9] = scores3
@@ -287,7 +287,7 @@ class GOF_Scores:  # noqa: N801
         return scores
 
 
-class Batch_GOF_Scores:  # noqa: N801
+class Batch_GOF_Scores:
     """Run goodness-of-fit scoring in batch."""
 
     def __init__(self, list_of_scores: list[GOF_Scores]) -> None:
@@ -304,7 +304,8 @@ class Batch_GOF_Scores:  # noqa: N801
 
     def run(
             self,
-            parallel: bool = False,  # noqa: FBT001, FBT002
+            *,
+            parallel: bool = False,
             n_cores: int | None = 1,
             options: dict[str, Any] | None = None,
     ) -> list[GOF_Scores]:
@@ -328,7 +329,7 @@ class Batch_GOF_Scores:  # noqa: N801
         """
         options = {} if options is None else options
 
-        N = self.n_scores  # noqa: N806
+        N = self.n_scores
 
         score_results = []
         if not parallel:

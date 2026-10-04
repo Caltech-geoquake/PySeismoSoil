@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Simulation_Results:  # noqa: N801
+class Simulation_Results:
     """
     Site response simulation results.
 
@@ -229,8 +229,8 @@ class Simulation_Results:  # noqa: N801
     def plot(  # noqa: PLR0915
             self,
             dpi: float = 100,
-            save_fig: bool = False,  # noqa: FBT001, FBT002
-            amplif_func_ylog: bool = True,  # noqa: FBT001, FBT002
+            *, save_fig: bool = False,
+            amplif_func_ylog: bool = True,
             output_dir: str | None = None,
     ) -> tuple[
         tuple[Figure, Figure | None], tuple[Axes, tuple[Axes | None, ...]]
@@ -401,8 +401,8 @@ class Simulation_Results:  # noqa: N801
 
     def to_txt(
             self,
-            save_full_time_history: bool = True,  # noqa: FBT001, FBT002
-            verbose: bool = False,  # noqa: FBT001, FBT002
+            *, save_full_time_history: bool = True,
+            verbose: bool = False,
             output_dir: str | None = None,
     ) -> None:
         """
@@ -434,8 +434,8 @@ class Simulation_Results:  # noqa: N801
         od_path = pathlib.Path(od)
         motion_name = self.motion_name
 
-        fn_TF_raw = od_path / f'{motion_name}_nonlinear_TF_raw.txt'  # noqa: N806
-        fn_TF_smoothed = od_path / f'{motion_name}_nonlinear_TF_smoothed.txt'  # noqa: N806
+        fn_TF_raw = od_path / f'{motion_name}_nonlinear_TF_raw.txt'
+        fn_TF_smoothed = od_path / f'{motion_name}_nonlinear_TF_smoothed.txt'
         fn_surface_accel = od_path / f'{motion_name}_accel_on_surface.txt'
         fn_new_profile = od_path / f'{motion_name}_re-discretized_profile.txt'
         fn_out_a = od_path / f'{motion_name}_time_history_accel.txt'

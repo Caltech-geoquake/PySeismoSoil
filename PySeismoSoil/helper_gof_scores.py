@@ -62,8 +62,9 @@ def d_1234(  # noqa: PLR0915
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
-        baseline: bool = True,  # noqa: FBT001, FBT002
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        baseline: bool = True,
+        show_fig: bool = False,
 ) -> tuple[float, float, float, float]:
     """
     Calculate the first four goodness-of-fit scores in the GoF scheme described
@@ -131,20 +132,20 @@ def d_1234(  # noqa: PLR0915
         a_m = sp.bandpass(a_m, [fmin, fmax], filter_order=filter_order)
         a_s = sp.bandpass(a_s, [fmin, fmax], filter_order=filter_order)
 
-    Ia_m, Ia_m_peak = calc_AriasIntensity(a_m)  # noqa: N806
-    Ia_s, Ia_s_peak = calc_AriasIntensity(a_s)  # noqa: N806
+    Ia_m, Ia_m_peak = calc_AriasIntensity(a_m)
+    Ia_s, Ia_s_peak = calc_AriasIntensity(a_s)
 
     v_m = sr.num_int(a_m)[0]
     v_s = sr.num_int(a_s)[0]
 
-    Ie_m, Ie_m_peak = calc_AriasIntensity(v_m)  # noqa: N806
-    Ie_s, Ie_s_peak = calc_AriasIntensity(v_s)  # noqa: N806
+    Ie_m, Ie_m_peak = calc_AriasIntensity(v_m)
+    Ie_s, Ie_s_peak = calc_AriasIntensity(v_s)
 
-    N_Ia_m = Ia_m[:, 1] / Ia_m_peak  # normalized Ia duration  # noqa: N806
-    N_Ia_s = Ia_s[:, 1] / Ia_s_peak  # normalized Ia duration  # noqa: N806
+    N_Ia_m = Ia_m[:, 1] / Ia_m_peak  # normalized Ia duration
+    N_Ia_s = Ia_s[:, 1] / Ia_s_peak  # normalized Ia duration
 
-    N_Ie_m = Ie_m[:, 1] / Ie_m_peak  # normalized Ie duration  # noqa: N806
-    N_Ie_s = Ie_s[:, 1] / Ie_s_peak  # normalized Ie duration  # noqa: N806
+    N_Ie_m = Ie_m[:, 1] / Ie_m_peak  # normalized Ie duration
+    N_Ie_s = Ie_s[:, 1] / Ie_s_peak  # normalized Ie duration
 
     n_m = N_Ia_m.shape[0]
     n_s = N_Ia_s.shape[0]
@@ -152,27 +153,27 @@ def d_1234(  # noqa: PLR0915
     # If mismatched in time spacing, interpolate to grid with more points
     # (assuming both time series start at 0 and and stop at same time)
     if n_m < n_s:
-        N_Ia_m = hlp.interpolate(  # noqa: N806
+        N_Ia_m = hlp.interpolate(
             t2[0], t2[-1], n_s, N_Ia_m, t1, log_scale=False
         )
-        N_Ie_m = hlp.interpolate(  # noqa: N806
+        N_Ie_m = hlp.interpolate(
             t2[0], t2[-1], n_s, N_Ie_m, t1, log_scale=False
         )
 
-        N_Ia_m = np.nan_to_num(N_Ia_m)  # noqa: N806
-        N_Ie_m = np.nan_to_num(N_Ie_m)  # noqa: N806
+        N_Ia_m = np.nan_to_num(N_Ia_m)
+        N_Ie_m = np.nan_to_num(N_Ie_m)
 
         tt_array = t2
     elif n_m > n_s:
-        N_Ia_s = hlp.interpolate(  # noqa: N806
+        N_Ia_s = hlp.interpolate(
             t1[0], t1[-1], n_m, N_Ia_s, t2, log_scale=False
         )
-        N_Ie_s = hlp.interpolate(  # noqa: N806
+        N_Ie_s = hlp.interpolate(
             t1[0], t1[-1], n_m, N_Ie_s, t2, log_scale=False
         )
 
-        N_Ia_s = np.nan_to_num(N_Ia_s)  # noqa: N806
-        N_Ie_s = np.nan_to_num(N_Ie_s)  # noqa: N806
+        N_Ia_s = np.nan_to_num(N_Ia_s)
+        N_Ie_s = np.nan_to_num(N_Ie_s)
 
         tt_array = t1
     else:
@@ -285,14 +286,14 @@ def calc_AriasIntensity(  # noqa: N802
     n = a.shape[0]
 
     dt = t[1] - t[0]
-    Ia = np.zeros(n)  # noqa: N806
+    Ia = np.zeros(n)
     a_sq = a**2.0
 
     for ix in range(1, n):
         Ia[ix] = Ia[ix - 1] + np.pi / (2 * g) * a_sq[ix - 1] * dt
 
-    Ia_peak = float(Ia[-1])  # noqa: N806
-    Ia = np.column_stack((t, Ia))  # noqa: N806
+    Ia_peak = float(Ia[-1])
+    Ia = np.column_stack((t, Ia))
 
     return Ia, Ia_peak
 
@@ -302,8 +303,9 @@ def d_567(  # noqa: PLR0915
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
-        baseline: bool = True,  # noqa: FBT001, FBT002
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        baseline: bool = True,
+        show_fig: bool = False,
 ) -> tuple[float, float, float]:
     """
     Calculate the 5th, 6th, and 7th goodness-of-fit scores in the GoF scheme
@@ -591,8 +593,9 @@ def d_89(  # noqa: PLR0915
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
-        baseline: bool = True,  # noqa: FBT001, FBT002
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        baseline: bool = True,
+        show_fig: bool = False,
 ) -> tuple[float, float]:
     """
     Calculate the last two goodness-of-fit scores in the GoF scheme described
@@ -672,24 +675,24 @@ def d_89(  # noqa: PLR0915
         simulation = sp.baseline(simulation)
 
     # response spectra
-    Tmax = 1.0 / fmin  # noqa: N806
-    Tmin = 1.0 / fmax  # noqa: N806
+    Tmax = 1.0 / fmin
+    Tmin = 1.0 / fmax
 
-    Tn_m, SA_m, _, _, _, _, _ = sr.response_spectra(  # noqa: N806
+    Tn_m, SA_m, _, _, _, _, _ = sr.response_spectra(
         measurement,
         T_min=np.min((Tmin, 0.01)),
         T_max=np.max((Tmax, 5.0)),
         n_pts=100,
     )
-    Tn_s, SA_s, _, _, _, _, _ = sr.response_spectra(  # noqa: N806
+    Tn_s, SA_s, _, _, _, _, _ = sr.response_spectra(
         simulation,
         T_min=np.min((Tmin, 0.01)),
         T_max=np.max((Tmax, 5.0)),
         n_pts=100,
     )
 
-    idx1_RS = np.min(np.where(Tn_m >= Tmin)[0])  # noqa: N806
-    idx2_RS = np.max(np.where(Tn_m <= Tmax)[0]) + 1  # noqa: N806
+    idx1_RS = np.min(np.where(Tn_m >= Tmin)[0])
+    idx2_RS = np.max(np.where(Tn_m <= Tmax)[0]) + 1
 
     # fourier transform
     ft_m = sp.fourier_transform(measurement)
@@ -698,14 +701,14 @@ def d_89(  # noqa: PLR0915
     farray_m = ft_m[:, 0]
     farray_s = ft_s[:, 0]
 
-    FS_m = sp.sine_smooth(ft_m)  # noqa: N806
-    FS_s = sp.sine_smooth(ft_s)  # noqa: N806
+    FS_m = sp.sine_smooth(ft_m)
+    FS_s = sp.sine_smooth(ft_s)
 
-    idx1_FS = np.max((  # noqa: N806
+    idx1_FS = np.max((
         np.min(np.where(farray_m >= fmin)[0]),
         np.min(np.where(farray_s >= fmin)[0]),
     ))
-    idx2_FS = (  # noqa: N806
+    idx2_FS = (
         np.min((
             np.max(np.where(farray_m <= fmax)[0]),
             np.max(np.where(farray_s <= fmax)[0]),
@@ -788,8 +791,9 @@ def d_10(
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
-        baseline: bool = True,  # noqa: FBT001, FBT002
-        show_fig: bool = False,  # noqa: FBT001, FBT002
+        *,
+        baseline: bool = True,
+        show_fig: bool = False,
 ) -> float:
     """
     Cross-correlation measure of goodness-of-fit, as described in: Anderson
@@ -914,7 +918,7 @@ def upArrow_op(  # noqa: N802
     if j == 0:
         return [1]
 
-    N = len(li)  # noqa: N806
+    N = len(li)
     li_n = np.zeros(2 ** (j - 1) * (N - 1) + 1)
     for i in range(N):
         li_n[2 ** (j - 1) * i] = li[i]
@@ -998,9 +1002,9 @@ def modwtmra(w: np.ndarray, filters: str) -> np.ndarray:
     g = wavelet.dec_lo
 
     # D
-    level, N = w.shape  # noqa: N806
+    level, N = w.shape
     level -= 1
-    D = []  # noqa: N806
+    D = []
     g_j_part = [1]
     for j in range(level):
         # g_j_part
@@ -1023,6 +1027,6 @@ def modwtmra(w: np.ndarray, filters: str) -> np.ndarray:
     g_j = np.convolve(g_j_part, g_j_up)
     g_j_t = g_j / (2 ** ((j + 1) / 2.0))
     g_j_t_o = period_list(g_j_t, N)
-    S = circular_convolve_mra(g_j_t_o, w[-1])  # noqa: N806
+    S = circular_convolve_mra(g_j_t_o, w[-1])
     D.append(S)
     return np.vstack(D)
