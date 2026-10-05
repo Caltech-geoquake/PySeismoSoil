@@ -2644,7 +2644,7 @@ def _fit_single_layer_loop(param: tuple[Any, ...]) -> Any:
         verbose,
     ) = other_params
 
-    return func_fit_single_layer(
+    best_param = func_fit_single_layer(
         damping_curve,
         use_scipy=use_scipy,
         n_gen=n_gen,
@@ -2657,6 +2657,8 @@ def _fit_single_layer_loop(param: tuple[Any, ...]) -> Any:
         verbose=verbose,
         parallel=False,  # no par. within layers
     )
+
+    return best_param  # noqa: RET504
 
 
 def ga_optimization(
