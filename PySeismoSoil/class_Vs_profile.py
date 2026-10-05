@@ -221,12 +221,9 @@ class Vs_Profile:
 
     def __repr__(self) -> str:
         """Define a presentation of the basic info of a Vs profile."""
-        rule = '----------+----------+-------------+------------------+-------'
-        rule += '-------\n'
-        text = '\n' + rule
-        text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] '
-        text += '| Material No. \n'
-        text += rule
+        text = '\n----------+----------+-------------+------------------+--------------\n'  # noqa: E501
+        text += '  Thk [m] | Vs [m/s] | Damping [%] | Density [kg/m^3] | Material No. \n'  # noqa: E501
+        text += '----------+----------+-------------+------------------+--------------\n'  # noqa: E501
 
         n_layer_all, _ = self.vs_profile.shape
         for j in range(n_layer_all):
@@ -237,7 +234,7 @@ class Vs_Profile:
             text += '{:^14}'.format(f'{int(self.vs_profile[j, 4])}')
             text += '\n'
 
-        text += rule
+        text += '----------+----------+-------------+------------------+--------------\n'  # noqa: E501
         text += f'\n(Vs30 = {self.vs30:.1f} m/s)\n'
 
         return text
