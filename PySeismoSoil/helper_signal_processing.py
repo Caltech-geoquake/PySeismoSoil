@@ -872,7 +872,7 @@ def lin_smooth(
 
     Returns
     -------
-    smoothed : np.ndarray
+    np.ndarray
         The smoothed signal (same dimension as ``x``)
 
     Raises

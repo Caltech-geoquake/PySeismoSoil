@@ -521,7 +521,7 @@ def baseline_wavelet(
 
     Returns
     -------
-    y : np.ndarray
+    np.ndarray
         The baseline corrected signal. Also has two columns.
 
     Notes

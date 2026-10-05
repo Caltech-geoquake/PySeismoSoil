@@ -781,7 +781,7 @@ def _calc_OCR(
 
     Returns
     -------
-    OCR : np.ndarray
+    np.ndarray
         1D array of OCR value, for each soil layer. (Unitless.)
     """
     # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from

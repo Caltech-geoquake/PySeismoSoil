@@ -155,7 +155,7 @@ def tau_HH(
 
     Returns
     -------
-    T_FKZ : np.ndarray
+    np.ndarray
         The shear stress determined by the HH model. Same shape as ``x``, and
         same unit as ``Gmax``.
     """

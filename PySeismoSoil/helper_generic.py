@@ -663,7 +663,7 @@ def interpolate(
 
 def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
-    Calculate the mean squared error between ground truth and prediction.
+    Calculate the mean absolute error between ground truth and prediction.
 
     Parameters
     ----------
@@ -674,8 +674,8 @@ def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
     Returns
     -------
-    mse : float
-        Mean squared error.
+    float
+        Mean absolute error.
     """
     assert_1D_numpy_array(y_true, name='`y_true`')
     assert_1D_numpy_array(y_pred, name='`y_pred`')

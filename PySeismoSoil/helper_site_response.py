@@ -2290,7 +2290,7 @@ def calc_damping_from_stress_strain(
 
     Returns
     -------
-    damping : np.ndarray
+    np.ndarray
         A 1D numpy array of damping ratios, in the unit of "1".
     """
     strain = strain_in_unit_1

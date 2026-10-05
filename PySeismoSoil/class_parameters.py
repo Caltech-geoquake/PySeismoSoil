@@ -170,7 +170,7 @@ class Parameter(collections.UserDict):
 
         Returns
         -------
-        result : np.ndarray
+        np.ndarray
             The G/Gmax array, with the same shape as the strain array.
         """
         tau = self.get_stress(strain_in_pct=strain_in_pct)
