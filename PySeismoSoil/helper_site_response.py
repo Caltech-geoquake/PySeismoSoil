@@ -2096,7 +2096,8 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     n_time = int(np.ceil(max(tmax1, tmax2) / dt))
     tmax = dt * n_time  # use the larger end time of the two as the end time
 
-    return np.linspace(dt, tmax, num=n_time)
+    t_output = np.linspace(dt, tmax, num=n_time)
+    return t_output  # noqa: RET504
 
 
 def _get_freq_interval(
