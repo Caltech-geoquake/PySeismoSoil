@@ -55,12 +55,14 @@ def tau_MKZ(
 
     Returns
     -------
-    np.ndarray
+    T_MKZ : np.ndarray
         The shear stress determined by the formula above. Same shape as ``x``,
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    return Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
+    T_MKZ = Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
+
+    return T_MKZ  # noqa: RET504
 
 
 def fit_H4_x_single_layer(
