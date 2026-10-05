@@ -1634,7 +1634,8 @@ def amplify_motion(  # noqa: PLR0915
             f_array = np.append(df, f_array)
             amp_ss = np.append(1.0, amp_ss)
             phase_ss = np.append(0.0, phase_ss)
-    else:  # keep downsampling `input_motion` until f_array covers fmax
+    else:
+        # keep downsampling `input_motion` until f_array covers the freq range
         while np.max(f_array) < fmax:
             input_motion = input_motion[::2, :]
             if input_motion.shape[0] <= 1:
