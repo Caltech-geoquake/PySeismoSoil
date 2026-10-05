@@ -2609,7 +2609,7 @@ def fit_all_damping_curves(
         if func_serialize is None:
             raise ValueError(
                 'Please provide a function to serialize the parameters into a'
-                ' lists.',
+                ' list.',
             )
 
         data_for_file = [func_serialize(param) for param in params]
