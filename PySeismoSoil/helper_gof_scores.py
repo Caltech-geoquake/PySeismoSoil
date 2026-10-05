@@ -963,7 +963,8 @@ def circular_convolve_d(
     for i, h in enumerate(h_t):
         ker[i * 2 ** (j - 1)] = h
 
-    return convolve1d(v_j_1, ker, mode='wrap', origin=-len(ker) // 2)
+    w_j = convolve1d(v_j_1, ker, mode='wrap', origin=-len(ker) // 2)
+    return w_j  # noqa: RET504
 
 
 def modwt(x: np.ndarray, filters: str, level: int) -> np.ndarray:
