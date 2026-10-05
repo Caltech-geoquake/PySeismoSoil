@@ -57,12 +57,14 @@ def tau_FKZ(
 
     Returns
     -------
-    np.ndarray
+    T_FKZ : np.ndarray
         The shear stress determined by the formula above. Same shape as ``x``,
         and same unit as ``Gmax``.
     """
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
-    return mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
+    T_FKZ = mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
+
+    return T_FKZ  # noqa: RET504
 
 
 def transition_function(
