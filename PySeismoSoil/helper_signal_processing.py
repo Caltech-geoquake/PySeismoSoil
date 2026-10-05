@@ -788,7 +788,7 @@ def log_smooth(
 
     Returns
     -------
-    np.ndarray
+    smoothed_signal : np.ndarray
         The smoothed signal which has the same dimension as the original
         signal.
 
@@ -844,7 +844,8 @@ def log_smooth(
         for j in range(len(y) - 2, len(y) - n - 1, -1):
             y[j] = beta2 * y[j + 1] + (1 - beta2) * x[j]
 
-    return y
+    smoothed_signal = y
+    return smoothed_signal  # noqa: RET504
 
 
 def lin_smooth(
