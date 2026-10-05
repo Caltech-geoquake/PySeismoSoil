@@ -1076,10 +1076,11 @@ def _calc_mean_confining_stress(
 
     Returns
     -------
-    np.ndarray
+    sigma_m0 : np.ndarray
         Mean effective confining stress (of three directions). Unit: Pa.
     """
-    return (2 * K0 + 1) / 3.0 * sigma_v0
+    sigma_m0 = (2 * K0 + 1) / 3.0 * sigma_v0
+    return sigma_m0  # noqa: RET504
 
 
 def _optimization_kernel(
