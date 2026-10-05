@@ -66,7 +66,8 @@ def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
     Earthquake Ground Motion Modeling." PhD thesis, California Institute of
     Technology
     """
-    return 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
+    z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
+    return z1_in_m  # noqa: RET504
 
 
 def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
