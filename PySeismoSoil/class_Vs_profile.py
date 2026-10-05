@@ -535,7 +535,8 @@ class Vs_Profile:
             if not np.any(depth == 0):
                 thk_array = sr.dep2thk(np.append([0], depth))
                 vs_queried = np.append(vs_queried[0:1], vs_queried)
-            else:  # `depth` is guaranteed to be sorted with no duplicates
+            else:
+                # `depth` has been guaranteed to be sorted with no duplicates
                 thk_array = sr.dep2thk(depth)
 
             vs_ = np.column_stack((thk_array, vs_queried))
