@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
@@ -25,6 +25,11 @@ PrecisionSpecifiers = tuple[str, str, str, str, str]
 
 # Default precision of each column when writing a Vs profile to a text file
 DEFAULT_PRECISION: PrecisionSpecifiers = ('%.2f', '%.2f', '%.4g', '%.5g', '%d')
+
+
+# If the min. density of a profile (in kg/m^3) is at or below this value, a
+# warning is printed because the density is likely to be in a wrong unit
+MIN_PLAUSIBLE_DENSITY_KG_M3 = 1000
 
 
 class Vs_Profile:
@@ -75,10 +80,6 @@ class Vs_Profile:
 
     Attributes
     ----------
-    MIN_PLAUSIBLE_DENSITY_KG_M3 : ClassVar[int], default=1000
-        If the minimum density of a profile (in kg/m^3) is at or below this
-        value, a warning is printed because the density is likely given in a
-        wrong unit (class attribute).
     vs_profile : np.ndarray
         The full 5-column Vs profile data. If the supplied Vs profile only has
         2 columns, damping and density and material numbers are automatically
@@ -103,10 +104,6 @@ class Vs_Profile:
     ValueError
         When the value of input arguments is incorrect or invalid
     """
-
-    # If the min. density of a profile (in kg/m^3) is at or below this value, a
-    # warning is printed because the density is likely to be in a wrong unit
-    MIN_PLAUSIBLE_DENSITY_KG_M3: ClassVar[int] = 1000
 
     vs_profile: np.ndarray
     vs30: float
@@ -169,7 +166,7 @@ class Vs_Profile:
             rho = data_[:, 3]
             if (
                 density_unit in {'kg/m^3', 'kg/m3'}
-                and min(rho) <= self.MIN_PLAUSIBLE_DENSITY_KG_M3
+                and min(rho) <= MIN_PLAUSIBLE_DENSITY_KG_M3
             ):
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '

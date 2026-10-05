@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
@@ -19,6 +19,17 @@ from PySeismoSoil.class_parameters import (
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
+
+# Valid range of damping values (used by ``Damping_Curve``):
+# [MIN_POSSIBLE_DAMPING, MAX_POSSIBLE_DAMPING_PCT], where the upper bound is in
+# percent
+MAX_POSSIBLE_DAMPING_PCT = 100
+MIN_POSSIBLE_DAMPING = 0
+
+# A ``(mgc, mdc)`` tuple (used by ``Multiple_GGmax_Damping_Curves``) must have
+# exactly two elements
+NUM_ELEMENTS_IN_MGC_MDC_TUPLE = 2
 
 
 class Curve:
@@ -310,10 +321,6 @@ class Damping_Curve(Curve):
 
     Attributes
     ----------
-    MAX_POSSIBLE_DAMPING_PCT : ClassVar[int], default=100
-        Upper bound of valid damping values, in percent (class attribute).
-    MIN_POSSIBLE_DAMPING : ClassVar[int], default=0
-        Lower bound of valid damping values (class attribute).
     raw_data : np.ndarray
         The raw data that the user passed in.
     strain : np.ndarray
@@ -332,11 +339,6 @@ class Damping_Curve(Curve):
     ValueError
         When the provided damping values are not within [0, 100]
     """
-
-    # Valid range of damping values: [MIN_POSSIBLE_DAMPING,
-    # MAX_POSSIBLE_DAMPING_PCT], where the upper bound is in percent
-    MAX_POSSIBLE_DAMPING_PCT: ClassVar[int] = 100
-    MIN_POSSIBLE_DAMPING: ClassVar[int] = 0
 
     raw_data: np.ndarray
     strain: np.ndarray
@@ -375,8 +377,8 @@ class Damping_Curve(Curve):
             self.damping *= 100  # unit: 1 --> %
 
         if check_values and (
-            np.any(self.damping > self.MAX_POSSIBLE_DAMPING_PCT)
-            or np.any(self.damping < self.MIN_POSSIBLE_DAMPING)
+            np.any(self.damping > MAX_POSSIBLE_DAMPING_PCT)
+            or np.any(self.damping < MIN_POSSIBLE_DAMPING)
         ):
             raise ValueError(
                 'The provided damping values must be between [0, 100].'
@@ -1500,10 +1502,6 @@ class Multiple_GGmax_Damping_Curves:
 
     Attributes
     ----------
-    NUM_ELEMENTS_IN_MGC_MDC_TUPLE : ClassVar[int], default=2
-        Number of elements that the ``mgc_and_mdc`` tuple must have: a
-        ``Multiple_GGmax_Curves`` object and a ``Multiple_Damping_Curves``
-        object (class attribute).
     mgc : Multiple_GGmax_Curves
         Object containing information of G/Gmax curves. It will be ``None`` if
         ``mgc_and_mdc`` is not provided.
@@ -1523,9 +1521,6 @@ class Multiple_GGmax_Damping_Curves:
     ValueError
         When both input arguments are ``None``, or neither of them are ``None``
     """  # noqa: E501
-
-    # A ``(mgc, mdc)`` tuple must have exactly two elements
-    NUM_ELEMENTS_IN_MGC_MDC_TUPLE: ClassVar[int] = 2
 
     mgc: Multiple_GGmax_Curves
     mdc: Multiple_Damping_Curves
@@ -1554,7 +1549,7 @@ class Multiple_GGmax_Damping_Curves:
             if not isinstance(mgc_and_mdc, tuple):
                 raise TypeError('`mgc_and_mdc` needs to be a tuple.')
 
-            if len(mgc_and_mdc) != self.NUM_ELEMENTS_IN_MGC_MDC_TUPLE:
+            if len(mgc_and_mdc) != NUM_ELEMENTS_IN_MGC_MDC_TUPLE:
                 raise ValueError('Length of `mgc_and_mdc` needs to be 2.')
 
             if not isinstance(mgc_and_mdc[0], Multiple_GGmax_Curves):

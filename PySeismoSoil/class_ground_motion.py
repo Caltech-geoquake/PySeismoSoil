@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +17,13 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
+
+# Number of elements that the ``limit`` argument (lower and upper bounds) and
+# the ``extend`` argument (amounts to extend before and after) of
+# ``Ground_Motion.truncate()`` must have
+NUM_ELEMENTS_IN_LIMIT_ARG = 2
+NUM_ELEMENTS_IN_EXTEND_ARG = 2
 
 
 class Ground_Motion:
@@ -54,12 +61,6 @@ class Ground_Motion:
 
     Attributes
     ----------
-    NUM_ELEMENTS_IN_LIMIT_ARG : ClassVar[int], default=2
-        Number of elements (lower and upper bounds) that the ``limit`` argument
-        of ``truncate()`` must have (class attribute).
-    NUM_ELEMENTS_IN_EXTEND_ARG : ClassVar[int], default=2
-        Number of elements (amounts to extend before and after) that the
-        ``extend`` argument of ``truncate()`` must have (class attribute).
     dt : float
         Recording time interval of the motion.
     time : np.ndarray
@@ -112,9 +113,6 @@ class Ground_Motion:
     ValueError
         When ``motion_type`` has invalid values
     """
-
-    NUM_ELEMENTS_IN_LIMIT_ARG: ClassVar[int] = 2
-    NUM_ELEMENTS_IN_EXTEND_ARG: ClassVar[int] = 2
 
     dt: float
     time: np.ndarray
@@ -624,13 +622,13 @@ class Ground_Motion:
         if not isinstance(limit, (tuple, list)):
             raise TypeError('`limit` must be a list/tuple of  two elements.')
 
-        if len(limit) != self.NUM_ELEMENTS_IN_LIMIT_ARG:
+        if len(limit) != NUM_ELEMENTS_IN_LIMIT_ARG:
             raise ValueError('Length of `limit` must be 2.')
 
         if not isinstance(extend, (tuple, list)):
             raise TypeError('`extend` must be a list/tuple of  two elements.')
 
-        if len(extend) != self.NUM_ELEMENTS_IN_EXTEND_ARG:
+        if len(extend) != NUM_ELEMENTS_IN_EXTEND_ARG:
             raise ValueError('Length of `extend` must be 2.')
 
         if extend[0] < 0 or extend[1] < 0:
