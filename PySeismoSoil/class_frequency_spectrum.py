@@ -296,7 +296,7 @@ class Frequency_Spectrum:
             self, *, robust: bool = True
     ) -> Frequency_Spectrum:
         """
-        Unwrpped the phase component of the spectrum.
+        Unwrap the phase component of the spectrum.
 
         Parameters
         ----------
