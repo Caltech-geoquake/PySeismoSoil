@@ -282,8 +282,8 @@ class SVM:
 
                     # change Vs value where Vs > eta * Vs_cap
                     for i in range(idx_eta_Vs_cap, end_index):
-                        # linearly distribute Vs increment from eta*Vs_cap to
-                        # Vs_cap
+                        # linearly distribute Vs increment from eta*Vs_cap
+                        # to Vs_cap
                         Vs_analyt[i] = Vs_cap * eta + Vs_cap * (1 - eta) / (
                             end_index - idx_eta_Vs_cap
                         ) * (i - idx_eta_Vs_cap)
