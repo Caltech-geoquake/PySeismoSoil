@@ -161,7 +161,8 @@ def _process_fig_ax_objects(
         else:
             # create new axes and plot lines on it
             ax = plt.axes(projection=ax_proj)
-    # else: plot lines on the provided axes handle
+    else:
+        ax = ax  # noqa: PLW0127  # plot lines on the provided axes handle
 
     return fig, ax
 
