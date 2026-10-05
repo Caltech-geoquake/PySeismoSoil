@@ -25,8 +25,11 @@ from PySeismoSoil.class_parameters import (
 from PySeismoSoil.class_simulation_results import Simulation_Results
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
-OptionalModelParams = HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
-OptionalGGmaxDampingCurves = Multiple_GGmax_Damping_Curves | None
+# Parameters of the G/Gmax or damping curve model (HH or MKZ) of all soil
+# layers
+GGmaxOrDampingCurveParamsMultiLayer = (
+    HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
+)
 
 
 class Simulation:
@@ -46,14 +49,14 @@ class Simulation:
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
-    G_param : OptionalModelParams, default=None
+    G_param : GGmaxOrDampingCurveParamsMultiLayer | None, default=None
         Parameters that describe the G/Gmax curves: an ``HH_Param_Multi_Layer``
         or ``MKZ_Param_Multi_Layer`` object (or ``None``).
-    xi_param : OptionalModelParams, default=None
+    xi_param : GGmaxOrDampingCurveParamsMultiLayer | None, default=None
         Parameters that describe the damping curves: an
         ``HH_Param_Multi_Layer`` or ``MKZ_Param_Multi_Layer`` object (or
         ``None``).
-    GGmax_and_damping_curves : OptionalGGmaxDampingCurves, default=None
+    GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None, default=None
         G/Gmax and damping curves of every soil layer: a
         ``Multiple_GGmax_Damping_Curves`` object (or ``None``).
 
@@ -65,11 +68,11 @@ class Simulation:
         Same as the input parameter ``input_motion``.
     boundary : Literal['elastic', 'rigid']
         Same as the input parameter ``boundary``.
-    G_param : OptionalModelParams
+    G_param : GGmaxOrDampingCurveParamsMultiLayer | None
         Same as the input parameter ``G_param``.
-    xi_param : OptionalModelParams
+    xi_param : GGmaxOrDampingCurveParamsMultiLayer | None
         Same as the input parameter ``xi_param``.
-    GGmax_and_damping_curves : OptionalGGmaxDampingCurves
+    GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None
         Same as the input parameter ``GGmax_and_damping_curves``.
 
     Raises
@@ -78,14 +81,14 @@ class Simulation:
         When input arguments have incorrect or incompatible types
     ValueError
         When input arguments have incorrect or invalid values
-    """
+    """  # noqa: E501
 
     soil_profile: Vs_Profile
     input_motion: Ground_Motion
     boundary: Literal['elastic', 'rigid']
-    G_param: OptionalModelParams
-    xi_param: OptionalModelParams
-    GGmax_and_damping_curves: OptionalGGmaxDampingCurves
+    G_param: GGmaxOrDampingCurveParamsMultiLayer | None
+    xi_param: GGmaxOrDampingCurveParamsMultiLayer | None
+    GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None
 
     def __init__(
             self,
@@ -93,9 +96,10 @@ class Simulation:
             input_motion: Ground_Motion,
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            G_param: OptionalModelParams = None,
-            xi_param: OptionalModelParams = None,
-            GGmax_and_damping_curves: (OptionalGGmaxDampingCurves) = None,
+            G_param: GGmaxOrDampingCurveParamsMultiLayer | None = None,
+            xi_param: GGmaxOrDampingCurveParamsMultiLayer | None = None,
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves
+            | None = None,
     ) -> None:
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
@@ -452,10 +456,10 @@ class Nonlinear_Simulation(Simulation):
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
         ``boundary`` is set to ``"rigid"``.
-    G_param : OptionalModelParams
+    G_param : GGmaxOrDampingCurveParamsMultiLayer | None
         Parameters that describe the G/Gmax curves: an ``HH_Param_Multi_Layer``
         or ``MKZ_Param_Multi_Layer`` object.
-    xi_param : OptionalModelParams
+    xi_param : GGmaxOrDampingCurveParamsMultiLayer | None
         Parameters that describe the damping curves: an
         ``HH_Param_Multi_Layer`` or ``MKZ_Param_Multi_Layer`` object.
     boundary : Literal['elastic', 'rigid'], default='elastic'
@@ -469,9 +473,9 @@ class Nonlinear_Simulation(Simulation):
         Same as the input parameter ``soil_profile``.
     input_motion : Ground_Motion
         Same as the input parameter ``input_motion``.
-    G_param : OptionalModelParams
+    G_param : GGmaxOrDampingCurveParamsMultiLayer | None
         Same as the input parameter ``G_param``.
-    xi_param : OptionalModelParams
+    xi_param : GGmaxOrDampingCurveParamsMultiLayer | None
         Same as the input parameter ``xi_param``.
     boundary : Literal['elastic', 'rigid']
         Same as the input parameter ``boundary``.
@@ -484,8 +488,8 @@ class Nonlinear_Simulation(Simulation):
 
     soil_profile: Vs_Profile
     input_motion: Ground_Motion
-    G_param: OptionalModelParams
-    xi_param: OptionalModelParams
+    G_param: GGmaxOrDampingCurveParamsMultiLayer | None
+    xi_param: GGmaxOrDampingCurveParamsMultiLayer | None
     boundary: Literal['elastic', 'rigid']
 
     def __init__(
@@ -493,8 +497,8 @@ class Nonlinear_Simulation(Simulation):
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
-            G_param: OptionalModelParams,
-            xi_param: OptionalModelParams,
+            G_param: GGmaxOrDampingCurveParamsMultiLayer | None,
+            xi_param: GGmaxOrDampingCurveParamsMultiLayer | None,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:
         if G_param is None:
