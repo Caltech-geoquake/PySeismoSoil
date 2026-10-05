@@ -157,7 +157,7 @@ def tau_HH(
 
     Returns
     -------
-    np.ndarray
+    T_HH : np.ndarray
         The shear stress determined by the HH model. Same shape as ``x``, and
         same unit as ``Gmax``.
     """
@@ -165,7 +165,9 @@ def tau_HH(
     T_MKZ = mkz.tau_MKZ(gamma, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
     T_FKZ = tau_FKZ(gamma, Gmax=Gmax, mu=mu, d=d, Tmax=Tmax)
 
-    return w * T_MKZ + (1 - w) * T_FKZ
+    T_HH = w * T_MKZ + (1 - w) * T_FKZ
+
+    return T_HH  # noqa: RET504
 
 
 def fit_HH_x_single_layer(
