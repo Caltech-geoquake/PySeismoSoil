@@ -943,9 +943,9 @@ def produce_Darendeli_curves(
         strain_in_pct: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Produce G/Gmax and damping curves using Darendeli's correlations.
+    Produce G/Gmax and damping curves.
 
-    The empirical correlations are by Darendeli (2001).
+    Calculated using Darendeli (2001).
 
     Parameters
     ----------
