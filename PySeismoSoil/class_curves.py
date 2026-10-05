@@ -1260,7 +1260,7 @@ class Multiple_Damping_Curves(Multiple_Curves):
 
         Returns
         -------
-        new_file_name : str
+        str
             The new file name based on the input "curve" file name.
 
         Raises

@@ -307,7 +307,7 @@ class Frequency_Spectrum:
 
         Returns
         -------
-        unwrapped : Frequency_Spectrum
+        Frequency_Spectrum
             A frequency spectrum with unwrapped phase component.
         """
         if robust:

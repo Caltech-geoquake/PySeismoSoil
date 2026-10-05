@@ -507,7 +507,7 @@ class Param_Multi_Layer:
 
         Returns
         -------
-        param_2D_array : np.ndarray
+        np.ndarray
             A 2D numpy array whose columns are parameters of each layer.
         """
         output = []

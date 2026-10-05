@@ -785,7 +785,7 @@ def log_smooth(
 
     Returns
     -------
-    smoothed_signal : np.ndarray
+    np.ndarray
         The smoothed signal which has the same dimension as the original
         signal.
 

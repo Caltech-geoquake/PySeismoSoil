@@ -753,7 +753,7 @@ def _calc_Gmax(Vs: np.ndarray, rho: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    Gmax : np.ndarray
+    np.ndarray
         1D array of initial stiffness. Unit: Pa
     """
     return rho * Vs**2
@@ -927,7 +927,7 @@ def _calc_K0(
 
     Returns
     -------
-    K0 : float | np.ndarray
+    float | np.ndarray
         K0 value(s). If either ``OCR`` or ``phi`` is an array, ``K0`` will be
         an array of the same length.
     """
@@ -1076,7 +1076,7 @@ def _calc_mean_confining_stress(
 
     Returns
     -------
-    sigma_m0 : np.ndarray
+    np.ndarray
         Mean effective confining stress (of three directions). Unit: Pa.
     """
     return (2 * K0 + 1) / 3.0 * sigma_v0

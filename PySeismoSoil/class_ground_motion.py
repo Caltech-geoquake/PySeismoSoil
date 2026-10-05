@@ -259,7 +259,7 @@ class Ground_Motion:
 
         Returns
         -------
-        fs : Frequency_Spectrum
+        Frequency_Spectrum
             A frequency spectrum object.
         """
         x = sig.fourier_transform(
@@ -815,7 +815,7 @@ class Ground_Motion:
 
         Returns
         -------
-        output_motion : Ground_Motion
+        Ground_Motion
             The amplified ground motion.
 
         Raises
@@ -934,7 +934,7 @@ class Ground_Motion:
 
         Returns
         -------
-        deconv_motion : Ground_Motion
+        Ground_Motion
             The deconvolved motion on the rock outcrop or in a borehole.
 
         Raises

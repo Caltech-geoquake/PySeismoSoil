@@ -54,7 +54,7 @@ def tau_MKZ(
 
     Returns
     -------
-    T_MKZ : np.ndarray
+    np.ndarray
         The shear stress determined by the formula above. Same shape as ``x``,
         and same unit as ``Gmax``.
     """
@@ -202,7 +202,7 @@ def damping_misfit(
 
     Returns
     -------
-    error : float
+    float
         The mean absolute error between the true damping values and the
         predicted damping values at each strain level.
     """

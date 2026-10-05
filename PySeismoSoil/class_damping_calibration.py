@@ -122,7 +122,7 @@ class Damping_Calibration:
 
         Returns
         -------
-        HH_x_param : HH_Param_Multi_Layer
+        HH_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
         mdc = self.get_damping_curves(
@@ -148,7 +148,7 @@ class Damping_Calibration:
 
         Returns
         -------
-        H4_x_param : MKZ_Param_Multi_Layer
+        MKZ_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
         mdc = self.get_damping_curves(

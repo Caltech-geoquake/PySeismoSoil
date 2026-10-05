@@ -26,7 +26,7 @@ def S_(
 
     Returns
     -------
-    score : float | np.ndarray
+    float | np.ndarray
         The computed score between ``meas`` and ``simu``.
 
     Notes
@@ -552,7 +552,7 @@ def calc_rms(x: np.ndarray) -> float:
 
     Returns
     -------
-    rms : float
+    float
         The RMS value of ``x``.
     """
     return np.sqrt(np.mean(x[:, 1] ** 2.0))

@@ -454,7 +454,7 @@ def num_diff(veloc: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    accel : np.ndarray
+    np.ndarray
         Acceleration time history. Same shape as the input.
     """
     hlp.check_two_column_format(veloc, name='`veloc`')
@@ -481,7 +481,7 @@ def find_f0(x: np.ndarray) -> float:
 
     Returns
     -------
-    f0 : float
+    float
         The value in the 0th column of x corresponding to the initial peak
         value in the 1st column of x.
     """
@@ -978,7 +978,7 @@ def calc_Vs30(
 
     Returns
     -------
-    Vs30 : float
+    float
         Vs30.
 
     Notes
@@ -2175,7 +2175,7 @@ def robust_unwrap(
 
     Returns
     -------
-    unwrapped : np.ndarray
+    np.ndarray
         Unwrapped array.
 
     Notes
@@ -2246,7 +2246,7 @@ def calc_damping_from_param(
 
     Returns
     -------
-    damping : np.ndarray
+    np.ndarray
         Damping values corresponding to each strain values, in the unit of "1".
 
     Raises
@@ -2330,7 +2330,7 @@ def calc_GGmax_from_stress_strain(
 
     Returns
     -------
-    GGmax : np.ndarray
+    np.ndarray
         A 1D numpy array of G/Gmax.
 
     Raises

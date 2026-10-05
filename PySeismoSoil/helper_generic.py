@@ -320,7 +320,7 @@ def extend_scalar(
 
     Returns
     -------
-    array : np.ndarray
+    np.ndarray
         A 1D numpy array with length ``length`` and elements of value
         ``scalar``.
 
@@ -782,7 +782,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
 
     Returns
     -------
-    param_list : list[np.ndarray]
+    list[np.ndarray]
         The parsed parameters for each layer. Each element of ``param_list`` is
         a 1D numpy array with length N, where N is the number of parameters for
         the particular soil constitutive model.
