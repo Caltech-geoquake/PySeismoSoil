@@ -752,10 +752,11 @@ def _calc_Gmax(Vs: np.ndarray, rho: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
+    Gmax : np.ndarray
         1D array of initial stiffness. Unit: Pa
     """
-    return rho * Vs**2
+    Gmax = rho * Vs**2
+    return Gmax  # noqa: RET504
 
 
 def _calc_OCR(
