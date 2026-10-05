@@ -170,7 +170,8 @@ class Vs_Profile:
             ):
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '
-                    'lower than 1,000 kg/m^3. Possible error.',
+                    f'lower than {MIN_PLAUSIBLE_DENSITY_KG_M3:,} kg/m^3. '
+                    'Possible error.',
                 )
             elif density_unit in {'g/cm^3', 'g/cm3'} and min(rho) <= 1.0:
                 print(

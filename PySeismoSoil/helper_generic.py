@@ -492,10 +492,14 @@ def check_Vs_profile_format(data: Any) -> None:
         raise ValueError('`data` should be a 2D numpy array.')
 
     if data.shape[1] not in {
-        NUM_COLUMNS_TWO_COL_DATA,
+        NUM_COLUMNS_THICKNESS_AND_VS,
         NUM_COLUMNS_OF_FULL_VS_PROFILE,
     }:
-        raise ValueError('`data` should have either 2 or 5 columns.')
+        raise ValueError(
+            '`data` should have either '
+            f'{NUM_COLUMNS_THICKNESS_AND_VS} or '
+            f'{NUM_COLUMNS_OF_FULL_VS_PROFILE} columns.'
+        )
 
     thk = data[:, 0]
     Vs = data[:, 1]

@@ -158,7 +158,10 @@ class Site_Factors:
         )
         if 'Vs30 out of range' in status:
             if not lenient:
-                raise ValueError('Vs30 should be between [175, 950] m/s')
+                raise ValueError(
+                    'Vs30 should be between '
+                    f'[{MIN_VS30_M_S}, {MAX_VS30_M_S}] m/s'
+                )
 
             if Vs30_in_meter_per_sec < MIN_VS30_M_S:
                 Vs30_in_meter_per_sec = MIN_VS30_M_S
@@ -167,13 +170,17 @@ class Site_Factors:
 
         if 'z1 out of range' in status:
             if not lenient:
-                raise ValueError('z1_in_m should be between [8, 900] m')
+                raise ValueError(
+                    f'z1_in_m should be between [{MIN_Z1_M}, {MAX_Z1_M}] m'
+                )
 
             z1_in_m = MIN_Z1_M if z1_in_m < MIN_Z1_M else MAX_Z1_M
 
         if 'PGA out of range' in status:
             if not lenient:
-                raise ValueError('PGA should be between [0.01g, 1.5g]')
+                raise ValueError(
+                    f'PGA should be between [{MIN_PGA_G}g, {MAX_PGA_G}g]'
+                )
 
             PGA_in_g = MIN_PGA_G if PGA_in_g < MIN_PGA_G else MAX_PGA_G
 
@@ -253,7 +260,7 @@ class Site_Factors:
             show_interp_plots: bool = False,
     ) -> Frequency_Spectrum:
         """
-        Get site phase-shift factors.
+        Get phase-shift factors.
 
         Parameters
         ----------

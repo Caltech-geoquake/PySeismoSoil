@@ -2077,7 +2077,10 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
         len(t1) < MIN_NUM_POINTS_IN_TIME_ARRAY
         or len(t2) < MIN_NUM_POINTS_IN_TIME_ARRAY
     ):
-        raise ValueError('Both time arrays need to have at least 2 elements.')
+        raise ValueError(
+            'Both time arrays need to have at least '
+            f'{MIN_NUM_POINTS_IN_TIME_ARRAY} elements.'
+        )
 
     dt1 = t1[1] - t1[0]
     dt2 = t2[1] - t2[0]

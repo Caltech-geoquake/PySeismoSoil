@@ -623,13 +623,17 @@ class Ground_Motion:
             raise TypeError('`limit` must be a list/tuple of  two elements.')
 
         if len(limit) != NUM_ELEMENTS_IN_LIMIT_ARG:
-            raise ValueError('Length of `limit` must be 2.')
+            raise ValueError(
+                f'Length of `limit` must be {NUM_ELEMENTS_IN_LIMIT_ARG}.'
+            )
 
         if not isinstance(extend, (tuple, list)):
             raise TypeError('`extend` must be a list/tuple of  two elements.')
 
         if len(extend) != NUM_ELEMENTS_IN_EXTEND_ARG:
-            raise ValueError('Length of `extend` must be 2.')
+            raise ValueError(
+                f'Length of `extend` must be {NUM_ELEMENTS_IN_EXTEND_ARG}.'
+            )
 
         if extend[0] < 0 or extend[1] < 0:
             raise ValueError('`extend` should be non negative.')

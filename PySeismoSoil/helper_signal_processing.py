@@ -211,7 +211,10 @@ def _filter_kernel(  # noqa: C901, PLR0915
             )
 
         if len(cutoff_freq) != NUM_CUTOFF_FREQS_BAND_FILTER:
-            raise ValueError('`cutoff_freq` must have length 2.')
+            raise ValueError(
+                '`cutoff_freq` must have length '
+                f'{NUM_CUTOFF_FREQS_BAND_FILTER}.'
+            )
 
         if cutoff_freq[1] <= cutoff_freq[0]:
             raise ValueError(

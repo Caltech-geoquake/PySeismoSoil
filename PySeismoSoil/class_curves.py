@@ -381,7 +381,8 @@ class Damping_Curve(Curve):
             or np.any(self.damping < MIN_POSSIBLE_DAMPING)
         ):
             raise ValueError(
-                'The provided damping values must be between [0, 100].'
+                'The provided damping values must be between '
+                f'[{MIN_POSSIBLE_DAMPING}, {MAX_POSSIBLE_DAMPING_PCT}].'
             )
 
     def get_HH_x_param(
@@ -1550,7 +1551,10 @@ class Multiple_GGmax_Damping_Curves:
                 raise TypeError('`mgc_and_mdc` needs to be a tuple.')
 
             if len(mgc_and_mdc) != NUM_ELEMENTS_IN_MGC_MDC_TUPLE:
-                raise ValueError('Length of `mgc_and_mdc` needs to be 2.')
+                raise ValueError(
+                    'Length of `mgc_and_mdc` needs to be '
+                    f'{NUM_ELEMENTS_IN_MGC_MDC_TUPLE}.'
+                )
 
             if not isinstance(mgc_and_mdc[0], Multiple_GGmax_Curves):
                 raise TypeError(

@@ -132,10 +132,11 @@ class SVM:
             target_Vs30 > MAX_APPLICABLE_VS30_M_S
         ):
             print(
-                '***** Warning in initializing an SVM object: your Vs30 '
-                '(%.2f m/s) is out of the range of applicability of the '
-                'SVM (173.1 m/s to 1000 m/s); the result may not be '
-                'as credible. *****',
+                '***** Warning in initializing an SVM object: your Vs30'
+                ' (%.2f m/s) is out of the range of applicability of the SVM'
+                f' ({MIN_APPLICABLE_VS30_M_S} m/s to'
+                f' {MAX_APPLICABLE_VS30_M_S} m/s); the result may not be'
+                ' as credible. *****',
             )
 
         if eta <= 0 or eta > 1:
