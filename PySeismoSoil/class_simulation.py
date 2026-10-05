@@ -657,9 +657,7 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        import PySeismoSoil  # noqa: PLC0415
-
-        package_path = importlib.resources.files(PySeismoSoil)
+        package_path = importlib.resources.files('PySeismoSoil')
         dir_exec_files = str(package_path / 'exec_files')
         sim_path = pathlib.Path(sim_dir)
         shutil.copy(pathlib.Path(dir_exec_files) / f'NLHH.{exec_ext}', sim_dir)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import curve_fit
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
@@ -345,8 +346,6 @@ def fit_MKZ(
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.
     """  # noqa: E501
-    from scipy.optimize import curve_fit  # noqa: PLC0415
-
     hlp.assert_2D_numpy_array(curve_data, name='`curve_data`')
 
     nr = 109

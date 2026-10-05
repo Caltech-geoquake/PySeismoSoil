@@ -7,6 +7,7 @@ import itertools
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Literal
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
 
@@ -64,20 +65,6 @@ MAX_PGA_G = 1.5
 # has 8 corners (the "reference grids"), and the query point has 3 coordinates.
 NUM_REFERENCE_GRIDS = 8
 NUM_INTERP_DIMENSIONS = 3
-
-# Each pair is (Vs30 in m/s, z1 in m). A site whose Vs30 and z1 both exceed
-# those of any pair (i.e., a stiff site with a deep basin) is considered an
-# invalid combination.
-_INVALID_VS30_Z1_THRESHOLDS = (
-    (400, 750),
-    (450, 600),
-    (550, 450),
-    (600, 300),
-    (650, 150),
-    (750, 75),
-    (800, 36),
-    (850, 16),
-)
 
 
 class Site_Factors:
@@ -146,9 +133,7 @@ class Site_Factors:
             *,
             lenient: bool = False,
     ) -> None:
-        import PySeismoSoil  # noqa: PLC0415
-
-        package_path = importlib.resources.files(PySeismoSoil)
+        package_path = importlib.resources.files('PySeismoSoil')
         self.dir_amplif = str(package_path / 'data' / 'amplification')
         self.dir_phase = str(package_path / 'data' / 'phase')
         status = Site_Factors._range_check(
@@ -684,8 +669,6 @@ class Site_Factors:
             phase factors, then two subplots are produced, and ``ax1`` and
             ``ax2`` are the axes objects of the two subplots.
         """
-        import matplotlib.pyplot as plt  # noqa: PLC0415
-
         if phases is not None and phase_interp is not None:
             phase_flag = True
             figsize = (7, 3)
@@ -789,10 +772,18 @@ class Site_Factors:
         if PGA_in_g < MIN_PGA_G or PGA_in_g > MAX_PGA_G:
             status.append('PGA out of range')
 
-        thresholds = _INVALID_VS30_Z1_THRESHOLDS
-        if any(
-            Vs30_in_mps > Vs30_threshold and z1_in_m > z1_threshold
-            for Vs30_threshold, z1_threshold in thresholds
+        # A stiff site (large Vs30) cannot have a deep basin (large z1). The
+        # thresholds are deliberately written out as numbers, so that they are
+        # easy to read and to check.
+        if (
+            (Vs30_in_mps > 400 and z1_in_m > 750)  # noqa: PLR0916, PLR2004
+            or (Vs30_in_mps > 450 and z1_in_m > 600)  # noqa: PLR2004
+            or (Vs30_in_mps > 550 and z1_in_m > 450)  # noqa: PLR2004
+            or (Vs30_in_mps > 600 and z1_in_m > 300)  # noqa: PLR2004
+            or (Vs30_in_mps > 650 and z1_in_m > 150)  # noqa: PLR2004
+            or (Vs30_in_mps > 750 and z1_in_m > 75)  # noqa: PLR2004
+            or (Vs30_in_mps > 800 and z1_in_m > 36)  # noqa: PLR2004
+            or (Vs30_in_mps > 850 and z1_in_m > 16)  # noqa: PLR2004
         ):
             status.append('Invalid Vs30-z1 combination')
 

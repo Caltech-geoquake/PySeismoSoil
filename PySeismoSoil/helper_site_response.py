@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import itertools
 import math
+import multiprocessing as mp
+import random
+import warnings
 from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib as mpl
@@ -8,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
 from numba import jit
+from scipy.optimize import differential_evolution as diff_evol
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
@@ -573,9 +578,6 @@ def response_spectra(  # noqa: PLR0915
     ValueError
         When the value of input parameters are incorrect
     """
-    import itertools  # noqa: PLC0415
-    import multiprocessing as mp  # noqa: PLC0415
-
     hlp.check_two_column_format(accel, name='`accel`')
 
     t = accel[::subsample_interval, 0]
@@ -2571,10 +2573,7 @@ def fit_all_damping_curves(
     ]
 
     if parallel:
-        import itertools  # noqa: PLC0415
-        import multiprocessing  # noqa: PLC0415
-
-        p = multiprocessing.Pool(n_cores)
+        p = mp.Pool(n_cores)
         params = p.map(
             _fit_single_layer_loop,
             itertools.product(curves_list, other_params),
@@ -2763,15 +2762,9 @@ def ga_optimization(
     if suppress_warnings:
         # TODO: enable setting it from methods that call this  # noqa: TD003
         # function
-        import warnings  # noqa: PLC0415
-
         warnings.filterwarnings('ignore', category=RuntimeWarning)
 
     if use_scipy:
-        from scipy.optimize import (  # noqa: PLC0415
-            differential_evolution as diff_evol,
-        )
-
         bounds = [(lower_bound, upper_bound)] * n_param
         n_cores = -1 if parallel and n_cores is None else 1
         popsize_multiplier = max(1, pop_size // n_param)
@@ -2793,8 +2786,8 @@ def ga_optimization(
         opt_result = result.x
 
     else:
-        import random  # noqa: PLC0415
-
+        # ``deap`` is an optional dependency (it is not installed along
+        # with this package), so it is only imported when this branch runs
         import deap.algorithms  # noqa: PLC0415
         import deap.base  # noqa: PLC0415
         import deap.creator  # noqa: PLC0415
