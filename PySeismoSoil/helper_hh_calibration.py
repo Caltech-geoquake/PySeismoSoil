@@ -1291,7 +1291,7 @@ def __calc_area(
         d = range_d[j]
         T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
 
-        # unitless
+        # unit: 1  # noqa: ERA001
         range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
 
         # "copt" = cross-over point
