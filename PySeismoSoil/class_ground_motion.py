@@ -182,9 +182,11 @@ class Ground_Motion:
                 "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
             )
 
-        # Keep the plain assignment instead of `/=` or `*=` because `data_` can
-        # be an integer array, which this assignment casts back to integers,
-        # whereas the in-place operators would raise a `TypeError`
+        # Known bug (#59): `data_` can be the caller's own array, so this
+        # conversion also changes the caller's array, and truncates it if it
+        # is an integer array. (`/=` and `*=` would raise a `TypeError` for
+        # integer arrays instead, so the plain assignment stays until #59 is
+        # fixed.)
         if unit in {'cm', 'cm/s', 'cm/s/s', 'gal'}:
             data_[:, 1] = data_[:, 1] / 100.0  # noqa: PLR6104  # cm --> m
         elif unit == 'g':
@@ -1173,9 +1175,10 @@ class Ground_Motion:
         fmt = [t_prec, motion_prec]
         data = self.accel
 
-        # Keep the plain assignment instead of `/=` or `*=` because `data` can
-        # be an integer array, which this assignment casts back to integers,
-        # whereas the in-place operators would raise a `TypeError`
+        # Known bug (#58): `data` is `self.accel` itself, not a copy, so saving
+        # in another unit also rescales `self.accel`. (`/=` and `*=` would
+        # raise a `TypeError` for integer arrays, so the plain assignment stays
+        # until #58 is fixed.)
         if unit == 'm/s/s':
             pass
         elif unit == 'g':
