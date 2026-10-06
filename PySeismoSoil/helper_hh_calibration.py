@@ -502,7 +502,8 @@ def produce_HH_G_param(  # noqa: C901, PLR0915
 
         # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
         if mu[j] <= MU_THRESHOLD_THREE_STD_ERR_BOOST:
-            # 0.236 is the standard error suggested in Vardanega & Bolton (2011)  # noqa: E501
+            # 0.236 is the standard error suggested
+            # in Vardanega & Bolton (2011)
             mu[j] *= 10.0 ** (0.236 * 3)
         elif mu[j] <= MU_THRESHOLD_TWO_STD_ERR_BOOST:
             mu[j] *= 10.0 ** (0.236 * 2)
