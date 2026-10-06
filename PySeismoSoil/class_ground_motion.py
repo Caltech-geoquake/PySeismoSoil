@@ -938,7 +938,7 @@ class Ground_Motion:
 
         Returns
         -------
-        Ground_Motion
+        deconv_motion : Ground_Motion
             The deconvolved motion on the rock outcrop or in a borehole.
 
         Raises
@@ -958,7 +958,8 @@ class Ground_Motion:
             boundary=boundary,
             show_fig=show_fig,
         )[0]
-        return Ground_Motion(response, unit='m')
+        deconv_motion = Ground_Motion(response, unit='m')
+        return deconv_motion  # noqa: RET504
 
     def baseline_correct(
             self,

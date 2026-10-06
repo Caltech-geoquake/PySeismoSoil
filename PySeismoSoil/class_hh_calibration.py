@@ -136,7 +136,7 @@ class HH_Calibration:
 
         Returns
         -------
-        HH_Param_Multi_Layer
+        HH_G_param : HH_Param_Multi_Layer
             The HH parameters of each layer.
         """
         vs_profile = self.vs_profile.vs_profile
@@ -158,4 +158,5 @@ class HH_Calibration:
                 vs_profile, curves, **options
             )
 
-        return HH_Param_Multi_Layer(HH_G_param_)
+        HH_G_param = HH_Param_Multi_Layer(HH_G_param_)
+        return HH_G_param  # noqa: RET504

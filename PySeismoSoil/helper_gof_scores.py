@@ -26,7 +26,7 @@ def S_(
 
     Returns
     -------
-    float | np.ndarray
+    score : float | np.ndarray
         The computed score between ``meas`` and ``simu``.
 
     Notes
@@ -54,7 +54,8 @@ def S_(
         rela_diff = (simu - meas) / meas
         rela_diff[meas < eps2] = simu[meas < eps2] - meas[meas < eps2]
 
-    return scipy.special.erf(rela_diff * 1) * 10
+    score = scipy.special.erf(rela_diff * 1) * 10
+    return score  # noqa: RET504
 
 
 def d_1234(  # noqa: PLR0915

@@ -460,7 +460,7 @@ def num_diff(veloc: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
+    accel : np.ndarray
         Acceleration time history. Same shape as the input.
     """
     hlp.check_two_column_format(veloc, name='`veloc`')
@@ -470,7 +470,9 @@ def num_diff(veloc: np.ndarray) -> np.ndarray:
 
     a = np.diff(v) / np.diff(t)
     a = np.append(np.array([0]), a)
-    return np.column_stack((t, a))
+    accel = np.column_stack((t, a))
+
+    return accel  # noqa: RET504
 
 
 def find_f0(x: np.ndarray) -> float:

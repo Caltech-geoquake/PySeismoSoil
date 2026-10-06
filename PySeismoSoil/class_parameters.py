@@ -508,7 +508,7 @@ class Param_Multi_Layer:
 
         Returns
         -------
-        np.ndarray
+        param_2D_array : np.ndarray
             A 2D numpy array whose columns are parameters of each layer.
         """
         output = []
@@ -516,7 +516,8 @@ class Param_Multi_Layer:
             param_array = param_single_layer.serialize()
             output.append(param_array)
 
-        return np.array(output).T
+        param_2D_array = np.array(output).T
+        return param_2D_array  # noqa: RET504
 
     def save_txt(
             self,
