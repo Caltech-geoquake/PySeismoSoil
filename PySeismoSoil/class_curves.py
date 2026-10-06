@@ -1472,7 +1472,7 @@ class Multiple_GGmax_Curves(Multiple_Curves):
 
 
 # A tuple of the G/Gmax curves and the damping curves of the same soil layers
-MgcMdcPair = tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]
+MGC_MDC_Pair = tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]
 
 
 class Multiple_GGmax_Damping_Curves:
@@ -1486,7 +1486,7 @@ class Multiple_GGmax_Damping_Curves:
 
     Parameters
     ----------
-    mgc_and_mdc : MgcMdcPair | None, default=None
+    mgc_and_mdc : MGC_MDC_Pair | None, default=None
         A tuple of two elements, which are the G/Gmax curve information (a
         ``Multiple_GGmax_Curves`` object) and the damping curve information (a
         ``Multiple_Damping_Curves`` object), respectively. The two objects
@@ -1531,7 +1531,7 @@ class Multiple_GGmax_Damping_Curves:
     def __init__(
             self,
             *,
-            mgc_and_mdc: MgcMdcPair | None = None,
+            mgc_and_mdc: MGC_MDC_Pair | None = None,
             data: np.ndarray | str | None = None,
     ) -> None:
         if mgc_and_mdc is None and data is None:

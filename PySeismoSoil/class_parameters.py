@@ -28,10 +28,10 @@ STRAIN_RANGE_PCT = np.logspace(-2, 1)
 StressFunction = Callable[[dict[str, float], ...], np.ndarray]
 
 # Valid ways of initializing HH_Param_Multi_Layer and MKZ_Param_Multi_Layer
-HHParamInput: TypeAlias = (
+HH_Param_Input: TypeAlias = (
     str | np.ndarray | list[dict[str, float]] | list['HH_Param']
 )
-MKZParamInput: TypeAlias = (
+MKZ_Param_Input: TypeAlias = (
     str | np.ndarray | list[dict[str, float]] | list['MKZ_Param']
 )
 
@@ -567,7 +567,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : HHParamInput
+    filename_or_data : HH_Param_Input
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -604,7 +604,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     def __init__(
             self,
-            filename_or_data: HHParamInput,
+            filename_or_data: HH_Param_Input,
             *,
             sep: str = '\t',
     ) -> None:
@@ -657,7 +657,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : MKZParamInput
+    filename_or_data : MKZ_Param_Input
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -694,7 +694,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     def __init__(
             self,
-            filename_or_data: MKZParamInput,
+            filename_or_data: MKZ_Param_Input,
             *,
             sep: str = '\t',
     ) -> None:
