@@ -4,7 +4,7 @@ requires = ["setuptools>=45", "wheel"]
 
 [project]
 name = "PySeismoSoil"
-version = "0.6.3"
+version = "0.7.0"
 dependencies = [
   "PyWavelets>=1.3.0",
   "matplotlib>=2.0.0",

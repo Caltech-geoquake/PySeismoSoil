@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-06
+
 - Changed
   - Modernized the CI pipeline: replaced `isort`, `cercis`, and `flake8` with
     `muff-format`, `pydoclint`, and an updated set of pre-commit hooks (same as
