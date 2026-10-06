@@ -50,7 +50,8 @@ such as `Vs_Profile` and `Gmax`). Please don't silence other rules with inline
 
 - Boolean arguments should be keyword-only (put a `*` before them) instead of
   silencing `FBT001`/`FBT002`
-- Use a named constant for a magic number, instead of silencing `PLR2004`
+- Use a named constant for a magic number rather than in-line silencing
+  `PLR2004`, except for special circumstances
 - Wrap long lines (or shorten type annotations with a type alias, since
   `format-docstring` generates the parameter lines in docstrings from them)
   instead of silencing `E501`
