@@ -40,8 +40,9 @@ configured in `muff.toml`, and `format-docstring`. Files in `tests/` are
 excluded from all the hooks.
 
 Docstrings use the NumPy style and are checked with `pydoclint`
-(`tox -e pydoclint`). To check linting and formatting without modifying any
-files, run `tox -e muff-check` and `tox -e muff-format`.
+(`tox -e pydoclint`). CI runs the pre-commit hooks (`tox -e pre-commit`), and
+fails if any hook modifies a file. The CI log then shows the changes that the
+hooks made, and the lint rules that `muff-check` fixed.
 
 Rules that don't fit this library are ignored globally in `muff.toml` (e.g.,
 `N801`/`N806`, because class and variable names follow the domain notation,
