@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_site_factors import Site_Factors
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Site_Effect_Adjustment:
@@ -69,6 +71,7 @@ class Site_Effect_Adjustment:
             Vs30_in_meter_per_sec: float,
             z1_in_m: float | None = None,
             ampl_method: Literal['nl_hh', 'eq_hh'] = 'nl_hh',
+            *,
             lenient: bool = False,
     ) -> None:
         if not isinstance(input_motion, Ground_Motion):
@@ -109,6 +112,7 @@ class Site_Effect_Adjustment:
 
     def run(
             self,
+            *,
             show_fig: bool = False,
             return_fig_obj: bool = False,
             **kwargs_to_plot: dict[Any, Any],
@@ -180,9 +184,9 @@ class Site_Effect_Adjustment:
             accel_out, fig, ax = result
             ax[0].set_ylabel('Accel. [m/s/s]')
             ax[0].set_title(
-                '$V_{S30}$=%.1fm/s, $z_1$=%.1fm, '
-                r'$\mathrm{PGA}_{\mathrm{input}}$=%.3g$g$'
-                % (self.Vs30, self.z1, self.PGA_in_g),
+                f'$V_{{S30}}$={self.Vs30:.1f}m/s, $z_1$={self.z1:.1f}m,'
+                rf' $\mathrm{{PGA}}_{{\mathrm{{input}}}}$='
+                f'{self.PGA_in_g:.3g}$g$',
             )
             ax[1].set_ylabel('Amplif. factor')
             ax[2].set_ylabel('Phase factor [rad]')

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import itertools
 import multiprocessing as mp
-import os
-from typing import Any, Literal
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil.class_simulation import (
@@ -11,7 +11,13 @@ from PySeismoSoil.class_simulation import (
     Linear_Simulation,
     Nonlinear_Simulation,
 )
-from PySeismoSoil.class_simulation_results import Simulation_Results
+
+if TYPE_CHECKING:
+    from PySeismoSoil.class_simulation_results import Simulation_Results
+
+SimulationType = Literal[
+    'Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation'
+]
 
 
 class Batch_Simulation:
@@ -39,8 +45,10 @@ class Batch_Simulation:
         Same as the input parameter ``list_of_simulations``.
     n_simulations : int
         Number of simulations in the list.
-    sim_type : Literal['Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation']
-        The object type of the site response simulations.
+    sim_type : SimulationType
+        The object type of the site response simulations: one of
+        'Linear_Simulation', 'Equiv_Linear_Simulation', or
+        'Nonlinear_Simulation'.
 
     Raises
     ------
@@ -52,13 +60,12 @@ class Batch_Simulation:
 
     list_of_simulations: list[Simulation_Results]
     n_simulations: int
-    sim_type: Literal[
-        'Linear_Simulation', 'Equiv_Linear_Simulation', 'Nonlinear_Simulation'
-    ]
+    sim_type: SimulationType
 
     def __init__(
             self,
             list_of_simulations: list[Simulation_Results],
+            *,
             use_ctx: bool = False,
     ) -> None:
         if not isinstance(list_of_simulations, list):
@@ -82,7 +89,8 @@ class Batch_Simulation:
 
         if not all(isinstance(i, type(sim_0)) for i in list_of_simulations):
             raise TypeError(
-                'All the elements of `list_of_simulations` should be of the same type.',
+                'All the elements of `list_of_simulations` should be of'
+                ' the same type.',
             )
 
         n_simulations = len(list_of_simulations)
@@ -103,6 +111,7 @@ class Batch_Simulation:
 
     def run(
             self,
+            *,
             parallel: bool = False,
             n_cores: int | None = 1,
             base_output_dir: str | None = None,
@@ -149,15 +158,15 @@ class Batch_Simulation:
 
         if base_output_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            base_output_dir = os.path.join('./', 'batch_sim_%s' % current_time)
+            base_output_dir = str(Path('./') / f'batch_sim_{current_time}')
 
         other_params = [n_digits, base_output_dir, catch_errors, options]
 
         if not parallel:
-            sim_results = []
-            for i in range(self.n_simulations):
-                sim_results.append(self._run_single_sim([i, other_params]))
-            # END FOR
+            sim_results = [
+                self._run_single_sim([i, other_params])
+                for i in range(self.n_simulations)
+            ]
         else:
             sim_results = []
 
@@ -191,9 +200,6 @@ class Batch_Simulation:
             if options.get('show_fig', False):
                 for sim_result in sim_results:
                     sim_result.plot(save_fig=options.get('save_fig', False))
-                # END FOR
-            # END IF
-        # END IF
 
         return sim_results
 
@@ -225,7 +231,7 @@ class Batch_Simulation:
         """
         i, other_params = all_params  # unpack
         n_digits, base_output_dir, catch_errors, options = other_params
-        output_dir = os.path.join(base_output_dir, str(i).rjust(n_digits, '0'))
+        output_dir = str(Path(base_output_dir) / str(i).rjust(n_digits, '0'))
         if self.sim_type == Nonlinear_Simulation:
             options.update({'sim_dir': output_dir})
         else:  # linear or equivalent linear

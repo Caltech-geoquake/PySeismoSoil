@@ -1,18 +1,22 @@
+"""Helper functions for site response simulations."""
+
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import scipy.fftpack
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
-from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
-from PySeismoSoil.class_parameters import (
-    HH_Param_Multi_Layer,
-    MKZ_Param_Multi_Layer,
-)
-from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
+    from PySeismoSoil.class_parameters import (
+        HH_Param_Multi_Layer,
+        MKZ_Param_Multi_Layer,
+    )
+    from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 
 def check_layer_count(
@@ -23,7 +27,9 @@ def check_layer_count(
         xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer = None,
 ) -> None:
     """
-    Check that ``G_param`` and ``xi_param`` have enough sets of parameters for
+    Check that there are enough sets of parameters/curves for ``vs_profile``.
+
+    Either ``G_param`` and ``xi_param`` have enough sets of parameters for
     ``vs_profile``, or ``GGmax_curves`` and ``xi_curves`` have enough sets of
     curves for ``vs_profile``.
 
@@ -43,7 +49,7 @@ def check_layer_count(
     ValueError
         When checks fail
     """
-    max_mat_num = np.max(vs_profile._material_number)
+    max_mat_num = np.max(vs_profile._material_number)  # noqa: SLF001
     if G_param is not None and G_param.n_layer < max_mat_num:
         raise ValueError(
             'Not enough sets of parameters in `G_param` for `vs_profile`.'
@@ -56,10 +62,11 @@ def check_layer_count(
 
     if (
         GGmax_and_damping_curves is not None
-        and GGmax_and_damping_curves.n_layer < max_mat_num  # noqa: W503
+        and GGmax_and_damping_curves.n_layer < max_mat_num
     ):
         raise ValueError(
-            'Not enough sets of curves in `GGmax_and_damping_curves` for `vs_profile`.',
+            'Not enough sets of curves in `GGmax_and_damping_curves` for'
+            ' `vs_profile`.',
         )
 
 
@@ -130,7 +137,7 @@ def linear(
           the shaking process, of each layer. Shape: ``(n_layer, )``.
         - ``max_gt``: Maximum shear strain and shear stress during the shaking
           process, of each layer. Shape: ``(n_layer - 1, )``.
-    """
+    """  # noqa: E501
     hlp.check_Vs_profile_format(vs_profile)
     hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
 
@@ -141,12 +148,12 @@ def linear(
         freq,
         new_profile,
         h,
-        vs,
+        _vs,
         D,
         rho,
-        mat_nr,
+        _mat_nr,
         n_layer,
-        Gmax,
+        _Gmax,
         G,
         t,
         dt,
@@ -221,6 +228,7 @@ def equiv_linear(
         tol: float = 0.075,
         R_gamma: float = 0.65,
         max_iter: int = 10,
+        *,
         verbose: bool = True,
 ) -> tuple[np.ndarray, ...]:
     """
@@ -299,19 +307,19 @@ def equiv_linear(
     Notes
     -----
     Based on the MATLAB function written by Wei Li and Jian Shi.
-    """
+    """  # noqa: E501
     hlp.check_Vs_profile_format(vs_profile)
     hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
     hlp.assert_2D_numpy_array(curve_matrix, name='`curve_matrix`')
 
-    # -------- Part 1.1: Data preparation -- soil profile and input motion -----
+    # -------- Part 1.1: Data preparation -- soil profile and input motion ----
     (
         flag,
         N,
         freq,
         new_profile,
         h,
-        vs,
+        _vs,
         D,
         rho,
         mat_nr,
@@ -323,7 +331,7 @@ def equiv_linear(
         ACCEL_IN,
     ) = _prepare_inputs(vs_profile=vs_profile, input_motion=input_motion)
 
-    # -------- Part 1.2: Data preparation -- modulus/damping curves ------------
+    # -------- Part 1.2: Data preparation -- modulus/damping curves -----------
     n_obs = curve_matrix.shape[0]  # number of strain points in a curve
     strain_G = np.zeros((n_obs, n_layer - 1))
     G_vector = np.zeros((n_obs, n_layer - 1))
@@ -338,7 +346,7 @@ def equiv_linear(
     for k in range(n_layer - 1):  # offset initial damping value
         D_vector[:, k] = D_vector[:, k] - D_vector[0, k] + D[k]
 
-    # -------- Part 2: Start iteration -----------------------------------------
+    # -------- Part 2: Start iteration ----------------------------------------
     # to store G and D of all iterations
     G_matrix = np.zeros((n_layer - 1, max_iter + 1))
     D_matrix = np.zeros((n_layer - 1, max_iter + 1))
@@ -347,7 +355,7 @@ def equiv_linear(
 
     for i_iter in range(max_iter):
         if verbose:
-            print('Iteration No.%d.' % (i_iter + 1), end='')
+            print(f'Iteration No.{i_iter + 1}.', end='')
 
         H, accel_out, veloc, displ, strain, eff_strain = _lin_resp_every_layer(
             dt=dt,
@@ -363,7 +371,7 @@ def equiv_linear(
             R_gamma=R_gamma,
         )
 
-        # ------- Update modulus and damping -----------------------------------
+        # ------- Update modulus and damping ----------------------------------
         G_new = np.zeros(n_layer - 1)
         D_new = np.zeros(n_layer - 1)
         for k in range(n_layer - 1):  # layer by layer
@@ -385,7 +393,7 @@ def equiv_linear(
             #            and eventually to 0.
 
             D_new[k] = np.interp(eff_strain[k], strain_D_, D_vector_)
-        # END FOR
+
         G_relative_diff = np.abs(G[:-1] - G_new) / G_new
         D_relative_diff = np.abs(D[:-1] - D_new) / D_new
         G[:-1] = G_new
@@ -394,14 +402,11 @@ def equiv_linear(
         D_matrix[:, i_iter + 1] = D_new
         if verbose:
             print(
-                '  G_diff = %7.2f%%, D_diff = %7.2f%%'
-                % (
-                    np.max(G_relative_diff) * 100,
-                    np.max(D_relative_diff) * 100,
-                ),
+                f'  G_diff = {np.max(G_relative_diff) * 100:7.2f}%,'
+                f' D_diff = {np.max(D_relative_diff) * 100:7.2f}%',
             )
 
-        # --------- Check convergence ------------------------------------------
+        # --------- Check convergence -----------------------------------------
         if (
             np.max(G_relative_diff) < tol
             and np.max(D_relative_diff) < tol
@@ -409,15 +414,13 @@ def equiv_linear(
         ):
             print('---------- Convergence achieved ---------------')
             break
-        # END IF
-    # END FOR
 
-    # --------- Part 3: Calculate stress from strain ---------------------------
+    # --------- Part 3: Calculate stress from strain --------------------------
     stress, half_N = _calc_stress(
         G=G, D=D, strain=strain, N=N, n_layer=n_layer
     )
 
-    # --------- Part 4: Post-processing ----------------------------------------
+    # --------- Part 4: Post-processing ---------------------------------------
     (
         freq_array,
         tf,
@@ -517,11 +520,10 @@ def _prepare_inputs(
         n += 1
     else:
         flag = 1
-    # END IF
 
     ACCEL_IN = scipy.fftpack.fft(accel_in)
     N = len(ACCEL_IN)
-    assert N == n
+    assert n == N
     assert N % 2 == 1
 
     freq = np.arange(1, N + 1, 1) / (N * dt)  # frequency
@@ -688,7 +690,6 @@ def _lin_resp_every_layer(
         H_ss[:, k] = (A[:, k] + B[:, k]) / A[:, -1]
         H_ss[0, k] = np.real(H_ss[0, k])  # see Note (1) below
         H_append[:, k] = np.conj(np.flipud(H_ss[1:, k]))
-    # END FOR
 
     H = np.vstack((H_ss, H_append))
 
@@ -722,7 +723,7 @@ def _lin_resp_every_layer(
     #           -3.5 - 2.7912i  ------|   |
     #           -3.5 - 7.2678i  ----------|
 
-    # ----- 2: Response motion of each layer -----------------------------------
+    # ----- 2: Response motion of each layer ----------------------------------
     ACCEL_OUT = H * ACCEL_IN.reshape(-1, 1)  # amplify accel. of each layer
     accel_out = np.real(scipy.fftpack.ifft(ACCEL_OUT, axis=0))  # column-wise
     veloc = np.cumsum(accel_out, axis=0) * dt
@@ -735,13 +736,12 @@ def _lin_resp_every_layer(
     )
     displ -= offset
 
-    # ----- 3: Strain time history and effective strain ------------------------
+    # ----- 3: Strain time history and effective strain -----------------------
     strain = np.zeros((N, n_layer - 1))
     eff_strain = np.zeros(n_layer - 1)  # Kramer's book, pages 271-272
     for k in range(n_layer - 1):  # layer by layer
         strain[:, k] = (displ[:, k] - displ[:, k + 1]) / h[k]  # unit: 1
         eff_strain[k] = R_gamma * np.max(np.abs(strain[:, k]))  # unit: 1
-    # END FOR
 
     return H, accel_out, veloc, displ, strain, eff_strain
 

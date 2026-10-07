@@ -1,4 +1,6 @@
 """
+Helper functions for calibrating the HH model parameters.
+
 Hierarchy of subroutines::
 
  hh_param_from_profile
@@ -36,7 +38,7 @@ they are not shown in the documentation page.
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,6 +47,24 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
+
+# Thresholds (in terms of "mu") below which the empirical mu is increased by
+# 3, 2, and 1 times the standard error (0.236, in log10 scale) suggested in
+# the 2011 paper by Vardanega and Bolton
+MU_THRESHOLD_THREE_STD_ERR_BOOST = 0.02
+MU_THRESHOLD_TWO_STD_ERR_BOOST = 0.03
+MU_THRESHOLD_ONE_STD_ERR_BOOST = 0.04
+
+# Below this value of mu, the lower bound of gamma_t is relaxed
+MU_THRESHOLD_RELAXED_GAMMA_T_LB = 0.03
+
+# Layers with Vs at or below this value (m/s) are "softer soils", whose shear
+# strength is calculated as undrained shear strength (otherwise, Mohr-Coulomb)
+UNDRAINED_STRENGTH_VS_LIMIT_M_S = 760
+
+# Vs values (m/s) at or below which the plasticity index is 10 and 5
+PI_10_VS_LIMIT_M_S = 200
+PI_5_VS_LIMIT_M_S = 360
 
 
 def hh_param_from_profile(
@@ -110,7 +130,8 @@ def hh_param_from_profile(
     ValueError
         When ``HH_G_file_dir`` is ``None``
     """
-    phi = 30.0  # friction angle (choose 30 degrees, because there is no better info)
+    # friction angle (choose 30 degrees, because there is no better info)
+    phi = 30.0
 
     hlp.check_Vs_profile_format(vs_profile)
     h = vs_profile[:-1, 0]
@@ -154,7 +175,7 @@ def hh_param_from_profile(
             profile_name = hlp.get_current_time(for_filename=True)
 
         np.savetxt(
-            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            Path(HH_G_file_dir) / f'HH_G_{profile_name}.txt',
             HH_G_param,
             delimiter='\t',
             fmt='%.6g',
@@ -236,7 +257,7 @@ def hh_param_from_curves(
     ------
     ValueError
         When ``HH_G_file_dir`` is ``None``
-    """
+    """  # noqa: E501
     phi = 30.0
 
     hlp.check_Vs_profile_format(vs_profile)
@@ -244,7 +265,7 @@ def hh_param_from_curves(
     Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
     n_layer = len(Vs)
 
-    if vs_profile.shape[1] == 5:  # there can only be 5 or 2 columns
+    if vs_profile.shape[1] == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
         mat = vs_profile[:-1, -1]
         rho = vs_profile[:-1, 3]
     else:  # only 2 columns
@@ -297,7 +318,7 @@ def hh_param_from_curves(
             profile_name = hlp.get_current_time(for_filename=True)
 
         np.savetxt(
-            os.path.join(HH_G_file_dir, 'HH_G_%s.txt' % profile_name),
+            Path(HH_G_file_dir) / f'HH_G_{profile_name}.txt',
             HH_G_param,
             delimiter='\t',
             fmt='%.6g',
@@ -306,7 +327,7 @@ def hh_param_from_curves(
     return HH_G_param
 
 
-def produce_HH_G_param(
+def produce_HH_G_param(  # noqa: C901, PLR0915
         Vs: np.ndarray,
         Gmax: np.ndarray,
         Tmax: np.ndarray,
@@ -316,9 +337,10 @@ def produce_HH_G_param(
         curves: np.ndarray | None = None,
         PI: float | np.ndarray | None = None,
         phi: float | np.ndarray | None = None,
+        *,
         show_fig: bool = False,
         save_fig: bool = False,
-        fig_output_dir: str = None,
+        fig_output_dir: str | None = None,
         verbose: bool = True,
 ) -> np.ndarray:
     """
@@ -371,7 +393,7 @@ def produce_HH_G_param(
     save_fig : bool, default=False
         Whether to save the figures to the hard drive. Only effective if
         ``show_fig`` is set to ``True``.
-    fig_output_dir : str, default=None
+    fig_output_dir : str | None, default=None
         The output directory for the figures. Only effective if ``show_fig``
         and ``save_fig`` are both ``True``.
     verbose : bool, default=True
@@ -392,7 +414,7 @@ def produce_HH_G_param(
     Notes
     -----
     This function is based on ``hybridParaKernel_FKZ.m``.
-    """
+    """  # noqa: E501
     hlp.assert_1D_numpy_array(Vs, '`Vs`')
     n_layer = len(Vs)
 
@@ -406,7 +428,6 @@ def produce_HH_G_param(
 
     if verbose:
         print('========== Start optimizing for HH_G parameters ===========')
-    # END
 
     # ============= MKZ fit ===================================================
     if curves is None:  # user does not provide curves
@@ -415,7 +436,6 @@ def produce_HH_G_param(
                 '------ G/Gmax not provided; will generate MKZ curves using '
                 'Darendeli (2001): ------',
             )
-        # END
 
         strain_ = np.geomspace(1e-4, 10, 400)  # unit: percent
         GGmax, _, gamma_ref = produce_Darendeli_curves(
@@ -459,8 +479,6 @@ def produce_HH_G_param(
                     f'Layer {j}: gamma_ref = {gamma_ref[j]:.3g}, '
                     f's = {s[j]:.3g}, beta = {beta[j]:.3g}',
                 )
-            # END
-        # END
 
     # ========== Stress-strain curve implied by G/Gmax ========================
     sigma = np.zeros_like(GGmax)
@@ -468,28 +486,26 @@ def produce_HH_G_param(
         sigma[0, j] = 0
         for k in range(1, GGmax.shape[0]):
             sigma[k, j] = GGmax[k, j] * Gmax[j] * strain[k, j] / 100.0
-        # END FOR
-    # END FOR
 
     # ========== Estimate mu using empirical correlations =====================
-    p0 = p0 / 1000.0  # unit: Pa --> kPa
+    p0 /= 1000.0  # unit: Pa --> kPa
 
     mu = np.zeros_like(OCR)
     for j in range(n_layer):
         # softer soil: use Vardanega & Bolton (2011) CGJ formula
         mu[j] = 1.0 / (
             0.000872 * Gmax[j] / Tmax[j] * OCR[j] ** 0.47 * p0[j] ** 0.28
-        )  # noqa: E226
+        )
 
         # mu too small --> too low tau_FKZ --> sharply decreasing tau_HH
-        if mu[j] <= 0.02:
-            # 0.236 is the standard error suggested in Vardanega & Bolton (2011)
-            mu[j] = mu[j] * 10.0 ** (0.236 * 3)
-        elif mu[j] <= 0.03:
-            mu[j] = mu[j] * 10.0 ** (0.236 * 2)
-        elif mu[j] <= 0.04:
-            mu[j] = mu[j] * 10.0 ** (0.236 * 1)
-    # END FOR
+        if mu[j] <= MU_THRESHOLD_THREE_STD_ERR_BOOST:
+            # 0.236 is the standard error suggested
+            # in Vardanega & Bolton (2011)
+            mu[j] *= 10.0 ** (0.236 * 3)
+        elif mu[j] <= MU_THRESHOLD_TWO_STD_ERR_BOOST:
+            mu[j] *= 10.0 ** (0.236 * 2)
+        elif mu[j] <= MU_THRESHOLD_ONE_STD_ERR_BOOST:
+            mu[j] *= 10.0 ** (0.236 * 1)
 
     # ========== Start FKZ optimization =======================================
     if verbose:
@@ -603,7 +619,7 @@ def produce_HH_G_param(
             plt.legend(loc='upper left')
 
             title_txt = f'$V_S$ = {Vs[j]:.1f} m/s, '
-            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'  # noqa: ISC003
+            title_txt += r'$G_{\max}$' + f' = {Gmax[j] / 1e6:.3f} MPa,\n'
             title_txt += r'$\tau_{\mathrm{ff}}$ = '
             title_txt += f'{Tmax[j] / 1e3:.3f} kPa, '
             title_txt += r'$\gamma_{\mathrm{ref}}$ = '
@@ -628,7 +644,7 @@ def produce_HH_G_param(
             plt.plot(
                 strain_j,
                 mu[j]
-                / (1 + Gmax[j] / Tmax[j] * mu[j] * np.abs(strain_j / 100.0)),  # noqa: E226
+                / (1 + Gmax[j] / Tmax[j] * mu[j] * np.abs(strain_j / 100.0)),
                 c=muted_green,
                 lw=lw * 1.75,
             )
@@ -638,9 +654,9 @@ def produce_HH_G_param(
             plt.xlabel('Strain [%]')
             plt.xlim(np.min(strain_j), np.max(strain_j))
             plt.title(
-                '$\\mu$ = %.3f, a = %.1f, $\\gamma_{\\mathrm{t}}$ = %.4f%%\n'
-                r"d = %.4f, $p'_{\mathrm{m0}}$ = %.2f kPa"
-                % (mu[j], a, gamma_t * 100, d, p0[j]),
+                f'$\\mu$ = {mu[j]:.3f}, a = {a:.1f},'
+                f' $\\gamma_{{\\mathrm{{t}}}}$ = {gamma_t * 100:.4f}%\n'
+                rf"d = {d:.4f}, $p'_{{\mathrm{{m0}}}}$ = {p0[j]:.2f} kPa",
             )
 
             fig.tight_layout(pad=0.5, h_pad=1.2, w_pad=0.3)
@@ -648,14 +664,11 @@ def produce_HH_G_param(
             if save_fig:
                 if fig_output_dir is None:
                     raise ValueError('Please specify `fig_output_dir`.')
-                # END
+
                 fig.savefig(
-                    os.path.join(
-                        fig_output_dir,
-                        'Stress_GGmax_of_Layer_#%d.png' % (j + 1),
-                    ),
+                    Path(fig_output_dir)
+                    / f'Stress_GGmax_of_Layer_#{j + 1}.png',
                 )
-            # END
 
     return parameters
 
@@ -664,8 +677,8 @@ def _calc_shear_strength(
         Vs: np.ndarray,
         OCR: np.ndarray,
         sigma_v0: np.ndarray,
-        K0: float | int | np.ndarray | None = None,
-        phi: float | int | np.ndarray = 30.0,
+        K0: float | np.ndarray | None = None,
+        phi: float | np.ndarray = 30.0,
 ) -> np.ndarray:
     """
     Calculate shear strength of soils.
@@ -678,11 +691,11 @@ def _calc_shear_strength(
         A 1D array of OCR (over-consolidation ratio) of each layer. Unit: 1.
     sigma_v0 : np.ndarray
         A 1D array of vertical overburden pressure. Unit: Pa.
-    K0 : float | int | np.ndarray | None, default=None
+    K0 : float | np.ndarray | None, default=None
         Lateral soil pressure coefficient. If a single value is given, it is
         assumed to be the value for all layers. If ``None``, it will be
         determined from OCR via an empirical formula by Mayne & Kulhawy (1982).
-    phi : float | int | np.ndarray, default=30.0
+    phi : float | np.ndarray, default=30.0
         Effective internal friction angle of soils (in degrees).
 
     Returns
@@ -690,7 +703,8 @@ def _calc_shear_strength(
     Tmax : np.ndarray
         Shear strength of soils of each layer. Unit: Pa.
     """
-    dyna_coeff = 1.2  # assume a strain rate of 0.01 sec^(-1), from Vardanega & Bolton (2013)
+    # assume a strain rate of 0.01 sec^(-1), from Vardanega & Bolton (2013)
+    dyna_coeff = 1.2
 
     phi = hlp.check_length_or_extend_to_array(phi, len(Vs), name='`phi`')
     if K0 is None:
@@ -701,8 +715,8 @@ def _calc_shear_strength(
     Tmax = np.zeros(len(Vs))
     for j in range(len(Vs)):
         # for softer soils, calculate undrained shear strength
-        if Vs[j] <= 760:
-            # Ladd (1991)
+        if Vs[j] <= UNDRAINED_STRENGTH_VS_LIMIT_M_S:
+            # formula by Ladd (1991)
             Tmax[j] = dyna_coeff * 0.28 * OCR[j] ** 0.8 * sigma_v0[j]
         else:  # stiffer soils: Mohr-Coulomb criterion
             sigma_h0 = K0[j] * sigma_v0[j]  # horizontal stress
@@ -719,8 +733,6 @@ def _calc_shear_strength(
             ) / 2.0 * np.sin(np.deg2rad(phi[j]))
 
             Tmax[j] = dyna_coeff * sigma_n * np.tan(np.deg2rad(phi[j]))
-        # END
-    # END
 
     return Tmax
 
@@ -742,12 +754,12 @@ def _calc_Gmax(Vs: np.ndarray, rho: np.ndarray) -> np.ndarray:
         1D array of initial stiffness. Unit: Pa
     """
     Gmax = rho * Vs**2
-    return Gmax
+    return Gmax  # noqa: RET504
 
 
 def _calc_OCR(
         Vs: np.ndarray,
-        rho: np.ndarray,
+        rho: np.ndarray,  # noqa: ARG001
         sigma_v0: np.ndarray,
         OCR_upper_limit: float | None = None,
 ) -> np.ndarray:
@@ -767,17 +779,17 @@ def _calc_OCR(
 
     Returns
     -------
-    OCR : np.ndarray
+    np.ndarray
         1D array of OCR value, for each soil layer. (Unitless.)
     """
-    # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from seismic piezocone tests"
-    sigma_p0 = 0.106 * Vs**1.47  # noqa: E501,E226
-    sigma_p0 = sigma_p0 * 1000  # kPa --> Pa
+    # Mayne, Robertson, Lunne (1998) "Clay stress history evaluated from
+    # seismic piezocone tests"
+    sigma_p0 = 0.106 * Vs**1.47
+    sigma_p0 *= 1000  # kPa --> Pa
     OCR = sigma_p0 / sigma_v0
-    OCR = np.minimum(
+    return np.minimum(
         OCR, np.inf if OCR_upper_limit is None else OCR_upper_limit
     )
-    return OCR
 
 
 def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
@@ -800,7 +812,7 @@ def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
     n = len(h)
     stress = np.zeros_like(h)
 
-    if np.mean(rho) < 1000:
+    if np.mean(rho) < hlp.MIN_PLAUSIBLE_DENSITY_KG_M3:
         print(
             'Warning in __calc_vertical_stress(): It looks like the unit '
             'of mass density is g/cm^3. The correct unit should be kg/m^3.',
@@ -822,8 +834,10 @@ def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
 
 def _calc_rho(h: np.ndarray, Vs: np.ndarray) -> np.ndarray:
     """
-    Calculate mass density of soils from Vs values, using the empirical formula
-    by Mayne, Schneider & Martin (1999) and Burns & Mayne (1996).
+    Calculate mass density of soils from Vs values.
+
+    Uses the empirical formula by Mayne, Schneider & Martin (1999) and Burns &
+    Mayne (1996).
 
     Parameters
     ----------
@@ -880,9 +894,9 @@ def _calc_PI(Vs: np.ndarray) -> np.ndarray:
     """
     PI = np.zeros_like(Vs)
     for j in range(len(Vs)):
-        if Vs[j] <= 200:
+        if Vs[j] <= PI_10_VS_LIMIT_M_S:
             PI[j] = 10
-        elif Vs[j] <= 360:
+        elif Vs[j] <= PI_5_VS_LIMIT_M_S:
             PI[j] = 5
         else:
             PI[j] = 0
@@ -891,59 +905,61 @@ def _calc_PI(Vs: np.ndarray) -> np.ndarray:
 
 
 def _calc_K0(
-        OCR: float | int | np.ndarray, phi: float | int | np.ndarray = 30.0
+        OCR: float | np.ndarray,
+        phi: float | np.ndarray = 30.0,
 ) -> float | np.ndarray:
     """
-    Calculate K0 (lateral earth pressure coefficient at rest) from OCR using
-    the empirical formula by Mayne & Kulhawy (1982).
+    Calculate K0 (lateral earth pressure coefficient at rest) from OCR.
+
+    Uses the empirical formula by Mayne & Kulhawy (1982).
 
     Parameters
     ----------
-    OCR : float | int | np.ndarray
+    OCR : float | np.ndarray
         Over-consolidation ratio of each layer of soils. If it is a float/int,
         it means only one layer, or all the layers have the same OCR.
-    phi : float | int | np.ndarray, default=30.0
+    phi : float | np.ndarray, default=30.0
         Internal effective friction angle of soils. If it is a float/int, it
         means only one soil layer, or all the layers have the same angle. Unit:
         deg.
 
     Returns
     -------
-    K0 : float | np.ndarray
+    float | np.ndarray
         K0 value(s). If either ``OCR`` or ``phi`` is an array, ``K0`` will be
         an array of the same length.
     """
-    K0 = (1 - np.sin(np.deg2rad(phi))) * OCR ** np.sin(np.deg2rad(phi))
-    return K0
+    return (1 - np.sin(np.deg2rad(phi))) * OCR ** np.sin(np.deg2rad(phi))
 
 
 def produce_Darendeli_curves(
         sigma_v0: np.ndarray,
-        PI: int | float | np.ndarray = 20.0,
-        OCR: int | float | np.ndarray = 1.0,
-        K0: int | float | np.ndarray | None = 0.5,
-        phi: int | float | np.ndarray = 30.0,
+        PI: float | np.ndarray = 20.0,
+        OCR: float | np.ndarray = 1.0,
+        K0: float | np.ndarray | None = 0.5,
+        phi: float | np.ndarray = 30.0,
         strain_in_pct: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Produce G/Gmax and damping curves using empirical correlations by Darendeli
-    (2001).
+    Produce G/Gmax and damping curves.
+
+    Calculated using Darendeli (2001).
 
     Parameters
     ----------
     sigma_v0 : np.ndarray
         Effective vertical confining stress of each layer. Unit: Pa.
-    PI : int | float | np.ndarray, default=20.0
+    PI : float | np.ndarray, default=20.0
         Plasticity index of each layer. Unit: %. If a single value is given, it
         is assumed to be the PI for all layers.
-    OCR : int | float | np.ndarray, default=1.0
+    OCR : float | np.ndarray, default=1.0
         Over-consolidation ratio of each layer. If a single value is given, it
         is assumed to be the value for all layers.
-    K0 : int | float | np.ndarray | None, default=0.5
+    K0 : float | np.ndarray | None, default=0.5
         Lateral soil pressure coefficient. If a single value is given, it is
         assumed to be the value for all layers. If ``None``, it will be
         determined from OCR via an empirical formula by Mayne & Kulhawy (1982).
-    phi : int | float | np.ndarray, default=30.0
+    phi : float | np.ndarray, default=30.0
         Internal effective friction angle of soils. If it is a float/int, it
         means all the layers have the same angle. Unit: deg.
     strain_in_pct : np.ndarray | None, default=None
@@ -1005,7 +1021,7 @@ def produce_Darendeli_curves(
 
     # Confinine stress
     sigma_0 = _calc_mean_confining_stress(sigma_v0, K0)  # octahedral stress
-    sigma_0 = sigma_0 / 101325.0  # unit: Pa --> atm
+    sigma_0 /= 101325.0  # unit: Pa --> atm
     n_strain_pts = len(strain_in_pct)
 
     # Reference strain for each layer (Eq 9.1a). Unit: percent
@@ -1043,7 +1059,8 @@ def produce_Darendeli_curves(
 
 
 def _calc_mean_confining_stress(
-        sigma_v0: np.ndarray, K0: np.ndarray
+        sigma_v0: np.ndarray,
+        K0: np.ndarray,
 ) -> np.ndarray:
     """
     Calculate mean (of three directions) confining stress.
@@ -1061,7 +1078,7 @@ def _calc_mean_confining_stress(
         Mean effective confining stress (of three directions). Unit: Pa.
     """
     sigma_m0 = (2 * K0 + 1) / 3.0 * sigma_v0
-    return sigma_m0
+    return sigma_m0  # noqa: RET504
 
 
 def _optimization_kernel(
@@ -1109,16 +1126,16 @@ def _optimization_kernel(
     Based on optHybFKZ.m
     """
     T_MKZ = mkz.tau_MKZ(x, gamma_ref=x_ref, beta=beta, s=s, Gmax=Gmax)
-    if mu <= 0.03:  # when mu is too small, there may be some numerical issues
-        gamma_t_LB = 0.001  # therefore gamma_t lower bound is relaxed
-    else:
-        gamma_t_LB = 0.01
+    # when mu is too small, there may be some numerical issues, therefore
+    # gamma_t lower bound is relaxed
+    gamma_t_LB = 0.001 if mu <= MU_THRESHOLD_RELAXED_GAMMA_T_LB else 0.01
 
     gamma_t_UB = 3.0  # unit: percent
 
     index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)
     if T_MKZ[index_gamma_t_LB] >= 0.85 * tau_f:
-        gamma_t_LB = 0.005  # for very deep layers, tau_MKZ may be larger than tau_f at gamma_t_LB
+        # for very deep layers, tau_MKZ may be larger than tau_f at gamma_t_LB
+        gamma_t_LB = 0.005
 
     # do it again
     index_gamma_t_LB, _ = hlp.find_closest_index(x, gamma_t_LB / 100.0)
@@ -1167,9 +1184,6 @@ def _optimization_kernel(
             else:
                 d = 1.03
                 gamma_t = 1e-3 / 100.0  # further ralax to 0.001%
-            # END IF
-        # END IF
-    # END IF
 
     a = 100.0  # always use a fast transition
     return a, gamma_t, d
@@ -1185,8 +1199,9 @@ def __find_x_t_and_d(
         T_MKZ: np.ndarray,
 ) -> tuple[float, float]:
     """
-    Find the ``x_t`` (transition strain) that minimizes the "area" between the
-    MKZ stress curve and the FKZ stress curve.
+    Find the ``x_t`` (transition strain) that minimizes the "area".
+
+    The "area" is that between the MKZ stress curve and the FKZ stress curve.
 
     Parameters
     ----------
@@ -1237,6 +1252,7 @@ def __calc_area(
 ) -> np.ndarray:
     r"""
     Calculate the "area" between the MKZ stress curve and the FKZ stress curve.
+
     The MKZ stress curve is supplied as a parameter, and the FKZ stress curve
     is determined by ``x``, ``Gmax``, ``mu``, ``d``, ``tau_f``, and
     ``gamma_t``.
@@ -1273,7 +1289,7 @@ def __calc_area(
         d = range_d[j]
         T_FKZ = hh.tau_FKZ(x, Gmax=Gmax, mu=mu, d=d, Tmax=tau_f)
 
-        # unit: 1
+        # unit: 1 (unitless)  # noqa: ERA001
         range_gamma_t = np.geomspace(gamma_t_LB, gamma_t_UB, 200) / 100.0
 
         # "copt" = cross-over point
@@ -1285,6 +1301,5 @@ def __calc_area(
             area[j] = np.linalg.norm(diff_T) / (copt + 1.0)
         else:
             area[j] = np.inf
-        # END IF
-    # END FOR
+
     return area

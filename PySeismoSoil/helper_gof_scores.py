@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pywt
 import scipy
@@ -27,27 +29,24 @@ def S_(
     score : float | np.ndarray
         The computed score between ``meas`` and ``simu``.
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     eps2 = 1e-12
     if isinstance(meas, (float, np.float64)):
         meas = np.max((meas, np.finfo(np.float64).eps))
         simu = np.max((simu, np.finfo(np.float64).eps))
 
-        if meas < eps2:
-            rela_diff = simu - meas
-        else:
-            rela_diff = (simu - meas) / meas
+        rela_diff = simu - meas if meas < eps2 else (simu - meas) / meas
     else:
         meas[meas < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
         simu[simu < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
@@ -56,14 +55,15 @@ def S_(
         rela_diff[meas < eps2] = simu[meas < eps2] - meas[meas < eps2]
 
     score = scipy.special.erf(rela_diff * 1) * 10
-    return score
+    return score  # noqa: RET504
 
 
-def d_1234(
+def d_1234(  # noqa: PLR0915
         measurement: np.ndarray,
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
+        *,
         baseline: bool = True,
         show_fig: bool = False,
 ) -> tuple[float, float, float, float]:
@@ -101,17 +101,17 @@ def d_1234(
     d4 : float
         Peak energy integral score.
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     filter_order = 4
     q = 15
@@ -299,11 +299,12 @@ def calc_AriasIntensity(
     return Ia, Ia_peak
 
 
-def d_567(
+def d_567(  # noqa: PLR0915
         measurement: np.ndarray,
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
+        *,
         baseline: bool = True,
         show_fig: bool = False,
 ) -> tuple[float, float, float]:
@@ -340,17 +341,17 @@ def d_567(
     d7 : float
         RMS displacement score.
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     filter_order = 4
     q = 15
@@ -521,7 +522,7 @@ def baseline_wavelet(
 
     Returns
     -------
-    y : np.ndarray
+    np.ndarray
         The baseline corrected signal. Also has two columns.
 
     Notes
@@ -537,9 +538,7 @@ def baseline_wavelet(
     mra[-1, :] = np.zeros_like(mra[-1, :])
 
     y = np.sum(mra, axis=0)
-    y = np.column_stack((t, y))
-
-    return y
+    return np.column_stack((t, y))
 
 
 def calc_rms(x: np.ndarray) -> float:
@@ -554,11 +553,10 @@ def calc_rms(x: np.ndarray) -> float:
 
     Returns
     -------
-    rms : float
+    float
         The RMS value of ``x``.
     """
-    rms = np.sqrt(np.mean(x[:, 1] ** 2.0))
-    return rms
+    return np.sqrt(np.mean(x[:, 1] ** 2.0))
 
 
 def getAbsPeak(x: np.ndarray) -> float:
@@ -583,7 +581,7 @@ def getAbsPeak(x: np.ndarray) -> float:
     """
     if x.shape[1] == 1:
         peak = np.max(np.abs(x))
-    elif x.shape[1] == 2:
+    elif x.shape[1] == hlp.NUM_COLUMNS_TWO_COL_DATA:
         peak = np.max(np.abs(x[:, 1]))
     else:
         raise TypeError('Dimension error.')
@@ -591,11 +589,12 @@ def getAbsPeak(x: np.ndarray) -> float:
     return peak
 
 
-def d_89(
+def d_89(  # noqa: PLR0915
         measurement: np.ndarray,
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
+        *,
         baseline: bool = True,
         show_fig: bool = False,
 ) -> tuple[float, float]:
@@ -634,17 +633,17 @@ def d_89(
     ValueError
         If fmin is greater than fmax
 
+    Notes
+    -----
+    - Original Matlab code (c) Jian Shi, 2/17/2015
+    - Ported to Python by Flora Xia, 02/2024
+
     References
     ----------
     1. J. Shi, and D. Asimaki. (2017) "From stiffness to strength: Formulation
        and validation of a hybrid hyperbolic nonlinear soil model for site-
        response analyses." Bulletin of the Seismological Society of America.
        Vol. 107, No. 3, 1336-1355.
-
-    Notes
-    -----
-    - Original Matlab code (c) Jian Shi, 2/17/2015
-    - Ported to Python by Flora Xia, 02/2024
     """
     if baseline:
         measurement = sp.baseline(measurement)
@@ -793,6 +792,7 @@ def d_10(
         simulation: np.ndarray,
         fmin: float | None = None,
         fmax: float | None = None,
+        *,
         baseline: bool = True,
         show_fig: bool = False,
 ) -> float:
@@ -911,8 +911,11 @@ def d_10(
     return d10
 
 
-def upArrow_op(li, j):
-    """Code from: https://github.com/pistonly/modwtpy"""
+def upArrow_op(
+        li: np.ndarray | list[float],
+        j: int,
+) -> np.ndarray | list[int]:
+    """Code from: https://github.com/pistonly/modwtpy."""
     if j == 0:
         return [1]
 
@@ -924,14 +927,14 @@ def upArrow_op(li, j):
     return li_n
 
 
-def period_list(li, N):
-    """Code from: https://github.com/pistonly/modwtpy"""
+def period_list(li: np.ndarray | list[float], N: int) -> np.ndarray:
+    """Code from: https://github.com/pistonly/modwtpy."""
     n = len(li)
 
     # append [0 0 ...]
     n_app = N - np.mod(n, N)
     li = list(li)
-    li = li + [0] * n_app
+    li += [0] * n_app
 
     if len(li) < 2 * N:
         li_result = np.array(li)
@@ -944,17 +947,17 @@ def period_list(li, N):
     return li_result
 
 
-def circular_convolve_mra(h_j_o, w_j):
+def circular_convolve_mra(h_j_o: np.ndarray, w_j: np.ndarray) -> np.ndarray:
     """Calculate the mra D_j. Code from: https://github.com/pistonly/modwtpy"""
     return convolve1d(
         w_j, np.flip(h_j_o), mode='wrap', origin=(len(h_j_o) - 1) // 2
     )
 
 
-def circular_convolve_d(h_t, v_j_1, j):
-    """Code from: https://github.com/pistonly/modwtpy"""
-    N = len(v_j_1)
-    w_j = np.zeros(N)
+def circular_convolve_d(
+        h_t: np.ndarray, v_j_1: np.ndarray, j: int
+) -> np.ndarray:
+    """Code from: https://github.com/pistonly/modwtpy."""
     ker = np.zeros(len(h_t) * 2 ** (j - 1))
 
     # make kernel
@@ -962,10 +965,10 @@ def circular_convolve_d(h_t, v_j_1, j):
         ker[i * 2 ** (j - 1)] = h
 
     w_j = convolve1d(v_j_1, ker, mode='wrap', origin=-len(ker) // 2)
-    return w_j
+    return w_j  # noqa: RET504
 
 
-def modwt(x, filters, level):
+def modwt(x: np.ndarray, filters: str, level: int) -> np.ndarray:
     """
     Code from: https://github.com/pistonly/modwtpy
 
@@ -989,7 +992,7 @@ def modwt(x, filters, level):
     return np.vstack(wavecoeff)
 
 
-def modwtmra(w, filters):
+def modwtmra(w: np.ndarray, filters: str) -> np.ndarray:
     """
     Multiresolution analysis based on MODWT
 
@@ -1002,7 +1005,7 @@ def modwtmra(w, filters):
 
     # D
     level, N = w.shape
-    level = level - 1
+    level -= 1
     D = []
     g_j_part = [1]
     for j in range(level):

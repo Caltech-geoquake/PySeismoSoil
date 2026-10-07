@@ -33,13 +33,28 @@ to have the changes merged.
 
 You can run tests with the `tox` command.
 
-And you can run auto-formatting with the command `pre-commit run -a`. The
-pre-commit hooks include `muff-format` (the code formatter, configured in
-`muff.toml`) and `format-docstring`.
+And you can run auto-formatting and auto-fixing with the command
+`pre-commit run -a`. The pre-commit hooks include `muff-check` (the linter,
+which auto-fixes what it can) and `muff-format` (the code formatter), both
+configured in `muff.toml`, and `format-docstring`. Files in `tests/` are
+excluded from all the hooks.
 
 Docstrings use the NumPy style and are checked with `pydoclint`
-(`tox -e pydoclint`). To check formatting without modifying any files, run
-`tox -e muff-format`.
+(`tox -e pydoclint`). To check linting and formatting without modifying any
+files, run `tox -e muff-check` and `tox -e muff-format`.
+
+Rules that don't fit this library are ignored globally in `muff.toml` (e.g.,
+`N801`/`N806`, because class and variable names follow the domain notation,
+such as `Vs_Profile` and `Gmax`). Please don't silence other rules with inline
+`# noqa` comments unless there is no reasonable fix. In particular:
+
+- Boolean arguments should be keyword-only (put a `*` before them) instead of
+  silencing `FBT001`/`FBT002`
+- Use a named constant for a magic number rather than in-line silencing
+  `PLR2004`, except for special circumstances
+- Wrap long lines (or shorten type annotations with a type alias, since
+  `format-docstring` generates the parameter lines in docstrings from them)
+  instead of silencing `E501`
 
 ## 4. Re-run the example notebooks in every PR
 

@@ -1,12 +1,13 @@
+"""Site response simulation results class."""
+
 from __future__ import annotations
 
-import os
+import pathlib
+from typing import TYPE_CHECKING
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
@@ -14,10 +15,16 @@ from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
 
 class Simulation_Results:
     """
-    Site response simulation results: output ground motion, transfer function,
+    Site response simulation results.
+
+    This includes output ground motion, transfer function, and
     acceleration/velocity/displacement time histories (of every layer).
 
     Parameters
@@ -109,7 +116,7 @@ class Simulation_Results:
     motion_name: str
     output_dir: str
 
-    def __init__(
+    def __init__(  # noqa: PLR0915
             self,
             input_accel: Ground_Motion,
             accel_on_surface: Ground_Motion,
@@ -142,14 +149,16 @@ class Simulation_Results:
 
         if not isinstance(trans_func, (Frequency_Spectrum, type(None))):
             raise TypeError(
-                '`trans_func` needs to be either None or of Frequency_Spectrum type.',
+                '`trans_func` needs to be either None or of'
+                ' Frequency_Spectrum type.',
             )
 
         if not isinstance(
             trans_func_smoothed, (Frequency_Spectrum, type(None))
         ):
             raise TypeError(
-                '`trans_func_smoothed` should be either None or of Frequency_Spectrum type.',
+                '`trans_func_smoothed` should be either None or of'
+                ' Frequency_Spectrum type.',
             )
 
         n_layer = rediscretized_profile.n_layer
@@ -196,10 +205,10 @@ class Simulation_Results:
 
         current_time = hlp.get_current_time(for_filename=True)
         if motion_name is None:
-            motion_name = 'accel_%s' % current_time
+            motion_name = f'accel_{current_time}'
 
         if output_dir is None:
-            output_dir = os.path.join('./', 'sim_%s' % current_time)
+            output_dir = f'./sim_{current_time}'
 
         self.input_accel = input_accel
         self.accel_on_surface = accel_on_surface
@@ -216,18 +225,21 @@ class Simulation_Results:
         self.motion_name = motion_name
         self.output_dir = output_dir
 
-    # fmt: off
-    def plot(
+    def plot(  # noqa: PLR0915
             self,
             dpi: float = 100,
+            *,
             save_fig: bool = False,
             amplif_func_ylog: bool = True,
             output_dir: str | None = None,
-    ) -> tuple[tuple[Figure, Figure | None], tuple[Axes, tuple[Axes | None, ...]]]:
-        # fmt: on
+    ) -> tuple[
+        tuple[Figure, Figure | None], tuple[Axes, tuple[Axes | None, ...]]
+    ]:
         """
-        Plot simulation results: output vs input motions, transfer functions
-        and maximum acceleration, velocity, displacement, strain, and stress
+        Plot simulation results.
+
+        The plots include output vs input motions, transfer functions and
+        maximum acceleration, velocity, displacement, strain, and stress
         profiles.
 
         Parameters
@@ -250,7 +262,7 @@ class Simulation_Results:
         axes : tuple[Axes, tuple[Axes | None, ...]]
             A list of axes objects (or axes lists, if multiple subplots).
         """
-        # -------- Plot output/input motions and transfer functions ------------
+        # -------- Plot output/input motions and transfer functions ----------
         accel_in = self.input_accel.accel
         accel_out = self.accel_on_surface.accel
         if self.trans_func is not None:
@@ -267,7 +279,7 @@ class Simulation_Results:
         else:
             ampl_func_smoothed = None
 
-        fig1, axes1 = sr._plot_site_amp(
+        fig1, axes1 = sr._plot_site_amp(  # noqa: SLF001
             accel_in,
             accel_out,
             freq,
@@ -279,7 +291,7 @@ class Simulation_Results:
         )
         axes1[0].set_ylabel('Accel. [m/s/s]')
 
-        # -------- Plot maximum accel/veloc/displ/strain/stress profiles -------
+        # -------- Plot maximum accel/veloc/displ/strain/stress profiles -----
         if self.max_a_v_d is not None and self.max_strain_stress is not None:
             max_layer_boundary_depth = np.max(self.max_a_v_d[:, 0])
 
@@ -369,16 +381,16 @@ class Simulation_Results:
             if output_dir is None:
                 output_dir = self.output_dir
 
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+            if not pathlib.Path(output_dir).exists():
+                pathlib.Path(output_dir).mkdir(parents=True)
 
-            fn_fig1 = os.path.join(
-                output_dir,
-                '%s_ground_motions.png' % self.motion_name,
+            fn_fig1 = (
+                pathlib.Path(output_dir)
+                / f'{self.motion_name}_ground_motions.png'
             )
-            fn_fig2 = os.path.join(
-                self.output_dir,
-                '%s_max_profiles.png' % self.motion_name,
+            fn_fig2 = (
+                pathlib.Path(self.output_dir)
+                / f'{self.motion_name}_max_profiles.png'
             )
             fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')
             if fig2 is not None:
@@ -388,14 +400,16 @@ class Simulation_Results:
 
     def to_txt(
             self,
+            *,
             save_full_time_history: bool = True,
             verbose: bool = False,
             output_dir: str | None = None,
     ) -> None:
         """
-        Save simulation results (output time history, transfer function, the
-        profile of maximum acceleration/velocity/displacement/stress/train,
-        etc.) as text files to the hard drive.
+        Save simulation results as text files to the hard drive.
+
+        The results include output time history, transfer function, the profile
+        of maximum acceleration/velocity/displacement/stress/train, etc.
 
         Parameters
         ----------
@@ -413,33 +427,24 @@ class Simulation_Results:
         if output_dir is None:
             output_dir = self.output_dir
 
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        if not pathlib.Path(output_dir).exists():
+            pathlib.Path(output_dir).mkdir(parents=True)
 
         od = output_dir  # shorten the variable name
+        od_path = pathlib.Path(od)
         motion_name = self.motion_name
 
-        fn_TF_raw = os.path.join(od, '%s_nonlinear_TF_raw.txt' % motion_name)
-        fn_TF_smoothed = os.path.join(
-            od, '%s_nonlinear_TF_smoothed.txt' % motion_name
-        )
-        fn_surface_accel = os.path.join(
-            od, '%s_accel_on_surface.txt' % motion_name
-        )
-        fn_new_profile = os.path.join(
-            od, '%s_re-discretized_profile.txt' % motion_name
-        )
-        fn_out_a = os.path.join(od, '%s_time_history_accel.txt' % motion_name)
-        fn_out_v = os.path.join(od, '%s_time_history_veloc.txt' % motion_name)
-        fn_out_d = os.path.join(od, '%s_time_history_displ.txt' % motion_name)
-        fn_out_gamma = os.path.join(
-            od, '%s_time_history_strain.txt' % motion_name
-        )
-        fn_out_tau = os.path.join(
-            od, '%s_time_history_stress.txt' % motion_name
-        )
-        fn_max_avd = os.path.join(od, '%s_max_a_v_d.txt' % motion_name)
-        fn_max_gt = os.path.join(od, '%s_max_gamma_tau.txt' % motion_name)
+        fn_TF_raw = od_path / f'{motion_name}_nonlinear_TF_raw.txt'
+        fn_TF_smoothed = od_path / f'{motion_name}_nonlinear_TF_smoothed.txt'
+        fn_surface_accel = od_path / f'{motion_name}_accel_on_surface.txt'
+        fn_new_profile = od_path / f'{motion_name}_re-discretized_profile.txt'
+        fn_out_a = od_path / f'{motion_name}_time_history_accel.txt'
+        fn_out_v = od_path / f'{motion_name}_time_history_veloc.txt'
+        fn_out_d = od_path / f'{motion_name}_time_history_displ.txt'
+        fn_out_gamma = od_path / f'{motion_name}_time_history_strain.txt'
+        fn_out_tau = od_path / f'{motion_name}_time_history_stress.txt'
+        fn_max_avd = od_path / f'{motion_name}_max_a_v_d.txt'
+        fn_max_gt = od_path / f'{motion_name}_max_gamma_tau.txt'
 
         fmt_dict = {'delimiter': '\t', 'fmt': '%.6g'}
 
@@ -481,4 +486,4 @@ class Simulation_Results:
             )
 
         if verbose:
-            print('Simulation results saved to %s' % od)
+            print(f'Simulation results saved to {od}')

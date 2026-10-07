@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_calibration as hhc
 from PySeismoSoil.class_curves import Multiple_GGmax_Curves
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 class HH_Calibration:
@@ -19,7 +22,7 @@ class HH_Calibration:
 
     For more information, refer to the following paper: J. Shi and D. Asimaki
     (2017) "From stiffness to strength: Formulation and validation of a hybrid
-    hyperbolic nonlinear soil model for site‐response analyses." Bulletin of
+    hyperbolic nonlinear soil model for site-response analyses." Bulletin of
     the Seismological Society of America. 107 (3), 1336-1355.
 
     Parameters
@@ -95,6 +98,7 @@ class HH_Calibration:
 
     def fit(
             self,
+            *,
             show_fig: bool = False,
             save_fig: bool = False,
             fig_output_dir: str | None = None,
@@ -155,4 +159,4 @@ class HH_Calibration:
             )
 
         HH_G_param = HH_Param_Multi_Layer(HH_G_param_)
-        return HH_G_param
+        return HH_G_param  # noqa: RET504

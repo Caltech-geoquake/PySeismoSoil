@@ -13,14 +13,14 @@ checks that:
    In other words, the notebook was re-run in the current branch.
 
 The check is skipped on ``main`` itself.
-"""
+"""  # noqa: INP001
 
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import subprocess
+import subprocess  # noqa: S404
 import sys
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path

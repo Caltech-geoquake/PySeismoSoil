@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
 from PySeismoSoil import helper_site_response as sr
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Frequency_Spectrum:
@@ -30,7 +32,7 @@ class Frequency_Spectrum:
         The data can have one column (which contains the spectrum) or two
         columns (0st column: freq; 1st column: spectrum). If only one column is
         supplied, another input parameter ``df`` must also be supplied.
-    df : float, default=None
+    df : float | None, default=None
         Frequency interval. Not necessary if ``data`` has two columns (with the
         0th column being the frequency information). If ``data`` has one
         column, it is assumed that the values in ``data`` correspond to a
@@ -103,7 +105,7 @@ class Frequency_Spectrum:
             self,
             data: str | np.ndarray,
             *,
-            df: float = None,
+            df: float | None = None,
             interpolate: bool = False,
             fmin: float = 0.1,
             fmax: float = 30,
@@ -149,20 +151,18 @@ class Frequency_Spectrum:
         self.iscomplex = np.iscomplex(self.spectrum).any()
 
     def __repr__(self) -> str:
-        text = 'df = %.2f Hz, n_pts = %d, f_min = %.2f Hz, f_max = %.2f Hz' % (
-            self.raw_df,
-            self.n_pts,
-            self.fmin,
-            self.fmax,
+        return (
+            f'df = {self.raw_df:.2f} Hz, n_pts = {int(self.n_pts)},'
+            f' f_min = {self.fmin:.2f} Hz, f_max = {self.fmax:.2f} Hz'
         )
-        return text
 
     def plot(
             self,
             fig: Figure | None = None,
             ax: Axes | None = None,
-            figsize: tuple[float, float] = None,
+            figsize: tuple[float, float] | None = None,
             dpi: float = 100,
+            *,
             logx: bool = True,
             logy: bool = False,
             plot_abs: bool = False,
@@ -177,7 +177,7 @@ class Frequency_Spectrum:
             Figure object. If None, a new figure will be created.
         ax : Axes | None, default=None
             Axes object. If None, a new axes will be created.
-        figsize : tuple[float, float], default=None
+        figsize : tuple[float, float] | None, default=None
             Figure size in inches, as a tuple of two numbers. The figure size
             of ``fig`` (if not ``None``) will override this parameter.
         dpi : float, default=100
@@ -199,7 +199,7 @@ class Frequency_Spectrum:
         ax : Axes
             The axes object being created or being passed into this function.
         """
-        fig, ax = hlp._process_fig_ax_objects(
+        fig, ax = hlp._process_fig_ax_objects(  # noqa: SLF001
             fig, ax, figsize=figsize, dpi=dpi
         )
 
@@ -225,8 +225,8 @@ class Frequency_Spectrum:
     def get_smoothed(
             self,
             win_len: int = 15,
-            show_fig: bool = False,
             *,
+            show_fig: bool = False,
             log_scale: bool,
             **kwargs: dict[Any, Any],
     ) -> tuple[np.ndarray | None, Figure, Axes]:
@@ -292,9 +292,11 @@ class Frequency_Spectrum:
         """
         return sr.find_f0(self.amplitude_2col)
 
-    def get_unwrapped_phase(self, robust: bool = True) -> Frequency_Spectrum:
+    def get_unwrapped_phase(
+            self, *, robust: bool = True
+    ) -> Frequency_Spectrum:
         """
-        Unwrpped the phase component of the spectrum.
+        Unwrap the phase component of the spectrum.
 
         Parameters
         ----------
@@ -305,7 +307,7 @@ class Frequency_Spectrum:
 
         Returns
         -------
-        unwrapped : Frequency_Spectrum
+        Frequency_Spectrum
             A frequency spectrum with unwrapped phase component.
         """
         if robust:
@@ -314,7 +316,4 @@ class Frequency_Spectrum:
             unwrapped_phase = np.unwrap(self.phase)
 
         data_1col = self.amplitude * np.exp(1j * unwrapped_phase)
-        unwrapped = Frequency_Spectrum(
-            data_1col, df=self.raw_df, interpolate=False
-        )
-        return unwrapped
+        return Frequency_Spectrum(data_1col, df=self.raw_df, interpolate=False)

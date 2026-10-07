@@ -1,13 +1,39 @@
+"""Generic helper functions."""
+
 from __future__ import annotations
 
 import platform
 from datetime import datetime
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+AxesProjection = Literal[
+    'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'
+]
+
+NDIM_2D_ARRAY = 2
+NUM_COLUMNS_TWO_COL_DATA = 2
+
+# A Vs profile has either 2 columns (thickness, Vs) or 5 columns (thickness,
+# Vs, damping, density, material number)
+NUM_COLUMNS_THICKNESS_AND_VS = 2
+NUM_COLUMNS_OF_FULL_VS_PROFILE = 5
+
+# If the density of a profile (in kg/m^3) is at or below this value, it is
+# likely to be in a wrong unit (g/cm^3), so a warning is printed
+MIN_PLAUSIBLE_DENSITY_KG_M3 = 1000
+DELTA_UNIFORMITY_REL_TOL = 1e-8
+
+# Status codes returned by ``check_numbers_valid()`` (0 means all valid)
+CHECK_STATUS_NON_NUMERIC = -1
+CHECK_STATUS_NOT_FINITE = -2
+CHECK_STATUS_NEGATIVE = -3
 
 
 def detect_OS() -> str:
@@ -22,7 +48,7 @@ def detect_OS() -> str:
     return platform.system()
 
 
-def get_current_time(for_filename: bool = True) -> str:
+def get_current_time(*, for_filename: bool = True) -> str:
     """
     Get current time as a string (e.g., 2001-01-01 23:59:59).
 
@@ -39,9 +65,9 @@ def get_current_time(for_filename: bool = True) -> str:
         The current time as a string (such as "2001-01-01 23:59:59")
     """
     if for_filename:
-        return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        return datetime.now().astimezone().strftime('%Y-%m-%d_%H-%M-%S')
 
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def find_closest_index(
@@ -49,8 +75,7 @@ def find_closest_index(
         value: float,
 ) -> tuple[int | None, float | None]:
     """
-    Find the index in ``array`` corresponding to the value closest to the given
-    ``value``.
+    Find the index in ``array`` of the value closest to ``value``.
 
     Parameters
     ----------
@@ -92,21 +117,16 @@ def _process_fig_ax_objects(
         ax: Axes | None,
         figsize: tuple[float, float] | None = None,
         dpi: float | None = None,
-        ax_proj: Literal[
-            None,
-            'aitoff',
-            'hammer',
-            'lambert',
-            'mollweide',
-            'polar',
-            'rectilinear',
-        ] = None,
+        ax_proj: AxesProjection | None = None,
+        *,
         bypass_ax_creation: bool = False,
 ) -> tuple[Figure, Axes]:
     """
-    Process figure and axes objects. If ``fig`` and ``ax`` are None, creates
-    new figure and new axes according to ``figsize``, ``dpi``, and ``ax_proj``.
-    Otherwise, uses the passed-in ``fig`` and/or ``ax``.
+    Process figure and axes objects.
+
+    If ``fig`` and ``ax`` are None, creates new figure and new axes according
+    to ``figsize``, ``dpi``, and ``ax_proj``. Otherwise, uses the passed-in
+    ``fig`` and/or ``ax``.
 
     Parameters
     ----------
@@ -120,8 +140,9 @@ def _process_fig_ax_objects(
     dpi : float | None, default=None
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    ax_proj : Literal[None, 'aitoff', 'hammer', 'lambert', 'mollweide', 'polar', 'rectilinear'], default=None
-        The projection type of the axes. The default None results in a
+    ax_proj : AxesProjection | None, default=None
+        The projection type of the axes. One of 'aitoff', 'hammer', 'lambert',
+        'mollweide', 'polar', 'rectilinear'. The default None results in a
         'rectilinear' projection.
     bypass_ax_creation : bool, default=False
         If True, do not create an ``ax`` object if ``ax`` is ``None``
@@ -145,7 +166,7 @@ def _process_fig_ax_objects(
             # create new axes and plot lines on it
             ax = plt.axes(projection=ax_proj)
     else:
-        ax = ax  # plot lines on the provided axes handle
+        ax = ax  # plot lines on the provided axes handle  # noqa: PLW0127
 
     return fig, ax
 
@@ -201,7 +222,9 @@ def read_two_column_stuff(
     else:
         raise TypeError('`data` must be a file name or a numpy array.')
 
-    if data_.ndim == 1 or (data_.ndim == 2 and min(data_.shape) == 1):
+    if data_.ndim == 1 or (
+        data_.ndim == NDIM_2D_ARRAY and min(data_.shape) == 1
+    ):
         if delta is None:
             raise ValueError(
                 '`delta` (such as dt or df) is needed for one-column `data`.',
@@ -209,12 +232,18 @@ def read_two_column_stuff(
 
         n = len(data_)
         col1 = np.linspace(delta, n * delta, num=n)
-        assert np.abs(col1[1] - col1[0] - delta) / delta <= 1e-8
+        assert (
+            np.abs(col1[1] - col1[0] - delta) / delta
+            <= DELTA_UNIFORMITY_REL_TOL
+        )
         data_ = np.column_stack((col1, data_))
-    elif data_.ndim == 2 and data_.shape[1] == 2:  # two columns
+    elif (
+        data_.ndim == NDIM_2D_ARRAY
+        and data_.shape[1] == NUM_COLUMNS_TWO_COL_DATA
+    ):  # two columns
         col1 = data_[:, 0]
         delta = col1[1] - col1[0]
-    elif data_.shape[1] != 2:  # noqa: R506
+    elif data_.shape[1] != NUM_COLUMNS_TWO_COL_DATA:
         raise TypeError(
             'The provided data should be a two-column 2D numpy '
             'array, or a one-column array with a `delta` value.',
@@ -227,7 +256,7 @@ def read_two_column_stuff(
 
 def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     """
-    Assert that ``something`` is a 1D numpy array
+    Assert that ``something`` is a 1D numpy array.
 
     Parameters
     ----------
@@ -244,7 +273,7 @@ def assert_1D_numpy_array(something: Any, name: str | None = None) -> None:
     """
     if not isinstance(something, np.ndarray) or something.ndim != 1:
         name = '`something`' if name is None else name
-        raise TypeError('%s must be a 1D numpy array.' % name)
+        raise TypeError(f'{name} must be a 1D numpy array.')
 
 
 def assert_array_length(
@@ -273,29 +302,30 @@ def assert_array_length(
     assert_1D_numpy_array(something, name=name)
     if len(something) != length:
         raise ValueError(
-            '%s must have length %d, but not %d.'
-            % (name, length, len(something)),
+            f'{name} must have length {length}, but not {len(something)}.',
         )
 
 
 def extend_scalar(
-        scalar: float | int | np.number,
+        scalar: float | np.number,
         length: int,
 ) -> np.ndarray:
     """
-    "Extend" a scalar (float, int, or numpy.number type) into a 1D numpy array
-    whose length is ``length`` and whose elements are all ``scalar``.
+    "Extend" a scalar (float, int, or numpy.number type) into a 1D array.
+
+    The output is a 1D numpy array whose length is ``length`` and whose
+    elements are all ``scalar``.
 
     Parameters
     ----------
-    scalar : float | int | np.number
+    scalar : float | np.number
         A single number.
     length : int
         The length of the desired output.
 
     Returns
     -------
-    array : np.ndarray
+    np.ndarray
         A 1D numpy array with length ``length`` and elements of value
         ``scalar``.
 
@@ -309,8 +339,7 @@ def extend_scalar(
             '`scalar` must be a float, int, or a numpy.number type.'
         )
 
-    array = scalar * np.ones(length)
-    return array
+    return scalar * np.ones(length)
 
 
 def check_length_or_extend_to_array(
@@ -319,9 +348,10 @@ def check_length_or_extend_to_array(
         name: str = '`something`',
 ) -> np.ndarray:
     """
-    Check that ``something`` is a 1D numpy array with length ``length``, or if
-    ``something`` is a single value, extend it to a 1D numpy array whose length
-    is ``length`` and elements are all ``something``.
+    Check that ``something`` is a 1D numpy array with length ``length``.
+
+    If ``something`` is a single value, extend it to a 1D numpy array whose
+    length is ``length`` and elements are all ``something``.
 
     Parameters
     ----------
@@ -365,20 +395,25 @@ def assert_2D_numpy_array(something: Any, name: str | None = None) -> None:
     TypeError
         When ``something`` is not a 2D numpy array
     """
-    if not isinstance(something, np.ndarray) or something.ndim != 2:
+    if (
+        not isinstance(something, np.ndarray)
+        or something.ndim != NDIM_2D_ARRAY
+    ):
         name = '`something`' if name is None else name
-        raise TypeError('%s must be a 2D numpy array.' % name)
+        raise TypeError(f'{name} must be a 2D numpy array.')
 
 
 def check_two_column_format(
         something: Any,
         name: str | None = None,
+        *,
         ensure_non_negative: bool = False,
         at_least_two_columns: bool = False,
 ) -> None:
     """
-    Check that ``something`` is a 2D numpy array with two columns. Raises an
-    error if ``something`` is the wrong format.
+    Check that ``something`` is a 2D numpy array with two columns.
+
+    Raises an error if ``something`` is the wrong format.
 
     Parameters
     ----------
@@ -404,32 +439,37 @@ def check_two_column_format(
         name = '`something`'
 
     if not isinstance(something, np.ndarray):
-        raise TypeError('%s should be a numpy array.' % name)
+        raise TypeError(f'{name} should be a numpy array.')
 
-    if something.ndim != 2:
-        raise TypeError('%s should be a 2D numpy array.' % name)
+    if something.ndim != NDIM_2D_ARRAY:
+        raise TypeError(f'{name} should be a 2D numpy array.')
 
-    if not at_least_two_columns and something.shape[1] != 2:
-        raise TypeError('%s should have two columns.' % name)
+    if (
+        not at_least_two_columns
+        and something.shape[1] != NUM_COLUMNS_TWO_COL_DATA
+    ):
+        raise TypeError(f'{name} should have two columns.')
 
-    if at_least_two_columns and something.shape[1] < 2:
-        raise TypeError('%s should have >= 2 columns.' % name)
+    if at_least_two_columns and something.shape[1] < NUM_COLUMNS_TWO_COL_DATA:
+        raise TypeError(f'{name} should have >= 2 columns.')
 
     check_status = check_numbers_valid(something)
-    if check_status == -1:
-        raise ValueError('%s should only contain numeric elements.' % name)
+    if check_status == CHECK_STATUS_NON_NUMERIC:
+        raise ValueError(f'{name} should only contain numeric elements.')
 
-    if check_status == -2:
-        raise ValueError('%s should contain no NaN values.' % name)
+    if check_status == CHECK_STATUS_NOT_FINITE:
+        raise ValueError(f'{name} should contain no NaN values.')
 
-    if ensure_non_negative and check_status == -3:
-        raise ValueError('%s should have all non-negative values.' % name)
+    if ensure_non_negative and check_status == CHECK_STATUS_NEGATIVE:
+        raise ValueError(f'{name} should have all non-negative values.')
 
 
 def check_Vs_profile_format(data: Any) -> None:
     """
-    Check that ``data`` is in a valid format as a Vs profile (i.e., 2D numpy
-    array, two or five columns, non-negative or positive values, etc.)
+    Check that ``data`` is in a valid format as a Vs profile.
+
+    A valid Vs profile is a 2D numpy array with two or five columns,
+    non-negative or positive values, etc.
 
     Parameters
     ----------
@@ -447,23 +487,31 @@ def check_Vs_profile_format(data: Any) -> None:
         raise TypeError('`data` should be a numpy array.')
 
     check_status = check_numbers_valid(data)
-    if check_status == -1:
+    if check_status == CHECK_STATUS_NON_NUMERIC:
         raise ValueError('`data` should only contain numeric elements.')
 
-    if check_status == -2:
+    if check_status == CHECK_STATUS_NOT_FINITE:
         raise ValueError('`data` should contain no NaN values.')
 
-    if data.ndim != 2:
+    if data.ndim != NDIM_2D_ARRAY:
         raise ValueError('`data` should be a 2D numpy array.')
 
-    if data.shape[1] not in [2, 5]:
-        raise ValueError('`data` should have either 2 or 5 columns.')
+    if data.shape[1] not in {
+        NUM_COLUMNS_THICKNESS_AND_VS,
+        NUM_COLUMNS_OF_FULL_VS_PROFILE,
+    }:
+        raise ValueError(
+            '`data` should have either '
+            f'{NUM_COLUMNS_THICKNESS_AND_VS} or '
+            f'{NUM_COLUMNS_OF_FULL_VS_PROFILE} columns.'
+        )
 
     thk = data[:, 0]
     Vs = data[:, 1]
     if np.any(thk[:-1] <= 0):
         raise ValueError(
-            'The thickness column should be all positive, except for the last layer.',
+            'The thickness column should be all positive, except for the'
+            ' last layer.',
         )
 
     if np.any(thk[-1] < 0):
@@ -472,7 +520,7 @@ def check_Vs_profile_format(data: Any) -> None:
     if np.any(Vs <= 0):
         raise ValueError('The Vs column should be all positive.')
 
-    if data.shape[1] == 5:
+    if data.shape[1] == NUM_COLUMNS_OF_FULL_VS_PROFILE:
         xi = data[:, 2]
         rho = data[:, 3]
         mat = data[:, 4]
@@ -494,14 +542,16 @@ def check_Vs_profile_format(data: Any) -> None:
 
         if np.any(mat[-1] < 0):
             raise ValueError(
-                'The material number of the last layer should be non-negative.',
+                'The material number of the last layer should be'
+                ' non-negative.',
             )
 
 
 def is_int(number: Any) -> bool:
     """
-    Check that a ``number`` represents an integer value. (Its data type does
-    not need to be int or numpy.integer).
+    Check that a ``number`` represents an integer value.
+
+    Its data type does not need to be int or numpy.integer.
 
     Parameters
     ----------
@@ -528,8 +578,9 @@ def is_int(number: Any) -> bool:
 
 def check_numbers_valid(array: np.ndarray) -> int:
     """
-    Check the contents in ``array`` is valid (i.e., are numbers, are not
-    infinite, are positive).
+    Check the contents in ``array`` is valid.
+
+    Valid contents are numbers that are not infinite and are positive.
 
     Parameters
     ----------
@@ -544,13 +595,13 @@ def check_numbers_valid(array: np.ndarray) -> int:
     assert isinstance(array, np.ndarray)
 
     if not np.issubdtype(array.dtype, np.number):
-        return -1
+        return CHECK_STATUS_NON_NUMERIC
 
     if not np.isfinite(array).all():
-        return -2
+        return CHECK_STATUS_NOT_FINITE
 
     if np.any(array < 0):
-        return -3
+        return CHECK_STATUS_NEGATIVE
 
     return 0
 
@@ -561,12 +612,15 @@ def interpolate(
         n_pts: int,
         x_ref: np.ndarray,
         y_ref: np.ndarray,
+        *,
         log_scale: bool = True,
         **kwargs_to_interp: dict[Any, Any],
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Interpolate data (``x_ref`` and ``y_ref``) at x query points defined by
-    ``x_query_min``, ``x_query_max``, and ``n_pts``.
+    Interpolate data (``x_ref`` and ``y_ref``) at x query points.
+
+    The x query points are defined by ``x_query_min``, ``x_query_max``, and
+    ``n_pts``.
 
     Parameters
     ----------
@@ -613,7 +667,7 @@ def interpolate(
 
 def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
-    Calculate the mean squared error between ground truth and prediction.
+    Calculate the mean absolute error between ground truth and prediction.
 
     Parameters
     ----------
@@ -624,21 +678,22 @@ def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
     Returns
     -------
-    mse : float
-        Mean squared error.
+    float
+        Mean absolute error.
     """
     assert_1D_numpy_array(y_true, name='`y_true`')
     assert_1D_numpy_array(y_pred, name='`y_pred`')
-    mae = np.mean(np.abs(y_true - y_pred))
-    return mae
+    return np.mean(np.abs(y_true - y_pred))
 
 
 def extract_from_curve_format(
         curves: np.ndarray,
+        *,
         ensure_non_negative: bool = True,
 ) -> tuple[list[np.ndarray], list[np.ndarray]]:
     """
     Extract G/Gmax and damping curves from a "curve formatted" 2D numpy array.
+
     All G/Gmax curves are organized into a list, and all damping curves are
     organized into another list.
 
@@ -676,11 +731,11 @@ def extract_from_curve_format(
         When the input has unexpected type
     ValueError
         When the input has unexpected value
-    """
+    """  # noqa: E501
     if not isinstance(curves, np.ndarray):
         raise TypeError('`curves` needs to be a numpy array.')
 
-    if curves.ndim != 2:
+    if curves.ndim != NDIM_2D_ARRAY:
         raise TypeError('If `curves` is a numpy array, it needs to be 2D.')
 
     if curves.shape[1] % 4 != 0:
@@ -698,12 +753,12 @@ def extract_from_curve_format(
         damping = curves[:, j * 4 + 2 : j * 4 + 4]
         check_two_column_format(
             GGmax,
-            name='G/Gmax curve for layer #%d' % j,
+            name=f'G/Gmax curve for layer #{j}',
             ensure_non_negative=ensure_non_negative,
         )
         check_two_column_format(
             damping,
-            name='Damping curve for layer #%d' % j,
+            name=f'Damping curve for layer #{j}',
             ensure_non_negative=ensure_non_negative,
         )
         GGmax_curves_list.append(GGmax)
@@ -736,7 +791,7 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
 
     Returns
     -------
-    param_list : list[np.ndarray]
+    list[np.ndarray]
         The parsed parameters for each layer. Each element of ``param_list`` is
         a 1D numpy array with length N, where N is the number of parameters for
         the particular soil constitutive model.
@@ -746,23 +801,21 @@ def extract_from_param_format(params: np.ndarray) -> list[np.ndarray]:
     TypeError
         When the input has invalid types
     """
-    if not isinstance(params, np.ndarray) or params.ndim != 2:
+    if not isinstance(params, np.ndarray) or params.ndim != NDIM_2D_ARRAY:
         raise TypeError('`params` needs to be a 2D numpy array.')
 
     n_layer = params.shape[1]
-    param_list = []
-    for j in range(n_layer):
-        param_list.append(params[:, j])
-
-    return param_list
+    return [params[:, j] for j in range(n_layer)]
 
 
 def merge_curve_matrices(
-        GGmax_matrix: np.ndarray, xi_matrix: np.ndarray
+        GGmax_matrix: np.ndarray,
+        xi_matrix: np.ndarray,
 ) -> np.ndarray:
     """
-    Merge G/Gmax curves matrix and damping curves matrix. Both matrices need to
-    have the following format:
+    Merge G/Gmax curves matrix and damping curves matrix.
+
+    Both matrices need to have the following format:
 
         +------------+--------+------------+-------------+-------------+--------+-----+
         | strain [%] | G/Gmax | strain [%] | damping [%] |  strain [%] | G/Gmax | ... |
@@ -790,21 +843,21 @@ def merge_curve_matrices(
     ------
     ValueError
         When the input has invalid values
-    """
+    """  # noqa: E501
     assert_2D_numpy_array(GGmax_matrix, name='`GGmax_matrix`')
     assert_2D_numpy_array(xi_matrix, name='`xi_matrix`')
     if GGmax_matrix.shape[1] % 4 != 0:
         raise ValueError(
             'The number of columns of `GGmax_matrix` needs '
-            'to be a multiple of 4. However, your '
-            '`GGmax_matrix` has %d columns.' % GGmax_matrix.shape[1],
+            'to be a multiple of 4. However, your'
+            f' `GGmax_matrix` has {GGmax_matrix.shape[1]} columns.',
         )
 
     if xi_matrix.shape[1] % 4 != 0:
         raise ValueError(
             'The number of columns of `xi_matrix` needs '
-            'to be a multiple of 4. However, your '
-            '`xi_matrix` has %d columns.' % xi_matrix.shape[1],
+            'to be a multiple of 4. However, your'
+            f' `xi_matrix` has {xi_matrix.shape[1]} columns.',
         )
 
     if GGmax_matrix.shape[1] != xi_matrix.shape[1]:
@@ -833,5 +886,5 @@ def merge_curve_matrices(
                 xi_matrix[:, k * 4 + 2 : k * 4 + 4],
             ),
         )
-    # END FOR
+
     return merged

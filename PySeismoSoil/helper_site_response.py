@@ -1,18 +1,60 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal
+import itertools
+import math
+import multiprocessing as mp
+import random
+import warnings
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
 from numba import jit
+from scipy.optimize import differential_evolution as diff_evol
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.lines import Line2D
+
+# A single-sided transfer function is given as a tuple of (frequency, TF),
+# where the TF can be either a complex array or a tuple of (amplitude, phase).
+NUM_ITEMS_FREQ_AND_TF_TUPLE = 2
+NUM_ITEMS_AMPLITUDE_AND_PHASE_TUPLE = 2
+
+# A time array needs at least 2 points to define a time step.
+MIN_NUM_POINTS_IN_TIME_ARRAY = 2
+
+# Max allowed deviation among time steps of an "evenly spaced" time array.
+TIME_STEP_UNIFORMITY_TOL_SEC = 1e-7
+
+# Options for ``calc_VsZ()`` when the profile is shallower than Z.
+PROFILE_OPTION_EXTEND_LAST_LAYER = 1
+PROFILE_OPTION_USE_ACTUAL_DEPTH = 2
+
+# Formulas (``formula_type``) for ``get_xi_rho()`` to determine damping.
+XI_FORMULA_VS_STEPS = 1
+XI_FORMULA_TABORDA_BIELAK_2013 = 2
+XI_FORMULA_ARCHULETA_LIU_2004 = 3
+
+# Vs thresholds (unit: m/s) of the stepwise damping rule (formula 1)
+XI_VS_STEPS_LOW_THRESHOLD_M_S = 250
+XI_VS_STEPS_HIGH_THRESHOLD_M_S = 750
+
+# Vs thresholds (unit: m/s) of the Qs rule by Archuleta and Liu (formula 3)
+QS_ARCHULETA_LIU_LOW_VS_THRESHOLD_M_S = 1000
+QS_ARCHULETA_LIU_HIGH_VS_THRESHOLD_M_S = 2000
+
+# Vs thresholds (unit: m/s) of the stepwise soil density rule
+RHO_VS_STEPS_LOW_THRESHOLD_M_S = 200
+RHO_VS_STEPS_HIGH_THRESHOLD_M_S = 800
 
 
 def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
@@ -25,10 +67,10 @@ def calc_z1_from_Vs30(Vs30_in_meter_per_sec: np.ndarray) -> np.ndarray:
     Technology
     """
     z1_in_m = 140.511 * np.exp(-0.00303 * Vs30_in_meter_per_sec)
-    return z1_in_m
+    return z1_in_m  # noqa: RET504
 
 
-def stratify(vs_profile: np.ndarray) -> np.ndarray:
+def stratify(vs_profile: np.ndarray) -> np.ndarray:  # noqa: PLR0915
     """
     Divide layers of a Vs profile as necessary, according to the Vs values of
     each layer: if the layer thickness is more than Vs / 225.0, then divide the
@@ -49,7 +91,7 @@ def stratify(vs_profile: np.ndarray) -> np.ndarray:
 
     h = vs_profile[:, 0]
     Vs = vs_profile[:, 1]
-    if vs_profile.shape[1] > 2:
+    if vs_profile.shape[1] > hlp.NUM_COLUMNS_THICKNESS_AND_VS:
         five_columns = True
         xi = vs_profile[:, 2]
         rho = vs_profile[:, 3]
@@ -158,7 +200,7 @@ def query_Vs_at_depth(
     ValueError
         When there are negative `depth`` values.
     """
-    # ------------- Check input type, input value, etc. ------------------------
+    # ------------- Check input type, input value, etc. -----------------------
     if isinstance(depth, (int, float, np.number)):
         is_scalar = True
         depth = np.array([depth])
@@ -185,7 +227,7 @@ def query_Vs_at_depth(
         name='`vs_profile`',
     )
 
-    # ------------------ Start querying ----------------------------------------
+    # ------------------ Start querying ---------------------------------------
     thk_ref = vs_profile[:, 0]
     vs_ref = vs_profile[:, 1]
     dep_ref = thk2dep(thk_ref, midpoint=False)
@@ -201,6 +243,7 @@ def query_Vs_given_thk(
         vs_profile: np.ndarray,
         thk: float | np.ndarray,
         n_layers: int | None = None,
+        *,
         at_midpoint: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -247,7 +290,8 @@ def query_Vs_given_thk(
     else:  # need to construct an array
         if not isinstance(n_layers, (int, np.integer)):
             raise TypeError(
-                'If `thk` is a scalar, you need to provide `n_layers` as an integer.',
+                'If `thk` is a scalar, you need to provide `n_layers` as an'
+                ' integer.',
             )
 
         if n_layers <= 0:
@@ -311,12 +355,11 @@ def plot_motion(
     if isinstance(accel, str):
         if not title:
             title = accel
-        # END
+
         accel = np.loadtxt(accel)
     elif isinstance(accel, np.ndarray):
         if title is None:
             title = 'Ground motion'
-        # END
     else:
         raise TypeError('"accel" must be a str or a 2-columned numpy array.')
 
@@ -330,14 +373,14 @@ def plot_motion(
 
     v, u = num_int(np.column_stack((t, a)))
 
-    fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
+    fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)  # noqa: SLF001
     fig.subplots_adjust(left=0.2)
     ax.remove()  # remove axes to make room for subplot axes
 
     lw = 1.00
     vl = 'top' if a[pga_index] > 0 else 'bottom'
 
-    if unit not in ['m', 'cm']:
+    if unit not in {'m', 'cm'}:
         raise ValueError('"unit" can only be "m" or "cm".')
 
     accel_unit = 'gal' if unit == 'cm' else unit + '/s/s'
@@ -348,7 +391,7 @@ def plot_motion(
     ax1.plot(t, a, 'b', linewidth=lw)
     ax1.plot(t[pga_index], a[pga_index], 'ro', mfc='none', mew=1)
     t_ = t[int(np.min((pga_index + np.round(np.size(t) / 40.0), np.size(t))))]
-    ax1.text(t_, a[pga_index], 'PGA = %.3g ' % PGA + accel_unit, va=vl)
+    ax1.text(t_, a[pga_index], f'PGA = {PGA:.3g} ' + accel_unit, va=vl)
     ax1.grid(ls=':')
     ax1.set_xlim(np.min(t), np.max(t))
     ax1.set_ylabel('Acceleration [' + accel_unit + ']')
@@ -358,14 +401,14 @@ def plot_motion(
     ax2.plot(t, v[:, 1], 'b', linewidth=lw)
     ax2.grid(ls=':')
     ax2.set_xlim(np.min(t), np.max(t))
-    ax2.set_ylabel('Velocity [%s]' % veloc_unit)
+    ax2.set_ylabel(f'Velocity [{veloc_unit}]')
 
     ax3 = fig.add_subplot(313)
     ax3.plot(t, u[:, 1], 'b', linewidth=lw)
     ax3.set_xlabel('Time [sec]')
     ax3.grid(ls=':')
     ax3.set_xlim(np.min(t), np.max(t))
-    ax3.set_ylabel('Displacement [%s]' % displ_unit)
+    ax3.set_ylabel(f'Displacement [{displ_unit}]')
 
     fig.tight_layout(pad=0.3)
 
@@ -429,7 +472,7 @@ def num_diff(veloc: np.ndarray) -> np.ndarray:
     a = np.append(np.array([0]), a)
     accel = np.column_stack((t, a))
 
-    return accel
+    return accel  # noqa: RET504
 
 
 def find_f0(x: np.ndarray) -> float:
@@ -446,7 +489,7 @@ def find_f0(x: np.ndarray) -> float:
 
     Returns
     -------
-    f0 : float
+    float
         The value in the 0th column of x corresponding to the initial peak
         value in the 1st column of x.
     """
@@ -475,19 +518,18 @@ def find_f0(x: np.ndarray) -> float:
         previous_flag = current_flag
 
     if i == ll - 2:  # if the loop above finishes without breaking
-        i = i + 1
+        i += 1
 
-    f0 = freq[i]
-
-    return f0
+    return freq[i]
 
 
-def response_spectra(
+def response_spectra(  # noqa: PLR0915
         accel: np.ndarray,
         T_min: float = 0.01,
         T_max: float = 10,
         n_pts: int = 60,
         damping: float = 0.05,
+        *,
         show_fig: bool = False,
         parallel: bool = False,
         n_cores: int | None = None,
@@ -539,16 +581,14 @@ def response_spectra(
     ValueError
         When the value of input parameters are incorrect
     """
-    import itertools
-    import multiprocessing as mp
-
     hlp.check_two_column_format(accel, name='`accel`')
 
     t = accel[::subsample_interval, 0]
     a = accel[::subsample_interval, 1]
 
     t_shift = np.roll(t, 1)
-    if not np.all((t - t_shift)[1:] - (t - t_shift)[1] < 1e-7):
+    t_step_deviation = (t - t_shift)[1:] - (t - t_shift)[1]
+    if not np.all(t_step_deviation < TIME_STEP_UNIFORMITY_TOL_SEC):
         raise ValueError('Time array within "accel" must be evenly spaced.')
 
     dt = float(t[1] - t[0])
@@ -569,8 +609,8 @@ def response_spectra(
     # A, B, C, and D in Table 5.2.1, page 169
     A = np.exp(-xi * wn * dt) * (
         xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt)
-    )  # noqa: E226,E501
-    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))  # noqa: E226,E501
+    )
+    B = np.exp(-xi * wn * dt) * (1.0 / wd * np.sin(wd * dt))
     C = (
         1.0
         / wn**2.0
@@ -583,7 +623,7 @@ def response_spectra(
                 - (1 + 2.0 * xi / wn / dt) * np.cos(wd * dt)
             )
         )
-    )  # noqa: E226,E501
+    )
     D = (
         1.0
         / wn**2.0
@@ -596,15 +636,15 @@ def response_spectra(
                 + 2.0 * xi / wn / dt * np.cos(wd * dt)
             )
         )
-    )  # noqa: E226,E501
+    )
 
     # A', B', C', and D' in Table 5.2.1, page 169
     A_ = -np.exp(-xi * wn * dt) * (
         wn / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
-    )  # noqa: E226,E501
+    )
     B_ = np.exp(-xi * wn * dt) * (
         np.cos(wd * dt) - xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt)
-    )  # noqa: E226,E501
+    )
     C_ = (
         1.0
         / wn**2.0
@@ -620,7 +660,7 @@ def response_spectra(
                 + 1.0 / dt * np.cos(wd * dt)
             )
         )
-    )  # noqa: E226,E501
+    )
     D_ = (
         1.0
         / wn**2.0
@@ -630,7 +670,7 @@ def response_spectra(
             - np.exp(-xi * wn * dt)
             * (xi / np.sqrt(1.0 - xi**2.0) * np.sin(wd * dt) + np.cos(wd * dt))
         )
-    )  # noqa: E226,E501
+    )
 
     if parallel:
         p = mp.Pool(n_cores)
@@ -676,7 +716,7 @@ def response_spectra(
             )
 
     # transpose list of tuples
-    utdd_max, ud_max, u_max, PSA, PSV = zip(*result)
+    utdd_max, ud_max, u_max, PSA, PSV = zip(*result, strict=False)
 
     SA = np.array(utdd_max)  # (Total or absolute) spectral acceleration
     SV = np.array(ud_max)  # (Relative) spectral velocity
@@ -718,7 +758,7 @@ def response_spectra(
 @jit(nopython=True, nogil=True)
 def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
     """Step forward in time to calculate velocity, displacements, etc."""
-    i, len_a, A, B, C, D, A_, B_, C_, D_, wn, wd, xi, a = para
+    i, len_a, A, B, C, D, A_, B_, C_, D_, wn, _wd, xi, a = para
 
     u_ = np.zeros(len_a)
     ud_ = np.zeros(len_a)
@@ -728,13 +768,13 @@ def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
             + ud_[j] * B[i]
             + (-1) * a[j] * C[i]
             + (-1) * a[j + 1] * D[i]
-        )  # noqa: E226
+        )
         ud_[j + 1] = (
             u_[j] * A_[i]
             + ud_[j] * B_[i]
             + (-1) * a[j] * C_[i]
             + (-1) * a[j + 1] * D_[i]
-        )  # noqa: E226
+        )
 
     udd_ = -(2.0 * wn[i] * xi * ud_ + wn[i] ** 2.0 * u_ + a)
     utdd_ = udd_ + a
@@ -749,7 +789,8 @@ def _time_stepping(para: tuple[Any, ...]) -> tuple[Any, ...]:
 
 
 def get_xi_rho(
-        Vs: np.ndarray, formula_type: Literal[1, 2, 3] = 3
+        Vs: np.ndarray,
+        formula_type: Literal[1, 2, 3] = 3,
 ) -> tuple[float | np.ndarray, float | np.ndarray]:
     """
     Generate damping (xi) and density (rho) from the given 2-column Vs profile.
@@ -797,15 +838,15 @@ def get_xi_rho(
     Qs = np.zeros(nr)
     rho = np.zeros(nr)
 
-    if formula_type == 1:
+    if formula_type == XI_FORMULA_VS_STEPS:
         for i in range(nr):
-            if Vs[i] < 250:
+            if Vs[i] < XI_VS_STEPS_LOW_THRESHOLD_M_S:
                 xi[i] = 0.05
-            elif Vs[i] < 750:
+            elif Vs[i] < XI_VS_STEPS_HIGH_THRESHOLD_M_S:
                 xi[i] = 0.02
             else:
                 xi[i] = 0.01
-    elif formula_type == 2:
+    elif formula_type == XI_FORMULA_TABORDA_BIELAK_2013:
         Vs_ = Vs / 1000.0  # unit conversion: from m/s to km/s
         Qs = (
             10.5
@@ -815,16 +856,17 @@ def get_xi_rho(
             + 34.7 * Vs_**4.0
             - 5.29 * Vs_**5.0
             + 0.31 * Vs_**6.0
-        )  # noqa: E501, E226
+        )
 
-        # subsitute Qs = 0 (if any) with 0.5 to make sure xi has upper bound 1.0  # noqa: E501, E226
+        # Substitute Qs = 0 (if any) with 0.5 to make sure xi has upper
+        # bound 1.0
         Qs[np.where(Qs == 0)] = 0.5
         xi = 1.0 / (2.0 * Qs)
-    elif formula_type == 3:
+    elif formula_type == XI_FORMULA_ARCHULETA_LIU_2004:
         for i in range(nr):
-            if Vs[i] <= 1000:
+            if Vs[i] <= QS_ARCHULETA_LIU_LOW_VS_THRESHOLD_M_S:
                 Qs[i] = 0.06 * Vs[i]
-            elif Vs[i] <= 2000:
+            elif Vs[i] <= QS_ARCHULETA_LIU_HIGH_VS_THRESHOLD_M_S:
                 Qs[i] = 0.14 * Vs[i]
             else:
                 Qs[i] = 0.16 * Vs[i]
@@ -832,9 +874,9 @@ def get_xi_rho(
         xi = 1.0 / (2.0 * Qs)
 
     for i in range(nr):
-        if Vs[i] < 200:
+        if Vs[i] < RHO_VS_STEPS_LOW_THRESHOLD_M_S:
             rho[i] = 1600
-        elif Vs[i] < 800:
+        elif Vs[i] < RHO_VS_STEPS_HIGH_THRESHOLD_M_S:
             rho[i] = 1800
         else:
             rho[i] = 2000
@@ -846,6 +888,7 @@ def calc_VsZ(
         profile: np.ndarray,
         Z: float,
         option_for_profile_shallower_than_Z: Literal[1, 2] = 1,
+        *,
         verbose: bool = False,
 ) -> float:
     """
@@ -888,14 +931,14 @@ def calc_VsZ(
     cumul_sl = 0.0  # make sure cumul_sl is float
     for i in range(len(thick)):
         if depth[i + 1] < Z:
-            cumul_sl = cumul_sl + sl[i] * thick[i]  # cumulative Vs*thickness
+            cumul_sl += sl[i] * thick[i]  # cumulative Vs*thickness
 
         if depth[i + 1] >= Z:
-            cumul_sl = cumul_sl + sl[i] * (thick[i] - (depth[i + 1] - Z))
+            cumul_sl += sl[i] * (thick[i] - (depth[i + 1] - Z))
             break
 
     # assume last Vs extends to Z m
-    if option_for_profile_shallower_than_Z == 1:
+    if option_for_profile_shallower_than_Z == PROFILE_OPTION_EXTEND_LAST_LAYER:
         if total_thickness < Z:
             if verbose is True:
                 print(
@@ -903,12 +946,13 @@ def calc_VsZ(
                     f'Assume last Vs value goes down to {Z:.2f} m.',
                 )
 
-            cumul_sl = cumul_sl + sl[-1] * (Z - total_thickness)
+            cumul_sl += sl[-1] * (Z - total_thickness)
             VsZ = float(Z) / cumul_sl
         else:
             VsZ = float(Z) / cumul_sl
 
-    if option_for_profile_shallower_than_Z == 2:  # only use actual depth
+    # only use actual depth
+    if option_for_profile_shallower_than_Z == PROFILE_OPTION_USE_ACTUAL_DEPTH:
         VsZ = np.min([total_thickness, Z]) / float(cumul_sl)
 
     return VsZ
@@ -917,6 +961,7 @@ def calc_VsZ(
 def calc_Vs30(
         profile: np.ndarray,
         option_for_profile_shallower_than_30m: Literal[1, 2] = 1,
+        *,
         verbose: bool = False,
 ) -> float:
     """
@@ -938,20 +983,19 @@ def calc_Vs30(
 
     Returns
     -------
-    Vs30 : float
+    float
         Vs30.
 
     Notes
     -----
     Rewritten into Python from MATLAB on 3/4/2017.
     """
-    Vs30 = calc_VsZ(
+    return calc_VsZ(
         profile,
         30.0,
-        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,  # noqa: LN001
+        option_for_profile_shallower_than_Z=option_for_profile_shallower_than_30m,
         verbose=verbose,
     )
-    return Vs30
 
 
 def plot_Vs_profile(
@@ -960,7 +1004,7 @@ def plot_Vs_profile(
         ax: Axes | None = None,
         figsize: tuple[float, float] = (2.6, 3.2),
         dpi: float = 100,
-        title: str = None,
+        title: str | None = None,
         label: str | None = None,
         c: list[float] | str = 'k',
         lw: float = 1.75,
@@ -986,7 +1030,7 @@ def plot_Vs_profile(
     dpi : float, default=100
         Figure resolution. The dpi of ``fig`` (if not ``None``) will override
         this parameter.
-    title : str, default=None
+    title : str | None, default=None
         The title of the figure.
     label : str | None, default=None
         The text label for the legend.
@@ -1011,7 +1055,7 @@ def plot_Vs_profile(
     h_line : Line2D
         The line object.
     """
-    fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)
+    fig, ax = hlp._process_fig_ax_objects(fig, ax, figsize=figsize, dpi=dpi)  # noqa: SLF001
     hlp.check_two_column_format(
         vs_profile,
         at_least_two_columns=True,
@@ -1020,10 +1064,7 @@ def plot_Vs_profile(
 
     thk = vs_profile[:, 0]
     vs = vs_profile[:, 1]
-    if not max_depth:
-        zmax = np.sum(thk) + thk[0]
-    else:
-        zmax = max_depth
+    zmax = max_depth or np.sum(thk) + thk[0]
 
     x, y = _gen_profile_plot_array(thk, vs, zmax)
 
@@ -1052,7 +1093,8 @@ def plot_Vs_profile(
 
 
 def calc_basin_depth(
-        vs_profile: np.ndarray, bedrock_Vs: float = 1000.0
+        vs_profile: np.ndarray,
+        bedrock_Vs: float = 1000.0,
 ) -> float:
     """
     Query the depth of the basin as indicated in ``vs_profile``. The basin is
@@ -1146,7 +1188,7 @@ def _gen_profile_plot_array(
     return x, y
 
 
-def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:
+def thk2dep(thk: np.ndarray, *, midpoint: bool = False) -> np.ndarray:
     """
     Convert a soil layer thickness array into depth array.
 
@@ -1189,6 +1231,7 @@ def thk2dep(thk: np.ndarray, midpoint: bool = False) -> np.ndarray:
 
 def dep2thk(
         depth_array_starting_from_0: np.ndarray,
+        *,
         include_halfspace: bool = True,
 ) -> np.ndarray:
     """
@@ -1233,8 +1276,9 @@ def dep2thk(
     return h[:-1]
 
 
-def linear_tf(
+def linear_tf(  # noqa: PLR0915
         vs_profile: np.ndarray,
+        *,
         show_fig: bool = True,
         freq_resolution: float = 0.05,
         fmax: float = 30.0,
@@ -1377,7 +1421,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_ro,
+            rf'$\mathregular{{f_0}}$ = {f0_ro:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1391,7 +1435,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$ = %.2f Hz' % f0_in,
+            rf'$\mathregular{{f_0}}$ = {f0_in:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1406,7 +1450,7 @@ def linear_tf(
         plt.text(
             0.55,
             0.85,
-            r'$\mathregular{f_0}$= %.2f Hz' % f0_bh,
+            rf'$\mathregular{{f_0}}$= {f0_bh:.2f} Hz',
             transform=ax.transAxes,
             fontweight='bold',
         )
@@ -1478,9 +1522,10 @@ def linear_tf(
     return freq_array, AF_ro, TF_ro, f0_ro, AF_in, TF_in, AF_bh, TF_bh, f0_bh
 
 
-def amplify_motion(
+def amplify_motion(  # noqa: PLR0915
         input_motion: np.ndarray,
         transfer_function_single_sided: tuple[np.ndarray, np.ndarray],
+        *,
         taper: bool = False,
         extrap_tf: bool = True,
         deconv: bool = False,
@@ -1507,8 +1552,8 @@ def amplify_motion(
             (1) A complex-valued transformation, which should be a 1D complex
                 numpy array
             (2) A tuple of (amplitude, phase) which represents the complex
-                numbers. ``amplitude`` and ``phase`` both need to be 1D arrays and
-                real-valued.
+                numbers. ``amplitude`` and ``phase`` both need to be 1D arrays
+                and real-valued.
         The transfer function only needs to be "single-sided" (see note below.)
     taper : bool, default=False
         Whether to taper the input acceleration (using Tukey taper).
@@ -1553,7 +1598,7 @@ def amplify_motion(
     motion at all.
     """
     assert isinstance(transfer_function_single_sided, tuple)
-    assert len(transfer_function_single_sided) == 2
+    assert len(transfer_function_single_sided) == NUM_ITEMS_FREQ_AND_TF_TUPLE
 
     f_array, tf_ss = transfer_function_single_sided
     hlp.assert_1D_numpy_array(f_array, name='`f_array`')
@@ -1564,7 +1609,7 @@ def amplify_motion(
         amp_ss = np.abs(tf_ss)
         phase_ss = robust_unwrap(np.angle(tf_ss))
     elif isinstance(tf_ss, tuple):
-        assert len(tf_ss) == 2
+        assert len(tf_ss) == NUM_ITEMS_AMPLITUDE_AND_PHASE_TUPLE
         amp_ss, phase_ss = tf_ss
         assert amp_ss.ndim == 1
         assert phase_ss.ndim == 1
@@ -1591,7 +1636,8 @@ def amplify_motion(
             f_array = np.append(df, f_array)
             amp_ss = np.append(1.0, amp_ss)
             phase_ss = np.append(0.0, phase_ss)
-    else:  # keep downsampling `input_motion` until f_array covers the freq range
+    else:
+        # keep downsampling `input_motion` until f_array covers the freq range
         while np.max(f_array) < fmax:
             input_motion = input_motion[::2, :]
             if input_motion.shape[0] <= 1:
@@ -1639,18 +1685,12 @@ def amplify_motion(
     tf_ds = np.append(tf_ss, tf_append)  # should have identical length as 'a'
 
     # ------------Fourier spectrum of the input motion-----------------
-    if taper:
-        a_tapered = sig.taper_Tukey(a)
-    else:
-        a_tapered = a
+    a_tapered = sig.taper_Tukey(a) if taper else a
 
     A = scipy.fftpack.fft(a_tapered)
 
     # ------------Multiplication---------------------------------------
-    if not deconv:
-        RESP = A * tf_ds
-    else:
-        RESP = A / tf_ds
+    RESP = A * tf_ds if not deconv else A / tf_ds
 
     # ---------Inverse Fourier transform to get the response time history------
     # truncate imaginary part (very small)
@@ -1685,6 +1725,7 @@ def linear_site_resp(
         soil_profile: np.ndarray | str,
         input_motion: np.ndarray | str,
         boundary: Literal['elastic', 'rigid'] = 'elastic',
+        *,
         show_fig: bool = False,
         deconv: bool = False,
 ) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]:
@@ -1745,7 +1786,7 @@ def linear_site_resp(
 
     (Original version in MATLAB: June 2013. Translated into Python on
     4/5/2018.)
-    """
+    """  # noqa: E501
     if isinstance(soil_profile, str):
         soil_profile = np.genfromtxt(soil_profile)
 
@@ -1781,7 +1822,7 @@ def linear_site_resp(
     return response, transfer_function
 
 
-def _plot_site_amp(
+def _plot_site_amp(  # noqa: PLR0915
         accel_in_2col: np.ndarray,
         accel_out_2col: np.ndarray,
         freq: np.ndarray,
@@ -1791,6 +1832,7 @@ def _plot_site_amp(
         fig: Figure | None = None,
         figsize: tuple[float, float] = (8, 4.5),
         dpi: float = 100,
+        *,
         amplif_func_ylog: bool = True,
         input_accel_label: str = 'Input',
         output_accel_label: str = 'Output',
@@ -1870,7 +1912,7 @@ def _plot_site_amp(
     assert np.allclose(t_in, t_out, atol=1e-4)
     time = t_in
 
-    fig, _ = hlp._process_fig_ax_objects(
+    fig, _ = hlp._process_fig_ax_objects(  # noqa: SLF001
         fig,
         ax=None,
         figsize=figsize,
@@ -1950,6 +1992,7 @@ def _plot_site_amp(
 def compare_two_accel(
         input_accel: np.ndarray,
         output_accel: np.ndarray,
+        *,
         smooth: bool = True,
         input_accel_label: str = 'Input',
         output_accel_label: str = 'Output',
@@ -2015,7 +2058,6 @@ def compare_two_accel(
         amp_func_smoothed = sig.log_smooth(amp_func, lin_space=False)
     else:
         amp_func_smoothed = None
-    # END IF-ELSE
 
     fig, ax = _plot_site_amp(
         a_in_2col,
@@ -2037,9 +2079,14 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     hlp.assert_1D_numpy_array(t1)
     hlp.assert_1D_numpy_array(t2)
 
-    if len(t1) < 2 or len(t2) < 2:
-        raise ValueError('Both time arrays need to have at least 2 elements.')
-    # END IF
+    if (
+        len(t1) < MIN_NUM_POINTS_IN_TIME_ARRAY
+        or len(t2) < MIN_NUM_POINTS_IN_TIME_ARRAY
+    ):
+        raise ValueError(
+            'Both time arrays need to have at least '
+            f'{MIN_NUM_POINTS_IN_TIME_ARRAY} elements.'
+        )
 
     dt1 = t1[1] - t1[0]
     dt2 = t2[1] - t2[0]
@@ -2052,7 +2099,7 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     tmax = dt * n_time  # use the larger end time of the two as the end time
 
     t_output = np.linspace(dt, tmax, num=n_time)
-    return t_output
+    return t_output  # noqa: RET504
 
 
 def _get_freq_interval(
@@ -2100,10 +2147,7 @@ def _get_freq_interval(
     n = len(a)
     df = fs / float(n)  # freq resolution
 
-    if n % 2 == 1:
-        half_n = int(np.ceil(n / 2.0))
-    else:
-        half_n = int(n / 2.0 + 1)
+    half_n = int(np.ceil(n / 2.0)) if n % 2 == 1 else int(n / 2.0 + 1)
 
     fmax = half_n * df
     f_array = np.linspace(df, fmax, num=half_n)
@@ -2112,7 +2156,7 @@ def _get_freq_interval(
 
 
 def robust_unwrap(
-        signal: np.ndarray, discont: float | None = 3.141592653589793
+        signal: np.ndarray, discont: float | None = math.pi
 ) -> np.ndarray:
     """
     Unwrap a phase signal in a robust way.
@@ -2135,13 +2179,13 @@ def robust_unwrap(
     ----------
     signal : np.ndarray
         Input array. Only allows 1D arrays.
-    discont : float | None, default=3.141592653589793
+    discont : float | None, default=math.pi
         Maximum discontinuity between values, default is pi. Refer to the
         documentation of ``numpy.unwrap()``.
 
     Returns
     -------
-    unwrapped : np.ndarray
+    np.ndarray
         Unwrapped array.
 
     Notes
@@ -2163,10 +2207,10 @@ def robust_unwrap(
     n = len(signal)
     signal_ = signal.copy()
 
-    # -------1. Find anomalies (peaks and troughs that are too far apart)-------
+    # ------1. Find anomalies (peaks and troughs that are too far apart)------
     trough = -1  # to store index of trough point
     peak = -1  # to store index of peak point
-    drawer = []  # to keep pairs of (trough, peak) that are 1+ apart in location
+    drawer = []  # to keep pairs of (trough, peak) that are 1+ apart
     flag = 0
     for i in range(1, n):
         if signal[i] <= signal[i - 1]:  # trend is decreasing
@@ -2180,7 +2224,7 @@ def robust_unwrap(
             peak = i
             flag = 1
 
-    # --------2. Move in-between points into (signal[trough], -3.1415927]-------
+    # -------2. Move in-between points into (signal[trough], -3.1415927]------
     for pair in drawer:
         i1, i2 = pair
         length = i2 - i1 - 1
@@ -2189,9 +2233,7 @@ def robust_unwrap(
             steps = float(j - i1)
             signal_[j] = signal_[i1] + steps / length * scale
 
-    unwrapped = np.unwrap(signal_, discont=discont)
-
-    return unwrapped
+    return np.unwrap(signal_, discont=discont)
 
 
 def calc_damping_from_param(
@@ -2214,7 +2256,7 @@ def calc_damping_from_param(
 
     Returns
     -------
-    damping : np.ndarray
+    np.ndarray
         Damping values corresponding to each strain values, in the unit of "1".
 
     Raises
@@ -2228,15 +2270,15 @@ def calc_damping_from_param(
     hlp.assert_1D_numpy_array(strain_in_unit_1)
 
     Tau = func_stress(strain_in_unit_1, **param)
-    damping = calc_damping_from_stress_strain(
+    return calc_damping_from_stress_strain(
         strain_in_unit_1, Tau, param['Gmax']
     )
 
-    return damping
-
 
 def calc_damping_from_stress_strain(
-        strain_in_unit_1: np.ndarray, stress: np.ndarray, Gmax: float
+        strain_in_unit_1: np.ndarray,
+        stress: np.ndarray,
+        Gmax: float,
 ) -> np.ndarray:
     """
     Calculate the damping curve from the given stress-strain curve.
@@ -2253,7 +2295,7 @@ def calc_damping_from_stress_strain(
 
     Returns
     -------
-    damping : np.ndarray
+    np.ndarray
         A 1D numpy array of damping ratios, in the unit of "1".
     """
     strain = strain_in_unit_1
@@ -2274,8 +2316,7 @@ def calc_damping_from_stress_strain(
             2.0 / np.pi * (2 * area[i] / G_Gmax[i] / strain[i] ** 2 - 1)
         )
 
-    damping = np.maximum(damping, 0.0)  # make sure all damping values are >= 0
-    return damping
+    return np.maximum(damping, 0.0)  # make sure all damping values are >= 0
 
 
 def calc_GGmax_from_stress_strain(
@@ -2299,7 +2340,7 @@ def calc_GGmax_from_stress_strain(
 
     Returns
     -------
-    GGmax : np.ndarray
+    np.ndarray
         A 1D numpy array of G/Gmax.
 
     Raises
@@ -2319,9 +2360,7 @@ def calc_GGmax_from_stress_strain(
         Gmax = stress[0] / strain_in_unit_1[0]
 
     G = stress / strain_in_unit_1  # secant modulus
-    GGmax = G / Gmax
-
-    return GGmax
+    return G / Gmax
 
 
 def _plot_damping_curve_fit(
@@ -2361,7 +2400,7 @@ def _plot_damping_curve_fit(
     Axes
         The axes
     """
-    fig, ax = hlp._process_fig_ax_objects(fig, ax)
+    fig, ax = hlp._process_fig_ax_objects(fig, ax)  # noqa: SLF001
 
     init_damping = damping_data_in_pct[0, 1]
     ax.semilogx(
@@ -2395,6 +2434,7 @@ def fit_all_damping_curves(
         curves: np.ndarray | list[np.ndarray],
         func_fit_single_layer: Callable[[Any, ...], Any],
         func_stress: Callable[[Any, ...], Any],
+        *,
         use_scipy: bool = True,
         pop_size: int = 800,
         n_gen: int = 100,
@@ -2412,7 +2452,7 @@ def fit_all_damping_curves(
         save_txt: bool = False,
         txt_filename: str | None = None,
         sep: str = '\t',
-        func_serialize: Callable[[Any, ...], Any] = None,
+        func_serialize: Callable[[Any, ...], Any] | None = None,
 ) -> list[dict[str, float]]:
     r"""
     Perform damping curve fitting for multiple damping curves using the genetic
@@ -2482,7 +2522,7 @@ def fit_all_damping_curves(
         The name of the text file to save the parameters to.
     sep : str, default='\t'
         Delimiter to separate columns of data in the output file.
-    func_serialize : Callable[[Any, ...], Any], default=None
+    func_serialize : Callable[[Any, ...], Any] | None, default=None
         The function to serialize the parameters from a dict into a list. Can
         be hh.serialize_params_to_array or mkz.serialize_params_to_array.
 
@@ -2497,18 +2537,21 @@ def fit_all_damping_curves(
         The type of the input parameter is incorrect
     ValueError
         No function for serialization
-    """
+    """  # noqa: E501
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)
     elif isinstance(curves, list):
         if not all(isinstance(_, np.ndarray) for _ in curves):
-            msg = 'If `curves` is a list, all its elements needs to be 2D numpy arrays.'
+            msg = (
+                'If `curves` is a list, all its elements needs to be 2D'
+                ' numpy arrays.'
+            )
             raise TypeError(msg)
 
         for j, curve in enumerate(curves):
             hlp.check_two_column_format(
                 curve,
-                name='Damping curve for layer #%d' % j,
+                name=f'Damping curve for layer #{j}',
                 ensure_non_negative=True,
             )
 
@@ -2535,10 +2578,7 @@ def fit_all_damping_curves(
     ]
 
     if parallel:
-        import itertools
-        import multiprocessing
-
-        p = multiprocessing.Pool(n_cores)
+        p = mp.Pool(n_cores)
         params = p.map(
             _fit_single_layer_loop,
             itertools.product(curves_list, other_params),
@@ -2570,12 +2610,11 @@ def fit_all_damping_curves(
     if save_txt:
         if func_serialize is None:
             raise ValueError(
-                'Please provide a function to serialize the parameters into a lists.',
+                'Please provide a function to serialize the parameters into a'
+                ' list.',
             )
 
-        data_for_file = []
-        for param in params:
-            data_for_file.append(func_serialize(param))
+        data_for_file = [func_serialize(param) for param in params]
 
         data_for_file__ = np.column_stack(tuple(data_for_file))
         np.savetxt(txt_filename, data_for_file__, fmt='%.6g', delimiter=sep)
@@ -2583,7 +2622,7 @@ def fit_all_damping_curves(
     return params
 
 
-def _fit_single_layer_loop(param):
+def _fit_single_layer_loop(param: tuple[Any, ...]) -> Any:
     """
     Loop body to be passed to the parallel pool.
 
@@ -2607,7 +2646,7 @@ def _fit_single_layer_loop(param):
         verbose,
     ) = other_params
 
-    best_para = func_fit_single_layer(
+    best_param = func_fit_single_layer(
         damping_curve,
         use_scipy=use_scipy,
         n_gen=n_gen,
@@ -2621,7 +2660,7 @@ def _fit_single_layer_loop(param):
         parallel=False,  # no par. within layers
     )
 
-    return best_para
+    return best_param  # noqa: RET504
 
 
 def ga_optimization(
@@ -2630,6 +2669,7 @@ def ga_optimization(
         upper_bound: float,
         loss_function: Callable[[float, ...], float],
         damping_data: np.ndarray,
+        *,
         use_scipy: bool = True,
         pop_size: int = 100,
         n_gen: int = 100,
@@ -2727,13 +2767,11 @@ def ga_optimization(
         loss.
     """
     if suppress_warnings:
-        import warnings  # TODO: enable setting it from methods that calls this function
-
+        # TODO: enable setting it from methods that call this  # noqa: TD003
+        # function
         warnings.filterwarnings('ignore', category=RuntimeWarning)
 
     if use_scipy:
-        from scipy.optimize import differential_evolution as diff_evol
-
         bounds = [(lower_bound, upper_bound)] * n_param
         n_cores = -1 if parallel and n_cores is None else 1
         popsize_multiplier = max(1, pop_size // n_param)
@@ -2750,29 +2788,34 @@ def ga_optimization(
         )
         if verbose:
             status = 'successful' if result.success else 'not successful'
-            print('\nOptimization status: %s.' % status)
+            print(f'\nOptimization status: {status}.')
 
         opt_result = result.x
 
     else:
-        import random
+        # ``deap`` is an optional dependency (it is not installed along
+        # with this package), so it is only imported when this branch runs
+        import deap.algorithms  # noqa: PLC0415
+        import deap.base  # noqa: PLC0415
+        import deap.creator  # noqa: PLC0415
+        import deap.tools  # noqa: PLC0415
 
-        import deap.algorithms
-        import deap.base
-        import deap.creator
-        import deap.tools
-
-        def loss_function__(param):  # because DEAP requires (loss, ) as output
+        def loss_function__(
+                param: Any,
+        ) -> tuple[Any]:  # because DEAP requires (loss, ) as output
             return (loss_function(param, damping_data),)
 
-        def uniform(low, up, size=None):
+        def uniform(
+                low: Any,
+                up: Any,
+                size: int | None = None,
+        ) -> list[float]:
             try:
-                return [random.uniform(a, b) for a, b in zip(low, up)]
+                return list(map(random.uniform, low, up))  # noqa: S311
             except TypeError:
-                return [
-                    random.uniform(a, b)
-                    for a, b in zip([low] * size, [up] * size)
-                ]
+                return list(
+                    map(random.uniform, [low] * size, [up] * size),  # noqa: S311
+                )
 
         LB = lower_bound
         UB = upper_bound

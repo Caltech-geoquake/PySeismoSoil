@@ -1,10 +1,16 @@
+"""Helper functions for the MKZ model."""
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import curve_fit
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
+
+# Number of parameters in the MKZ model: gamma_ref, s, beta, Gmax
+NUM_MKZ_PARAMS = 4
 
 
 def tau_MKZ(
@@ -16,8 +22,10 @@ def tau_MKZ(
         Gmax: float,
 ) -> np.ndarray:
     """
-    Calculate the MKZ shear stress. The MKZ model is proposed in Matasovic and
-    Vucetic (1993), and has the following form::
+    Calculate the MKZ shear stress.
+
+    The MKZ model is proposed in Matasovic and Vucetic (1993), and has the
+    following form::
 
                               Gmax * gamma
         T(gamma) = ---------------------------------------
@@ -28,7 +36,7 @@ def tau_MKZ(
         + gamma     = shear strain
         + Gmax      = initial shear modulus
         + beta      = a shape parameter of the MKZ model
-        + gamma_ref = reference strain, another shape parameter of the MKZ model
+        + gamma_ref = reference strain, another shape parameter of MKZ model
         + s         = another shape parameter of the MKZ model
 
     Parameters
@@ -54,7 +62,7 @@ def tau_MKZ(
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_MKZ = Gmax * gamma / (1 + beta * (np.abs(gamma) / gamma_ref) ** s)
 
-    return T_MKZ
+    return T_MKZ  # noqa: RET504
 
 
 def fit_H4_x_single_layer(
@@ -74,8 +82,9 @@ def fit_H4_x_single_layer(
         n_cores: int | None = None,
 ) -> dict[str, float]:
     """
-    Perform H4_x curve fitting for one damping curve using the genetic
-    algorithm.
+    Perform H4_x curve fitting for one damping curve.
+
+    The genetic algorithm is used for the fitting.
 
     Parameters
     ----------
@@ -170,7 +179,7 @@ def fit_H4_x_single_layer(
     best_param['Gmax'] = 1.0
 
     if show_fig:
-        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_MKZ)
+        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_MKZ)  # noqa: SLF001
 
     return best_param
 
@@ -180,10 +189,11 @@ def damping_misfit(
         damping_data: np.ndarray,
 ) -> float:
     """
-    Calculate the misfit given a set of MKZ parameters. Note that the values in
-    ``param`` are actually the 10-based power of the actual MKZ parameters.
-    Using the powers in the genetic algorithm searching turns out to work much
-    better for this particular problem.
+    Calculate the misfit given a set of MKZ parameters.
+
+    Note that the values in ``param`` are actually the 10-based power of the
+    actual MKZ parameters. Using the powers in the genetic algorithm searching
+    turns out to work much better for this particular problem.
 
     Parameters
     ----------
@@ -195,7 +205,7 @@ def damping_misfit(
 
     Returns
     -------
-    error : float
+    float
         The mean absolute error between the true damping values and the
         predicted damping values at each strain level.
     """
@@ -211,18 +221,18 @@ def damping_misfit(
 
     Tau_MKZ = tau_MKZ(strain, gamma_ref=gamma_ref, beta=beta, s=s, Gmax=Gmax)
     damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_MKZ, Gmax)
-    error = hlp.mean_absolute_error(damping_true, damping_pred)
-
-    return error
+    return hlp.mean_absolute_error(damping_true, damping_pred)
 
 
 def serialize_params_to_array(
         param: dict[str, float],
+        *,
         to_files: bool = False,
 ) -> np.ndarray:
     """
-    Convert the MKZ parameters from a dictionary to an array, according to this
-    order: gamma_ref, s, beta, Gmax
+    Convert the MKZ parameters from a dictionary to an array.
+
+    The order is: gamma_ref, s, beta, Gmax.
 
     Parameters
     ----------
@@ -241,11 +251,9 @@ def serialize_params_to_array(
         A numpy array of shape (9,) containing the parameters of the MKZ model
         in the order specified above.
     """
-    assert len(param) == 4
+    assert len(param) == NUM_MKZ_PARAMS
     order = ['gamma_ref', 's', 'beta', 'Gmax']
-    param_array = []
-    for key in order:
-        param_array.append(param[key])
+    param_array = [param[key] for key in order]
 
     if to_files:
         param_array = [param_array[0], 0.0, param_array[1], param_array[2]]
@@ -255,6 +263,7 @@ def serialize_params_to_array(
 
 def deserialize_array_to_params(
         array: np.ndarray,
+        *,
         from_files: bool = False,
 ) -> dict[str, float]:
     """
@@ -285,7 +294,7 @@ def deserialize_array_to_params(
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 4
+    assert len(array) == NUM_MKZ_PARAMS
 
     if from_files:
         param = {}
@@ -305,6 +314,7 @@ def deserialize_array_to_params(
 
 def fit_MKZ(
         curve_data: np.ndarray,
+        *,
         show_fig: bool = False,
         verbose: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -337,9 +347,7 @@ def fit_MKZ(
     fitted_curves : np.ndarray
         The fitted curves. Shape: (nr, 4 * n_mat), where ``nr`` is the length
         of the strain array. Currently hard-coded as 109.
-    """
-    from scipy.optimize import curve_fit
-
+    """  # noqa: E501
     hlp.assert_2D_numpy_array(curve_data, name='`curve_data`')
 
     nr = 109
@@ -362,16 +370,21 @@ def fit_MKZ(
     GGmax_ = np.zeros((nr, n_ma))
     damping_ = np.zeros((nr, n_ma))
 
-    # -------------- Curve-fitting, layer by layer -----------------------------
-    def func(x, beta, gamma_ref, s):
+    # -------------- Curve-fitting, layer by layer ----------------------------
+    def func(
+            x: np.ndarray,
+            beta: float,
+            gamma_ref: float,
+            s: float,
+    ) -> np.ndarray:
         return 1.0 / (1 + beta * (x / gamma_ref) ** s)
 
     if verbose:
-        print('Fitting MKZ model to G/Gmax data. Total: %d layers.' % n_ma)
+        print(f'Fitting MKZ model to G/Gmax data. Total: {n_ma} layers.')
 
     for j in range(n_ma):
         if verbose:
-            print('  Layer #%d' % j)
+            print(f'  Layer #{j}')
 
         x_data = gamma[:, j]
         y_data = GGmax[:, j]
@@ -388,7 +401,7 @@ def fit_MKZ(
 
     param = np.column_stack((ref_strain, np.zeros(n_ma), s_value, beta))
 
-    # ------------ Calculate the fitted curve ----------------------------------
+    # ------------ Calculate the fitted curve ---------------------------------
     for k in range(n_ma):
         param_k = param[k, :]
         T_MKZ = tau_MKZ(
@@ -401,7 +414,7 @@ def fit_MKZ(
         GGmax_k = sr.calc_GGmax_from_stress_strain(gamma_, T_MKZ, Gmax=1.0)
         GGmax_[:, k] = GGmax_k
 
-    # ------------ Plotting ----------------------------------------------------
+    # ------------ Plotting ---------------------------------------------------
     if show_fig:
         ncol = 4
         nrow = int(np.ceil(n_ma / ncol))
@@ -428,13 +441,13 @@ def fit_MKZ(
             plt.legend(loc='lower left')
             plt.grid(ls=':', lw=0.5)
             plt.title(
-                r'$\gamma_{\mathrm{ref}}$ = %.3g, s = %.3g, $\beta$ = %.3g'
-                % (ref_strain[k], s_value[k], beta[k]),
+                rf'$\gamma_{{\mathrm{{ref}}}}$ = {ref_strain[k]:.3g},'
+                rf' s = {s_value[k]:.3g}, $\beta$ = {beta[k]:.3g}',
             )
-        # END FOR
+
         plt.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
 
-    # ---------- Produce fitting curves ----------------------------------------
+    # ---------- Produce fitting curves ---------------------------------------
     for k in range(n_ma):
         fitted_curves[:, k * 4 + 0] = gamma_ * 100
         fitted_curves[:, k * 4 + 1] = GGmax_[:, k]

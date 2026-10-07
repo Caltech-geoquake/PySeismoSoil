@@ -1,3 +1,5 @@
+"""Helper functions for signal processing."""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -10,10 +12,24 @@ import scipy.signal
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
+# Names of the smoothing windows that ``log_smooth()`` and ``lin_smooth()``
+# can use
+WindowName = Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman']
+
+# Band-pass and band-stop filters need two cut-off frequencies (low and high)
+NUM_CUTOFF_FREQS_BAND_FILTER = 2
+
+# Smoothing windows shorter than this (number of points) have no effect
+MIN_SMOOTHING_WINDOW_LEN = 3
+
+# Minimum length of the work arrays used by ``sine_smooth()``
+SINE_SMOOTH_MIN_BUFFER_LEN = 4497
+
 
 def lowpass(
         orig_signal: np.ndarray,
         cutoff_freq: float,
+        *,
         show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
@@ -55,6 +71,7 @@ def lowpass(
 def highpass(
         orig_signal: np.ndarray,
         cutoff_freq: float,
+        *,
         show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
@@ -96,6 +113,7 @@ def highpass(
 def bandpass(
         orig_signal: np.ndarray,
         cutoff_freq: tuple[float, float],
+        *,
         show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
@@ -137,6 +155,7 @@ def bandpass(
 def bandstop(
         orig_signal: np.ndarray,
         cutoff_freq: tuple[float, float],
+        *,
         show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
@@ -175,37 +194,42 @@ def bandstop(
     )
 
 
-def _filter_kernel(
+def _filter_kernel(  # noqa: C901, PLR0915
         orig_signal: np.ndarray,
         cutoff_freq: float,
         filter_type: str,
+        *,
         show_fig: bool = False,
         filter_order: int = 4,
         padlen: int | None = None,
 ) -> np.ndarray:
-    if filter_type in ['bandpass', 'bandstop']:
+    if filter_type in {'bandpass', 'bandstop'}:
         fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
             raise TypeError(
                 '`cutoff_freq` must be a list, tuple, or numpy array.'
             )
 
-        if len(cutoff_freq) != 2:
-            raise ValueError('`cutoff_freq` must have length 2.')
+        if len(cutoff_freq) != NUM_CUTOFF_FREQS_BAND_FILTER:
+            raise ValueError(
+                '`cutoff_freq` must have length '
+                f'{NUM_CUTOFF_FREQS_BAND_FILTER}.'
+            )
 
         if cutoff_freq[1] <= cutoff_freq[0]:
             raise ValueError(
                 '`cutoff_freq` must be two values from smaller to larger.'
             )
 
-    elif filter_type in ['highpass', 'lowpass']:
+    elif filter_type in {'highpass', 'lowpass'}:
         if not isinstance(cutoff_freq, (float, int, np.number)):
             raise TypeError(
                 '`cutoff_freq` must be float, int, or numpy.number.'
             )
     else:
         raise ValueError(
-            "`filter_type` must be in {'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
+            '`filter_type` must be in'
+            " {'highpass', 'lowpass', 'bandpass', 'bandstop'}.",
         )
 
     hlp.check_two_column_format(orig_signal, name='`orig_signal`')
@@ -332,8 +356,9 @@ def _filter_kernel(
     return np.column_stack((time, y))
 
 
-def baseline(
+def baseline(  # noqa: PLR0915
         orig_signal: np.ndarray,
+        *,
         show_fig: bool = False,
         cutoff_freq: float = 0.20,
 ) -> np.ndarray:
@@ -362,45 +387,34 @@ def baseline(
     dt = time[1] - time[0]
     n0 = len(a)
 
-    # ---------- Remove pre-event mean -----------------------------------------
+    # ---------- Remove pre-event mean ----------------------------------------
     pre_mean = (a[0] + a[1] + a[2] + a[3] + a[4]) / 5.0
-    a = a - pre_mean
+    # not in-place: `a` is a view of the caller's array (and may be int dtype)
+    a = a - pre_mean  # noqa: PLR6104
 
-    # ---------- Obtain first and last zero crossing ---------------------------
+    # ---------- Obtain first and last zero crossing --------------------------
     cross_bound_left = 0
     cross_bound_right = len(a)
 
-    if a[0] >= 0:
-        flag1 = 1
-    else:
-        flag1 = -1
+    flag1 = 1 if a[0] >= 0 else -1
 
     for i in range(1, len(a)):
-        if a[i] >= 0:
-            flag2 = 1
-        else:
-            flag2 = -1
+        flag2 = 1 if a[i] >= 0 else -1
 
         if flag1 * flag2 < 0:
             cross_bound_left = i
             break
 
-    if a[-1] >= 0:
-        glaf1 = 1
-    else:
-        glaf1 = -1
+    glaf1 = 1 if a[-1] >= 0 else -1
 
     for j in range(len(a) - 2, -1, -1):
-        if a[j] >= 0:
-            glaf2 = 1
-        else:
-            glaf2 = -1
+        glaf2 = 1 if a[j] >= 0 else -1
 
         if glaf1 * glaf2 < 0:
             cross_bound_right = j
             break
 
-    # ---------- Pad zeros on both ends ----------------------------------------
+    # ---------- Pad zeros on both ends ---------------------------------------
     a_cut = a[cross_bound_left : cross_bound_right + 1]
 
     filter_order = 2
@@ -412,11 +426,11 @@ def baseline(
     a_cut = np.append(np.zeros(nr_zpad), np.append(a_cut, np.zeros(nr_zpad)))
     t_cut = np.linspace(dt, len(a_cut) * dt, len(a_cut), endpoint=True)
 
-    # ----------- Step 4: High-pass filter -------------------------------------
+    # ----------- Step 4: High-pass filter ------------------------------------
     a_new = highpass(np.column_stack((t_cut, a_cut)), cutoff_freq)
     a_new = a_new[:, 1]
 
-    # ----------- Shift a_new in time to match original signal -----------------
+    # ----------- Shift a_new in time to match original signal ----------------
     a_new = a_new[nr_zpad - cross_bound_left - 1 :]
 
     if len(a_new) >= n0:
@@ -426,14 +440,14 @@ def baseline(
 
     a_new = np.column_stack((time, a_new))
 
-    # ---------- Remove trend (assumed straight light) in displacement ---------
+    # ---------- Remove trend (assumed straight light) in displacement --------
     _, u_new = sr.num_int(a_new)
     u_new2 = _remove_linear_trend(u_new)
 
     v_new2 = sr.num_diff(u_new2)
     a_new2 = sr.num_diff(v_new2)
 
-    # ----------- Show plots ---------------------------------------------------
+    # ----------- Show plots --------------------------------------------------
     if show_fig:
         v, u = sr.num_int(orig_signal)
         v_, u_ = sr.num_int(a_new2)
@@ -584,7 +598,7 @@ def fourier_transform(
 
 def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     """
-    Taper a time-domain signal on both ends with a Tukey window
+    Taper a time-domain signal on both ends with a Tukey window.
 
     Parameters
     ----------
@@ -606,7 +620,7 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     if not isinstance(input_signal, np.ndarray):
         raise TypeError('`input_signal` should be a numpy array.')
 
-    if input_signal.ndim == 2:  # if input_signal has two columns
+    if input_signal.ndim == hlp.NDIM_2D_ARRAY:  # two columns
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
         ll = len(time_array)
@@ -632,9 +646,10 @@ def calc_transfer_function(
         smooth_signal: bool = False,
 ) -> np.ndarray:
     """
-    Calculate transfer function between the output and input time-domain
-    signals. The two signals need to have the same time interval and same
-    length.
+    Calculate transfer function between the output and input signals.
+
+    The signals are in the time domain. The two signals need to have the same
+    time interval and same length.
 
     Parameters
     ----------
@@ -661,10 +676,16 @@ def calc_transfer_function(
     """
     hlp.check_two_column_format(input_signal, name='`input_signal`')
     hlp.check_two_column_format(output_signal, name='`output_signal`')
-    if hlp.check_numbers_valid(input_signal) in [-1, -2]:
+    if hlp.check_numbers_valid(input_signal) in {
+        hlp.CHECK_STATUS_NON_NUMERIC,
+        hlp.CHECK_STATUS_NOT_FINITE,
+    }:
         raise ValueError('`input_signal` contains invalid values.')
 
-    if hlp.check_numbers_valid(output_signal) in [-1, -2]:
+    if hlp.check_numbers_valid(output_signal) in {
+        hlp.CHECK_STATUS_NON_NUMERIC,
+        hlp.CHECK_STATUS_NOT_FINITE,
+    }:
         raise ValueError('`output_signal` contains invalid values.')
 
     dt_in = input_signal[1, 0] - input_signal[0, 0]
@@ -719,17 +740,12 @@ def calc_transfer_function(
 def log_smooth(
         signal: np.ndarray,
         win_len: int = 15,
-        window: Literal[
-            'flat',
-            'hanning',
-            'hamming',
-            'bartlett',
-            'blackman',
-        ] = 'hanning',
+        window: WindowName = 'hanning',
+        *,
         lin_space: bool = True,
         fmin: float | None = None,
         fmax: float | None = None,
-        n_pts: int = None,
+        n_pts: int | None = None,
         fix_ends: bool = True,
         beta1: float = 0.9,
         beta2: float = 0.9,
@@ -743,8 +759,9 @@ def log_smooth(
         The signal to be smoothed. Must be a 1D numpy array.
     win_len : int, default=15
         The length of the convolution window.
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
-        The name of the window.
+    window : WindowName, default='hanning'
+        The name of the window. One of 'flat', 'hanning', 'hamming',
+        'bartlett', 'blackman'.
     lin_space : bool, default=True
         Whether the points of the signal is uniformly spaced linearly. If
         ``False``, the signal is treated as uniformaly spaced logarithmically.
@@ -754,7 +771,7 @@ def log_smooth(
     fmax : float | None, default=None
         Maximum frequency (in Hz) that the signal is spaced within. Only
         effective when ``lin_space`` is ``True``.
-    n_pts : int, default=None
+    n_pts : int | None, default=None
         The number of points of the logarithmically interpolated the signal.
         Only effective when ``lin_space`` is ``True``.
     fix_ends : bool, default=True
@@ -784,12 +801,13 @@ def log_smooth(
     if signal.size < win_len:
         raise ValueError('Input vector needs to be bigger than window size.')
 
-    if win_len < 3:
+    if win_len < MIN_SMOOTHING_WINDOW_LEN:
         return signal
 
-    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+    if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett',"
+            " or 'blackman'",
         )
 
     if lin_space and (fmin is None or fmax is None):
@@ -827,19 +845,13 @@ def log_smooth(
             y[j] = beta2 * y[j + 1] + (1 - beta2) * x[j]
 
     smoothed_signal = y
-    return smoothed_signal
+    return smoothed_signal  # noqa: RET504
 
 
 def lin_smooth(
         x: np.ndarray,
         window_len: int = 15,
-        window: Literal[
-            'flat',
-            'hanning',
-            'hamming',
-            'bartlett',
-            'blackman',
-        ] = 'hanning',
+        window: WindowName = 'hanning',
 ) -> np.ndarray:
     """
     Smooth the data using a window with requested size.
@@ -855,20 +867,19 @@ def lin_smooth(
         The input signal. Should be a 1D numpy array
     window_len : int, default=15
         The dimension of the smoothing window; should be an odd integer
-    window : Literal['flat', 'hanning', 'hamming', 'bartlett', 'blackman'], default='hanning'
-        The type of window. A 'flat' window will produce a moving average
-        smoothing.
+    window : WindowName, default='hanning'
+        The type of window. One of 'flat', 'hanning', 'hamming', 'bartlett',
+        'blackman'. A 'flat' window will produce a moving average smoothing.
 
     Returns
     -------
-    smoothed : np.ndarray
+    np.ndarray
         The smoothed signal (same dimension as ``x``)
 
-    Examples
-    --------
-    >>> t = linspace(-2, 2, 0.1)
-    >>> x = sin(t) + randn(len(t)) * 0.1
-    >>> y = lin_smooth(x)
+    Raises
+    ------
+    ValueError
+        When the input values are not entirely valid
 
     See Also
     --------
@@ -883,10 +894,11 @@ def lin_smooth(
     - TO-DO: The window parameter could be the window itself if an array
       instead of a string
 
-    Raises
-    ------
-    ValueError
-        When the input values are not entirely valid
+    Examples
+    --------
+    >>> t = linspace(-2, 2, 0.1)
+    >>> x = sin(t) + randn(len(t)) * 0.1
+    >>> y = lin_smooth(x)
     """
     if x.ndim != 1:
         raise ValueError('smooth only accepts one-dimensional arrays.')
@@ -894,21 +906,21 @@ def lin_smooth(
     if x.size < window_len:
         raise ValueError('Input vector needs to be bigger than window size.')
 
-    if window_len < 3:
+    if window_len < MIN_SMOOTHING_WINDOW_LEN:
         return x
 
-    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+    if window not in {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}:
         raise ValueError(
-            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett', or 'blackman'",
+            "'Window' should be 'flat', 'hanning', 'hamming', 'bartlett',"
+            " or 'blackman'",
         )
 
     if window == 'flat':  # moving average
         w = np.ones(window_len, 'd')
     else:
-        w = eval('np.' + window + '(window_len)')
+        w = getattr(np, window)(window_len)
 
-    y = np.convolve(w / w.sum(), x, mode='same')
-    return y
+    return np.convolve(w / w.sum(), x, mode='same')
 
 
 def sine_smooth(
@@ -916,7 +928,7 @@ def sine_smooth(
         window_span: float = 0.3,
 ) -> np.ndarray:
     """
-    Smooths a frequency spectrum using a sine-shaped window.
+    Smooth a frequency spectrum using a sine-shaped window.
 
     - data: two column signal, first column is frequency
     - window_span: width of moving window in hz
@@ -953,12 +965,12 @@ def sine_smooth(
     lt = (ll - 1) * 2 + nfold
     le = lt - lmax + 1
 
-    if lt > 4497:
+    if lt > SINE_SMOOTH_MIN_BUFFER_LEN:
         g1 = np.zeros(lt)
         g2 = np.zeros(lt)
     else:
-        g1 = np.zeros(4497)
-        g2 = np.zeros(4497)
+        g1 = np.zeros(SINE_SMOOTH_MIN_BUFFER_LEN)
+        g2 = np.zeros(SINE_SMOOTH_MIN_BUFFER_LEN)
 
     for k in range(nfold):
         g1[ll - 1 + k] = g[k]
@@ -977,8 +989,8 @@ def sine_smooth(
     # (index ll - 1) and the last data point (index ln - 1) back in, by
     # mirroring them about those points
     for lix in range(1, lmax):
-        g2[ll - 1 + lix] = g2[ll - 1 + lix] + g2[ll - 1 - lix]
-        g2[ln - 1 - lix] = g2[ln - 1 - lix] + g2[ln - 1 + lix]
+        g2[ll - 1 + lix] += g2[ll - 1 - lix]
+        g2[ln - 1 - lix] += g2[ln - 1 + lix]
 
     for k in range(nfold):
         g[k] = g2[ll - 1 + k]

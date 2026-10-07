@@ -1,16 +1,19 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
+from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_calibration as hhc
 from PySeismoSoil.class_curves import Damping_Curve, Multiple_Damping_Curves
-from PySeismoSoil.class_parameters import (
-    HH_Param_Multi_Layer,
-    MKZ_Param_Multi_Layer,
-)
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from PySeismoSoil.class_parameters import (
+        HH_Param_Multi_Layer,
+        MKZ_Param_Multi_Layer,
+    )
 
 STRAIN_RANGE_PCT = np.logspace(-3, 1)
 
@@ -30,6 +33,7 @@ class Damping_Calibration:
     def get_damping_curves(
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
+            *,
             use_Darendeli_Dmin: bool = False,
             show_fig: bool = False,
     ) -> Multiple_Damping_Curves:
@@ -60,14 +64,15 @@ class Damping_Calibration:
         n_layer = len(Vs)
 
         # there can only be 5 or 2 columns
-        if self.vs_profile.vs_profile.shape[1] == 5:
+        n_columns = self.vs_profile.vs_profile.shape[1]
+        if n_columns == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             rho = self.vs_profile.vs_profile[:-1, 3]
         else:  # only 2 columns
-            rho = hhc._calc_rho(h, Vs)
+            rho = hhc._calc_rho(h, Vs)  # noqa: SLF001
 
-        sigma_v0 = hhc._calc_vertical_stress(h, rho)
-        OCR = hhc._calc_OCR(Vs, rho, sigma_v0)
-        PI = hhc._calc_PI(Vs)
+        sigma_v0 = hhc._calc_vertical_stress(h, rho)  # noqa: SLF001
+        OCR = hhc._calc_OCR(Vs, rho, sigma_v0)  # noqa: SLF001
+        PI = hhc._calc_PI(Vs)  # noqa: SLF001
         phi = 30
         _, xi, _ = hhc.produce_Darendeli_curves(
             sigma_v0,
@@ -117,15 +122,14 @@ class Damping_Calibration:
 
         Returns
         -------
-        HH_x_param : HH_Param_Multi_Layer
+        HH_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
         mdc = self.get_damping_curves(
             strain_in_pct=np.geomspace(1e-4, 15, 100),
             show_fig=False,
         )
-        HH_x_param = mdc.get_all_HH_x_params(**kwargs)
-        return HH_x_param
+        return mdc.get_all_HH_x_params(**kwargs)
 
     def get_H4_x_param(
             self, **kwargs: dict[Any, Any]
@@ -144,12 +148,11 @@ class Damping_Calibration:
 
         Returns
         -------
-        H4_x_param : MKZ_Param_Multi_Layer
+        MKZ_Param_Multi_Layer
             The best parameters for each soil layer found in the optimization.
         """
         mdc = self.get_damping_curves(
             strain_in_pct=np.geomspace(1e-4, 15, 100),
             show_fig=False,
         )
-        H4_x_param = mdc.get_all_HH_x_params(**kwargs)
-        return H4_x_param
+        return mdc.get_all_HH_x_params(**kwargs)

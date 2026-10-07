@@ -14,7 +14,7 @@ The ``run-notebooks`` tox env sets up the environment that this script needs.
 To run the script directly instead (``python scripts/run_notebooks.py``), it
 needs the packages in ``requirements.dev``, and PySeismoSoil installed in the
 current Python environment (``pip install -e .``).
-"""
+"""  # noqa: INP001
 
 from __future__ import annotations
 

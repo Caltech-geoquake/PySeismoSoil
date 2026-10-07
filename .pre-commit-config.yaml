@@ -20,6 +20,8 @@ repos:
   - repo: https://github.com/jsh9/muff-pre-commit
     rev: 0.15.20
     hooks:
+      - id: muff-check
+        args: [--fix, --config, muff.toml]
       - id: muff-format
         args: [--config, muff.toml]
   - repo: https://github.com/lyz-code/yamlfix
@@ -98,6 +100,8 @@ repos:
         args:
           - --pre-commit-repo
           - https://github.com/jsh9/muff-pre-commit
+          - --tox-env
+          - muff-check
           - --tox-env
           - muff-format
           - --tox-dep

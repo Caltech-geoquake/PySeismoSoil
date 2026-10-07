@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import glob
 import importlib.resources
 import os
+import pathlib
 import shutil
 import stat
-import subprocess
+import subprocess  # noqa: S404
 from typing import Literal
 
 import numpy as np
@@ -25,6 +25,10 @@ from PySeismoSoil.class_parameters import (
 from PySeismoSoil.class_simulation_results import Simulation_Results
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
+# Parameters of the G/Gmax or damping curve model (HH or MKZ) of all soil
+# layers
+HH_Or_MKZ_Param_Multi_Layer = HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
+
 
 class Simulation:
     """
@@ -43,12 +47,16 @@ class Simulation:
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
         back to the soil medium.
-    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None, default=None
-        Parameters that describe the G/Gmax curves.
-    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None, default=None
-        Parameters that describe the damping curves.
+    G_param : HH_Or_MKZ_Param_Multi_Layer | None, default=None
+        Parameters that describe the G/Gmax curves: an ``HH_Param_Multi_Layer``
+        or ``MKZ_Param_Multi_Layer`` object (or ``None``).
+    xi_param : HH_Or_MKZ_Param_Multi_Layer | None, default=None
+        Parameters that describe the damping curves: an
+        ``HH_Param_Multi_Layer`` or ``MKZ_Param_Multi_Layer`` object (or
+        ``None``).
     GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None, default=None
-        G/Gmax and damping curves of every soil layer.
+        G/Gmax and damping curves of every soil layer: a
+        ``Multiple_GGmax_Damping_Curves`` object (or ``None``).
 
     Attributes
     ----------
@@ -58,9 +66,9 @@ class Simulation:
         Same as the input parameter ``input_motion``.
     boundary : Literal['elastic', 'rigid']
         Same as the input parameter ``boundary``.
-    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    G_param : HH_Or_MKZ_Param_Multi_Layer | None
         Same as the input parameter ``G_param``.
-    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    xi_param : HH_Or_MKZ_Param_Multi_Layer | None
         Same as the input parameter ``xi_param``.
     GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None
         Same as the input parameter ``GGmax_and_damping_curves``.
@@ -71,37 +79,36 @@ class Simulation:
         When input arguments have incorrect or incompatible types
     ValueError
         When input arguments have incorrect or invalid values
-    """
+    """  # noqa: E501
 
     soil_profile: Vs_Profile
     input_motion: Ground_Motion
     boundary: Literal['elastic', 'rigid']
-    G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
-    xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    G_param: HH_Or_MKZ_Param_Multi_Layer | None
+    xi_param: HH_Or_MKZ_Param_Multi_Layer | None
     GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None
 
-    # fmt: off
     def __init__(
             self,
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
-            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,
-            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None = None,  # noqa: LN001
-            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves | None = None,  # noqa: LN001
+            G_param: HH_Or_MKZ_Param_Multi_Layer | None = None,
+            xi_param: HH_Or_MKZ_Param_Multi_Layer | None = None,
+            GGmax_and_damping_curves: Multiple_GGmax_Damping_Curves
+            | None = None,
     ) -> None:
-    # fmt: on  # noqa: E115
         if not isinstance(soil_profile, Vs_Profile):
             raise TypeError('`soil_profile` must be of class `Vs_Profile`.')
 
         if not isinstance(input_motion, Ground_Motion):
             raise TypeError('`input_motion` must be of class `Ground_Motion`.')
 
-        if boundary not in ['elastic', 'rigid']:
+        if boundary not in {'elastic', 'rigid'}:
             raise ValueError('`boundary` should be "elastic" or "rigid".')
 
-        if type(G_param) != type(xi_param):  # noqa: E721
+        if type(G_param) is not type(xi_param):
             raise TypeError(
                 '`G_param` and `xi_param` must be of the same type.'
             )
@@ -173,6 +180,7 @@ class Linear_Simulation(Simulation):
 
     def run(
             self,
+            *,
             every_layer: bool = True,
             deconv: bool = False,
             show_fig: bool = False,
@@ -180,7 +188,7 @@ class Linear_Simulation(Simulation):
             motion_name: str | None = None,
             save_txt: bool = False,
             save_full_time_history: bool = False,
-            output_dir: str = None,
+            output_dir: str | None = None,
             verbose: bool = True,
     ) -> Simulation_Results:
         """
@@ -212,7 +220,7 @@ class Linear_Simulation(Simulation):
             histories (i.e., every time step, every depth) of the acceleration,
             velocity, displacement, stress, and strain. Only effective if
             ``every_layer`` is ``True``.
-        output_dir : str, default=None
+        output_dir : str | None, default=None
             Directory for saving the figures and/or result files.
         verbose : bool, default=True
             Whether to show simulation progress.
@@ -264,7 +272,6 @@ class Linear_Simulation(Simulation):
             )
             if show_fig:
                 sim_results.plot(save_fig=save_fig, amplif_func_ylog=False)
-            # END IF
         else:  # `every_layer` is `False`
             response, tf = sr.linear_site_resp(
                 self.soil_profile.vs_profile,
@@ -283,7 +290,6 @@ class Linear_Simulation(Simulation):
 
         if save_txt:
             sim_results.to_txt(save_full_time_history=save_full_time_history)
-        # END IF
 
         if verbose:
             print('done.')
@@ -340,6 +346,7 @@ class Equiv_Linear_Simulation(Simulation):
 
     def run(
             self,
+            *,
             verbose: bool = True,
             show_fig: bool = False,
             save_fig: bool = False,
@@ -447,10 +454,12 @@ class Nonlinear_Simulation(Simulation):
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
         ``boundary`` is set to ``"rigid"``.
-    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
-        Parameters that describe the G/Gmax curves.
-    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
-        Parameters that describe the damping curves.
+    G_param : HH_Or_MKZ_Param_Multi_Layer | None
+        Parameters that describe the G/Gmax curves: an ``HH_Param_Multi_Layer``
+        or ``MKZ_Param_Multi_Layer`` object.
+    xi_param : HH_Or_MKZ_Param_Multi_Layer | None
+        Parameters that describe the damping curves: an
+        ``HH_Param_Multi_Layer`` or ``MKZ_Param_Multi_Layer`` object.
     boundary : Literal['elastic', 'rigid'], default='elastic'
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -462,9 +471,9 @@ class Nonlinear_Simulation(Simulation):
         Same as the input parameter ``soil_profile``.
     input_motion : Ground_Motion
         Same as the input parameter ``input_motion``.
-    G_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    G_param : HH_Or_MKZ_Param_Multi_Layer | None
         Same as the input parameter ``G_param``.
-    xi_param : HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    xi_param : HH_Or_MKZ_Param_Multi_Layer | None
         Same as the input parameter ``xi_param``.
     boundary : Literal['elastic', 'rigid']
         Same as the input parameter ``boundary``.
@@ -477,8 +486,8 @@ class Nonlinear_Simulation(Simulation):
 
     soil_profile: Vs_Profile
     input_motion: Ground_Motion
-    G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
-    xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None
+    G_param: HH_Or_MKZ_Param_Multi_Layer | None
+    xi_param: HH_Or_MKZ_Param_Multi_Layer | None
     boundary: Literal['elastic', 'rigid']
 
     def __init__(
@@ -486,8 +495,8 @@ class Nonlinear_Simulation(Simulation):
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
-            G_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,
-            xi_param: HH_Param_Multi_Layer | MKZ_Param_Multi_Layer | None,
+            G_param: HH_Or_MKZ_Param_Multi_Layer | None,
+            xi_param: HH_Or_MKZ_Param_Multi_Layer | None,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:
         if G_param is None:
@@ -505,10 +514,11 @@ class Nonlinear_Simulation(Simulation):
         )
         sim.check_layer_count(soil_profile, G_param=G_param, xi_param=xi_param)
 
-    def run(
+    def run(  # noqa: C901, PLR0915
             self,
             sim_dir: str | None = None,
             motion_name: str | None = None,
+            *,
             save_txt: bool = False,
             save_full_time_history: bool = True,
             show_fig: bool = False,
@@ -573,19 +583,18 @@ class Nonlinear_Simulation(Simulation):
 
         if sim_dir is None:
             current_time = hlp.get_current_time(for_filename=True)
-            sim_dir = './nonlinear_sim_%s' % current_time
+            sim_dir = f'./nonlinear_sim_{current_time}'
 
-        if os.path.exists(sim_dir):
+        if pathlib.Path(sim_dir).exists():
             sim_dir += '_'
 
-        os.makedirs(sim_dir)
-        os.chmod(
-            sim_dir,
+        pathlib.Path(sim_dir).mkdir(parents=True)
+        pathlib.Path(sim_dir).chmod(
             stat.S_IRWXU
             | stat.S_IRGRP
             | stat.S_IXGRP
             | stat.S_IROTH
-            | stat.S_IXOTH,
+            | stat.S_IXOTH
         )
 
         f_max = 30  # maximum frequency modeled, unit is Hz
@@ -611,7 +620,7 @@ class Nonlinear_Simulation(Simulation):
             ],
         )
 
-        # --------- Re-discretize Vs profile -----------------------------------
+        # --------- Re-discretize Vs profile ----------------------------------
         new_profile = sr.stratify(self.soil_profile.vs_profile)
         new_profile[:, 3] /= 1000.0  # convert to g/cm3 to pass to NLHH
 
@@ -626,7 +635,7 @@ class Nonlinear_Simulation(Simulation):
         t = input_accel[:, 0]
         nt_out = len(t)
 
-        # --------- Create a dummy "curves" for Fortran ------------------------
+        # --------- Create a dummy "curves" for Fortran -----------------------
         mgc, _ = self.G_param.construct_curves(
             strain_in_pct=strain_in_pct, curve_type='ggmax'
         )
@@ -636,7 +645,7 @@ class Nonlinear_Simulation(Simulation):
         mgdc = Multiple_GGmax_Damping_Curves(mgc_and_mdc=(mgc, mdc))
         curves = mgdc.get_curve_matrix()
 
-        # --------- Prepare tabk.dat file --------------------------------------
+        # --------- Prepare tabk.dat file -------------------------------------
         if hlp.detect_OS() == 'Windows':
             exec_ext = 'exe'
         elif hlp.detect_OS() == 'Darwin':
@@ -646,74 +655,60 @@ class Nonlinear_Simulation(Simulation):
         else:
             raise ValueError('Unknown operating system.')
 
-        import PySeismoSoil
-
-        package_path = importlib.resources.files(PySeismoSoil)
+        package_path = importlib.resources.files('PySeismoSoil')
         dir_exec_files = str(package_path / 'exec_files')
-        shutil.copy(
-            os.path.join(dir_exec_files, 'NLHH.%s' % exec_ext), sim_dir
+        sim_path = pathlib.Path(sim_dir)
+        shutil.copy(pathlib.Path(dir_exec_files) / f'NLHH.{exec_ext}', sim_dir)
+        np.savetxt(str(sim_path / 'tabk.dat'), tabk, delimiter='\t')
+
+        # -------- Prepare control.dat file -----------------------------------
+        (sim_path / 'control.dat').write_text(
+            f'{f_max:6.1f} {ppw:6.0f} {n_dt:6.0f} {n_bound:6.0f}'
+            f' {n_layer:6.0f} {nt_out:10.0f} {n_ma:6.0f} {N_spr:6.0f}'
+            f' {N_obs:6.0f}',
+            encoding='utf-8',
         )
-        np.savetxt(os.path.join(sim_dir, 'tabk.dat'), tabk, delimiter='\t')
 
-        # -------- Prepare control.dat file ------------------------------------
-        with open(os.path.join(sim_dir, 'control.dat'), 'w') as fp:
-            fp.write(
-                '%6.1f %6.0f %6.0f %6.0f %6.0f %10.0f %6.0f %6.0f %6.0f'
-                % (
-                    f_max,
-                    ppw,
-                    n_dt,
-                    n_bound,
-                    n_layer,
-                    nt_out,
-                    n_ma,
-                    N_spr,
-                    N_obs,
-                ),
-            )
-
-        # -------- Write data to files for the Fortran kernel to read ----------
-        np.savetxt(os.path.join(sim_dir, 'profile.dat'), new_profile)
-        np.savetxt(os.path.join(sim_dir, 'incident.dat'), input_accel)
-        np.savetxt(os.path.join(sim_dir, 'curve.dat'), curves)
+        # -------- Write data to files for the Fortran kernel to read ---------
+        np.savetxt(str(sim_path / 'profile.dat'), new_profile)
+        np.savetxt(str(sim_path / 'incident.dat'), input_accel)
+        np.savetxt(str(sim_path / 'curve.dat'), curves)
         np.savetxt(
-            os.path.join(sim_dir, 'HH_G.dat'),
+            str(sim_path / 'HH_G.dat'),
             self.G_param.serialize_to_2D_array(),
         )
         np.savetxt(
-            os.path.join(sim_dir, 'HH_x.dat'),
+            str(sim_path / 'HH_x.dat'),
             self.xi_param.serialize_to_2D_array(),
         )
 
-        # ------- Execute Fortran kernel ---------------------------------------
-        cwd = os.getcwd()
+        # ------- Execute Fortran kernel --------------------------------------
+        cwd = pathlib.Path.cwd()
         os.chdir(sim_dir)
         if hlp.detect_OS() == 'Windows':
-            subprocess.run('NLHH.exe')
+            subprocess.run('NLHH.exe', check=False)  # noqa: S607
         elif hlp.detect_OS() == 'Darwin':
-            current_status = os.stat('NLHH.mac').st_mode
-            os.chmod(
-                'NLHH.mac',
-                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+            current_status = pathlib.Path('NLHH.mac').stat().st_mode
+            pathlib.Path('NLHH.mac').chmod(
+                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
             )
-            subprocess.run('./NLHH.mac', stdout=True)
+            subprocess.run('./NLHH.mac', stdout=True, check=False)
         elif hlp.detect_OS() == 'Linux':
-            current_status = os.stat('NLHH.unix').st_mode
-            os.chmod(
-                'NLHH.unix',
-                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+            current_status = pathlib.Path('NLHH.unix').stat().st_mode
+            pathlib.Path('NLHH.unix').chmod(
+                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
             )
             if verbose:
-                subprocess.run('./NLHH.unix', stdout=True)
+                subprocess.run('./NLHH.unix', stdout=True, check=False)
             else:
-                subprocess.run('./NLHH.unix', capture_output=True)
+                subprocess.run('./NLHH.unix', capture_output=True, check=False)
         else:
             raise ValueError('Unknown operating system.')
 
         if verbose:
             print('Simulation finished. Now post processing.')
 
-        # ------------ Post-process files --------------------------------------
+        # ------------ Post-process files -------------------------------------
         layer_boundary_depth = np.genfromtxt('node_depth.dat').T
         layer_midpoint_depth = np.genfromtxt('layer_depth.dat').T
         out_a = np.genfromtxt('out_a.dat')
@@ -722,16 +717,16 @@ class Nonlinear_Simulation(Simulation):
         out_gamma = np.genfromtxt('out_gamma.dat')
         out_tau = np.genfromtxt('out_tau.dat')
 
-        dat_files = glob.glob('*.dat')
+        dat_files = pathlib.Path().glob('*.dat')
         for dat_file in dat_files:
-            os.remove(dat_file)
+            pathlib.Path(dat_file).unlink()
 
         if hlp.detect_OS() == 'Windows':
-            os.remove('NLHH.exe')
+            pathlib.Path('NLHH.exe').unlink()
         elif hlp.detect_OS() == 'Darwin':
-            os.remove('NLHH.mac')
+            pathlib.Path('NLHH.mac').unlink()
         elif hlp.detect_OS() == 'Linux':
-            os.remove('NLHH.unix')
+            pathlib.Path('NLHH.unix').unlink()
         else:
             raise ValueError('Unknown operating system.')
 
@@ -760,7 +755,7 @@ class Nonlinear_Simulation(Simulation):
         )
         os.chdir(cwd)
 
-        # ------------ Create sim_results object and plot and/or save ----------
+        # ------------ Create sim_results object and plot and/or save ---------
         sim_results = Simulation_Results(
             self.input_motion,
             Ground_Motion(accel_surface_2col, unit='m'),
@@ -793,6 +788,6 @@ class Nonlinear_Simulation(Simulation):
         if not save_txt and not save_fig and remove_sim_dir:
             os.removedirs(sim_dir)
             if verbose:
-                print('`sim_dir` (%s) removed.' % sim_dir)
+                print(f'`sim_dir` ({sim_dir}) removed.')
 
         return sim_results

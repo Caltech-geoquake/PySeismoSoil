@@ -1,5 +1,5 @@
-# Configuration file for the Sphinx documentation builder.
-#
+"""Configuration file for the Sphinx documentation builder."""  # noqa: INP001
+
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
@@ -10,21 +10,27 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
+from __future__ import annotations
 
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
+import pathlib
+import sys
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from sphinx.application import Sphinx
+
+sys.path.insert(0, str(pathlib.Path.cwd()))
+sys.path.insert(0, str(pathlib.Path('../').resolve()))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'PySeismoSoil'
-copyright = '2024, California Institute of Technology'
+copyright = '2024, California Institute of Technology'  # noqa: A001
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.6.0'
+release = 'v0.7.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -80,20 +86,25 @@ numpydoc_show_class_members = False
 automodsumm_inherited_members = True
 
 
-# ------- A fix to sphinx-automodapi to exclude imported members ---------------
+# ------- A fix to sphinx-automodapi to exclude imported members -------------
 # Thanks to https://github.com/astropy/sphinx-automodapi/issues/119
 from sphinx_automodapi import automodsumm  # noqa: E402
 from sphinx_automodapi.utils import find_mod_objs  # noqa: E402
 
 
-def find_mod_objs_patched(*args, **kwargs):
+def find_mod_objs_patched(
+        *args: Any,
+        **kwargs: Any,  # noqa: ARG001 (signature mandated by automodapi)
+) -> Any:
+    """Find module objects, excluding the ones that are imported."""
     return find_mod_objs(args[0], onlylocals=True)
 
 
-def patch_automodapi(app):
-    """Monkey-patch the automodapi extension to exclude imported members"""
+def patch_automodapi(app: Sphinx) -> None:  # noqa: ARG001
+    """Monkey-patch the automodapi extension to exclude imported members."""
     automodsumm.find_mod_objs = find_mod_objs_patched
 
 
-def setup(app):
+def setup(app: Sphinx) -> None:
+    """Set up the Sphinx app (hook called by Sphinx)."""
     app.connect('builder-inited', patch_automodapi)

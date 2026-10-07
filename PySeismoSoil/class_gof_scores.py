@@ -74,7 +74,7 @@ class GOF_Scores:
             'Cross Correlation (S10)',
         ]
 
-        sum = 0
+        total = 0.0
         count = 0
 
         text = '\nGoodness of Fit Scores\n'
@@ -82,11 +82,11 @@ class GOF_Scores:
         for ix, sc in enumerate(self.scores):
             if not np.isnan(sc):
                 text += f'{sn[ix]:>31}: {sc: .3f}\n'
-                sum += sc
+                total += sc
                 count += 1
 
         text += '---------------------------------------\n'
-        text += f'Average Score: {sum / count:.3f}\n'
+        text += f'Average Score: {total / count:.3f}\n'
 
         return text
 
@@ -109,7 +109,7 @@ class GOF_Scores:
         """
         return self.scores
 
-    def calc_scores(
+    def calc_scores(  # noqa: C901
             self,
             fmin: float | None = None,
             fmax: float | None = None,
@@ -192,8 +192,8 @@ class GOF_Scores:
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             for ind, sc in enumerate(scores0):
                 scores = np.append(scores, sc)
@@ -205,8 +205,8 @@ class GOF_Scores:
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             for ind, sc in enumerate(scores1):
                 scores = np.append(scores, sc)
@@ -218,8 +218,8 @@ class GOF_Scores:
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             for ind, sc in enumerate(scores2):
                 scores = np.append(scores, sc)
@@ -231,8 +231,8 @@ class GOF_Scores:
                 self.simulation,
                 fmin,
                 fmax,
-                baseline,
-                show_fig,
+                baseline=baseline,
+                show_fig=show_fig,
             )
             scores = np.append(scores, scores3)
             self.scores[9] = scores3
@@ -304,6 +304,7 @@ class Batch_GOF_Scores:
 
     def run(
             self,
+            *,
             parallel: bool = False,
             n_cores: int | None = 1,
             options: dict[str, Any] | None = None,
@@ -330,18 +331,17 @@ class Batch_GOF_Scores:
 
         N = self.n_scores
 
-        score_results = []
         if not parallel:
-            for i in range(self.n_scores):
-                score_results.append(self._run_single_score([i, options]))
-            # END FOR
+            score_results = [
+                self._run_single_score([i, options])
+                for i in range(self.n_scores)
+            ]
         else:
             p = mp.Pool(n_cores)
             score_results = p.map(
                 self._run_single_score,
                 itertools.product(range(N), [options]),
             )
-        # END IF
 
         return score_results
 

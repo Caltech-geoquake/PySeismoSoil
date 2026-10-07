@@ -1,18 +1,29 @@
+"""Ground motion class."""
+
 from __future__ import annotations
 
 import os
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_signal_processing as sig
 from PySeismoSoil import helper_site_response as sr
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 from PySeismoSoil.class_Vs_profile import Vs_Profile
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+
+# Number of elements that the ``limit`` argument (lower and upper bounds) and
+# the ``extend`` argument (amounts to extend before and after) of
+# ``Ground_Motion.truncate()`` must have
+NUM_ELEMENTS_IN_LIMIT_ARG = 2
+NUM_ELEMENTS_IN_EXTEND_ARG = 2
 
 
 class Ground_Motion:
@@ -132,7 +143,7 @@ class Ground_Motion:
             motion_type: Literal['accel', 'veloc', 'displ'] = 'accel',
             dt: float | None = None,
             sep: str = '\t',
-            **kwargs_to_genfromtxt: dict[Any, Any],
+            **kwargs_to_genfromtxt: dict[Any, Any],  # noqa: ARG002
     ) -> None:
         if isinstance(data, str):  # a file name
             self._path_name, self._file_name = os.path.split(data)
@@ -152,30 +163,34 @@ class Ground_Motion:
             'g',
         ]
         if unit not in valid_unit_name:
-            if 's^2' in unit:  # noqa: R506
+            if 's^2' in unit:
                 raise ValueError(
                     "Please use '/s/s' instead of 's^2' in `unit`."
                 )
-            else:
-                raise ValueError(
-                    'Invalid `unit` name. Valid names are: %s'
-                    % valid_unit_name,
-                )
 
-        if motion_type not in ['accel', 'veloc', 'displ']:
+            raise ValueError(
+                f'Invalid `unit` name. Valid names are: {valid_unit_name}',
+            )
+
+        if motion_type not in {'accel', 'veloc', 'displ'}:
             raise ValueError(
                 "`motion_type` must be in {'accel', 'veloc', 'displ'}"
             )
 
-        if (unit == 'g' or unit == 'gal') and motion_type != 'accel':
+        if (unit in {'g', 'gal'}) and motion_type != 'accel':
             raise ValueError(
                 "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
             )
 
-        if unit in ['cm', 'cm/s', 'cm/s/s', 'gal']:
-            data_[:, 1] = data_[:, 1] / 100.0  # cm --> m
+        # Known bug (#59): `data_` can be the caller's own array, so this
+        # conversion also changes the caller's array, and truncates it if it
+        # is an integer array. (`/=` and `*=` would raise a `TypeError` for
+        # integer arrays instead, so the plain assignment stays until #59 is
+        # fixed.)
+        if unit in {'cm', 'cm/s', 'cm/s/s', 'gal'}:
+            data_[:, 1] = data_[:, 1] / 100.0  # noqa: PLR6104  # cm --> m
         elif unit == 'g':
-            data_[:, 1] = data_[:, 1] * 9.81  # g --> m/s/s
+            data_[:, 1] = data_[:, 1] * 9.81  # noqa: PLR6104  # g --> m/s/s
 
         self.dt = float(dt)  # float; unit: sec
         self.npts = len(data_[:, 0])  # int; how many time points
@@ -209,21 +224,14 @@ class Ground_Motion:
         self.T5_95 = arias_result[3]
         self.rms_accel, self.rms_veloc, self.rms_displ = self.__calc_RMS()
 
-    def __repr__(self) -> None:
+    def __repr__(self) -> str:
         """Return basic information of a ground motion."""
-        text = (
-            'n_pts=%d, dt=%.4gs, PGA=%.3gg=%.3ggal, PGV=%.3gcm/s, PGD=%.3gcm, T5_95=%.3gs'
-            % (
-                self.npts,
-                self.dt,
-                self.pga_in_g,
-                self.pga_in_gal,
-                self.pgv_in_cm_s,
-                self.pgd_in_cm,
-                self.T5_95,
-            )
+        return (
+            f'n_pts={self.npts:d}, dt={self.dt:.4g}s,'
+            f' PGA={self.pga_in_g:.3g}g={self.pga_in_gal:.3g}gal,'
+            f' PGV={self.pgv_in_cm_s:.3g}cm/s, PGD={self.pgd_in_cm:.3g}cm,'
+            f' T5_95={self.T5_95:.3g}s'
         )
-        return text
 
     def summary(self) -> None:
         """Show a brief summary of the ground motion."""
@@ -232,6 +240,7 @@ class Ground_Motion:
 
     def get_Fourier_spectrum(
             self,
+            *,
             real_val: bool = True,
             double_sided: bool = False,
             show_fig: bool = False,
@@ -252,7 +261,7 @@ class Ground_Motion:
 
         Returns
         -------
-        fs : Frequency_Spectrum
+        Frequency_Spectrum
             A frequency spectrum object.
         """
         x = sig.fourier_transform(
@@ -261,8 +270,7 @@ class Ground_Motion:
             double_sided=double_sided,
             show_fig=show_fig,
         )
-        fs = Frequency_Spectrum(x)
-        return fs
+        return Frequency_Spectrum(x)
 
     def get_response_spectra(
             self,
@@ -270,15 +278,17 @@ class Ground_Motion:
             T_max: float = 10,
             n_pts: int = 60,
             damping: float = 0.05,
+            *,
             show_fig: bool = True,
             parallel: bool = False,
             n_cores: int | None = None,
             subsample_interval: int = 1,
     ) -> tuple[np.ndarray, ...]:
         """
-        Get elastic response spectra of the ground motion, using the "exact"
-        solution to the equation of motion (Section 5.2, Dynamics of
-        Structures, Second Edition, by Anil K. Chopra).
+        Get elastic response spectra of the ground motion.
+
+        This uses the "exact" solution to the equation of motion (Section 5.2,
+        Dynamics of Structures, Second Edition, by Anil K. Chopra).
 
         Parameters
         ----------
@@ -361,10 +371,7 @@ class Ground_Motion:
         ValueError
             When the value of ``show_as_unit`` is invalid
         """
-        if self._file_name:
-            title = self._file_name
-        else:
-            title = ''
+        title = self._file_name or ''
 
         if show_as_unit == 'm':
             accel_ = self.accel
@@ -390,8 +397,10 @@ class Ground_Motion:
             self, unit: Literal['m/s/s', 'cm/s/s', 'gal', 'g'] = 'm/s/s'
     ) -> np.ndarray:
         """
-        Convert the unit of acceleration. "In-place" conversion is not allowed,
-        because ground motions are always stored in SI units internally.
+        Convert the unit of acceleration.
+
+        "In-place" conversion is not allowed, because ground motions are always
+        stored in SI units internally.
 
         Parameters
         ----------
@@ -413,7 +422,7 @@ class Ground_Motion:
 
         if unit == 'm/s/s':
             pass
-        elif unit in ['cm/s/s', 'gal']:
+        elif unit in {'cm/s/s', 'gal'}:
             accel[:, 1] *= 100  # m/s/s --> cm/s/s
         elif unit == 'g':
             accel[:, 1] /= 9.81  # m/s/s --> g
@@ -442,8 +451,10 @@ class Ground_Motion:
             high_lim: float,
     ) -> tuple[float, float]:
         """
-        Calculate lower and upper time bounds corresponding to two given
-        normalized Arias intensity percentages (e.g., [0.05, 0.95])
+        Calculate lower and upper time bounds for given Arias intensities.
+
+        The bounds correspond to two given normalized Arias intensity
+        percentages (e.g., [0.05, 0.95]).
         """
         if low_lim >= high_lim:
             raise ValueError('low_lim must be smaller than high_lim.')
@@ -476,12 +487,14 @@ class Ground_Motion:
     def __calc_Arias(
             self,
             motion: str = 'accel',
+            *,
             show_fig: bool = False,
     ) -> tuple[np.ndarray, np.ndarray, float, float]:
         """
-        Calculate Arias intensity. Returns the intensity time series, peak
-        intensity, and T5_95 (time interval from 5% Arias intensity to 95%
-        Arias intensity).
+        Calculate Arias intensity.
+
+        Returns the intensity time series, peak intensity, and T5_95 (time
+        interval from 5% Arias intensity to 95% Arias intensity).
         """
         g = 9.81
 
@@ -534,8 +547,10 @@ class Ground_Motion:
             target_PGA_in_g: float | None = None,
     ) -> Ground_Motion:
         """
-        Scale ground motion, either by specifying a factor, or specifying a
-        target PGA level.
+        Scale ground motion.
+
+        This can be done either by specifying a factor, or specifying a target
+        PGA level.
 
         Parameters
         ----------
@@ -560,9 +575,10 @@ class Ground_Motion:
         acc_scaled = acc * factor
         return Ground_Motion(np.column_stack((time, acc_scaled)), unit='m')
 
-    def truncate(
+    def truncate(  # noqa: PLR0915
             self,
             limit: tuple[float, float],
+            *,
             arias: bool = True,
             extend: tuple[float, float] = (0, 0),
             show_fig: bool = False,
@@ -608,14 +624,18 @@ class Ground_Motion:
         if not isinstance(limit, (tuple, list)):
             raise TypeError('`limit` must be a list/tuple of  two elements.')
 
-        if len(limit) != 2:
-            raise ValueError('Length of `limit` must be 2.')
+        if len(limit) != NUM_ELEMENTS_IN_LIMIT_ARG:
+            raise ValueError(
+                f'Length of `limit` must be {NUM_ELEMENTS_IN_LIMIT_ARG}.'
+            )
 
         if not isinstance(extend, (tuple, list)):
             raise TypeError('`extend` must be a list/tuple of  two elements.')
 
-        if len(extend) != 2:
-            raise ValueError('Length of `extend` must be 2.')
+        if len(extend) != NUM_ELEMENTS_IN_EXTEND_ARG:
+            raise ValueError(
+                f'Length of `extend` must be {NUM_ELEMENTS_IN_EXTEND_ARG}.'
+            )
 
         if extend[0] < 0 or extend[1] < 0:
             raise ValueError('`extend` should be non negative.')
@@ -635,11 +655,9 @@ class Ground_Motion:
         n1 = int(t1 / self.dt)
         n2 = int(t2 / self.dt)
 
-        if n1 < 0:
-            n1 = 0
+        n1 = max(n1, 0)
 
-        if n2 > self.npts:
-            n2 = self.npts
+        n2 = min(n2, self.npts)
 
         time_trunc = self.accel[: n2 - n1, 0]
         accel_trunc = self.accel[n1:n2, 1]
@@ -691,6 +709,7 @@ class Ground_Motion:
     def amplify_by_tf(
             self,
             transfer_function: Frequency_Spectrum,
+            *,
             taper: bool = False,
             extrap_tf: bool = True,
             deconv: bool = False,
@@ -699,8 +718,9 @@ class Ground_Motion:
             return_fig_obj: bool = False,
     ) -> tuple[Ground_Motion, Figure | None, Axes | None]:
         """
-        Amplify (or de-amplify) ground motions in the frequency domain. The
-        mathematical process behind this function is as follows:
+        Amplify (or de-amplify) ground motions in the frequency domain.
+
+        The mathematical process behind this function is as follows:
 
             (1) INPUT = fft(input)
             (2) OUTPUT = INPUT * TRANS_FUNC
@@ -781,11 +801,13 @@ class Ground_Motion:
             self,
             soil_profile: Vs_Profile,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
+            *,
             show_fig: bool = False,
     ) -> Ground_Motion:
         """
-        Amplify the ground motion via a 1D soil profile, using linear site
-        amplification method.
+        Amplify the ground motion via a 1D soil profile.
+
+        This uses the linear site amplification method.
 
         Parameters
         ----------
@@ -799,7 +821,7 @@ class Ground_Motion:
 
         Returns
         -------
-        output_motion : Ground_Motion
+        Ground_Motion
             The amplified ground motion.
 
         Raises
@@ -819,20 +841,22 @@ class Ground_Motion:
             boundary=boundary,
             show_fig=show_fig,
         )[0]
-        output_motion = Ground_Motion(response, unit='m')
-        return output_motion
+        return Ground_Motion(response, unit='m')
 
     def compare(
             self,
             another_ground_motion: Ground_Motion,
+            *,
             this_ground_motion_as_input: bool = True,
             smooth: bool = True,
             input_accel_label: str = 'Input',
             output_accel_label: str = 'Output',
     ) -> tuple[Figure, Axes]:
         """
-        Compare with another ground motion: plot comparison figures showing two
-        time histories and the transfer function between them.
+        Compare with another ground motion.
+
+        This plots comparison figures showing two time histories and the
+        transfer function between them.
 
         Parameters
         ----------
@@ -865,7 +889,6 @@ class Ground_Motion:
             raise TypeError(
                 '`another_ground_motion` must be a `Ground_Motion`.'
             )
-        # END IF
 
         if this_ground_motion_as_input:
             accel_in = self.accel
@@ -873,7 +896,6 @@ class Ground_Motion:
         else:
             accel_in = another_ground_motion.accel
             accel_out = self.accel
-        # END IF-ELSE
 
         amp_ylabel = (
             f'Amplification\n({input_accel_label} ➡ {output_accel_label})'
@@ -897,12 +919,14 @@ class Ground_Motion:
             self,
             soil_profile: Vs_Profile,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
+            *,
             show_fig: bool = False,
     ) -> Ground_Motion:
         """
-        Deconvolve the ground motion, i.e., propagate the motion downwards to
-        get the borehole motion (rigid boundary) or the "rock outcrop" motion
-        (elastic boundary).
+        Deconvolve the ground motion.
+
+        That is, propagate the motion downwards to get the borehole motion
+        (rigid boundary) or the "rock outcrop" motion (elastic boundary).
 
         Parameters
         ----------
@@ -937,14 +961,18 @@ class Ground_Motion:
             show_fig=show_fig,
         )[0]
         deconv_motion = Ground_Motion(response, unit='m')
-        return deconv_motion
+        return deconv_motion  # noqa: RET504
 
     def baseline_correct(
-            self, cutoff_freq: float = 0.20, show_fig: bool = False
+            self,
+            cutoff_freq: float = 0.20,
+            *,
+            show_fig: bool = False,
     ) -> Ground_Motion:
         """
-        Baseline-correct the acceleration (via zero-phase-shift high-pass
-        method).
+        Baseline-correct the acceleration.
+
+        This uses the zero-phase-shift high-pass method.
 
         Parameters
         ----------
@@ -967,6 +995,7 @@ class Ground_Motion:
     def lowpass(
             self,
             cutoff_freq: float,
+            *,
             show_fig: bool = False,
             filter_order: int = 4,
             padlen: int = 150,
@@ -1005,6 +1034,7 @@ class Ground_Motion:
     def highpass(
             self,
             cutoff_freq: float,
+            *,
             show_fig: bool = False,
             filter_order: int = 4,
             padlen: int = 150,
@@ -1043,6 +1073,7 @@ class Ground_Motion:
     def bandpass(
             self,
             cutoff_freq: tuple[float, float],
+            *,
             show_fig: bool = False,
             filter_order: int = 4,
             padlen: int = 150,
@@ -1081,6 +1112,7 @@ class Ground_Motion:
     def bandstop(
             self,
             cutoff_freq: tuple[float, float],
+            *,
             show_fig: bool = False,
             filter_order: int = 4,
             padlen: int = 150,
@@ -1143,11 +1175,15 @@ class Ground_Motion:
         fmt = [t_prec, motion_prec]
         data = self.accel
 
+        # Known bug (#58): `data` is `self.accel` itself, not a copy, so saving
+        # in another unit also rescales `self.accel`. (`/=` and `*=` would
+        # raise a `TypeError` for integer arrays, so the plain assignment stays
+        # until #58 is fixed.)
         if unit == 'm/s/s':
             pass
         elif unit == 'g':
-            data[:, 1] = data[:, 1] / 9.81
-        elif unit in ['gal', 'cm/s/s']:
-            data[:, 1] = data[:, 1] * 100.0
+            data[:, 1] = data[:, 1] / 9.81  # noqa: PLR6104
+        elif unit in {'gal', 'cm/s/s'}:
+            data[:, 1] = data[:, 1] * 100.0  # noqa: PLR6104
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)

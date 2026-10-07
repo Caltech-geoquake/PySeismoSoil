@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import collections
 import json
-from typing import TYPE_CHECKING, Any, Callable, Type
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_hh_model as hh
@@ -15,12 +14,26 @@ from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
 if TYPE_CHECKING:  # to avoid circular imports
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
     from PySeismoSoil.class_curves import (
         Multiple_Damping_Curves,
         Multiple_GGmax_Curves,
     )
 
 STRAIN_RANGE_PCT = np.logspace(-2, 1)
+
+# A function that calculates shear stress from the model parameters
+StressFunction = Callable[[dict[str, float], ...], np.ndarray]
+
+# Valid ways of initializing HH_Param_Multi_Layer and MKZ_Param_Multi_Layer
+HH_Param_Input: TypeAlias = (
+    str | np.ndarray | list[dict[str, float]] | list['HH_Param']
+)
+MKZ_Param_Input: TypeAlias = (
+    str | np.ndarray | list[dict[str, float]] | list['MKZ_Param']
+)
 
 
 class Parameter(collections.UserDict):
@@ -39,8 +52,10 @@ class Parameter(collections.UserDict):
         Name-value pairs of the parameters.
     allowable_keys : set[str] | None, default=None
         The allowable parameter names of the constitutive model.
-    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None, default=None
-        A function to calculate shear stress from the parameters.
+    func_stress : StressFunction | None, default=None
+        A function to calculate shear stress from the parameters. It is called
+        as ``func_stress(strain, **params)``, where ``strain`` is a numpy array
+        (in absolute value, not in %), and returns a numpy array.
 
     Attributes
     ----------
@@ -48,7 +63,7 @@ class Parameter(collections.UserDict):
         The original data, stored as a regular dictionary.
     allowable_keys : set[str] | None
         Same as the input parameter.
-    func_stress : Callable[[dict[str, float], ...], np.ndarray] | None
+    func_stress : StressFunction | None
         A function to calculate shear stress from the parameters.
 
     Raises
@@ -61,15 +76,14 @@ class Parameter(collections.UserDict):
 
     data: dict[str, float]
     allowable_keys: set[str] | None
-    func_stress: Callable[[dict[str, float], ...], np.ndarray] | None
+    func_stress: StressFunction | None
 
     def __init__(
             self,
             param_dict: dict[str, float],
             *,
             allowable_keys: set[str] | None = None,
-            func_stress: Callable[[dict[str, float], ...], np.ndarray]
-            | None = None,
+            func_stress: StressFunction | None = None,
     ) -> None:
         if not isinstance(param_dict, dict):
             raise TypeError('`param_dict` must be a dictionary.')
@@ -81,8 +95,8 @@ class Parameter(collections.UserDict):
 
         if param_dict.keys() != allowable_keys:
             raise KeyError(
-                'Invalid keys exist in your input data. We only '
-                'allow %s.' % allowable_keys,
+                'Invalid keys exist in your input data. We only'
+                f' allow {allowable_keys}.',
             )
 
         self.allowable_keys = allowable_keys
@@ -92,13 +106,13 @@ class Parameter(collections.UserDict):
     def __repr__(self) -> str:
         return json.dumps(self.data, indent=2).replace('"', '')
 
-    def __setitem__(self, key, item) -> None:
+    def __setitem__(self, key: str, item: float) -> None:
         if key not in self.allowable_keys:
-            raise KeyError("The model does not have a '%s' parameter." % key)
+            raise KeyError(f"The model does not have a '{key}' parameter.")
 
         self.data[key] = item
 
-    def __delitem__(self, key) -> None:
+    def __delitem__(self, key: str) -> None:
         raise ValueError(
             'Deleting items from the parameter set is not allowed.'
         )
@@ -114,9 +128,7 @@ class Parameter(collections.UserDict):
         result : np.ndarray
             Serialized parameters.
         """
-        param_array = []
-        for _, val in self.data.items():
-            param_array.append(val)
+        param_array = list(self.data.values())
 
         return np.array(param_array)
 
@@ -158,7 +170,7 @@ class Parameter(collections.UserDict):
 
         Returns
         -------
-        result : np.ndarray
+        np.ndarray
             The G/Gmax array, with the same shape as the strain array.
         """
         tau = self.get_stress(strain_in_pct=strain_in_pct)
@@ -168,8 +180,7 @@ class Parameter(collections.UserDict):
 
         Gmax = self.data['Gmax']
         strain_in_1 = strain_in_pct / 100.0
-        GGmax = sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
-        return GGmax
+        return sr.calc_GGmax_from_stress_strain(strain_in_1, tau, Gmax=Gmax)
 
     def get_damping(
             self, strain_in_pct: np.ndarray = STRAIN_RANGE_PCT
@@ -201,16 +212,16 @@ class Parameter(collections.UserDict):
 
     def plot_curves(
             self,
-            figsize: tuple[float, float] = None,
+            figsize: tuple[float, float] | None = None,
             dpi: float = 100,
-            **kwargs_to_matplotlib: dict[Any, Any],
+            **kwargs_to_matplotlib: dict[Any, Any],  # noqa: ARG002
     ) -> tuple[Figure, list[Axes]]:
         """
         Plot G/Gmax and damping curves from the model parameters
 
         Parameters
         ----------
-        figsize : tuple[float, float], default=None
+        figsize : tuple[float, float] | None, default=None
             Figure size in inches, as a tuple of two numbers. If ``None``, use
             (3, 6).
         dpi : float, default=100
@@ -360,7 +371,7 @@ class Param_Multi_Layer:
     list_of_param_data : list[dict[str, float]] | list[Parameter]
         List of dict or a list of valid parameter class (such as ``HH_Param``),
         which contain data for parameters of each layer.
-    element_class : Type[Parameter]
+    element_class : type[Parameter]
         A class name, such as ``HH_Param``. Each element of
         ``list_of_param_dict`` will be used to initialize an object of
         ``element_class``.
@@ -385,7 +396,7 @@ class Param_Multi_Layer:
             self,
             list_of_param_data: list[dict[str, float]] | list[Parameter],
             *,
-            element_class: Type[Parameter],
+            element_class: type[Parameter],
     ) -> None:
         param_list: list[Parameter] = []
         for param_data in list_of_param_data:
@@ -407,10 +418,10 @@ class Param_Multi_Layer:
     def __len__(self) -> int:
         return self.n_layer
 
-    def __setitem__(self, i, item) -> None:
+    def __setitem__(self, i: int, item: Parameter) -> None:
         self.param_list[i] = item
 
-    def __getitem__(self, i) -> Parameter | Param_Multi_Layer:
+    def __getitem__(self, i: int | slice) -> Parameter | Param_Multi_Layer:
         if isinstance(i, int):
             return self.param_list[i]
 
@@ -418,9 +429,9 @@ class Param_Multi_Layer:
             # return an object of the same class, filled with the sliced data
             return self.__class__(self.param_list[i])
 
-        raise TypeError('Indices must be integers or slices, not %s' % type(i))
+        raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
-    def __delitem__(self, i) -> None:
+    def __delitem__(self, i: int | slice) -> None:
         del self.param_list[i]
         self.n_layer -= 1
 
@@ -428,7 +439,7 @@ class Param_Multi_Layer:
             self,
             strain_in_pct: np.ndarray = STRAIN_RANGE_PCT,
             curve_type: str | None = None,
-    ) -> tuple['Multiple_GGmax_Curves', 'Multiple_Damping_Curves']:
+    ) -> tuple[Multiple_GGmax_Curves, Multiple_Damping_Curves]:
         """
         Construct G/Gmax and damping curves from parameter values.
 
@@ -442,13 +453,14 @@ class Param_Multi_Layer:
 
         Returns
         -------
-        mgc : 'Multiple_GGmax_Curves'
+        mgc : Multiple_GGmax_Curves
             G/Gmax curves for each soil layer.
-        mdc : 'Multiple_Damping_Curves'
+        mdc : Multiple_Damping_Curves
             Damping curves for each soil layer.
         """
         # Importing within the method to avoid circular imports
-        from PySeismoSoil.class_curves import (
+        # (``class_curves`` imports this module when it is imported)
+        from PySeismoSoil.class_curves import (  # noqa: PLC0415
             Multiple_Damping_Curves,
             Multiple_GGmax_Curves,
             Multiple_GGmax_Damping_Curves,
@@ -505,7 +517,7 @@ class Param_Multi_Layer:
             output.append(param_array)
 
         param_2D_array = np.array(output).T
-        return param_2D_array
+        return param_2D_array  # noqa: RET504
 
     def save_txt(
             self,
@@ -555,7 +567,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : str | np.ndarray | list[dict[str, float]] | list[HH_Param]
+    filename_or_data : HH_Param_Input
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -569,7 +581,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
             +----------------+-----------------+-----------------+-----+
 
         or a 2D numpy array containing the data of the format above, or a list
-        containing HH parameter data.
+        containing HH parameter data (dictionaries or ``HH_Param`` objects).
     sep : str, default='\t'
         Delimiter of the file to be imported. If ``filename_or_data`` is not a
         file name, ``sep`` has no effect.
@@ -592,10 +604,7 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
 
     def __init__(
             self,
-            filename_or_data: str
-            | np.ndarray
-            | list[dict[str, float]]
-            | list[HH_Param],
+            filename_or_data: HH_Param_Input,
             *,
             sep: str = '\t',
     ) -> None:
@@ -648,7 +657,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     Parameters
     ----------
-    filename_or_data : str | np.ndarray | list[dict[str, float]] | list[HH_Param]
+    filename_or_data : MKZ_Param_Input
         A file name of a validly formatted "parameter file", i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
@@ -662,7 +671,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             +----------------+-----------------+-----------------+-----+
 
         or a 2D numpy array containing the data of the format above, or a list
-        containing MKZ parameter data.
+        containing MKZ parameter data (dictionaries or ``MKZ_Param`` objects).
     sep : str, default='\t'
         Delimiter of the file to be imported. If ``filename_or_data`` is not a
         file name, ``sep`` has no effect.
@@ -685,10 +694,7 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
     def __init__(
             self,
-            filename_or_data: str
-            | np.ndarray
-            | list[dict[str, float]]
-            | list[HH_Param],
+            filename_or_data: MKZ_Param_Input,
             *,
             sep: str = '\t',
     ) -> None:

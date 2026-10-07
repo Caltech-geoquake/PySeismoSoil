@@ -6,9 +6,22 @@ from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_mkz_model as mkz
 from PySeismoSoil import helper_site_response as sr
 
+# Number of parameters in the HH model: gamma_t, a, gamma_ref, beta, s, Gmax,
+# mu, Tmax, d
+NUM_HH_PARAMS = 9
+
+# Largest exponent (base 10) that is safe for ``np.power(10, ...)`` without
+# overflowing (or underflowing to zero) in float64 numbers
+MAX_SAFE_LOG10_EXPONENT = 305
+
 
 def tau_FKZ(
-        gamma: np.ndarray, *, Gmax: float, mu: float, d: float, Tmax: float
+        gamma: np.ndarray,
+        *,
+        Gmax: float,
+        mu: float,
+        d: float,
+        Tmax: float,
 ) -> np.ndarray:
     """
     Calculate the FKZ shear stress. The FKZ model is proposed in Shi & Asimaki
@@ -51,7 +64,7 @@ def tau_FKZ(
     hlp.assert_1D_numpy_array(gamma, name='`gamma`')
     T_FKZ = mu * Gmax * gamma**d / (1 + Gmax / Tmax * mu * np.abs(gamma) ** d)
 
-    return T_FKZ
+    return T_FKZ  # noqa: RET504
 
 
 def transition_function(
@@ -86,9 +99,9 @@ def transition_function(
         intermediateValue = np.log10(np.abs(g) / gamma_t) - 4.039 * a ** (
             -1.036
         )
-        if -a * intermediateValue > 305:
+        if -a * intermediateValue > MAX_SAFE_LOG10_EXPONENT:
             w[ix] = 1.0
-        elif -a * intermediateValue < -305:
+        elif -a * intermediateValue < -MAX_SAFE_LOG10_EXPONENT:
             w[ix] = 0.0
         else:
             w[ix] = 1 - 1.0 / (
@@ -144,7 +157,7 @@ def tau_HH(
 
     Returns
     -------
-    T_FKZ : np.ndarray
+    T_HH : np.ndarray
         The shear stress determined by the HH model. Same shape as ``x``, and
         same unit as ``Gmax``.
     """
@@ -154,7 +167,7 @@ def tau_HH(
 
     T_HH = w * T_MKZ + (1 - w) * T_FKZ
 
-    return T_HH
+    return T_HH  # noqa: RET504
 
 
 def fit_HH_x_single_layer(
@@ -281,7 +294,7 @@ def fit_HH_x_single_layer(
     best_param['d'] = 10 ** result[8]
 
     if show_fig:
-        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_HH)
+        sr._plot_damping_curve_fit(damping_data_in_pct, best_param, tau_HH)  # noqa: SLF001
 
     return best_param
 
@@ -306,7 +319,7 @@ def _damping_misfit(
 
     Returns
     -------
-    error : float
+    float
         The mean absolute error between the true damping values and the
         predicted damping values at each strain level.
     """
@@ -338,9 +351,7 @@ def _damping_misfit(
         d=d,
     )
     damping_pred = sr.calc_damping_from_stress_strain(strain, Tau_HH, Gmax)
-    error = hlp.mean_absolute_error(damping_true, damping_pred)
-
-    return error
+    return hlp.mean_absolute_error(damping_true, damping_pred)
 
 
 def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
@@ -359,7 +370,7 @@ def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
         A numpy array of shape (9,) containing the parameters of the HH model
         in the order specified above.
     """
-    assert len(param) == 9
+    assert len(param) == NUM_HH_PARAMS
     order = [
         'gamma_t',
         'a',
@@ -371,9 +382,7 @@ def serialize_params_to_array(param: dict[str, float]) -> np.ndarray:
         'Tmax',
         'd',
     ]
-    param_array = []
-    for key in order:
-        param_array.append(param[key])
+    param_array = [param[key] for key in order]
 
     return np.array(param_array)
 
@@ -397,7 +406,7 @@ def deserialize_array_to_params(array: np.ndarray) -> dict[str, float]:
         The dictionary with parameter name as keys and values as values.
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == 9
+    assert len(array) == NUM_HH_PARAMS
 
     param = {}
     param['gamma_t'] = array[0]
