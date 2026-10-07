@@ -27,11 +27,6 @@ PrecisionSpecifiers = tuple[str, str, str, str, str]
 DEFAULT_PRECISION: PrecisionSpecifiers = ('%.2f', '%.2f', '%.4g', '%.5g', '%d')
 
 
-# If the min. density of a profile (in kg/m^3) is at or below this value, a
-# warning is printed because the density is likely to be in a wrong unit
-MIN_PLAUSIBLE_DENSITY_KG_M3 = 1000
-
-
 class Vs_Profile:
     r"""
     Class implementation of a Vs profile.
@@ -166,11 +161,11 @@ class Vs_Profile:
             rho = data_[:, 3]
             if (
                 density_unit in {'kg/m^3', 'kg/m3'}
-                and min(rho) <= MIN_PLAUSIBLE_DENSITY_KG_M3
+                and min(rho) <= hlp.MIN_PLAUSIBLE_DENSITY_KG_M3
             ):
                 print(
                     'Warning in initializing Vs_Profile: min(density) is '
-                    f'lower than {MIN_PLAUSIBLE_DENSITY_KG_M3:,} kg/m^3. '
+                    f'lower than {hlp.MIN_PLAUSIBLE_DENSITY_KG_M3:,} kg/m^3. '
                     'Possible error.',
                 )
             elif density_unit in {'g/cm^3', 'g/cm3'} and min(rho) <= 1.0:

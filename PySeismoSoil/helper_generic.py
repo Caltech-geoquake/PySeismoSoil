@@ -24,6 +24,10 @@ NUM_COLUMNS_TWO_COL_DATA = 2
 # Vs, damping, density, material number)
 NUM_COLUMNS_THICKNESS_AND_VS = 2
 NUM_COLUMNS_OF_FULL_VS_PROFILE = 5
+
+# If the density of a profile (in kg/m^3) is at or below this value, it is
+# likely to be in a wrong unit (g/cm^3), so a warning is printed
+MIN_PLAUSIBLE_DENSITY_KG_M3 = 1000
 DELTA_UNIFORMITY_REL_TOL = 1e-8
 
 # Status codes returned by ``check_numbers_valid()`` (0 means all valid)

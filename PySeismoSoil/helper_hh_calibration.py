@@ -62,9 +62,6 @@ MU_THRESHOLD_RELAXED_GAMMA_T_LB = 0.03
 # strength is calculated as undrained shear strength (otherwise, Mohr-Coulomb)
 UNDRAINED_STRENGTH_VS_LIMIT_M_S = 760
 
-# Mean mass density (kg/m^3) below which the density is likely in g/cm^3
-MIN_PLAUSIBLE_RHO_KG_M3 = 1000
-
 # Vs values (m/s) at or below which the plasticity index is 10 and 5
 PI_10_VS_LIMIT_M_S = 200
 PI_5_VS_LIMIT_M_S = 360
@@ -815,7 +812,7 @@ def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
     n = len(h)
     stress = np.zeros_like(h)
 
-    if np.mean(rho) < MIN_PLAUSIBLE_RHO_KG_M3:
+    if np.mean(rho) < hlp.MIN_PLAUSIBLE_DENSITY_KG_M3:
         print(
             'Warning in __calc_vertical_stress(): It looks like the unit '
             'of mass density is g/cm^3. The correct unit should be kg/m^3.',
