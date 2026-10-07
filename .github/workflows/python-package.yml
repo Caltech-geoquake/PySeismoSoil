@@ -9,7 +9,7 @@ on:
     branches: [main]
 jobs:
   lint:
-    name: Lint (muff-check, muff-format, pydoclint, pre-commit)
+    name: Lint (pydoclint, pre-commit)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -27,8 +27,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox
-      - name: Run muff-check, muff-format, pydoclint, and pre-commit
-        run: tox -e muff-check,muff-format,pydoclint,pre-commit
+      - name: Run pydoclint and pre-commit
+        run: tox -e pydoclint,pre-commit
   notebooks:
     # Runs every example notebook in a clean environment, without saving them.
     # The pre-commit hook `check-notebooks-were-run` (in the lint job above)

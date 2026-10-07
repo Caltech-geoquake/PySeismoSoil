@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+- Changed
+  - `muff-check` and `muff-format` now run only as pre-commit hooks (removed
+    the duplicate `tox` envs, which CI ran separately). CI now also
+    format-checks `scripts/`, `docs/`, and the example notebooks. When a hook
+    modifies a file in CI, the log shows the diff, and the lint rules that
+    `muff-check` fixed
+
 ## [0.7.0] - 2026-10-06
 
 - Changed

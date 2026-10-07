@@ -21,7 +21,7 @@ repos:
     rev: 0.15.20
     hooks:
       - id: muff-check
-        args: [--fix, --config, muff.toml]
+        args: [--fix, --show-fixes, --config, muff.toml]
       - id: muff-format
         args: [--config, muff.toml]
   - repo: https://github.com/lyz-code/yamlfix
@@ -93,19 +93,6 @@ repos:
     rev: 0.1.4
     hooks:
       - id: blank-line-after-blocks
-  - repo: https://github.com/jsh9/pre-commit-tox-version-sync
-    rev: 0.1.1
-    hooks:
-      - id: sync-precommit-tox-versions
-        args:
-          - --pre-commit-repo
-          - https://github.com/jsh9/muff-pre-commit
-          - --tox-env
-          - muff-check
-          - --tox-env
-          - muff-format
-          - --tox-dep
-          - muff
   - repo: local
     hooks:
       - id: check-notebooks-were-run
