@@ -22,6 +22,9 @@ repos:
     hooks:
       - id: muff-check
         args: [--fix, --show-fixes, --config, muff.toml]
+        # Also lint pyproject.toml (e.g., RUF200: invalid-pyproject-toml)
+        types_or: [python, pyi, jupyter, toml]
+        files: ^pyproject\.toml$|\.(py|pyi|ipynb)$
       - id: muff-format
         args: [--config, muff.toml]
   - repo: https://github.com/lyz-code/yamlfix

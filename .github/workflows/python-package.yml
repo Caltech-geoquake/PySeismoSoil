@@ -28,7 +28,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install tox
       - name: Run pydoclint and pre-commit
-        run: tox -e pydoclint,pre-commit
+        # The options after `--` go to `pre-commit run` (pydoclint ignores
+        # them). `--show-diff-on-failure` prints the changes that the hooks
+        # made, since the modified files are discarded with the runner.
+        run: tox -e pydoclint,pre-commit -- -a --show-diff-on-failure
   notebooks:
     # Runs every example notebook in a clean environment, without saving them.
     # The pre-commit hook `check-notebooks-were-run` (in the lint job above)
