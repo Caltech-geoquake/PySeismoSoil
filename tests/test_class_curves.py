@@ -197,7 +197,8 @@ class Test_Class_Curves(unittest.TestCase):
         with self.assertRaisesRegex(
             TypeError, '`curve` should be a numpy array'
         ):
-            mdc[2] = GGmax_Curve(_join(f_dir, 'curve_FKSH14.txt'))  # use an incorrect type
+            # use an incorrect type
+            mdc[2] = GGmax_Curve(_join(f_dir, 'curve_FKSH14.txt'))
 
         self.assertEqual(len(mdc), 4)
         mdc.append(mdc_3)
@@ -296,7 +297,8 @@ class Test_Class_Curves(unittest.TestCase):
 
         curve_benchmark = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         for j in range(curve_benchmark.shape[1]):
-            if j % 4 == 3:  # original damping info is lost; use same dummy value
+            # original damping info is lost; use same dummy value
+            if j % 4 == 3:
                 curve_benchmark[:, j] = damping
 
         self.assertTrue(
@@ -311,7 +313,8 @@ class Test_Class_Curves(unittest.TestCase):
 
         curve_benchmark = np.genfromtxt(_join(f_dir, 'curve_FKSH14.txt'))
         for j in range(curve_benchmark.shape[1]):
-            if j % 4 == 1:  # original damping info is lost; use same dummy value
+            # original damping info is lost; use same dummy value
+            if j % 4 == 1:
                 curve_benchmark[:, j] = GGmax
 
         self.assertTrue(

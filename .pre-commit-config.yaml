@@ -1,7 +1,7 @@
 ---
-# Test files (and the data files they read) are intentionally left untouched
-# by every hook, so that they keep verifying the reformatted source code.
-exclude: ^tests/
+# The data files that the tests read are intentionally left untouched by every
+# hook, so that the tests keep verifying the source code with the same data.
+exclude: ^tests/files/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

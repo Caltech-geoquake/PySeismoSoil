@@ -1,7 +1,5 @@
 # Docs: https://docs.astral.sh/ruff/configuration
 
-# Test files are intentionally left untouched by the formatter and linter
-extend-exclude = ["tests"]
 line-length = 79
 target-version = "py311"
 
@@ -11,6 +9,8 @@ preview = true
 quote-style = "single"
 
 [lint]
+# Test files are not linted yet
+exclude = ["tests/**"]
 # Explanations: https://docs.astral.sh/ruff/rules
 extend-select = [
   "A", # flake8-builtins
