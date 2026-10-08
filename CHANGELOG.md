@@ -11,7 +11,10 @@
   - The formatters (`muff-format`, `format-docstring`, and the other formatting
     hooks) now also run on `tests/`, and the test files are formatted. Only the
     data files in `tests/files/` are still excluded from all hooks.
-    `muff-check` still skips `tests/` for now
+  - `muff-check` now also lints `tests/`, and the lint violations there are
+    fixed. Tests use plain `assert` statements and `pytest.raises()` instead of
+    the `unittest`-style assertion methods, and read the data files via
+    `pathlib`
 
 ## [0.7.0] - 2026-10-06
 

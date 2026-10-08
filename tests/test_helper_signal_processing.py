@@ -1,6 +1,5 @@
-import os
 import unittest
-from os.path import join as _join
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,13 +7,13 @@ import numpy as np
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
 
-f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+f_dir = Path(__file__).resolve().parent / 'files'
 
 
 class Test_Helper_Signal_Processing(unittest.TestCase):
-    def test_fourier_transform(self):
+    def test_fourier_transform(self) -> None:
         accel, _ = hlp.read_two_column_stuff(
-            _join(f_dir, 'two_column_data_example.txt'),
+            str(f_dir / 'two_column_data_example.txt'),
         )
         freq, FS = sig.fourier_transform(accel, real_val=False).T
 
@@ -39,19 +38,19 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
             -1.5000 + 0.1577j,
         ]
 
-        self.assertTrue(np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0))
-        self.assertTrue(np.allclose(FS, FS_bench, atol=0.0001, rtol=0.0))
+        assert np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0)
+        assert np.allclose(FS, FS_bench, atol=0.0001, rtol=0.0)
 
-    def test_calc_transfer_function(self):
-        input_accel = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
+    def test_calc_transfer_function(self) -> None:
+        input_accel = np.genfromtxt(f_dir / 'sample_accel.txt')
         output_accel = input_accel.copy()
         output_accel[:, 1] *= 2.3
         transfer_func = sig.calc_transfer_function(input_accel, output_accel)
-        self.assertTrue(np.allclose(transfer_func[:, 1], 2.3))
+        assert np.allclose(transfer_func[:, 1], 2.3)
 
-    def test_lin_smooth(self):
+    def test_lin_smooth(self) -> None:
         raw_signal = sig.fourier_transform(
-            np.genfromtxt(_join(f_dir, 'sample_accel.txt')),
+            np.genfromtxt(f_dir / 'sample_accel.txt'),
         )
         freq = raw_signal[:, 0]
         log_smoothed = sig.log_smooth(raw_signal[:, 1], lin_space=False)
@@ -67,18 +66,18 @@ class Test_Helper_Signal_Processing(unittest.TestCase):
         plt.ylabel('Signal value')
         plt.legend(loc='best')
 
-    def test_sine_smooth__constant_spectrum(self):
+    def test_sine_smooth__constant_spectrum(self) -> None:
         freq = np.linspace(0.1, 50, 2000)
         spectrum = np.column_stack((freq, np.full_like(freq, 2.0)))
         smoothed = sig.sine_smooth(spectrum)
 
-        self.assertEqual(smoothed.shape, freq.shape)
+        assert smoothed.shape == freq.shape
 
         # A constant spectrum stays constant everywhere, including at both
         # ends (where the smoothing window is folded back in by mirroring)
-        self.assertTrue(np.allclose(smoothed, smoothed[0]))
+        assert np.allclose(smoothed, smoothed[0])
 
-        self.assertTrue(np.allclose(smoothed, 2.0, rtol=0.01))
+        assert np.allclose(smoothed, 2.0, rtol=0.01)
 
 
 if __name__ == '__main__':

@@ -9,8 +9,6 @@ preview = true
 quote-style = "single"
 
 [lint]
-# Test files are not linted yet
-exclude = ["tests/**"]
 # Explanations: https://docs.astral.sh/ruff/rules
 extend-select = [
   "A", # flake8-builtins
@@ -103,8 +101,12 @@ max-complexity = 14
   "D101", # no need for docstrings in tests
   "D102",
   "D103",
+  "INP001", # `tests/` is not a package; pytest runs the files directly
   "PLC2701", # importing private functions is allowed in tests
+  "PLR0904", # a test class can group many tests
   "PLR2004", # using magic numbers is allowed in tests
+  "PLR6301", # test methods (in `unittest.TestCase` classes) don't need `self`
+  "SLF001", # tests can check private members
 ]
 
 [lint.pydocstyle]
