@@ -8,6 +8,10 @@
     format-checks `scripts/`, `docs/`, and the example notebooks. When a hook
     modifies a file in CI, the log shows the diff, and the lint rules that
     `muff-check` fixed
+  - The formatters (`muff-format`, `format-docstring`, and the other formatting
+    hooks) now also run on `tests/`, and the test files are formatted. Only the
+    data files in `tests/files/` are still excluded from all hooks.
+    `muff-check` still skips `tests/` for now
 
 ## [0.7.0] - 2026-10-06
 
