@@ -75,7 +75,9 @@ class Test_Helper_Site_Response(unittest.TestCase):
                 [1.0000, 3.5000],
             ],
         )
-        v_bench[0, 1] = 0  # because the "initial offset" info is lost in num_diff
+
+        # because the "initial offset" info is lost in num_diff
+        v_bench[0, 1] = 0
         displac = np.array(
             [
                 [0.1000, 0.0100],

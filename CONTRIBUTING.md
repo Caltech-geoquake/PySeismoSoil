@@ -36,8 +36,9 @@ You can run tests with the `tox` command.
 And you can run auto-formatting and auto-fixing with the command
 `pre-commit run -a`. The pre-commit hooks include `muff-check` (the linter,
 which auto-fixes what it can) and `muff-format` (the code formatter), both
-configured in `muff.toml`, and `format-docstring`. Files in `tests/` are
-excluded from all the hooks.
+configured in `muff.toml`, and `format-docstring`. Files in `tests/` are not
+linted by `muff-check` yet, and the data files in `tests/files/` are excluded
+from all the hooks.
 
 Docstrings use the NumPy style and are checked with `pydoclint`
 (`tox -e pydoclint`). CI runs the pre-commit hooks (`tox -e pre-commit`), and
