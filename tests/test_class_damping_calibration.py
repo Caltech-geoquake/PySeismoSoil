@@ -74,7 +74,8 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
         )
         curve_matrix_ = mdc_.get_curve_matrix()
         for i in range(mdc_.n_layer):
-            xi = curve_matrix[:, i * 4 + 3]  # damping with Darendeli's D_min
+            # damping with Darendeli's D_min
+            xi = curve_matrix[:, i * 4 + 3]
 
             # damping specified in `vs_profile`
             xi_ = curve_matrix_[:, i * 4 + 3]
