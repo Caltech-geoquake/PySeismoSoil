@@ -49,7 +49,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
         for i in range(mdc.n_layer):
             gamma = curve_matrix[:, i * 4 + 2]
             xi = curve_matrix[:, i * 4 + 3]
-            assert np.allclose(gamma, strain_in_pct, atol=1e-05, rtol=0.0)
+            assert np.allclose(gamma, strain_in_pct, atol=1e-5, rtol=0.0)
 
             # last element of each damping curve
             assert xi[-1] >= 1.0
@@ -81,7 +81,7 @@ class Test_Class_Damping_Calibration(unittest.TestCase):
             # damping specified in `vs_profile`
             xi_ = curve_matrix_[:, i * 4 + 3]
             assert np.allclose(
-                xi_[0], vs_profile.vs_profile[i, 2] * 100, atol=1e-05, rtol=0.0
+                xi_[0], vs_profile.vs_profile[i, 2] * 100, atol=1e-5, rtol=0.0
             )
             assert np.allclose(xi_ - xi_[0], xi - xi[0])
 

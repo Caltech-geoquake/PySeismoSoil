@@ -25,9 +25,10 @@ class Test_Class_SVM(unittest.TestCase):
     def test_Vs_cap_is_user_defined(self) -> None:
         Vs30 = 256
         z1 = 10
-        svm = SVM(Vs30, z1=z1, Vs_cap=1234.5)
+        Vs_cap = 1234.5
+        svm = SVM(Vs30, z1=z1, Vs_cap=Vs_cap)
         assert svm.base_profile.vs_profile[-1, 0] == 0
-        assert svm.base_profile.vs_profile[-1, 1] == pytest.approx(1234.5)
+        assert svm.base_profile.vs_profile[-1, 1] == Vs_cap
 
     def test_Vs_cap_is_False(self) -> None:
         pass  # this case is hard to test; skipped for now

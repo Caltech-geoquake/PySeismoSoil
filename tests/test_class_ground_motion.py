@@ -296,7 +296,7 @@ class Test_Class_Ground_Motion(unittest.TestCase):
             return False
 
         r = np.corrcoef(motion_1[:, 1], motion_2[:, 1])
-        return r[1, 0] >= thres
+        return not r[1, 0] < thres
 
 
 if __name__ == '__main__':

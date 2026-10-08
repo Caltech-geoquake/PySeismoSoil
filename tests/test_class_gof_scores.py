@@ -43,12 +43,12 @@ class Test_Class_GOF_Scores(unittest.TestCase):
         score_for_ratio_0p8 = 10 * erf(0.8 - 1)
         score_for_ratio_0p64 = 10 * erf(0.8**2 - 1)
 
-        assert np.allclose(scores[0:2], 0.0, atol=1e-06)  # d1, d2
+        assert np.allclose(scores[0:2], 0.0, atol=1e-6)  # d1, d2
         assert np.allclose(
-            scores[2:4], score_for_ratio_0p64, atol=0.001
+            scores[2:4], score_for_ratio_0p64, atol=1e-3
         )  # d3, d4
         assert np.allclose(
-            scores[4:9], score_for_ratio_0p8, atol=0.01
+            scores[4:9], score_for_ratio_0p8, atol=1e-2
         )  # d5 to d9
         assert scores[9] == pytest.approx(0.1, abs=1e-7)  # d10
 

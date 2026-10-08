@@ -75,7 +75,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         ]
         # fmt: on
 
-        assert np.allclose(GGmax, GGmax_bench, atol=0.0001, rtol=0.0)
+        assert np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0)
 
     def test_get_GGmax__the_0th_layer_of_actual_H4_G_parameter_of_IBRH17(
             self,
@@ -100,7 +100,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         ]
         # fmt: on
 
-        assert np.allclose(GGmax, GGmax_bench, atol=0.0001, rtol=0.0)
+        assert np.allclose(GGmax, GGmax_bench, atol=1e-4, rtol=0.0)
 
     def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01(
             self,
@@ -296,7 +296,7 @@ class Test_Class_HH_Param(unittest.TestCase):
         assert np.allclose(
             mkz.serialize_params_to_array(H4_G_1),
             [0.000856, 0, 0.88832, 1.7492],
-            atol=1e-06,
+            atol=1e-6,
             rtol=0.0,
         )
 

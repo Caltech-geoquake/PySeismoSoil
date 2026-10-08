@@ -22,8 +22,8 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         Vs = np.array([200, 300, 400])
         assert np.allclose(
             hhc._calc_Gmax(Vs, rho),
-            [64000000.0, 153000000.0, 288000000.0],
-            rtol=0.01,
+            [6.4e7, 1.53e8, 2.88e8],
+            rtol=1e-2,
             atol=0.0,
         )
 
@@ -32,7 +32,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         rho = np.array([1600, 1700, 1800])
         sigma = hhc._calc_vertical_stress(h, rho)
         sigma_ = [627840, 2006145, 3639510]  # from MATLAB
-        assert np.allclose(sigma, sigma_, rtol=0.001, atol=0.0)
+        assert np.allclose(sigma, sigma_, rtol=1e-3, atol=0.0)
 
     def test_calc_OCR__case_1_no_upper_limit(self) -> None:
         Vs = np.array([200, 300, 400])
@@ -55,7 +55,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         phi = 30
         K0 = hhc._calc_K0(OCR, phi=phi)
         assert np.allclose(
-            K0, [0.5, 0.707, 0.866, 1.0, 1.118], atol=0.001, rtol=0.0
+            K0, [0.5, 0.707, 0.866, 1.0, 1.118], atol=1e-3, rtol=0.0
         )
 
     def test_calc_K0__case_1_phi_is_a_vector(self) -> None:
@@ -63,7 +63,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         phi = np.array([30, 40, 50, 60, 70])
         K0 = hhc._calc_K0(OCR, phi=phi)
         assert np.allclose(
-            K0, [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]], atol=0.001, rtol=0.0
+            K0, [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]], atol=1e-3, rtol=0.0
         )
 
     def test_calc_PI(self) -> None:
@@ -79,13 +79,13 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         phi = 35.0
         Tmax = hhc._calc_shear_strength(Vs, OCR, sigma_v0, K0=K0, phi=phi)
         Tmax_bench = [106405.11792473, 112706.83771548, 44359.02160861]
-        assert np.allclose(Tmax, Tmax_bench, rtol=0.001, atol=0.0)
+        assert np.allclose(Tmax, Tmax_bench, rtol=1e-3, atol=0.0)
 
     def test_calc_mean_confining_stress(self) -> None:
         sigma_v0 = np.array([1e6, 1.5e6, 2.2e6])
         K0 = np.array([0.4, 0.55, 0.7])
         sigma_m0 = hhc._calc_mean_confining_stress(sigma_v0, K0)
-        assert np.allclose(sigma_m0, [600000.0, 1050000.0, 1760000.0])
+        assert np.allclose(sigma_m0, [0.6e6, 1.05e6, 1.76e6])
 
     def test_produce_Darendeli_curves__normal_case(self) -> None:
         # Case #1: normal case
@@ -108,16 +108,16 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
                 [0.0165279, 0.0205492, 0.023331],
             ],
         )
-        assert np.allclose(GGmax, GGmax_bench, atol=1e-05, rtol=0.0)
+        assert np.allclose(GGmax, GGmax_bench, atol=1e-5, rtol=0.0)
 
         D_bench = np.array([
             [0.2041934, 0.1906769, 0.1827475],
             [0.2305960, 0.2260726, 0.2236005],
         ])
-        assert np.allclose(D, D_bench, atol=1e-05, rtol=0.0)
+        assert np.allclose(D, D_bench, atol=1e-5, rtol=0.0)
 
         gamma_ref_bench = np.array([0.1172329, 0.1492445, 0.1718822]) * 1e-3
-        assert np.allclose(gamma_ref, gamma_ref_bench, atol=1e-05, rtol=0.0)
+        assert np.allclose(gamma_ref, gamma_ref_bench, atol=1e-5, rtol=0.0)
 
     def test_produce_Darendeli_curves__one_of_the_inputs_has_incorrect_length(
             self,
@@ -203,7 +203,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
         HH_G_benchmark = np.genfromtxt(f_dir / 'HH_G_FKSH14.txt')
 
         # use low tolerance because the whole process is highly reproducible
-        assert np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-05, atol=0.0)
+        assert np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-5, atol=0.0)
 
     def test_hh_param_from_curves__case_1(self) -> None:
         # Case 1: Fit G/Gmax curves generated using Darendeli (2001)
@@ -285,7 +285,7 @@ class Test_Helper_HH_Calibration(unittest.TestCase):
 
         # use higher tolerance because MKZ curve fitting has room for small
         # errors
-        assert np.allclose(HH_G_param, HH_G_benchmark, rtol=0.01, atol=0.0)
+        assert np.allclose(HH_G_param, HH_G_benchmark, rtol=1e-2, atol=0.0)
 
     def test_hh_param_from_curves__case_2(self) -> None:
         # Case 2: Fit manually specified ("real-world") G/Gmax curves

@@ -285,7 +285,7 @@ class Test_Class_Curves(unittest.TestCase):
             if j % 4 == 3:
                 curve_benchmark[:, j] = damping
 
-        assert np.allclose(curve, curve_benchmark, rtol=1e-05, atol=0.0)
+        assert np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
 
     def test_multiple_damping_curve_get_curve_matrix(self) -> None:
         GGmax = 0.76  # choose a dummy value
@@ -299,7 +299,7 @@ class Test_Class_Curves(unittest.TestCase):
             if j % 4 == 1:
                 curve_benchmark[:, j] = GGmax
 
-        assert np.allclose(curve, curve_benchmark, rtol=1e-05, atol=0.0)
+        assert np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
 
     def test_init_multiple_GGmax_damping_curves(self) -> None:
         # Case 1: with MGC and MDC

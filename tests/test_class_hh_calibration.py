@@ -83,7 +83,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         assert np.allclose(
             HH_G_param.serialize_to_2D_array(),
             HH_G_param_benchmark.serialize_to_2D_array(),
-            rtol=1e-05,
+            rtol=1e-5,
             atol=0.0,
         )
 
@@ -163,7 +163,7 @@ class Test_Class_HH_Calibration(unittest.TestCase):
         assert np.allclose(
             HH_G_param.serialize_to_2D_array(),
             HH_G_param_benchmark.serialize_to_2D_array(),
-            rtol=0.01,
+            rtol=1e-2,
             atol=0.0,
         )
 

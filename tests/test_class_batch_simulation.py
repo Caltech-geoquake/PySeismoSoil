@@ -69,7 +69,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         accel_out_1_par = par_results[1].accel_on_surface.accel
 
         assert np.allclose(
-            accel_out_1_non_par, accel_out_1_par, atol=0.0, rtol=0.001
+            accel_out_1_non_par, accel_out_1_par, atol=0.0, rtol=1e-3
         )
 
     def test_equiv_linear(self) -> None:
@@ -95,7 +95,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         accel_out_0_par = par_results[0].accel_on_surface.accel
 
         assert np.allclose(
-            accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=0.001
+            accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=1e-3
         )
 
     def test_nonlinear(self) -> None:
@@ -121,7 +121,7 @@ class Test_Class_Batch_Simulation(unittest.TestCase):
         accel_out_0_par = par_results[0].accel_on_surface.accel
 
         assert np.allclose(
-            accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=0.001
+            accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=1e-3
         )
 
 

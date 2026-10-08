@@ -240,7 +240,7 @@ class Test_Class_Vs_Profile(unittest.TestCase):
             ],
         )
         assert np.allclose(
-            af_RO.spectrum_2col, af_benchmark, atol=1e-09, rtol=0.0
+            af_RO.spectrum_2col, af_benchmark, atol=1e-9, rtol=0.0
         )
 
     def test_f0_BH(self) -> None:
