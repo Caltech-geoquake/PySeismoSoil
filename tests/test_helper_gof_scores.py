@@ -1,38 +1,38 @@
-import os
 import unittest
-from os.path import join as _join
+from pathlib import Path
 
 import numpy as np
+import pytest
 
 import PySeismoSoil.helper_gof_scores as gof
 
-f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+f_dir = Path(__file__).resolve().parent / 'files'
 
 
 class Test_Helper_GOF_Scores(unittest.TestCase):
-    def test_calc_AriasIntensity__constant_accel(self):
+    def test_calc_AriasIntensity__constant_accel(self) -> None:
         # Ia(t) = pi / (2g) * integral of a^2 dt, so for a = 1 m/s/s lasting
         # 1 second, the peak Arias intensity is pi / (2g)
         t = np.linspace(0, 1, 101)
         accel = np.column_stack((t, np.ones_like(t)))
         Ia, Ia_peak = gof.calc_AriasIntensity(accel)
 
-        self.assertIsInstance(Ia_peak, float)
-        self.assertAlmostEqual(Ia_peak, np.pi / (2 * 9.81))
-        self.assertEqual(Ia.shape, (101, 2))
-        self.assertTrue(np.allclose(Ia[:, 0], t))
-        self.assertAlmostEqual(Ia[-1, 1], Ia_peak)
+        assert isinstance(Ia_peak, float)
+        assert Ia_peak == pytest.approx(np.pi / (2 * 9.81), abs=1e-7)
+        assert Ia.shape == (101, 2)
+        assert np.allclose(Ia[:, 0], t)
+        assert Ia[-1, 1] == pytest.approx(Ia_peak, abs=1e-7)
 
-    def test_d_89__default_fmin_and_fmax(self):
-        meas = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
+    def test_d_89__default_fmin_and_fmax(self) -> None:
+        meas = np.genfromtxt(f_dir / 'sample_accel.txt')
         d8, d9 = gof.d_89(meas, meas.copy())  # fmin and fmax are None
-        self.assertAlmostEqual(d8, 0.0)
-        self.assertAlmostEqual(d9, 0.0)
+        assert d8 == pytest.approx(0.0, abs=1e-7)
+        assert d9 == pytest.approx(0.0, abs=1e-7)
 
-    def test_d_10__default_fmin_and_fmax(self):
-        meas = np.genfromtxt(_join(f_dir, 'sample_accel.txt'))
+    def test_d_10__default_fmin_and_fmax(self) -> None:
+        meas = np.genfromtxt(f_dir / 'sample_accel.txt')
         d10 = gof.d_10(meas, meas.copy())  # fmin and fmax are None
-        self.assertAlmostEqual(d10, 0.1)
+        assert d10 == pytest.approx(0.1, abs=1e-7)
 
 
 if __name__ == '__main__':

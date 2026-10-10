@@ -1,91 +1,95 @@
-import os
 import unittest
-from os.path import join as _join
+from pathlib import Path
 
 import numpy as np
+import pytest
 
 from PySeismoSoil.class_curves import Multiple_GGmax_Curves
 from PySeismoSoil.class_hh_calibration import HH_Calibration
 from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
-f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+f_dir = Path(__file__).resolve().parent / 'files'
 
 
 class Test_Class_HH_Calibration(unittest.TestCase):
-    def test_init__success_without_curve(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        hh_c = HH_Calibration(vs_profile)  # noqa: F841
+    def test_init__success_without_curve(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        HH_Calibration(vs_profile)
 
-    def test_init__wrong_vs_profile_type(self):
-        with self.assertRaisesRegex(TypeError, 'must be of type Vs_Profile'):
+    def test_init__wrong_vs_profile_type(self) -> None:
+        with pytest.raises(TypeError, match='must be of type Vs_Profile'):
             HH_Calibration(np.array([1, 2, 3, 4, 5]))
 
-    def test_init__success_with_vs_profile_and_curve(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
-        hh_c = HH_Calibration(vs_profile, GGmax_curves=curves)  # noqa: F841
+    def test_init__success_with_vs_profile_and_curve(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
+        HH_Calibration(vs_profile, GGmax_curves=curves)
 
-    def test_init__incorrect_curves_type(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        msg = 'If `GGmax_curves` is not `None`, it must be of type Multiple_GGmax_Curves'
-        with self.assertRaisesRegex(TypeError, msg):
+    def test_init__incorrect_curves_type(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        msg = (
+            'If `GGmax_curves` is not `None`, it must be of type'
+            ' Multiple_GGmax_Curves'
+        )
+        with pytest.raises(TypeError, match=msg):
             HH_Calibration(vs_profile, GGmax_curves=np.array([1, 2, 3]))
 
-    def test_init__incorrect_length_of_curves(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
+    def test_init__incorrect_length_of_curves(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
         del curves[-1]  # remove the last layer
-        msg = 'The number of layers implied in `GGmax_curves` and `vs_profile` must be the same.'
-        with self.assertRaisesRegex(ValueError, msg):
+        msg = (
+            'The number of layers implied in `GGmax_curves` and `vs_profile`'
+            ' must be the same.'
+        )
+        with pytest.raises(ValueError, match=msg):
             HH_Calibration(vs_profile, GGmax_curves=curves)
 
-    def test_init__incorrect_Tmax_type(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
+    def test_init__incorrect_Tmax_type(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
         Tmax = [1, 2, 3, 4, 5]
         msg = '`Tmax_profile` must be a 1D numpy array.'
-        with self.assertRaisesRegex(TypeError, msg):
+        with pytest.raises(TypeError, match=msg):
             HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 
-    def test_init__incorrect_Tmax_length(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
+    def test_init__incorrect_Tmax_length(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
         Tmax = np.array([1, 2, 3])
         msg = 'The length of `Tmax_profile` needs to equal'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 
-    def test_init__success_with_curves_and_Tmax(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
+    def test_init__success_with_curves_and_Tmax(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
         Tmax = np.array([1, 2, 3, 4, 5])
         hh_c = HH_Calibration(
             vs_profile, GGmax_curves=curves, Tmax_profile=Tmax
         )
-        self.assertTrue(isinstance(hh_c.vs_profile, Vs_Profile))
-        self.assertTrue(isinstance(hh_c.GGmax_curves, Multiple_GGmax_Curves))
-        self.assertTrue(isinstance(hh_c.Tmax_profile, np.ndarray))
+        assert isinstance(hh_c.vs_profile, Vs_Profile)
+        assert isinstance(hh_c.GGmax_curves, Multiple_GGmax_Curves)
+        assert isinstance(hh_c.Tmax_profile, np.ndarray)
 
-    def test_fit__case_1_with_only_Vs_profile(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+    def test_fit__case_1_with_only_Vs_profile(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
         hh_c = HH_Calibration(vs_profile)
         HH_G_param = hh_c.fit(verbose=False)
         HH_G_param_benchmark = HH_Param_Multi_Layer(
-            _join(f_dir, 'HH_G_FKSH14.txt')
+            str(f_dir / 'HH_G_FKSH14.txt')
         )
-        self.assertTrue(
-            np.allclose(
-                HH_G_param.serialize_to_2D_array(),
-                HH_G_param_benchmark.serialize_to_2D_array(),
-                rtol=1e-5,
-                atol=0.0,
-            ),
+        assert np.allclose(
+            HH_G_param.serialize_to_2D_array(),
+            HH_G_param_benchmark.serialize_to_2D_array(),
+            rtol=1e-5,
+            atol=0.0,
         )
 
-    def test_fit__case_2_with_both_Vs_profile_and_GGmax_curves(self):
-        vs_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        curves = Multiple_GGmax_Curves(_join(f_dir, 'curve_FKSH14.txt'))
+    def test_fit__case_2_with_both_Vs_profile_and_GGmax_curves(self) -> None:
+        vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
         hh_c = HH_Calibration(vs_profile, GGmax_curves=curves)
         HH_G_param = hh_c.fit(verbose=False)
         HH_G_benchmark_data = np.array(
@@ -156,13 +160,11 @@ class Test_Class_HH_Calibration(unittest.TestCase):
             ],
         )
         HH_G_param_benchmark = HH_Param_Multi_Layer(HH_G_benchmark_data)
-        self.assertTrue(
-            np.allclose(
-                HH_G_param.serialize_to_2D_array(),
-                HH_G_param_benchmark.serialize_to_2D_array(),
-                rtol=1e-2,
-                atol=0.0,
-            ),
+        assert np.allclose(
+            HH_G_param.serialize_to_2D_array(),
+            HH_G_param_benchmark.serialize_to_2D_array(),
+            rtol=1e-2,
+            atol=0.0,
         )
 
 

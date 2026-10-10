@@ -1,8 +1,8 @@
-import os
 import unittest
-from os.path import join as _join
+from pathlib import Path
 
 import numpy as np
+import pytest
 from test_class_ground_motion import Test_Class_Ground_Motion
 
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
@@ -15,39 +15,35 @@ from PySeismoSoil.class_simulation import (
 )
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
-f_dir = _join(os.path.dirname(os.path.realpath(__file__)), 'files')
+f_dir = Path(__file__).resolve().parent / 'files'
 
 
 class Test_Class_Simulation(unittest.TestCase):
-    def test_linear(self):
-        input_motion = Ground_Motion(
-            _join(f_dir, 'sample_accel.txt'), unit='m'
-        )
-        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+    def test_linear(self) -> None:
+        input_motion = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='m')
+        soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
         ls = Linear_Simulation(soil_profile, input_motion)
         sim_result = ls.run(every_layer=True, show_fig=True)
         output = sim_result.accel_on_surface
 
-        self.assertEqual(output.accel.shape, input_motion.accel.shape)
-        self.assertEqual(output.dt, input_motion.dt)
-        self.assertEqual(output.npts, input_motion.npts)
+        assert output.accel.shape == input_motion.accel.shape
+        assert output.dt == input_motion.dt
+        assert output.npts == input_motion.npts
 
         sim_result_ = ls.run(every_layer=False, show_fig=False)
         output_ = sim_result_.accel_on_surface
 
         # Check that two algorithms produce nearly identical results
         nearly_identical = Test_Class_Ground_Motion.nearly_identical
-        self.assertTrue(
-            nearly_identical(output.accel, output_.accel, thres=0.99)
-        )
+        assert nearly_identical(output.accel, output_.accel, thres=0.99)
 
-    def test_equiv_linear(self):
-        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
+    def test_equiv_linear(self) -> None:
+        soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
         input_motion = Ground_Motion(
-            _join(f_dir, 'sample_accel.txt'), unit='gal'
+            str(f_dir / 'sample_accel.txt'), unit='gal'
         )
         curves = Multiple_GGmax_Damping_Curves(
-            data=_join(f_dir, 'curve_FKSH14.txt')
+            data=str(f_dir / 'curve_FKSH14.txt')
         )
         equiv_lin_sim = Equiv_Linear_Simulation(
             soil_profile,
@@ -76,18 +72,15 @@ class Test_Class_Simulation(unittest.TestCase):
         ]
         # fmt: on
 
-        tol = 0.01  # FFT of scipy and MATLAB are different, hence a lenient tolerance
-        self.assertTrue(
-            np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0)
-        )
+        # FFT of scipy and MATLAB are different, hence a lenient tolerance
+        tol = 0.01
+        assert np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0)
 
-    def test_nonlinear_init(self):
-        input_motion = Ground_Motion(
-            _join(f_dir, 'sample_accel.txt'), unit='m'
-        )
-        soil_profile = Vs_Profile(_join(f_dir, 'profile_FKSH14.txt'))
-        HH_G = HH_Param_Multi_Layer(_join(f_dir, 'HH_G_FKSH14.txt'))
-        HH_x = HH_Param_Multi_Layer(_join(f_dir, 'HH_X_FKSH14.txt'))
+    def test_nonlinear_init(self) -> None:
+        input_motion = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='m')
+        soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+        HH_G = HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt'))
+        HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
 
         # this should succeed
         Nonlinear_Simulation(
@@ -103,9 +96,7 @@ class Test_Class_Simulation(unittest.TestCase):
         HH_x_data = HH_x.param_list
         HH_G_ = HH_Param_Multi_Layer(HH_G_data[:-1])  # exclude one layer
         HH_x_ = HH_Param_Multi_Layer(HH_x_data[:-1])  # exclude one layer
-        with self.assertRaisesRegex(
-            ValueError, 'Not enough sets of parameters'
-        ):
+        with pytest.raises(ValueError, match='Not enough sets of parameters'):
             Nonlinear_Simulation(
                 soil_profile,
                 input_motion,
@@ -113,9 +104,7 @@ class Test_Class_Simulation(unittest.TestCase):
                 xi_param=HH_x,
             )
 
-        with self.assertRaisesRegex(
-            ValueError, 'Not enough sets of parameters'
-        ):
+        with pytest.raises(ValueError, match='Not enough sets of parameters'):
             Nonlinear_Simulation(
                 soil_profile,
                 input_motion,
