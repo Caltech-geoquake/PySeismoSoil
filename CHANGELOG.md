@@ -15,6 +15,9 @@
     fixed. Tests use plain `assert` statements and `pytest.raises()` instead of
     the `unittest`-style assertion methods, and read the data files via
     `pathlib`
+  - The tests are now plain `pytest` functions instead of methods of
+    `unittest.TestCase` classes. Shared setup is now in `pytest` fixtures or
+    module-level constants
 
 ## [0.7.0] - 2026-10-06
 
