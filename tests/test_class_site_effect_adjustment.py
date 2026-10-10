@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from PySeismoSoil.class_ground_motion import Ground_Motion
 from PySeismoSoil.class_site_effect_adjustment import Site_Effect_Adjustment
@@ -24,19 +25,20 @@ def test_run__normal_case() -> None:
     assert isinstance(gm_out, Ground_Motion)
 
 
-def test_run__out_of_bound_Vs30_lenient_case() -> None:
+@pytest.mark.parametrize(
+    ('out_of_bound_values', 'values_at_the_bound'),
+    [
+        pytest.param((170, 75), (175, 75), id='out_of_bound_Vs30'),
+        pytest.param((360, 927), (360, 900), id='out_of_bound_z1'),
+    ],
+)
+def test_run__lenient_case(
+        out_of_bound_values: tuple[float, float],
+        values_at_the_bound: tuple[float, float],
+) -> None:
     gm_in = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='gal')
-    sea1 = Site_Effect_Adjustment(gm_in, 170, 75, lenient=True)
-    sea2 = Site_Effect_Adjustment(gm_in, 175, 75)
-    motion_out1 = sea1.run()[0]
-    motion_out2 = sea2.run()[0]
-    assert np.allclose(motion_out1.accel, motion_out2.accel)
-
-
-def test_run__out_of_bound_z1_lenient_case() -> None:
-    gm_in = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='gal')
-    sea1 = Site_Effect_Adjustment(gm_in, 360, 927, lenient=True)
-    sea2 = Site_Effect_Adjustment(gm_in, 360, 900)
+    sea1 = Site_Effect_Adjustment(gm_in, *out_of_bound_values, lenient=True)
+    sea2 = Site_Effect_Adjustment(gm_in, *values_at_the_bound)
     motion_out1 = sea1.run()[0]
     motion_out2 = sea2.run()[0]
     assert np.allclose(motion_out1.accel, motion_out2.accel)

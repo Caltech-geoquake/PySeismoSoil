@@ -35,40 +35,46 @@ def test_calc_vertical_stress() -> None:
     assert np.allclose(sigma, sigma_, rtol=1e-3, atol=0.0)
 
 
-def test_calc_OCR__case_1_no_upper_limit() -> None:
+@pytest.mark.parametrize(
+    ('OCR_upper_limit', 'OCR_bench'),
+    [
+        pytest.param(
+            None, [4.26254237, 5.80208548, 7.08490535], id='no_upper_limit'
+        ),
+        pytest.param(
+            6.0, [4.26254237, 5.80208548, 6.0], id='with_an_upper_limit_of_6'
+        ),
+    ],
+)
+def test_calc_OCR(
+        OCR_upper_limit: float | None, OCR_bench: list[float]
+) -> None:
     Vs = np.array([200, 300, 400])
     rho = np.array([1600, 1700, 1800])
     sigma_v0 = np.array([6e4, 8e4, 1e5])
-    OCR = hhc._calc_OCR(Vs, rho, sigma_v0)
-    OCR_bench = [4.26254237, 5.80208548, 7.08490535]
+    OCR = hhc._calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=OCR_upper_limit)
     assert np.allclose(OCR, OCR_bench)
 
 
-def test_calc_OCR__case_2_with_an_upper_limit_of_6() -> None:
-    Vs = np.array([200, 300, 400])
-    rho = np.array([1600, 1700, 1800])
-    sigma_v0 = np.array([6e4, 8e4, 1e5])
-    OCR = hhc._calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=6.0)
-    OCR_bench = [4.26254237, 5.80208548, 6.0]
-    assert np.allclose(OCR, OCR_bench)
-
-
-def test_calc_K0__case_1_phi_is_a_scalar() -> None:
+@pytest.mark.parametrize(
+    ('phi', 'K0_bench'),
+    [
+        pytest.param(
+            30, [0.5, 0.707, 0.866, 1.0, 1.118], id='phi_is_a_scalar'
+        ),
+        pytest.param(
+            np.array([30, 40, 50, 60, 70]),
+            [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]],
+            id='phi_is_a_vector',
+        ),
+    ],
+)
+def test_calc_K0(
+        phi: float | np.ndarray, K0_bench: list[float] | list[list[float]]
+) -> None:
     OCR = np.array([1, 2, 3, 4, 5])
-    phi = 30
     K0 = hhc._calc_K0(OCR, phi=phi)
-    assert np.allclose(
-        K0, [0.5, 0.707, 0.866, 1.0, 1.118], atol=1e-3, rtol=0.0
-    )
-
-
-def test_calc_K0__case_1_phi_is_a_vector() -> None:
-    OCR = np.array([1, 2, 3, 4, 5])
-    phi = np.array([30, 40, 50, 60, 70])
-    K0 = hhc._calc_K0(OCR, phi=phi)
-    assert np.allclose(
-        K0, [[0.5, 0.5577, 0.54279, 0.44506, 0.2736]], atol=1e-3, rtol=0.0
-    )
+    assert np.allclose(K0, K0_bench, atol=1e-3, rtol=0.0)
 
 
 def test_calc_PI() -> None:
@@ -145,59 +151,55 @@ def test_produce_Darendeli_curves__an_input_has_incorrect_length() -> None:
         )
 
 
-def test_optimization_kernel__case_1() -> None:
-    # Comparing results with MATLAB for different test cases
+# Comparing results with MATLAB for different test cases
+@pytest.mark.parametrize(
+    ('x_ref', 'Gmax', 'Tmax', 'mu', 'param_bench'),
+    [
+        pytest.param(
+            0.000924894,
+            5711500000.0,
+            1111840.0,
+            1.0,
+            [100.0, 0.000104122, 0.944975],  # results by MATLAB
+            id='case_1',
+        ),
+        pytest.param(
+            0.000423305,
+            238271000.0,
+            120482.0,
+            0.0605238,
+            [100.0, 0.000101161, 0.702563],
+            id='case_2',
+        ),
+        pytest.param(
+            0.000600213,
+            1112580000.0,
+            450959.0,
+            0.045854,
+            [100.0, 5.06128e-05, 0.686577],
+            id='case_3',
+        ),
+        pytest.param(
+            0.000898872,
+            5932650000.0,
+            1031310.0,
+            1.0,
+            [100.0, 0.000101161, 0.934121],
+            id='case_4',
+        ),
+    ],
+)
+def test_optimization_kernel(
+        x_ref: float,
+        Gmax: float,
+        Tmax: float,
+        mu: float,
+        param_bench: list[float],
+) -> None:
     x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
-    x_ref = 0.000924894
     beta = 1.0
     s = 0.919
-    Gmax = 5711500000.0
-    Tmax = 1111840.0
-    mu = 1.0
     a, x_t, d = hhc._optimization_kernel(x, x_ref, beta, s, Gmax, Tmax, mu)
-    param_bench = [100.0, 0.000104122, 0.944975]  # results by MATLAB
-    assert np.allclose([a, x_t, d], param_bench)
-
-
-def test_optimization_kernel__case_2() -> None:
-    # Comparing results with MATLAB for different test cases
-    x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
-    x_ref = 0.000423305
-    beta = 1.0
-    s = 0.919
-    Gmax = 238271000.0
-    Tmax = 120482.0
-    mu = 0.0605238
-    a, x_t, d = hhc._optimization_kernel(x, x_ref, beta, s, Gmax, Tmax, mu)
-    param_bench = [100.0, 0.000101161, 0.702563]
-    assert np.allclose([a, x_t, d], param_bench)
-
-
-def test_optimization_kernel__case_3() -> None:
-    # Comparing results with MATLAB for different test cases
-    x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
-    x_ref = 0.000600213
-    beta = 1.0
-    s = 0.919
-    Gmax = 1112580000.0
-    Tmax = 450959.0
-    mu = 0.045854
-    a, x_t, d = hhc._optimization_kernel(x, x_ref, beta, s, Gmax, Tmax, mu)
-    param_bench = [100.0, 5.06128e-05, 0.686577]
-    assert np.allclose([a, x_t, d], param_bench)
-
-
-def test_optimization_kernel__case_4() -> None:
-    # Comparing results with MATLAB for different test cases
-    x = np.geomspace(1e-6, 0.1, num=400)  # unit: 1
-    x_ref = 0.000898872
-    beta = 1.0
-    s = 0.919
-    Gmax = 5932650000.0
-    Tmax = 1031310.0
-    mu = 1.0
-    a, x_t, d = hhc._optimization_kernel(x, x_ref, beta, s, Gmax, Tmax, mu)
-    param_bench = [100.0, 0.000101161, 0.934121]
     assert np.allclose([a, x_t, d], param_bench)
 
 

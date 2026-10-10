@@ -1,5 +1,6 @@
 import os
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -30,38 +31,74 @@ def test_loading_data__two_columns_from_file() -> None:
     assert gm.rms_accel == pytest.approx(0.4645, abs=tol)
 
 
-def test_loading_data__two_columns_from_numpy_array() -> None:
-    # Two columns from numpy array
-    gm = GM(np.array([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]]).T, unit='m/s/s')
-    assert gm.pga == pytest.approx(4, abs=1e-7)
+@pytest.mark.parametrize(
+    ('data', 'unit', 'dt', 'pga_attr', 'pga_benchmark'),
+    [
+        pytest.param(
+            np.array([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]]).T,
+            'm/s/s',
+            None,
+            'pga',
+            4,
+            id='two_columns_from_numpy_array',
+        ),
+        pytest.param(
+            str(f_dir / 'one_column_data_example.txt'),
+            'g',
+            0.2,
+            'pga_in_g',
+            12.0,
+            id='one_column_from_file',
+        ),
+        pytest.param(
+            np.array([1, 2, 3, 4, 5]),
+            'gal',
+            0.1,
+            'pga_in_gal',
+            5.0,
+            id='one_column_from_numpy_array',
+        ),
+    ],
+)
+def test_loading_data(
+        data: str | np.ndarray,
+        unit: str,
+        dt: float | None,
+        pga_attr: str,
+        pga_benchmark: float,
+) -> None:
+    gm = GM(data, unit=unit, dt=dt)
+    assert getattr(gm, pga_attr) == pytest.approx(pga_benchmark, abs=1e-7)
 
 
-def test_loading_data__one_column_from_file() -> None:
-    # One column from file
-    gm = GM(str(f_dir / 'one_column_data_example.txt'), unit='g', dt=0.2)
-    assert gm.pga_in_g == pytest.approx(12.0, abs=1e-7)
-
-
-def test_loading_data__one_column_from_numpy_array() -> None:
-    # One column from numpy array
-    gm = GM(np.array([1, 2, 3, 4, 5]), unit='gal', dt=0.1)
-    assert gm.pga_in_gal == pytest.approx(5.0, abs=1e-7)
-
-
-def test_loading_data__one_column_without_specifying_dt() -> None:
-    # One column without specifying dt
-    error_msg = 'is needed for one-column `data`.'
-    with pytest.raises(ValueError, match=error_msg):
-        GM(np.array([1, 2, 3, 4, 5]), unit='gal')
-
-
-def test_loading_data__test_invalid_unit_names() -> None:
-    # Test invalid unit names
-    with pytest.raises(ValueError, match=re.escape('Invalid `unit` name.')):
-        GM(np.array([1, 2, 3, 4, 5]), unit='test', dt=0.1)
-
-    with pytest.raises(ValueError, match=r"use '/s/s' instead of 's\^2'"):
-        GM(np.array([1, 2, 3, 4, 5]), unit='m/s^2', dt=0.1)
+@pytest.mark.parametrize(
+    ('unit', 'dt', 'match'),
+    [
+        pytest.param(
+            'gal',
+            None,
+            'is needed for one-column `data`.',
+            id='one_column_without_specifying_dt',
+        ),
+        pytest.param(
+            'test',
+            0.1,
+            re.escape('Invalid `unit` name.'),
+            id='invalid_unit_name',
+        ),
+        pytest.param(
+            'm/s^2',
+            0.1,
+            r"use '/s/s' instead of 's\^2'",
+            id='s_squared_in_unit_name',
+        ),
+    ],
+)
+def test_loading_data__invalid_input(
+        unit: str, dt: float | None, match: str
+) -> None:
+    with pytest.raises(ValueError, match=match):
+        GM(np.array([1, 2, 3, 4, 5]), unit=unit, dt=dt)
 
 
 def test_differentiation() -> None:
@@ -170,28 +207,21 @@ def test_baseline_correction() -> None:
     assert isinstance(corrected, GM)
 
 
-def test_high_pass_filter() -> None:
+@pytest.mark.parametrize(
+    ('filter_motion', 'cutoff_freq'),
+    [
+        pytest.param(GM.highpass, 1.0, id='high_pass'),
+        pytest.param(GM.lowpass, 1.0, id='low_pass'),
+        pytest.param(GM.bandpass, [0.5, 8], id='band_pass'),
+        pytest.param(GM.bandstop, [0.5, 8], id='band_stop'),
+    ],
+)
+def test_filter(
+        filter_motion: Callable[..., GM], cutoff_freq: float | list[float]
+) -> None:
     gm = GM(str(f_dir / 'sample_accel.txt'), unit='m')
-    hp = gm.highpass(cutoff_freq=1.0, show_fig=True)
-    assert isinstance(hp, GM)
-
-
-def test_low_pass_filter() -> None:
-    gm = GM(str(f_dir / 'sample_accel.txt'), unit='m')
-    lp = gm.lowpass(cutoff_freq=1.0, show_fig=True)
-    assert isinstance(lp, GM)
-
-
-def test_band_pass_filter() -> None:
-    gm = GM(str(f_dir / 'sample_accel.txt'), unit='m')
-    bp = gm.bandpass(cutoff_freq=[0.5, 8], show_fig=True)
-    assert isinstance(bp, GM)
-
-
-def test_band_stop_filter() -> None:
-    gm = GM(str(f_dir / 'sample_accel.txt'), unit='m')
-    bs = gm.bandstop(cutoff_freq=[0.5, 8], show_fig=True)
-    assert isinstance(bs, GM)
+    filtered = filter_motion(gm, cutoff_freq=cutoff_freq, show_fig=True)
+    assert isinstance(filtered, GM)
 
 
 def test_amplify_via_profile() -> None:

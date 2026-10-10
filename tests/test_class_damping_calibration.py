@@ -1,9 +1,14 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from PySeismoSoil.class_damping_calibration import Damping_Calibration
+from PySeismoSoil.class_parameters import (
+    HH_Param_Multi_Layer,
+    MKZ_Param_Multi_Layer,
+)
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = Path(__file__).resolve().parent / 'files'
@@ -86,24 +91,22 @@ def test_get_damping_curves__check_use_Darendeli_Dmin_correct() -> None:
         assert np.allclose(xi_ - xi_[0], xi - xi[0])
 
 
-def test_get_HH_x_param() -> None:
-    # Only test that `get_HH_x_param()` can run without bugs:
+@pytest.mark.parametrize(
+    'get_param',
+    [
+        pytest.param(Damping_Calibration.get_HH_x_param, id='HH_x'),
+        pytest.param(Damping_Calibration.get_H4_x_param, id='H4_x'),
+    ],
+)
+def test_get_x_param(
+        get_param: Callable[..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+) -> None:
+    # Only test that `get_HH_x_param()` and `get_H4_x_param()` can run
+    # without bugs:
     vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
     d_cal = Damping_Calibration(vs_profile)
-    d_cal.get_HH_x_param(
-        pop_size=1,
-        n_gen=1,
-        save_txt=False,
-        use_scipy=True,
-        show_fig=True,
-    )
-
-
-def test_get_H4_x_param() -> None:
-    # Only test that `get_H4_x_param()` can run without bugs:
-    vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
-    d_cal = Damping_Calibration(vs_profile)
-    d_cal.get_H4_x_param(
+    get_param(
+        d_cal,
         pop_size=1,
         n_gen=1,
         save_txt=False,

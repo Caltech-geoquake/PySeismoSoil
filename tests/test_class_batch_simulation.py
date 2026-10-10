@@ -18,23 +18,36 @@ from PySeismoSoil.class_Vs_profile import Vs_Profile
 f_dir = Path(__file__).resolve().parent / 'files'
 
 
-def test_init__case_1_not_a_list() -> None:
-    with pytest.raises(
-        TypeError,
-        match=re.escape('`list_of_simulations` should be a list.'),
-    ):
-        Batch_Simulation(1.4)
-
-
-def test_init__case_2_a_list_of_0_length() -> None:
-    with pytest.raises(ValueError, match='should have at least one element'):
-        Batch_Simulation([])
-
-
-def test_init__case_3_wrong_type() -> None:
-    msg = 'Elements of `list_of_simulations` should be of type'
-    with pytest.raises(TypeError, match=msg):
-        Batch_Simulation([1, 2, 3])
+@pytest.mark.parametrize(
+    ('list_of_simulations', 'exception', 'match'),
+    [
+        pytest.param(
+            1.4,
+            TypeError,
+            re.escape('`list_of_simulations` should be a list.'),
+            id='case_1_not_a_list',
+        ),
+        pytest.param(
+            [],
+            ValueError,
+            'should have at least one element',
+            id='case_2_a_list_of_0_length',
+        ),
+        pytest.param(
+            [1, 2, 3],
+            TypeError,
+            'Elements of `list_of_simulations` should be of type',
+            id='case_3_wrong_type',
+        ),
+    ],
+)
+def test_init__failure(
+        list_of_simulations: float | list[float],
+        exception: type[Exception],
+        match: str,
+) -> None:
+    with pytest.raises(exception, match=match):
+        Batch_Simulation(list_of_simulations)
 
 
 def test_init__case_4_inhomogeneous_element_type() -> None:

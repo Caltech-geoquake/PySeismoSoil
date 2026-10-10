@@ -18,6 +18,9 @@
   - The tests are now plain `pytest` functions instead of methods of
     `unittest.TestCase` classes. Shared setup is now in `pytest` fixtures or
     module-level constants
+  - Test functions that differ only in their inputs and expected results are
+    now combined into parametrized tests (`pytest.mark.parametrize`). Each case
+    still runs (and is reported) as a separate test
 
 ## [0.7.0] - 2026-10-06
 

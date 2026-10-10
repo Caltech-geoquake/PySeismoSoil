@@ -174,36 +174,80 @@ def test_plot_curves() -> None:
     mkzp.plot_curves()
 
 
-def test_hh_param_multi_layer__can_initiate_an_object_from_a_file() -> None:
-    HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
-    assert len(HH_x) == 5
-    assert HH_x.n_layer == 5
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'n_layer'),
+    [
+        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 5, id='HH'),
+        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14, id='MKZ'),
+    ],
+)
+def test_param_multi_layer__can_initiate_an_object_from_a_file(
+        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        file_name: str,
+        n_layer: int,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    assert len(param) == n_layer
+    assert param.n_layer == n_layer
 
 
-def test_hh_param_multi_layer__can_initiate_an_object_from_a_2D_array() -> (
-    None
-):
-    HH_x_array = np.genfromtxt(f_dir / 'HH_X_FKSH14.txt')
-    HH_x_from_array = HH_Param_Multi_Layer(HH_x_array)
-    assert len(HH_x_from_array) == 5
-    assert HH_x_from_array.n_layer == 5
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'n_layer'),
+    [
+        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 5, id='HH'),
+        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14, id='MKZ'),
+    ],
+)
+def test_param_multi_layer__can_initiate_an_object_from_a_2D_array(
+        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        file_name: str,
+        n_layer: int,
+) -> None:
+    param_array = np.genfromtxt(f_dir / file_name)
+    param_from_array = param_class(param_array)
+    assert len(param_from_array) == n_layer
+    assert param_from_array.n_layer == n_layer
 
 
-def test_hh_param_multi_layer__identical_objects_from_file_or_array() -> None:
-    HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
-    HH_x_array = np.genfromtxt(f_dir / 'HH_X_FKSH14.txt')
-    HH_x_from_array = HH_Param_Multi_Layer(HH_x_array)
+@pytest.mark.parametrize(
+    ('param_class', 'file_name'),
+    [
+        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', id='HH'),
+        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', id='MKZ'),
+    ],
+)
+def test_param_multi_layer__identical_objects_from_file_or_array(
+        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        file_name: str,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    param_array = np.genfromtxt(f_dir / file_name)
+    param_from_array = param_class(param_array)
     assert np.allclose(
-        HH_x.serialize_to_2D_array(),
-        HH_x_from_array.serialize_to_2D_array(),
+        param.serialize_to_2D_array(),
+        param_from_array.serialize_to_2D_array(),
     )
 
 
-def test_hh_param_multi_layer__test_list_operations() -> None:
-    HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
-    del HH_x[3]
-    assert len(HH_x) == 4
-    assert len(HH_x) == 4
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'index_to_delete', 'n_layer_after'),
+    [
+        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 3, 4, id='HH'),
+        pytest.param(
+            MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 6, 13, id='MKZ'
+        ),
+    ],
+)
+def test_param_multi_layer__test_list_operations(
+        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        file_name: str,
+        index_to_delete: int,
+        n_layer_after: int,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    del param[index_to_delete]
+    assert len(param) == n_layer_after
+    assert param.n_layer == n_layer_after
 
 
 def test_hh_param_multi_layer__test_contents_of_list_elements() -> None:
@@ -237,38 +281,6 @@ def test_hh_param_multi_layer__test_contents_of_list_elements() -> None:
     )
 
 
-def test_mkz_param_multi_layer__can_initiate_an_object_from_a_file() -> None:
-    H4_G = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
-    assert len(H4_G) == 14
-    assert H4_G.n_layer == 14
-
-
-def test_mkz_param_multi_layer__can_initiate_an_object_from_a_2D_array() -> (
-    None
-):
-    H4_G_array = np.genfromtxt(f_dir / 'H4_G_IWTH04.txt')
-    H4_G_from_array = MKZ_Param_Multi_Layer(H4_G_array)
-    assert len(H4_G_from_array) == 14
-    assert H4_G_from_array.n_layer == 14
-
-
-def test_mkz_param_multi_layer__identical_objects_from_file_or_array() -> None:
-    H4_G = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
-    H4_G_array = np.genfromtxt(f_dir / 'H4_G_IWTH04.txt')
-    H4_G_from_array = MKZ_Param_Multi_Layer(H4_G_array)
-    assert np.allclose(
-        H4_G.serialize_to_2D_array(),
-        H4_G_from_array.serialize_to_2D_array(),
-    )
-
-
-def test_mkz_param_multi_layer__test_list_operations() -> None:
-    H4_G = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
-    del H4_G[6]
-    assert len(H4_G) == 13
-    assert H4_G.n_layer == 13
-
-
 def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
     H4_G = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
     H4_G_1 = H4_G[1]
@@ -287,71 +299,79 @@ def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
     )
 
 
-def test_construct_curves__from_HH_G_parameters() -> None:
-    HH_G = HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt'))
-    mgc, _ = HH_G.construct_curves()
-    curves = mgc.get_curve_matrix()
-    assert mgc.n_layer == HH_G.n_layer
-    assert curves.shape[1] == HH_G.n_layer * 4
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'curves_index'),
+    [
+        # `construct_curves()` returns the G/Gmax curves (index 0) and the
+        # damping curves (index 1). Check the G/Gmax curves for the G
+        # parameters, and the damping curves for the x parameters.
+        pytest.param(HH_Param_Multi_Layer, 'HH_G_FKSH14.txt', 0, id='HH_G'),
+        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 1, id='HH_x'),
+        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 0, id='H4_G'),
+        pytest.param(MKZ_Param_Multi_Layer, 'H4_x_IWTH04.txt', 1, id='H4_x'),
+    ],
+)
+def test_construct_curves(
+        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        file_name: str,
+        curves_index: int,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    curves_object = param.construct_curves()[curves_index]
+    curves = curves_object.get_curve_matrix()
+    assert curves_object.n_layer == param.n_layer
+    assert curves.shape[1] == param.n_layer * 4
 
 
-def test_construct_curves__from_HH_x_parameters() -> None:
-    HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
-    _, mdc = HH_x.construct_curves()
-    curves = mdc.get_curve_matrix()
-    assert mdc.n_layer == HH_x.n_layer
-    assert curves.shape[1] == HH_x.n_layer * 4
+@pytest.mark.parametrize(
+    ('param_class', 'data', 'benchmark'),
+    [
+        pytest.param(
+            HH_Param,
+            {
+                'gamma_t': 1,
+                'a': 2,
+                'gamma_ref': 3,
+                'beta': 4,
+                's': 5,
+                'Gmax': 6,
+                'mu': 7,
+                'Tmax': 8,
+                'd': 9,
+            },
+            [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            id='HH_x',
+        ),
+        pytest.param(
+            MKZ_Param,
+            {'gamma_ref': 5, 's': 6, 'beta': 7, 'Gmax': 8},
+            [5, 6, 7, 8],
+            id='H4_x',
+        ),
+    ],
+)
+def test_param_serialize(
+        param_class: type[HH_Param | MKZ_Param],
+        data: dict[str, float],
+        benchmark: list[float],
+) -> None:
+    param = param_class(data)
+    param_array = param.serialize()
+    assert np.allclose(param_array, benchmark)
 
 
-def test_construct_curves__from_H4_G_parameters() -> None:
-    H4_G = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
-    mgc, _ = H4_G.construct_curves()
-    curves = mgc.get_curve_matrix()
-    assert mgc.n_layer == H4_G.n_layer
-    assert curves.shape[1] == H4_G.n_layer * 4
-
-
-def test_construct_curves__from_H4_x_parameters() -> None:
-    H4_x = MKZ_Param_Multi_Layer(str(f_dir / 'H4_x_IWTH04.txt'))
-    _, mdc = H4_x.construct_curves()
-    curves = mdc.get_curve_matrix()
-    assert mdc.n_layer == H4_x.n_layer
-    assert curves.shape[1] == H4_x.n_layer * 4
-
-
-def test_param_serialize__from_HH_x_parameters() -> None:
-    HH_x = HH_Param(
-        {
-            'gamma_t': 1,
-            'a': 2,
-            'gamma_ref': 3,
-            'beta': 4,
-            's': 5,
-            'Gmax': 6,
-            'mu': 7,
-            'Tmax': 8,
-            'd': 9,
-        },
-    )
-    HH_x_array = HH_x.serialize()
-    assert np.allclose(HH_x_array, [1, 2, 3, 4, 5, 6, 7, 8, 9])
-
-
-def test_param_serialize__from_H4_x_parameters() -> None:
-    H4_x = MKZ_Param({'gamma_ref': 5, 's': 6, 'beta': 7, 'Gmax': 8})
-    H4_x_array = H4_x.serialize()
-    assert np.allclose(H4_x_array, [5, 6, 7, 8])
-
-
-def test_serialize_to_2D_array__from_HH_x_parameters() -> None:
-    HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
-    HH_x_2D_array = HH_x.serialize_to_2D_array()
-    HH_x_2D_array_bench = np.genfromtxt(f_dir / 'HH_X_FKSH14.txt')
-    assert np.allclose(HH_x_2D_array, HH_x_2D_array_bench)
-
-
-def test_serialize_to_2D_array__from_H4_G_parameters() -> None:
-    H4_G = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
-    H4_G_2D_array = H4_G.serialize_to_2D_array()
-    H4_G_2D_array_bench = np.genfromtxt(f_dir / 'H4_G_IWTH04.txt')
-    assert np.allclose(H4_G_2D_array, H4_G_2D_array_bench)
+@pytest.mark.parametrize(
+    ('param_class', 'file_name'),
+    [
+        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', id='HH_x'),
+        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', id='H4_G'),
+    ],
+)
+def test_serialize_to_2D_array(
+        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        file_name: str,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    param_2D_array = param.serialize_to_2D_array()
+    param_2D_array_bench = np.genfromtxt(f_dir / file_name)
+    assert np.allclose(param_2D_array, param_2D_array_bench)
