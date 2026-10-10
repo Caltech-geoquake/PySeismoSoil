@@ -132,9 +132,7 @@ def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01() -> None:
     assert np.allclose(damping, damping_bench, atol=7.0, rtol=0.0)
 
 
-def test_get_damping__the_0th_layer_of_actual_H4_x_parameter_from_IBTH17() -> (
-    None
-):
+def test_get_damping__0th_layer_of_actual_H4_x_param_from_IBTH17() -> None:
     params = np.array([0.00062111, 0, 0.60001, 1.797])
     H4_x = MKZ_Param(mkz.deserialize_array_to_params(params, from_files=True))
     damping = H4_x.get_damping(strain_in_pct=np.geomspace(0.0001, 6, num=50))
