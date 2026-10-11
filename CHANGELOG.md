@@ -21,6 +21,10 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
+- Fixed
+  - `Damping_Calibration.get_H4_x_param()` returning HH parameters
+    (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
+    (`MKZ_Param_Multi_Layer`) (#60)
 
 ## [0.7.0] - 2026-10-06
 

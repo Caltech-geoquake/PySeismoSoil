@@ -92,20 +92,40 @@ def test_get_damping_curves__check_use_Darendeli_Dmin_correct() -> None:
 
 
 @pytest.mark.parametrize(
-    'get_param',
+    ('get_param', 'expected_class', 'expected_keys'),
     [
-        pytest.param(Damping_Calibration.get_HH_x_param, id='HH_x'),
-        pytest.param(Damping_Calibration.get_H4_x_param, id='H4_x'),
+        pytest.param(
+            Damping_Calibration.get_HH_x_param,
+            HH_Param_Multi_Layer,
+            {
+                'gamma_t',
+                'a',
+                'gamma_ref',
+                'beta',
+                's',
+                'Gmax',
+                'mu',
+                'Tmax',
+                'd',
+            },
+            id='HH_x',
+        ),
+        pytest.param(
+            Damping_Calibration.get_H4_x_param,
+            MKZ_Param_Multi_Layer,
+            {'gamma_ref', 's', 'beta', 'Gmax'},
+            id='H4_x',
+        ),
     ],
 )
 def test_get_HH_x_or_H4_x_param(
         get_param: Callable[..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        expected_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
+        expected_keys: set[str],
 ) -> None:
-    # Only test that `get_HH_x_param()` and `get_H4_x_param()` can run
-    # without bugs:
     vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
     d_cal = Damping_Calibration(vs_profile)
-    get_param(
+    param = get_param(
         d_cal,
         pop_size=1,
         n_gen=1,
@@ -113,3 +133,7 @@ def test_get_HH_x_or_H4_x_param(
         use_scipy=True,
         show_fig=True,
     )
+    assert isinstance(param, expected_class)
+    assert param.n_layer == vs_profile.n_layer
+    for layer_param in param.param_list:
+        assert set(layer_param.keys()) == expected_keys
