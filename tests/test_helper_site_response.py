@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -244,17 +245,26 @@ def test_calc_Vs30_and_VsZ() -> None:
     assert vs30 == pytest.approx(vs30_benchmark, abs=1e-7)
 
 
-def test_calc_z1__normal_case__Vs_reaches_1000_meters_per_sec() -> None:
-    vs_prof_1 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
-    assert sr.calc_z1(vs_prof_1) == pytest.approx(12, abs=1e-7)
-
-
-def test_calc_z1__abnormal_case__Vs_doesnt_reaches_1000_meters_per_sec() -> (
-    None
-):
-    # Abnormal case: Vs does not reach 1000 m/s ---> use total depth
-    vs_prof_2 = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 800, 900]]).T
-    assert sr.calc_z1(vs_prof_2) == pytest.approx(15, abs=1e-7)
+# The profiles are transposed in the test.
+@pytest.mark.parametrize(
+    ('vs_profile', 'z1_benchmark'),
+    [
+        pytest.param(
+            [[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]],
+            12,
+            id='normal_case__Vs_reaches_1000_meters_per_sec',
+        ),
+        # Abnormal case: Vs does not reach 1000 m/s ---> use total depth
+        pytest.param(
+            [[5, 4, 3, 2, 1], [200, 500, 700, 800, 900]],
+            15,
+            id='abnormal_case__Vs_doesnt_reach_1000_meters_per_sec',
+        ),
+    ],
+)
+def test_calc_z1(vs_profile: list[list[float]], z1_benchmark: float) -> None:
+    z1 = sr.calc_z1(np.array(vs_profile).T)
+    assert z1 == pytest.approx(z1_benchmark, abs=1e-7)
 
 
 def test_thk2dep_and_dep2thk() -> None:
@@ -313,57 +323,75 @@ def test_gen_profile_plot_array() -> None:
     assert np.allclose(y, y_benchmark)
 
 
-def test_calc_GGmax_from_stress_strain_curve__linear_case_GGmax_is_1() -> None:
-    # Test linear stress strain: G/Gmax should be all 1's
+@pytest.mark.parametrize(
+    ('stress', 'GGmax_benchmark'),
+    [
+        # Test linear stress strain: G/Gmax should be all 1's
+        pytest.param(
+            np.array([2, 4, 6]), [1, 1, 1], id='linear_case_GGmax_is_1'
+        ),
+        pytest.param(
+            np.array([4, 6, 7]),
+            [1.0, 3.0 / 4, 7.0 / 3.0 / 4],
+            id='a_hand_calculated_case',
+        ),
+    ],
+)
+def test_calc_GGmax_from_stress_strain_curve(
+        stress: np.ndarray, GGmax_benchmark: list[float]
+) -> None:
     strain = np.array([0.1, 0.2, 0.3])
-    stress = np.array([2, 4, 6])
     GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
-    assert np.allclose(GGmax, [1, 1, 1])
+    assert np.allclose(GGmax, GGmax_benchmark)
 
 
-def test_calc_GGmax_from_stress_strain_curve__a_hand_calculated_case() -> None:
-    strain = np.array([0.1, 0.2, 0.3])
-    stress = np.array([4, 6, 7])
-    GGmax = sr.calc_GGmax_from_stress_strain(strain, stress)
-    assert np.allclose(GGmax, [1.0, 3.0 / 4, 7.0 / 3.0 / 4])
-
-
-def test_calc_damping_from_stress_strain__case_1() -> None:
-    # Case 1: Test linear stress strain: damping should be 0
-    strain = np.array([0.1, 0.2, 0.3])
-    stress = np.array([2, 4, 6])
+@pytest.mark.parametrize(
+    ('strain', 'stress', 'damping_benchmark'),
+    [
+        # Linear stress strain: damping should be 0
+        pytest.param(
+            np.array([0.1, 0.2, 0.3]),
+            np.array([2, 4, 6]),
+            [0, 0, 0],
+            id='linear',
+        ),
+        # Elasto-perfectly-plastic: damping can be hand-calculated
+        #
+        #                 ^ stress
+        #                _|___________
+        #               / |    /     /
+        #              /  |   /     /
+        #             /   |  /     /
+        #            /    | /     /
+        #           /     |/     /
+        #   -------/------+-----/-----------> strain
+        #         /      O|    /
+        #        /        |   /
+        #       /         |  /
+        #      /          | /
+        #     /___________|/
+        #                 |
+        #
+        pytest.param(
+            np.array([0.1, 0.2, 0.3, 0.4]),
+            np.array([1, 2, 2, 2]),
+            [0, 0, 2.0 / 3.0 / np.pi, 1.0 / np.pi],
+            id='elasto_perfectly_plastic',
+        ),
+    ],
+)
+def test_calc_damping_from_stress_strain(
+        strain: np.ndarray,
+        stress: np.ndarray,
+        damping_benchmark: list[float],
+) -> None:
     Gmax = stress[0] / strain[0]
     damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
-    assert np.allclose(damping, [0, 0, 0])
+    assert np.allclose(damping, damping_benchmark)
 
 
-def test_calc_damping_from_stress_strain__case_2() -> None:
-    # Case 2: Test elasto-perfectly-plastic: damping can be hand-calculated
-    #
-    #                 ^ stress
-    #                _|___________
-    #               / |    /     /
-    #              /  |   /     /
-    #             /   |  /     /
-    #            /    | /     /
-    #           /     |/     /
-    #   -------/------+-----/-----------> strain
-    #         /      O|    /
-    #        /        |   /
-    #       /         |  /
-    #      /          | /
-    #     /___________|/
-    #                 |
-    #
-    strain = np.array([0.1, 0.2, 0.3, 0.4])
-    stress = np.array([1, 2, 2, 2])
-    Gmax = stress[0] / strain[0]
-    damping = sr.calc_damping_from_stress_strain(strain, stress, Gmax)
-    assert np.allclose(damping, [0, 0, 2.0 / 3.0 / np.pi, 1.0 / np.pi])
-
-
-def test_calc_damping_from_stress_strain__case_3() -> None:
-    # Case 3: An edge case -- the initial damping is, in theory, almost 0
+def test_calc_damping_from_stress_strain__initial_damping_almost_0() -> None:
+    # An edge case: the initial damping is, in theory, almost 0
     strain_in_1 = np.array(
         [0.0001, 0.00011514, 0.000132571, 0.000152642, 0.000175751],
     )
@@ -388,10 +416,34 @@ def test_fit_all_damping_curves__success() -> None:
     assert len(res[0]) == 9  # HH model: 9 parameters
 
 
-def test_fit_all_damping_curves__exception_when_no_func_serialize() -> None:
+@pytest.mark.parametrize(
+    ('kwargs', 'exception', 'match'),
+    [
+        pytest.param(
+            {'func_serialize': None},
+            ValueError,
+            'provide a function to serialize',
+            id='no_func_serialize',
+        ),
+        pytest.param(
+            {
+                'txt_filename': '1.txt',  # no effect anyways
+                'func_serialize': mkz.serialize_params_to_array,
+            },
+            AssertionError,
+            None,
+            id='incorrect_func_serialize',
+        ),
+    ],
+)
+def test_fit_all_damping_curves__exception(
+        kwargs: dict[str, Any],
+        exception: type[Exception],
+        match: str | None,
+) -> None:
     data = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
     curve = data[:, 2:4]
-    with pytest.raises(ValueError, match='provide a function to serialize'):
+    with pytest.raises(exception, match=match):
         sr.fit_all_damping_curves(
             [curve],
             hh.fit_HH_x_single_layer,
@@ -399,25 +451,7 @@ def test_fit_all_damping_curves__exception_when_no_func_serialize() -> None:
             pop_size=1,
             n_gen=1,
             save_txt=True,
-            func_serialize=None,
-        )
-
-
-def test_fit_all_damping_curves__exception_with_incorrect_func_serialize() -> (
-    None
-):
-    data = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
-    curve = data[:, 2:4]
-    with pytest.raises(AssertionError, match=''):
-        sr.fit_all_damping_curves(
-            [curve],
-            hh.fit_HH_x_single_layer,
-            hh.tau_HH,
-            pop_size=1,
-            n_gen=1,
-            save_txt=True,
-            txt_filename='1.txt',  # no effect anyways
-            func_serialize=mkz.serialize_params_to_array,
+            **kwargs,
         )
 
 
@@ -432,19 +466,24 @@ def test_plot_site_amp() -> None:
     sr._plot_site_amp(input_motion, output_motion, None, None)
 
 
-def test_align_two_time_arrays__normal_case__not_identical_arrays() -> None:
-    t1 = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
-    t2 = np.array([0.1, 0.2, 0.3])
-    t_ = sr._align_two_time_arrays(t1, t2)
-    benchmark = np.linspace(0.01, 0.3, num=int(0.3 / 0.01))
-    assert np.allclose(t_, benchmark)
+T1 = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
 
 
-def test_align_two_time_arrays__normal_case__identical_arrays() -> None:
-    t1 = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
-    t2 = t1.copy()
-    t_ = sr._align_two_time_arrays(t1, t2)
-    benchmark = t1.copy()
+@pytest.mark.parametrize(
+    ('t2', 'benchmark'),
+    [
+        pytest.param(
+            np.array([0.1, 0.2, 0.3]),
+            np.linspace(0.01, 0.3, num=int(0.3 / 0.01)),
+            id='not_identical_arrays',
+        ),
+        pytest.param(T1.copy(), T1.copy(), id='identical_arrays'),
+    ],
+)
+def test_align_two_time_arrays__normal_case(
+        t2: np.ndarray, benchmark: np.ndarray
+) -> None:
+    t_ = sr._align_two_time_arrays(T1.copy(), t2)
     assert np.allclose(t_, benchmark)
 
 
