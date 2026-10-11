@@ -537,7 +537,7 @@ def check_Vs_profile_format(data: Any) -> None:
         if np.any(mat[:-1] <= 0):
             raise ValueError(
                 'The "material number" column should be all '
-                'positive, except for the last error.',
+                'positive, except for the last layer.',
             )
 
         if np.any(mat[-1] < 0):
