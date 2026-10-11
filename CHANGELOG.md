@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+- Fixed
+  - The low-pass, high-pass, band-pass, and band-stop filters shifting the
+    signal in time (not zero-phase) and ignoring `padlen`. This also affected
+    `baseline()`, `Ground_Motion.baseline_correct()`, and the GoF scores (#77)
+
+## [0.7.1] - 2026-10-11
+
+- Added
+  - An introduction in the README to the main capabilities (linear,
+    equivalent-linear, and nonlinear site response, the sediment velocity
+    model, site amplification factors, and goodness-of-fit scores)
+  - A pre-commit hook, `copy_readme`, that copies `README.md` into the
+    documentation homepage (`docs/source/index.md`) so the published docs stay
+    in step with the README
 - Changed
+  - `PySeismoSoil.__version__` is read from the installed package metadata
+    instead of a hard-coded string
   - `muff-check` and `muff-format` now run only as pre-commit hooks (removed
     the duplicate `tox` envs, which CI ran separately). CI now also
     format-checks `scripts/`, `docs/`, and the example notebooks. When a hook
@@ -21,10 +37,8 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
-- Fixed
-  - The low-pass, high-pass, band-pass, and band-stop filters shifting the
-    signal in time (not zero-phase) and ignoring `padlen`. This also affected
-    `baseline()`, `Ground_Motion.baseline_correct()`, and the GoF scores (#77)
+- Full diff
+  - https://github.com/Caltech-geoquake/PySeismoSoil/compare/0.7.0...0.7.1
 
 ## [0.7.0] - 2026-10-06
 
@@ -82,6 +96,8 @@
     (#40)
   - Made `test_get_randomized_profile` use a fixed seed, so that it no longer
     fails randomly (#48)
+- Full diff
+  - https://github.com/Caltech-geoquake/PySeismoSoil/compare/0.6.3...0.7.0
 
 ## [0.6.3] - 2025-10-15
 
