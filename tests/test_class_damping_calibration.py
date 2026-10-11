@@ -98,7 +98,7 @@ def test_get_damping_curves__check_use_Darendeli_Dmin_correct() -> None:
         pytest.param(Damping_Calibration.get_H4_x_param, id='H4_x'),
     ],
 )
-def test_get_x_param(
+def test_get_HH_x_or_H4_x_param(
         get_param: Callable[..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
 ) -> None:
     # Only test that `get_HH_x_param()` and `get_H4_x_param()` can run

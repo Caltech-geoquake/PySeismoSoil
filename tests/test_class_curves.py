@@ -77,7 +77,7 @@ H4_X_PARAM_NAMES = {'gamma_ref', 's', 'beta', 'Gmax'}
         ),
     ],
 )
-def test_x_fit_single_layer(
+def test_HH_x_or_H4_x_fit_single_layer(
         get_param: Callable[..., HH_Param | MKZ_Param], param_names: set[str]
 ) -> None:
     data = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
@@ -199,7 +199,7 @@ def test_multiple_damping_curves() -> None:
         ),
     ],
 )
-def test_x_fit_multi_layer__differential_evolution_algorithm(
+def test_HH_x_H4_x_fit_multi_layer__differential_evolution_algorithm(
         get_all_params: Callable[
             ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
         ],
@@ -234,7 +234,7 @@ def test_x_fit_multi_layer__differential_evolution_algorithm(
         ),
     ],
 )
-def test_x_fit_multi_layer__DEAP_algorithm(
+def test_HH_x_H4_x_fit_multi_layer__DEAP_algorithm(
         get_all_params: Callable[
             ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
         ],

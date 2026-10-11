@@ -136,8 +136,8 @@ def test_serialize_params_to_array__success() -> None:
             AssertionError,
             id='incorrect_number_of_dict_items',
         ),
-        # Only one key name is wrong
         pytest.param(
+            # Only one key name is wrong
             {
                 'gamma_t': 1,
                 'a': 1,

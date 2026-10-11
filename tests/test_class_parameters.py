@@ -181,7 +181,7 @@ def test_plot_curves() -> None:
         pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14, id='MKZ'),
     ],
 )
-def test_param_multi_layer__can_initiate_an_object_from_a_file(
+def test_HH_MKZ_param_multi_layer__can_initiate_object_from_file(
         param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
         file_name: str,
         n_layer: int,
@@ -198,7 +198,7 @@ def test_param_multi_layer__can_initiate_an_object_from_a_file(
         pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14, id='MKZ'),
     ],
 )
-def test_param_multi_layer__can_initiate_an_object_from_a_2D_array(
+def test_HH_MKZ_param_multi_layer__can_initiate_object_from_2D_array(
         param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
         file_name: str,
         n_layer: int,
@@ -216,7 +216,7 @@ def test_param_multi_layer__can_initiate_an_object_from_a_2D_array(
         pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', id='MKZ'),
     ],
 )
-def test_param_multi_layer__identical_objects_from_file_or_array(
+def test_HH_MKZ_param_multi_layer__identical_objects_from_file_or_array(
         param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
         file_name: str,
 ) -> None:
@@ -305,10 +305,30 @@ def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
         # `construct_curves()` returns the G/Gmax curves (index 0) and the
         # damping curves (index 1). Check the G/Gmax curves for the G
         # parameters, and the damping curves for the x parameters.
-        pytest.param(HH_Param_Multi_Layer, 'HH_G_FKSH14.txt', 0, id='HH_G'),
-        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 1, id='HH_x'),
-        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 0, id='H4_G'),
-        pytest.param(MKZ_Param_Multi_Layer, 'H4_x_IWTH04.txt', 1, id='H4_x'),
+        pytest.param(
+            HH_Param_Multi_Layer,
+            'HH_G_FKSH14.txt',
+            0,
+            id='from_HH_G_parameters',
+        ),
+        pytest.param(
+            HH_Param_Multi_Layer,
+            'HH_X_FKSH14.txt',
+            1,
+            id='from_HH_x_parameters',
+        ),
+        pytest.param(
+            MKZ_Param_Multi_Layer,
+            'H4_G_IWTH04.txt',
+            0,
+            id='from_H4_G_parameters',
+        ),
+        pytest.param(
+            MKZ_Param_Multi_Layer,
+            'H4_x_IWTH04.txt',
+            1,
+            id='from_H4_x_parameters',
+        ),
     ],
 )
 def test_construct_curves(
@@ -340,13 +360,13 @@ def test_construct_curves(
                 'd': 9,
             },
             [1, 2, 3, 4, 5, 6, 7, 8, 9],
-            id='HH_x',
+            id='from_HH_x_parameters',
         ),
         pytest.param(
             MKZ_Param,
             {'gamma_ref': 5, 's': 6, 'beta': 7, 'Gmax': 8},
             [5, 6, 7, 8],
-            id='H4_x',
+            id='from_H4_x_parameters',
         ),
     ],
 )
@@ -363,8 +383,12 @@ def test_param_serialize(
 @pytest.mark.parametrize(
     ('param_class', 'file_name'),
     [
-        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', id='HH_x'),
-        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', id='H4_G'),
+        pytest.param(
+            HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', id='from_HH_x_parameters'
+        ),
+        pytest.param(
+            MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', id='from_H4_G_parameters'
+        ),
     ],
 )
 def test_serialize_to_2D_array(

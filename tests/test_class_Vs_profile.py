@@ -219,7 +219,7 @@ def test_get_amplif_function() -> None:
         pytest.param(Vs_Profile.get_f0_RO, 1.10, id='RO'),
     ],
 )
-def test_f0(
+def test_f0_BH_or_f0_RO(
         prof: Vs_Profile,
         get_f0: Callable[[Vs_Profile], float],
         f0_benchmark: float,
