@@ -14,13 +14,12 @@ ______________________________________________________________________
 - [2. Copyright and license](#2-copyright-and-license)
 - [3. Authors](#3-authors)
 - [4. Installation](#4-installation)
-- [5. Supported Python versions](#5-supported-python-versions)
-- [6. API Documentation](#6-api-documentation)
-- [7. Examples](#7-examples)
-- [8. Knowledge base](#8-knowledge-base)
-- [9. Report issues](#9-report-issues)
-- [10. How to cite this library](#10-how-to-cite-this-library)
-- [11. How to contribute to this library](#11-how-to-contribute-to-this-library)
+- [5. API Documentation](#5-api-documentation)
+- [6. Examples](#6-examples)
+- [7. Knowledge base](#7-knowledge-base)
+- [8. Report issues](#8-report-issues)
+- [9. How to cite this library](#9-how-to-cite-this-library)
+- [10. How to contribute to this library](#10-how-to-contribute-to-this-library)
 
 ______________________________________________________________________
 
@@ -39,42 +38,62 @@ analysis.
 
 ### 1.1. Site-response simulations
 
-- **Linear simulations,** which assumes viscoelastic wave propagation through
-  1D soil profile. Suitable for very weak motions.
-- **Equivalent linear simulations,** which updates the shear modulus and the
-  damping to the strain the motion produces (using G/G<sub>max</sub> and
-  damping curves as "look up tables"), and iterates until the response and the
-  soil properties converge. Suitable for moderate ground motions.
-- **Nonlinear simulations,** which utilizes advanced constitutive models and
-  propagates waves in the time domain. PySeismoSoil implements the hybrid
-  hyperbolic (HH) model
-  ([Shi & Asimaki, 2017](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:NtGNdKbuCngC)),
-  which describes both the small-strain stiffness and the large-strain strength
-  from a velocity profile alone, or the MKZ (modified
-  [Kondner and Zelasko, 1963](https://www.scirp.org/reference/referencespapers?referenceid=2740984))
-  model.
+- **Linear simulations** propagate waves viscoelastically through a 1D soil
+  column. In the KiK-net comparisons of
+  [Shi and Asimaki (2017)](https://authors.library.caltech.edu/records/4naa9-fbd36),
+  this method overestimates the surface motion as the shaking gets stronger.
+- **Equivalent-linear simulations** update the shear modulus and the damping to
+  the strain the motion produces, using G/G<sub>max</sub> and damping curves,
+  and iterate until the response and the soil properties agree. That
+  approximation underestimates stronger shaking, especially above about 5 Hz,
+  once the shear strain exceeds about 0.04% (surface PGA on the order of 0.05
+  g).
+- **Nonlinear simulations** integrate the stress-strain response in the time
+  domain. PySeismoSoil implements the hybrid hyperbolic (HH) model
+  ([Shi and Asimaki, 2017](https://authors.library.caltech.edu/records/4naa9-fbd36)),
+  which captures both the small-strain stiffness and the large-strain strength
+  from a _V<sub>S</sub>_ profile alone, and the MKZ model (Matasović and
+  Vucetic, 1993). MKZ modifies the Kondner and Zelasko (1963) hyperbola; unlike
+  HH, its shear stress is not bounded by the soil strength.
 
 ### 1.2. Sediment Velocity Model (SVM)
 
-People often only knows the _V<sub>S30</sub>_ of a site rather than a detailed
-_V<sub>S</sub>_ profile.
+A site is often known only through its _V<sub>S30</sub>_, not through a
+measured _V<sub>S</sub>_ profile.
 
-The Sediment Velocity Model (SVM) by
-[Shi & Asimaki (2018)](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:AFXcoJnoRH0C)
-turns _V<sub>S30</sub>_, and optionally the depth to _V<sub>S</sub>_=1,000 m/s
-soil, into a one-dimensional profile for California basin sediments. It also
-draws randomized profiles that stay consistent with that _V<sub>S30</sub>_ and
-basin depth, for calculations that need a suite of profiles rather than one.
+The sediment velocity model (SVM) of
+[Shi and Asimaki (2018)](https://authors.library.caltech.edu/records/as8rk-jjb29)
+builds a one-dimensional _V<sub>S</sub>_ profile for California basin sediments
+from _V<sub>S30</sub>_. It was calibrated on 914 measured profiles and is
+supported for _V<sub>S30</sub>_ from about 173 m/s to 1,000 m/s. If the basin
+depth _z_<sub>1</sub> is also known — the depth at which _V<sub>S</sub>_ first
+reaches 1,000 m/s, that is, the depth to bedrock — the profile is adjusted so
+that it reaches 1,000 m/s at that depth. Randomized profiles can be drawn so
+that they stay close to the target _V<sub>S30</sub>_ and _z_<sub>1</sub>.
 
 ### 1.3. Site amplification factors
 
-A database of site amplification factors (both amplitude and phase shift),
-conditioned on on _V<sub>S30</sub>_, basin depth (_z_<sub>1</sub>), and PGA of
-the input ground motion. They were pre-calculated using nonlinear simulation
-with the HH (hybrid hyperbolic) constitutive model by
-[Shi & Asimaki (2017)](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:NtGNdKbuCngC).
+[Shi (2019)](https://thesis.caltech.edu/11571/) tabulates site factors for the
+western United States (SAG19), conditioned on _V<sub>S30</sub>_, basin depth
+(_z_<sub>1</sub>), and the PGA of the input motion. Each factor is a Fourier
+spectral ratio: its amplitude is the amplification, and its phase is the
+frequency-dependent delay between the output and input motions. The database
+contains two versions, from nonlinear simulations and from equivalent-linear
+simulations, both using the HH model. The reference site has _V<sub>S30</sub>_
+= 1,046 m/s.
 
 ### 1.4. Useful utilities for ground motion analysis
+
+- **Ground motions.** Read an accelerogram, baseline-correct it, filter it, and
+  compute its response spectrum.
+- **Fourier spectra.** Work with the amplitude and phase of a motion, including
+  smoothing and the fundamental frequency.
+- **_V<sub>S</sub>_ profiles.** Plot a profile, query _V<sub>S</sub>_ at a
+  depth, and compute _z_<sub>1</sub> and the linear transfer function.
+- **Modulus and damping curves.** Store G/G<sub>max</sub> and damping versus
+  strain, including curves calibrated from a _V<sub>S</sub>_ profile for the HH
+  model.
+- **Goodness-of-fit scores.** Compare a simulated motion with a recording.
 
 ## 2. Copyright and license
 
@@ -84,7 +103,7 @@ EAR-1033462 and the U.S. Geological Survey (USGS) Cooperative Agreement
 G12AC20038. All rights reserved.
 
 Please carefully read the license
-[here](https://caltech-geoquake.github.io/PySeismoSoil/blob/master/LICENSE) for
+[here](https://github.com/Caltech-geoquake/PySeismoSoil/blob/main/LICENSE) for
 the terms and conditions of using this library.
 
 ## 3. Authors
@@ -105,15 +124,7 @@ pip install PySeismoSoil
 If you already have an older version installed and want to upgrade to the
 newest version, use `pip install --upgrade PySeismoSoil`.
 
-## 5. Supported Python versions
-
-PySeismoSoil currently support these Python versions:
-
-- 3.11
-- 3.12
-- 3.13
-
-## 6. API Documentation
+## 5. API Documentation
 
 The HTML documentation is published at
 <https://caltech-geoquake.github.io/PySeismoSoil/>.
@@ -121,7 +132,7 @@ The HTML documentation is published at
 - [Utility classes](https://caltech-geoquake.github.io/PySeismoSoil/classes.html)
 - [Helper modules](https://caltech-geoquake.github.io/PySeismoSoil/modules.html)
 
-## 7. Examples
+## 6. Examples
 
 The notebooks in
 [`examples/`](https://github.com/Caltech-geoquake/PySeismoSoil/tree/main/examples)
@@ -130,50 +141,49 @@ the HH calibration, linear, equivalent-linear, and nonlinear runs, batch
 simulations, the sediment velocity model, site factors, site-effect adjustment,
 and goodness-of-fit scores.
 
-## 8. Knowledge base
+## 7. Knowledge base
 
 The models and algorithms used in this library mainly come from these research
 papers:
 
 1. J. Shi (2019) "Improving Site Response Analysis for Earthquake Ground Motion
    Modeling." _Dissertation (Ph.D.), California Institute of Technology_.
-   doi:10.7907/X5NZ-DQ21.
-   \[[URL](https://scholar.google.com/scholar?hl=en&q=Shi+2019+%22Improving+Site+Response+Analysis+for+Earthquake+Ground+Motion+Modeling%22)\]
+   doi:10.7907/X5NZ-DQ21. \[[URL](https://thesis.caltech.edu/11571/)\]
 
 2. J. Shi, D. Asimaki (2018) "A Generic Velocity Profile for Basin Sediments in
    California Conditioned on Vs30." _Seismological Research Letters_, 89 (4),
    1397-1409.
-   \[[URL](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:AFXcoJnoRH0C)\]
+   \[[URL](https://authors.library.caltech.edu/records/as8rk-jjb29)\]
 
 3. J. Shi, D. Asimaki (2017) "From stiffness to strength: Formulation and
    validation of a hybrid hyperbolic nonlinear soil model for site-response
    analyses." _Bulletin of the Seismological Society of America_, 107 (3),
    1336-1355.
-   \[[URL](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:NtGNdKbuCngC)\]
+   \[[URL](https://authors.library.caltech.edu/records/4naa9-fbd36)\]
 
 4. W. Li, D. Assimaki (2010) "Site- and motion-dependent parametric uncertainty
    of site-response analyses in earthquake simulations." _Bulletin of the
    Seismological Society of America_, 100 (3), 954-968.
-   \[[URL](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:_FxGoFyzp5QC)\]
+   \[[URL](https://authors.library.caltech.edu/records/fet2d-ecs26)\]
 
 5. D. Asimaki, W. Li, J. Steidl, J. Schmedes (2008) "Quantifying nonlinearity
    susceptibility via site-response modeling uncertainty at three sites in the
    Los Angeles Basin." _Bulletin of the Seismological Society of America_, 98
    (5), 2364-2390.
-   \[[URL](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:W7OEmFMy1HYC)\]
+   \[[URL](https://authors.library.caltech.edu/records/eftgh-f2s74)\]
 
-## 9. Report issues
+## 8. Report issues
 
 To report bugs and submit suggestions, please use the
 ["Issues" section](https://github.com/jsh9/PySeismoSoil/issues) of this GitHub
 repository.
 
-## 10. How to cite this library
+## 9. How to cite this library
 
 To cite this library, please include this DOI in your publication:
 [![DOI](https://zenodo.org/badge/169386936.svg)](https://zenodo.org/badge/latestdoi/169386936).
 
-## 11. How to contribute to this library
+## 10. How to contribute to this library
 
 Please read the
 [contributing instructions](https://caltech-geoquake.github.io/PySeismoSoil/blob/master/CONTRIBUTING.md)

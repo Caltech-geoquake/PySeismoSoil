@@ -5,8 +5,8 @@
 - Added
   - An introduction in the README to the main capabilities (linear,
     equivalent-linear, and nonlinear site response, the sediment velocity
-    model, site amplification factors, and goodness-of-fit scores), with Google
-    Scholar links to the papers behind them
+    model, site amplification factors, and goodness-of-fit scores), with
+    CaltechAUTHORS links to the papers behind them where those records exist
   - A pre-commit hook, `copy_readme`, that copies `README.md` into the
     documentation homepage (`docs/source/index.md`) so the published docs stay
     in step with the README
