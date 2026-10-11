@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [0.7.1] - 2026-10-11
 
 - Added
   - An introduction in the README to the main capabilities (linear,
@@ -30,6 +30,8 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
+- Full diff
+  - https://github.com/Caltech-geoquake/PySeismoSoil/compare/0.7.0...0.7.1
 
 ## [0.7.0] - 2026-10-06
 
@@ -87,6 +89,8 @@
     (#40)
   - Made `test_get_randomized_profile` use a fixed seed, so that it no longer
     fails randomly (#48)
+- Full diff
+  - https://github.com/Caltech-geoquake/PySeismoSoil/compare/0.6.3...0.7.0
 
 ## [0.6.3] - 2025-10-15
 
