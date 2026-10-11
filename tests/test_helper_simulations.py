@@ -38,14 +38,13 @@ def test_check_layer_count() -> None:
 
 
 @pytest.mark.parametrize(
-    ('boundary', 'min_correlation'),
+    'boundary',
     [
-        pytest.param('elastic', 0.99, id='elastic'),
-        # rigid cases can lead to higher errors
-        pytest.param('rigid', 0.97, id='rigid'),
+        pytest.param('elastic', id='elastic'),
+        pytest.param('rigid', id='rigid'),
     ],
 )
-def test_linear(boundary: str, min_correlation: float) -> None:
+def test_linear(boundary: str) -> None:
     """
     Test that ``helper_simulations.linear()`` produces identical results to
     ``helper_site_response.linear_site_resp()``.
@@ -59,11 +58,12 @@ def test_linear(boundary: str, min_correlation: float) -> None:
     # Time arrays need to match well
     assert np.allclose(result[:, 0], result_[:, 0], rtol=0.0001, atol=0.0)
 
-    # Only check correlation (more lenient). Because `sim.linear()`
-    # re-discretizes soil profiles into finer layers, so numerical errors
-    # may accumulate over the additional layers.
+    # Only check correlation (more lenient), because the two functions
+    # compute the transfer function at different frequencies (for example,
+    # `linear_site_resp()` computes it on a coarser frequency grid and then
+    # interpolates it), so the results are close but not identical.
     r = np.corrcoef(result[:, 1], result_[:, 1])
-    assert r[0, 1] >= min_correlation
+    assert r[0, 1] >= 0.999
 
     plt.figure()
     plt.plot(result[:, 0], result[:, 1], label='every layer', alpha=0.6)

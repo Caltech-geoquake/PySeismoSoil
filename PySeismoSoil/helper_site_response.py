@@ -1632,7 +1632,9 @@ def amplify_motion(  # noqa: PLR0915
             # extrapolate phase knowing that it is a straight line in general:
             phase_ss = np.append(phase_ss, phase_slope * fmax)
 
-        if np.min(f_array) > df:  # `f_array` does not cover fmin (i.e., `df`)
+        # `f_array` does not cover fmin (i.e., `df`). (At 0 Hz, which is
+        # below `df`, `np.interp()` then uses the value at `df`, i.e., 1.0.)
+        if np.min(f_array) > df:
             f_array = np.append(df, f_array)
             amp_ss = np.append(1.0, amp_ss)
             phase_ss = np.append(0.0, phase_ss)
@@ -1667,8 +1669,10 @@ def amplify_motion(  # noqa: PLR0915
 
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     # Note (1) The value of transfer function when freq = 0 should be either 1
-    #          or 2 (a real number). Because of discretization errors, tf_ss(1)
-    #          is not a real number, but very close.
+    #          or 2 (a real number). If the transfer function does not cover
+    #          0 Hz, `np.interp()` uses its value at the lowest frequency, so
+    #          tf_ss[0] (the value at 0 Hz) is not a real number, but very
+    #          close.
     #      (2) If n is even, the "mid-point" of the Fourier spectrum is real.
     #          So the transfer function array needs to be modified so that the
     #          ifft of the product of the two is real valued.
@@ -1702,12 +1706,13 @@ def amplify_motion(  # noqa: PLR0915
     if show_fig:
         accel_in = np.column_stack((t, a))
         accel_out = np.column_stack((t, resp))
+        # Skip 0 Hz, which the logarithmic frequency axes cannot show
         fig, ax = _plot_site_amp(
             accel_in,
             accel_out,
-            f_array,
-            amp_ss_interp,
-            phase_func_1col=phase_ss_interp,
+            f_array[1:],
+            amp_ss_interp[1:],
+            phase_func_1col=phase_ss_interp[1:],
             amplif_func_ylog=False,
             dpi=dpi,
         )
@@ -2118,13 +2123,15 @@ def _get_freq_interval(
     df : float
         Frequency interval.
     fmax : float
-        Maximum frequency resolvable from the input motion.
+        Maximum frequency resolvable from the input motion, i.e., the last
+        element of ``f_array`` (the Nyquist frequency if ``n`` is even).
     n : int
         Length of signal.
     half_n : int
-        Length of the frequency array below the Nyquist frequency.
+        Length of the frequency array up to the Nyquist frequency.
     f_array : np.ndarray
-        Frequency array.
+        Frequency array: the frequencies of the first ``half_n`` FFT bins of
+        the input motion (0, ``df``, ..., ``fmax``), starting at 0 Hz.
 
     Raises
     ------
@@ -2149,8 +2156,9 @@ def _get_freq_interval(
 
     half_n = int(np.ceil(n / 2.0)) if n % 2 == 1 else int(n / 2.0 + 1)
 
-    fmax = half_n * df
-    f_array = np.linspace(df, fmax, num=half_n)
+    # Element k of `f_array` is the frequency of FFT bin k (bin 0 is 0 Hz)
+    f_array = np.arange(half_n) * df
+    fmax = (half_n - 1) * df
 
     return df, fmax, n, half_n, f_array
 
