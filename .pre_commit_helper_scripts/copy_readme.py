@@ -10,16 +10,7 @@ _DOCS_INDEX = Path('docs/source/index.md')
 # Appended after the README so the class and module pages stay in the
 # documentation sidebar. The directive is hidden, so the rendered homepage
 # is the README. It is not part of README.md: GitHub would show the fence.
-_API_NAV = (
-    '\n'
-    '```{toctree}\n'
-    ':hidden:\n'
-    ':maxdepth: 2\n'
-    '\n'
-    'classes\n'
-    'modules\n'
-    '```\n'
-)
+_API_NAV = '\n```{toctree}\n:hidden:\n:maxdepth: 2\n\nclasses\nmodules\n```\n'
 
 
 def main() -> None:

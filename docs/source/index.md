@@ -6,11 +6,11 @@ ______________________________________________________________________
 
 **Table of Contents**
 
-- [1. What PySeismoSoil does](#1-what-pyseismosoil-does)
+- [1. Functionalities](#1-functionalities)
   - [1.1. Site-response simulations](#11-site-response-simulations)
-  - [1.2. Sediment velocity model](#12-sediment-velocity-model)
+  - [1.2. Sediment Velocity Model (SVM)](#12-sediment-velocity-model-svm)
   - [1.3. Site amplification factors](#13-site-amplification-factors)
-  - [1.4. Profiles, motions, and goodness of fit](#14-profiles-motions-and-goodness-of-fit)
+  - [1.4. Useful utilities for ground motion analysis](#14-useful-utilities-for-ground-motion-analysis)
 - [2. Copyright and license](#2-copyright-and-license)
 - [3. Authors](#3-authors)
 - [4. Installation](#4-installation)
@@ -32,73 +32,49 @@ ______________________________________________________________________
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil/month)](https://pepy.tech/project/pyseismosoil)
 [![Downloads](https://static.pepy.tech/badge/pyseismosoil/week)](https://pepy.tech/project/pyseismosoil)
 
-PySeismoSoil propagates earthquake shaking through a layered soil column. Give
-it a shear-wave velocity profile and an input ground motion, and it returns the
-motion the soil delivers: the change in amplitude, frequency content, and
-timing that near-surface sediments impose on the shaking.
+PySeismoSoil is a Python library for performing 1D seismic site response
+analysis.
 
-## 1. What PySeismoSoil does
-
-A site-response study asks how a soil column filters an incoming wave. The
-library covers that calculation at three levels of soil behavior, and the steps
-that usually sit around it: building a profile when the only site parameter you
-have is Vs30, applying amplification factors when a full wave-propagation run
-is more than the calculation needs, and scoring a simulation against a
-recording.
+## 1. Functionalities
 
 ### 1.1. Site-response simulations
 
-`Linear_Simulation`, `Equiv_Linear_Simulation`, and `Nonlinear_Simulation` take
-the same two inputs, a `Vs_Profile` and a `Ground_Motion`, and return the same
-kind of result. The base of the column can be elastic (a rock outcrop motion,
-waves free to leave the profile) or rigid (a borehole motion, the downgoing
-wave reflected back into the soil).
-
-- **Linear.** Viscoelastic wave propagation through the profile. This is the
-  model to use when strains stay small. It produces a transfer function and, on
-  request, the motion in every layer, and it can deconvolve a surface recording
-  down to the base of the profile.
-- **Equivalent linear.** Updates the shear modulus and the damping to the
-  strain the motion produces, using G/Gmax and damping curves, and iterates
-  until the response and the soil properties agree. This is the practical model
-  for moderate shaking.
-- **Nonlinear.** Integrates the stress-strain response in the time domain. The
-  soil model is the hybrid hyperbolic (HH) formulation of
-  [Shi & Asimaki (2017)](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:NtGNdKbuCngC),
+- **Linear simulations,** which assumes viscoelastic wave propagation through
+  1D soil profile. Suitable for very weak motions.
+- **Equivalent linear simulations,** which updates the shear modulus and the
+  damping to the strain the motion produces (using G/G<sub>max</sub> and
+  damping curves as "look up tables"), and iterates until the response and the
+  soil properties converge. Suitable for moderate ground motions.
+- **Nonlinear simulations,** which utilizes advanced constitutive models and
+  propagates waves in the time domain. PySeismoSoil implements the hybrid
+  hyperbolic (HH) model
+  ([Shi & Asimaki, 2017](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:NtGNdKbuCngC)),
   which describes both the small-strain stiffness and the large-strain strength
-  from a velocity profile alone, or the MKZ model. `HH_Calibration` builds the
-  HH parameters from a `Vs_Profile`.
+  from a velocity profile alone, or the MKZ (modified
+  [Kondner and Zelasko, 1963](https://www.scirp.org/reference/referencespapers?referenceid=2740984))
+  model.
 
-`Batch_Simulation` runs a set of these analyses together.
+### 1.2. Sediment Velocity Model (SVM)
 
-### 1.2. Sediment velocity model
+People often only knows the _V<sub>S30</sub>_ of a site rather than a detailed
+_V<sub>S</sub>_ profile.
 
-A measured velocity profile is often the input you do not have. The sediment
-velocity model (SVM) of
+The Sediment Velocity Model (SVM) by
 [Shi & Asimaki (2018)](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:AFXcoJnoRH0C)
-turns Vs30, and optionally the depth to 1,000 m/s material, into a
-one-dimensional profile for California basin sediments. It also draws
-randomized profiles that stay consistent with that Vs30 and basin depth, for
-calculations that need a suite of profiles rather than one.
+turns _V<sub>S30</sub>_, and optionally the depth to _V<sub>S</sub>_=1,000 m/s
+soil, into a one-dimensional profile for California basin sediments. It also
+draws randomized profiles that stay consistent with that _V<sub>S30</sub>_ and
+basin depth, for calculations that need a suite of profiles rather than one.
 
 ### 1.3. Site amplification factors
 
-`Site_Factors` returns frequency-dependent amplification and phase that already
-include nonlinear soil response. The factors are conditioned on Vs30, basin
-depth (z1), and the peak acceleration of the input motion. They were proposed
-by Shi, Asimaki, and Graves (2019); the development is in
-[Shi (2019)](https://scholar.google.com/scholar?hl=en&q=Shi+2019+%22Improving+Site+Response+Analysis+for+Earthquake+Ground+Motion+Modeling%22).
-`Site_Effect_Adjustment` applies a chosen factor to a rock-outcrop motion,
-which is how a simulated rock time series picks up site response without a new
-wave-propagation run.
-
-### 1.4. Profiles, motions, and goodness of fit
-
-The objects the simulations use are useful on their own. The library reads and
-plots ground motions and Vs profiles, stores G/Gmax and damping curves, and
-compares a simulation with a recording through the goodness-of-fit scores
-described in
+A database of site amplification factors (both amplitude and phase shift),
+conditioned on on _V<sub>S30</sub>_, basin depth (_z_<sub>1</sub>), and PGA of
+the input ground motion. They were pre-calculated using nonlinear simulation
+with the HH (hybrid hyperbolic) constitutive model by
 [Shi & Asimaki (2017)](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=o5_Mbh8AAAAJ&citation_for_view=o5_Mbh8AAAAJ:NtGNdKbuCngC).
+
+### 1.4. Useful utilities for ground motion analysis
 
 ## 2. Copyright and license
 
