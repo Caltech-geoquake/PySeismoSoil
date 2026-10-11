@@ -155,4 +155,4 @@ class Damping_Calibration:
             strain_in_pct=np.geomspace(1e-4, 15, 100),
             show_fig=False,
         )
-        return mdc.get_all_HH_x_params(**kwargs)
+        return mdc.get_all_H4_x_params(**kwargs)

@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 - Fixed
+  - `Damping_Calibration.get_H4_x_param()` returning HH parameters
+    (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
+    (`MKZ_Param_Multi_Layer`) (#60)
   - `amplify_motion()` (also used by `linear_site_resp()`, `Ground_Motion`, and
     `Site_Effect_Adjustment`) applying the transfer function one frequency bin
     too high, and, with `extrap_tf=False`, downsampling the motion even if the
