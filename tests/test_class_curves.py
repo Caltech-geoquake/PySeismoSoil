@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -11,6 +13,12 @@ from PySeismoSoil.class_curves import (
     Multiple_GGmax_Curves,
     Multiple_GGmax_Damping_Curves,
     Stress_Curve,
+)
+from PySeismoSoil.class_parameters import (
+    HH_Param,
+    HH_Param_Multi_Layer,
+    MKZ_Param,
+    MKZ_Param_Multi_Layer,
 )
 
 f_dir = Path(__file__).resolve().parent / 'files'
@@ -45,73 +53,55 @@ def test_plot() -> None:
     curves.plot()
 
 
-def test_HH_x_fit_single_layer() -> None:
+HH_X_PARAM_NAMES = {
+    'gamma_t',
+    'a',
+    'gamma_ref',
+    'beta',
+    's',
+    'Gmax',
+    'mu',
+    'Tmax',
+    'd',
+}
+H4_X_PARAM_NAMES = {'gamma_ref', 's', 'beta', 'Gmax'}
+
+
+@pytest.mark.parametrize(
+    ('get_param', 'param_names'),
+    [
+        pytest.param(
+            Damping_Curve.get_HH_x_param, HH_X_PARAM_NAMES, id='HH_x'
+        ),
+        pytest.param(
+            Damping_Curve.get_H4_x_param, H4_X_PARAM_NAMES, id='H4_x'
+        ),
+    ],
+)
+def test_HH_x_or_H4_x_fit_single_layer(
+        get_param: Callable[..., HH_Param | MKZ_Param], param_names: set[str]
+) -> None:
     data = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
     curve = Damping_Curve(data[:, 2:4])
 
     try:
-        hhx = curve.get_HH_x_param(
+        param = get_param(
+            curve,
             pop_size=1,
             n_gen=1,
             show_fig=True,
             use_scipy=False,
         )
-        assert len(hhx) == 9
-        assert hhx.keys() == {
-            'gamma_t',
-            'a',
-            'gamma_ref',
-            'beta',
-            's',
-            'Gmax',
-            'mu',
-            'Tmax',
-            'd',
-        }
+        assert len(param) == len(param_names)
+        assert param.keys() == param_names
     except ImportError:  # DEAP library may not be installed
         pass
 
-    hhx = curve.get_HH_x_param(
-        pop_size=1, n_gen=1, show_fig=True, use_scipy=True
+    param = get_param(
+        curve, pop_size=1, n_gen=1, show_fig=True, use_scipy=True
     )
-    assert len(hhx) == 9
-    assert hhx.keys() == {
-        'gamma_t',
-        'a',
-        'gamma_ref',
-        'beta',
-        's',
-        'Gmax',
-        'mu',
-        'Tmax',
-        'd',
-    }
-
-
-def test_H4_x_fit_single_layer() -> None:
-    data = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
-    curve = Damping_Curve(data[:, 2:4])
-
-    try:
-        h4x = curve.get_H4_x_param(
-            pop_size=1,
-            n_gen=1,
-            show_fig=True,
-            use_scipy=False,
-        )
-        assert len(h4x) == 4
-        assert h4x.keys() == {'gamma_ref', 's', 'beta', 'Gmax'}
-    except ImportError:  # DEAP library may not be installed
-        pass
-
-    h4x = curve.get_H4_x_param(
-        pop_size=1,
-        n_gen=1,
-        show_fig=True,
-        use_scipy=True,
-    )
-    assert len(h4x) == 4
-    assert h4x.keys() == {'gamma_ref', 's', 'beta', 'Gmax'}
+    assert len(param) == len(param_names)
+    assert param.keys() == param_names
 
 
 def test_value_check() -> None:
@@ -195,114 +185,96 @@ def test_multiple_damping_curves() -> None:
     assert mdc.n_layer == 5
 
 
-def test_HH_x_fit_multi_layer__differential_evolution_algorithm() -> None:
-    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    mdc_ = mdc[:2]
-    hhx = mdc_.get_all_HH_x_params(
-        pop_size=1,
-        n_gen=1,
-        save_txt=False,
-        use_scipy=True,
-    )
-    assert len(hhx) == 2
-    assert isinstance(hhx[0].data, dict)
-    assert hhx[0].keys() == {
-        'gamma_t',
-        'a',
-        'gamma_ref',
-        'beta',
-        's',
-        'Gmax',
-        'mu',
-        'Tmax',
-        'd',
-    }
-
-
-def test_HH_x_fit_multi_layer__DEAP_algorithm() -> None:
-    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    mdc_ = mdc[:2]
-    try:
-        hhx = mdc_.get_all_HH_x_params(
-            pop_size=1,
-            n_gen=1,
-            save_txt=False,
-            use_scipy=False,
-        )
-        assert len(hhx) == 2
-        assert isinstance(hhx[0].data, dict)
-        assert hhx[0].keys() == {
-            'gamma_t',
-            'a',
-            'gamma_ref',
-            'beta',
-            's',
-            'Gmax',
-            'mu',
-            'Tmax',
-            'd',
-        }
-    except ImportError:  # DEAP library may not be installed
-        pass
-
-
-def test_H4_x_fit_multi_layer__differential_evolution_algorithm() -> None:
-    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    mdc_ = mdc[:2]
-    h4x = mdc_.get_all_H4_x_params(
-        pop_size=1,
-        n_gen=1,
-        save_txt=False,
-        use_scipy=True,
-    )
-    assert len(h4x) == 2
-    assert isinstance(h4x[0].data, dict)
-    assert h4x[0].keys() == {'gamma_ref', 's', 'beta', 'Gmax'}
-
-
-def test_H4_x_fit_multi_layer__DEAP_algorithm() -> None:
+@pytest.mark.parametrize(
+    'use_scipy',
+    [
+        pytest.param(True, id='differential_evolution'),
+        pytest.param(False, id='DEAP'),
+    ],
+)
+@pytest.mark.parametrize(
+    ('get_all_params', 'param_names'),
+    [
+        pytest.param(
+            Multiple_Damping_Curves.get_all_HH_x_params,
+            HH_X_PARAM_NAMES,
+            id='HH_x',
+        ),
+        pytest.param(
+            Multiple_Damping_Curves.get_all_H4_x_params,
+            H4_X_PARAM_NAMES,
+            id='H4_x',
+        ),
+    ],
+)
+def test_HH_x_or_H4_x_fit_multi_layer(
+        get_all_params: Callable[
+            ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
+        ],
+        param_names: set[str],
+        *,
+        use_scipy: bool,
+) -> None:
     mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
     mdc_ = mdc[:2]
     try:
-        h4x = mdc_.get_all_H4_x_params(
+        params = get_all_params(
+            mdc_,
             pop_size=1,
             n_gen=1,
             save_txt=False,
-            use_scipy=False,
+            use_scipy=use_scipy,
         )
-        assert len(h4x) == 2
-        assert isinstance(h4x[0].data, dict)
-        assert h4x[0].keys() == {'gamma_ref', 's', 'beta', 'Gmax'}
-    except ImportError:  # DEAP library may not be installed
-        pass
+    except ImportError:
+        if use_scipy:
+            raise
+
+        return  # DEAP library may not be installed
+
+    assert len(params) == 2
+    assert isinstance(params[0].data, dict)
+    assert params[0].keys() == param_names
 
 
-def test_multiple_GGmax_curve_get_curve_matrix() -> None:
-    damping = 1.23  # choose a dummy value
-
-    mgc = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    curve = mgc.get_curve_matrix(damping_filler_value=damping)
+@pytest.mark.parametrize(
+    ('curves_class', 'get_curve_matrix', 'filler_value', 'filled_column'),
+    [
+        # The damping curves are lost, so the damping columns (index 3 of
+        # every 4 columns) are filled with a dummy value
+        pytest.param(
+            Multiple_GGmax_Curves,
+            lambda mgc, value: mgc.get_curve_matrix(
+                damping_filler_value=value
+            ),
+            1.23,
+            3,
+            id='multiple_GGmax_curves',
+        ),
+        # The G/Gmax curves are lost, so the G/Gmax columns (index 1 of every
+        # 4 columns) are filled with a dummy value
+        pytest.param(
+            Multiple_Damping_Curves,
+            lambda mdc, value: mdc.get_curve_matrix(GGmax_filler_value=value),
+            0.76,
+            1,
+            id='multiple_damping_curves',
+        ),
+    ],
+)
+def test_get_curve_matrix(
+        curves_class: type[Multiple_GGmax_Curves | Multiple_Damping_Curves],
+        get_curve_matrix: Callable[[Any, float], np.ndarray],
+        filler_value: float,
+        filled_column: int,
+) -> None:
+    curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))
+    curve = get_curve_matrix(curves, filler_value)
 
     curve_benchmark = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
     for j in range(curve_benchmark.shape[1]):
-        # original damping info is lost; use same dummy value
-        if j % 4 == 3:
-            curve_benchmark[:, j] = damping
-
-    assert np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
-
-
-def test_multiple_damping_curve_get_curve_matrix() -> None:
-    GGmax = 0.76  # choose a dummy value
-
-    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    curve = mdc.get_curve_matrix(GGmax_filler_value=GGmax)
-
-    curve_benchmark = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
-    for j in range(curve_benchmark.shape[1]):
-        # original damping info is lost; use same dummy value
-        if j % 4 == 1:
-            curve_benchmark[:, j] = GGmax
+        # the original info is lost; use the same dummy value
+        if j % 4 == filled_column:
+            curve_benchmark[:, j] = filler_value
 
     assert np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
 

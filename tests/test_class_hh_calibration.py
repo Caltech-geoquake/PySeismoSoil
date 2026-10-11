@@ -49,21 +49,29 @@ def test_init__incorrect_length_of_curves() -> None:
         HH_Calibration(vs_profile, GGmax_curves=curves)
 
 
-def test_init__incorrect_Tmax_type() -> None:
+@pytest.mark.parametrize(
+    ('Tmax', 'exception', 'match'),
+    [
+        pytest.param(
+            [1, 2, 3, 4, 5],
+            TypeError,
+            '`Tmax_profile` must be a 1D numpy array.',
+            id='incorrect_Tmax_type',
+        ),
+        pytest.param(
+            np.array([1, 2, 3]),
+            ValueError,
+            'The length of `Tmax_profile` needs to equal',
+            id='incorrect_Tmax_length',
+        ),
+    ],
+)
+def test_init__incorrect_Tmax(
+        Tmax: list[float] | np.ndarray, exception: type[Exception], match: str
+) -> None:
     vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
     curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    Tmax = [1, 2, 3, 4, 5]
-    msg = '`Tmax_profile` must be a 1D numpy array.'
-    with pytest.raises(TypeError, match=msg):
-        HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
-
-
-def test_init__incorrect_Tmax_length() -> None:
-    vs_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
-    curves = Multiple_GGmax_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    Tmax = np.array([1, 2, 3])
-    msg = 'The length of `Tmax_profile` needs to equal'
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(exception, match=match):
         HH_Calibration(vs_profile, GGmax_curves=curves, Tmax_profile=Tmax)
 
 
