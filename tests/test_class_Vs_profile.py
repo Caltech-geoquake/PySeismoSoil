@@ -117,7 +117,7 @@ def _replace(
             id='material_number_of_last_layer_negative',
         ),
         pytest.param(
-            DATA_5_COLUMNS[:, 0:-1],  # one fewer column
+            DATA_5_COLUMNS[:, 0:-1].copy(),  # one fewer column
             ValueError,
             'either 2 or 5 columns',
             id='incorrect_number_of_columns',

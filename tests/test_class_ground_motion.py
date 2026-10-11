@@ -32,29 +32,26 @@ def test_loading_data__two_columns_from_file() -> None:
 
 
 @pytest.mark.parametrize(
-    ('data', 'unit', 'dt', 'pga_attr', 'pga_benchmark'),
+    ('data', 'kwargs', 'get_pga', 'pga_benchmark'),
     [
         pytest.param(
             np.array([[0.1, 0.2, 0.3, 0.4], [1, 2, 3, 4]]).T,
-            'm/s/s',
-            None,
-            'pga',
+            {'unit': 'm/s/s'},
+            lambda gm: gm.pga,
             4,
             id='two_columns_from_numpy_array',
         ),
         pytest.param(
             str(f_dir / 'one_column_data_example.txt'),
-            'g',
-            0.2,
-            'pga_in_g',
+            {'unit': 'g', 'dt': 0.2},
+            lambda gm: gm.pga_in_g,
             12.0,
             id='one_column_from_file',
         ),
         pytest.param(
             np.array([1, 2, 3, 4, 5]),
-            'gal',
-            0.1,
-            'pga_in_gal',
+            {'unit': 'gal', 'dt': 0.1},
+            lambda gm: gm.pga_in_gal,
             5.0,
             id='one_column_from_numpy_array',
         ),
@@ -62,43 +59,39 @@ def test_loading_data__two_columns_from_file() -> None:
 )
 def test_loading_data(
         data: str | np.ndarray,
-        unit: str,
-        dt: float | None,
-        pga_attr: str,
+        kwargs: dict[str, str | float],
+        get_pga: Callable[[GM], float],
         pga_benchmark: float,
 ) -> None:
-    gm = GM(data, unit=unit, dt=dt)
-    assert getattr(gm, pga_attr) == pytest.approx(pga_benchmark, abs=1e-7)
+    gm = GM(data, **kwargs)
+    assert get_pga(gm) == pytest.approx(pga_benchmark, abs=1e-7)
 
 
 @pytest.mark.parametrize(
-    ('unit', 'dt', 'match'),
+    ('kwargs', 'match'),
     [
         pytest.param(
-            'gal',
-            None,
+            {'unit': 'gal'},
             'is needed for one-column `data`.',
             id='one_column_without_specifying_dt',
         ),
         pytest.param(
-            'test',
-            0.1,
+            {'unit': 'test', 'dt': 0.1},
             re.escape('Invalid `unit` name.'),
             id='invalid_unit_name',
         ),
         pytest.param(
-            'm/s^2',
-            0.1,
+            {'unit': 'm/s^2', 'dt': 0.1},
             r"use '/s/s' instead of 's\^2'",
             id='s_squared_in_unit_name',
         ),
     ],
 )
 def test_loading_data__invalid_input(
-        unit: str, dt: float | None, match: str
+        kwargs: dict[str, str | float], match: str
 ) -> None:
     with pytest.raises(ValueError, match=match):
-        GM(np.array([1, 2, 3, 4, 5]), unit=unit, dt=dt)
+        GM(np.array([1, 2, 3, 4, 5]), **kwargs)
 
 
 def test_differentiation() -> None:

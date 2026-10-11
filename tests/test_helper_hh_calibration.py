@@ -36,23 +36,23 @@ def test_calc_vertical_stress() -> None:
 
 
 @pytest.mark.parametrize(
-    ('OCR_upper_limit', 'OCR_bench'),
+    ('kwargs', 'OCR_bench'),
     [
         pytest.param(
-            None, [4.26254237, 5.80208548, 7.08490535], id='no_upper_limit'
+            {}, [4.26254237, 5.80208548, 7.08490535], id='no_upper_limit'
         ),
         pytest.param(
-            6.0, [4.26254237, 5.80208548, 6.0], id='with_an_upper_limit_of_6'
+            {'OCR_upper_limit': 6.0},
+            [4.26254237, 5.80208548, 6.0],
+            id='with_an_upper_limit_of_6',
         ),
     ],
 )
-def test_calc_OCR(
-        OCR_upper_limit: float | None, OCR_bench: list[float]
-) -> None:
+def test_calc_OCR(kwargs: dict[str, float], OCR_bench: list[float]) -> None:
     Vs = np.array([200, 300, 400])
     rho = np.array([1600, 1700, 1800])
     sigma_v0 = np.array([6e4, 8e4, 1e5])
-    OCR = hhc._calc_OCR(Vs, rho, sigma_v0, OCR_upper_limit=OCR_upper_limit)
+    OCR = hhc._calc_OCR(Vs, rho, sigma_v0, **kwargs)
     assert np.allclose(OCR, OCR_bench)
 
 

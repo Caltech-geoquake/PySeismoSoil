@@ -174,52 +174,45 @@ def test_plot_curves() -> None:
     mkzp.plot_curves()
 
 
-@pytest.mark.parametrize(
-    ('param_class', 'file_name', 'n_layer'),
-    [
-        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 5, id='HH'),
-        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14, id='MKZ'),
+MultiLayerParamClass = type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer]
+
+
+# A multi-layer parameter class, a data file, and its number of layers
+@pytest.fixture(
+    params=[
+        pytest.param((HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 5), id='HH'),
+        pytest.param((MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14), id='MKZ'),
     ],
 )
+def multi_layer_case(
+        request: pytest.FixtureRequest,
+) -> tuple[MultiLayerParamClass, str, int]:
+    return request.param
+
+
 def test_HH_MKZ_param_multi_layer__can_initiate_object_from_file(
-        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
-        file_name: str,
-        n_layer: int,
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
 ) -> None:
+    param_class, file_name, n_layer = multi_layer_case
     param = param_class(str(f_dir / file_name))
     assert len(param) == n_layer
     assert param.n_layer == n_layer
 
 
-@pytest.mark.parametrize(
-    ('param_class', 'file_name', 'n_layer'),
-    [
-        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 5, id='HH'),
-        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 14, id='MKZ'),
-    ],
-)
 def test_HH_MKZ_param_multi_layer__can_initiate_object_from_2D_array(
-        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
-        file_name: str,
-        n_layer: int,
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
 ) -> None:
+    param_class, file_name, n_layer = multi_layer_case
     param_array = np.genfromtxt(f_dir / file_name)
     param_from_array = param_class(param_array)
     assert len(param_from_array) == n_layer
     assert param_from_array.n_layer == n_layer
 
 
-@pytest.mark.parametrize(
-    ('param_class', 'file_name'),
-    [
-        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', id='HH'),
-        pytest.param(MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', id='MKZ'),
-    ],
-)
 def test_HH_MKZ_param_multi_layer__identical_objects_from_file_or_array(
-        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
-        file_name: str,
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
 ) -> None:
+    param_class, file_name, _ = multi_layer_case
     param = param_class(str(f_dir / file_name))
     param_array = np.genfromtxt(f_dir / file_name)
     param_from_array = param_class(param_array)
@@ -229,25 +222,14 @@ def test_HH_MKZ_param_multi_layer__identical_objects_from_file_or_array(
     )
 
 
-@pytest.mark.parametrize(
-    ('param_class', 'file_name', 'index_to_delete', 'n_layer_after'),
-    [
-        pytest.param(HH_Param_Multi_Layer, 'HH_X_FKSH14.txt', 3, 4, id='HH'),
-        pytest.param(
-            MKZ_Param_Multi_Layer, 'H4_G_IWTH04.txt', 6, 13, id='MKZ'
-        ),
-    ],
-)
-def test_param_multi_layer__test_list_operations(
-        param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
-        file_name: str,
-        index_to_delete: int,
-        n_layer_after: int,
+def test_HH_MKZ_param_multi_layer__list_operations(
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
 ) -> None:
+    param_class, file_name, n_layer = multi_layer_case
     param = param_class(str(f_dir / file_name))
-    del param[index_to_delete]
-    assert len(param) == n_layer_after
-    assert param.n_layer == n_layer_after
+    del param[3]
+    assert len(param) == n_layer - 1
+    assert param.n_layer == n_layer - 1
 
 
 def test_hh_param_multi_layer__test_contents_of_list_elements() -> None:

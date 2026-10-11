@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -185,40 +186,12 @@ def test_multiple_damping_curves() -> None:
 
 
 @pytest.mark.parametrize(
-    ('get_all_params', 'param_names'),
+    'use_scipy',
     [
-        pytest.param(
-            Multiple_Damping_Curves.get_all_HH_x_params,
-            HH_X_PARAM_NAMES,
-            id='HH_x',
-        ),
-        pytest.param(
-            Multiple_Damping_Curves.get_all_H4_x_params,
-            H4_X_PARAM_NAMES,
-            id='H4_x',
-        ),
+        pytest.param(True, id='differential_evolution'),
+        pytest.param(False, id='DEAP'),
     ],
 )
-def test_HH_x_H4_x_fit_multi_layer__differential_evolution_algorithm(
-        get_all_params: Callable[
-            ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
-        ],
-        param_names: set[str],
-) -> None:
-    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
-    mdc_ = mdc[:2]
-    params = get_all_params(
-        mdc_,
-        pop_size=1,
-        n_gen=1,
-        save_txt=False,
-        use_scipy=True,
-    )
-    assert len(params) == 2
-    assert isinstance(params[0].data, dict)
-    assert params[0].keys() == param_names
-
-
 @pytest.mark.parametrize(
     ('get_all_params', 'param_names'),
     [
@@ -234,11 +207,13 @@ def test_HH_x_H4_x_fit_multi_layer__differential_evolution_algorithm(
         ),
     ],
 )
-def test_HH_x_H4_x_fit_multi_layer__DEAP_algorithm(
+def test_HH_x_or_H4_x_fit_multi_layer(
         get_all_params: Callable[
             ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
         ],
         param_names: set[str],
+        *,
+        use_scipy: bool,
 ) -> None:
     mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))
     mdc_ = mdc[:2]
@@ -248,23 +223,29 @@ def test_HH_x_H4_x_fit_multi_layer__DEAP_algorithm(
             pop_size=1,
             n_gen=1,
             save_txt=False,
-            use_scipy=False,
+            use_scipy=use_scipy,
         )
-        assert len(params) == 2
-        assert isinstance(params[0].data, dict)
-        assert params[0].keys() == param_names
-    except ImportError:  # DEAP library may not be installed
-        pass
+    except ImportError:
+        if use_scipy:
+            raise
+
+        return  # DEAP library may not be installed
+
+    assert len(params) == 2
+    assert isinstance(params[0].data, dict)
+    assert params[0].keys() == param_names
 
 
 @pytest.mark.parametrize(
-    ('curves_class', 'filler_name', 'filler_value', 'filled_column'),
+    ('curves_class', 'get_curve_matrix', 'filler_value', 'filled_column'),
     [
         # The damping curves are lost, so the damping columns (index 3 of
         # every 4 columns) are filled with a dummy value
         pytest.param(
             Multiple_GGmax_Curves,
-            'damping_filler_value',
+            lambda mgc, value: mgc.get_curve_matrix(
+                damping_filler_value=value
+            ),
             1.23,
             3,
             id='multiple_GGmax_curves',
@@ -273,7 +254,7 @@ def test_HH_x_H4_x_fit_multi_layer__DEAP_algorithm(
         # 4 columns) are filled with a dummy value
         pytest.param(
             Multiple_Damping_Curves,
-            'GGmax_filler_value',
+            lambda mdc, value: mdc.get_curve_matrix(GGmax_filler_value=value),
             0.76,
             1,
             id='multiple_damping_curves',
@@ -282,12 +263,12 @@ def test_HH_x_H4_x_fit_multi_layer__DEAP_algorithm(
 )
 def test_get_curve_matrix(
         curves_class: type[Multiple_GGmax_Curves | Multiple_Damping_Curves],
-        filler_name: str,
+        get_curve_matrix: Callable[[Any, float], np.ndarray],
         filler_value: float,
         filled_column: int,
 ) -> None:
     curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))
-    curve = curves.get_curve_matrix(**{filler_name: filler_value})
+    curve = get_curve_matrix(curves, filler_value)
 
     curve_benchmark = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
     for j in range(curve_benchmark.shape[1]):

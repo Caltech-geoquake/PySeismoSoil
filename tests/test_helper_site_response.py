@@ -348,15 +348,14 @@ def test_calc_GGmax_from_stress_strain_curve(
 @pytest.mark.parametrize(
     ('strain', 'stress', 'damping_benchmark'),
     [
-        # Case 1: Test linear stress strain: damping should be 0
+        # Linear stress strain: damping should be 0
         pytest.param(
             np.array([0.1, 0.2, 0.3]),
             np.array([2, 4, 6]),
             [0, 0, 0],
             id='linear',
         ),
-        # Case 2: Test elasto-perfectly-plastic: damping can be
-        # hand-calculated
+        # Elasto-perfectly-plastic: damping can be hand-calculated
         #
         #                 ^ stress
         #                _|___________
@@ -391,8 +390,8 @@ def test_calc_damping_from_stress_strain(
     assert np.allclose(damping, damping_benchmark)
 
 
-def test_calc_damping_from_stress_strain__case_3() -> None:
-    # Case 3: An edge case -- the initial damping is, in theory, almost 0
+def test_calc_damping_from_stress_strain__initial_damping_almost_0() -> None:
+    # An edge case: the initial damping is, in theory, almost 0
     strain_in_1 = np.array(
         [0.0001, 0.00011514, 0.000132571, 0.000152642, 0.000175751],
     )
