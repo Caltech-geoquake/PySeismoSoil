@@ -21,6 +21,10 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
+- Fixed
+  - The low-pass, high-pass, band-pass, and band-stop filters shifting the
+    signal in time (not zero-phase) and ignoring `padlen`. This also affected
+    `baseline()`, `Ground_Motion.baseline_correct()`, and the GoF scores (#77)
 
 ## [0.7.0] - 2026-10-06
 

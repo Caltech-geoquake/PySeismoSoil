@@ -50,7 +50,7 @@ def lowpass(
     padlen : int | None, default=None
         Pad length (the number of elements by which to extend x at both ends of
         axis before applying the filter). If ``None``, use the default value.
-        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html)
 
     Returns
     -------
@@ -92,7 +92,7 @@ def highpass(
     padlen : int | None, default=None
         Pad length (the number of elements by which to extend x at both ends of
         axis before applying the filter). If ``None``, use the default value.
-        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html)
 
     Returns
     -------
@@ -134,7 +134,7 @@ def bandpass(
     padlen : int | None, default=None
         Pad length (the number of elements by which to extend x at both ends of
         axis before applying the filter). If ``None``, use the default value
-        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html)
 
     Returns
     -------
@@ -176,7 +176,7 @@ def bandstop(
     padlen : int | None, default=None
         Pad length (the number of elements by which to extend x at both ends of
         axis before applying the filter). If ``None``, use the default value
-        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html)
+        (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html)
 
     Returns
     -------
@@ -294,7 +294,7 @@ def _filter_kernel(  # noqa: C901, PLR0915
     sos = scipy.signal.butter(
         filter_order, Wn, btype=filter_type, output='sos'
     )
-    y = scipy.signal.sosfilt(sos, x)
+    y = scipy.signal.sosfiltfilt(sos, x, padlen=padlen)
 
     if show_fig:
         plt.figure()
