@@ -30,7 +30,7 @@ copyright = '2024, California Institute of Technology'  # noqa: A001
 author = 'Jian Shi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.7.0'
+release = 'v0.7.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -51,6 +51,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.smart_resolver',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,8 +79,12 @@ html_static_path = ['_static']
 # https://stackoverflow.com/a/37210251
 autodoc_member_order = 'bysource'
 
-# Specify root document: index.rst
+# Specify root document: index.md (a copy of README.md)
 root_doc = 'index'
+
+# The homepage is README.md. Its table of contents uses GitHub heading
+# anchors, which this level of ``myst_heading_anchors`` reproduces.
+myst_heading_anchors = 3
 
 
 numpydoc_show_class_members = False
