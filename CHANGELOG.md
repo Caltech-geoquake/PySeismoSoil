@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 - Fixed
+  - `Damping_Calibration.get_H4_x_param()` returning HH parameters
+    (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
+    (`MKZ_Param_Multi_Layer`) (#60)
   - The low-pass, high-pass, band-pass, and band-stop filters shifting the
     signal in time (not zero-phase) and ignoring `padlen`. This also affected
     `baseline()`, `Ground_Motion.baseline_correct()`, and the GoF scores (#77)
