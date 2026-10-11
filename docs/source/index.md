@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 - [1. Functionalities](#1-functionalities)
   - [1.1. Site-response simulations](#11-site-response-simulations)
-  - [1.2. Sediment Velocity Model (SVM)](#12-sediment-velocity-model-svm)
+  - [1.2. Sediment velocity model (SVM)](#12-sediment-velocity-model-svm)
   - [1.3. Site amplification factors](#13-site-amplification-factors)
   - [1.4. Useful utilities for ground motion analysis](#14-useful-utilities-for-ground-motion-analysis)
 - [2. Copyright and license](#2-copyright-and-license)
@@ -38,49 +38,43 @@ analysis.
 
 ### 1.1. Site-response simulations
 
-- **Linear simulations** propagate waves viscoelastically through a 1D soil
-  column. In the KiK-net comparisons of
-  [Shi and Asimaki (2017)](https://authors.library.caltech.edu/records/4naa9-fbd36),
-  this method overestimates the surface motion as the shaking gets stronger.
-- **Equivalent-linear simulations** update the shear modulus and the damping to
-  the strain the motion produces, using G/G<sub>max</sub> and damping curves,
-  and iterate until the response and the soil properties agree. That
-  approximation underestimates stronger shaking, especially above about 5 Hz,
-  once the shear strain exceeds about 0.04% (surface PGA on the order of 0.05
-  g).
-- **Nonlinear simulations** integrate the stress-strain response in the time
-  domain. PySeismoSoil implements the hybrid hyperbolic (HH) model
-  ([Shi and Asimaki, 2017](https://authors.library.caltech.edu/records/4naa9-fbd36)),
-  which captures both the small-strain stiffness and the large-strain strength
-  from a _V<sub>S</sub>_ profile alone, and the MKZ model (Matasović and
-  Vucetic, 1993). MKZ modifies the Kondner and Zelasko (1963) hyperbola; unlike
-  HH, its shear stress is not bounded by the soil strength.
+- **Linear simulations,** which assumes viscoelastic wave propagation through
+  1D soil profile. Suitable for very weak motions.
+- **Equivalent linear simulations,** which updates the shear modulus and the
+  damping to the strain the motion produces (using G/G<sub>max</sub> and
+  damping curves as "look up tables"), and iterates until the response and the
+  soil properties converge. Suitable for moderate ground motions.
+- **Nonlinear simulations,** which utilizes advanced constitutive models and
+  propagates waves in the time domain. PySeismoSoil implements the hybrid
+  hyperbolic (HH) model
+  ([Shi & Asimaki, 2017](https://authors.library.caltech.edu/records/4naa9-fbd36)),
+  which describes both the small-strain stiffness and the large-strain strength
+  from a velocity profile alone, or the MKZ (modified
+  [Kondner and Zelasko, 1963](https://www.scirp.org/reference/referencespapers?referenceid=2740984))
+  model.
 
-### 1.2. Sediment Velocity Model (SVM)
+### 1.2. Sediment velocity model (SVM)
 
-A site is often known only through its _V<sub>S30</sub>_, not through a
-measured _V<sub>S</sub>_ profile.
+Oftentimes, only the _V<sub>S30</sub>_ of a site is known, rather than its
+detailed _V<sub>S</sub>_ profile.
 
-The sediment velocity model (SVM) of
-[Shi and Asimaki (2018)](https://authors.library.caltech.edu/records/as8rk-jjb29)
-builds a one-dimensional _V<sub>S</sub>_ profile for California basin sediments
-from _V<sub>S30</sub>_. It was calibrated on 914 measured profiles and is
-supported for _V<sub>S30</sub>_ from about 173 m/s to 1,000 m/s. If the basin
-depth _z_<sub>1</sub> is also known — the depth at which _V<sub>S</sub>_ first
-reaches 1,000 m/s, that is, the depth to bedrock — the profile is adjusted so
-that it reaches 1,000 m/s at that depth. Randomized profiles can be drawn so
-that they stay close to the target _V<sub>S30</sub>_ and _z_<sub>1</sub>.
+The sediment velocity model (SVM) by
+[Shi & Asimaki (2018)](https://authors.library.caltech.edu/records/as8rk-jjb29)
+turns _V<sub>S30</sub>_, and optionally the depth to _V<sub>S</sub>_=1,000 m/s
+soil, into a one-dimensional profile for California basin sediments. It also
+draws randomized profiles that stay consistent with that _V<sub>S30</sub>_ and
+basin depth, for calculations that need a suite of profiles rather than one.
 
 ### 1.3. Site amplification factors
 
-[Shi (2019)](https://thesis.caltech.edu/11571/) tabulates site factors for the
-western United States (SAG19), conditioned on _V<sub>S30</sub>_, basin depth
-(_z_<sub>1</sub>), and the PGA of the input motion. Each factor is a Fourier
-spectral ratio: its amplitude is the amplification, and its phase is the
-frequency-dependent delay between the output and input motions. The database
-contains two versions, from nonlinear simulations and from equivalent-linear
-simulations, both using the HH model. The reference site has _V<sub>S30</sub>_
-= 1,046 m/s.
+A database of site amplification factors (both amplitude and phase shift),
+conditioned on on _V<sub>S30</sub>_, basin depth (_z_<sub>1</sub>), and PGA of
+the input ground motion. They were pre-calculated using nonlinear simulation
+with the HH (hybrid hyperbolic) constitutive model by
+[Shi & Asimaki (2017)](https://authors.library.caltech.edu/records/4naa9-fbd36).
+
+PySeismoSoil offers functions to apply these amplification factors to input
+motions.
 
 ### 1.4. Useful utilities for ground motion analysis
 
