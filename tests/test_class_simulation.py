@@ -32,7 +32,7 @@ def test_linear() -> None:
     output_ = sim_result_.accel_on_surface
 
     # Check that two algorithms produce nearly identical results
-    assert nearly_identical(output.accel, output_.accel, thres=0.99)
+    assert nearly_identical(output.accel, output_.accel, thres=0.999)
 
 
 def test_equiv_linear() -> None:

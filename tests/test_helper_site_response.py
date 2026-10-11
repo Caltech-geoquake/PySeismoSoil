@@ -309,6 +309,99 @@ def test_amplify_motion() -> None:
     assert np.allclose(motion_out, motion_out_bench, atol=0.02, rtol=0.0)
 
 
+@pytest.mark.parametrize(
+    'n',
+    [
+        pytest.param(1000, id='even_length'),
+        pytest.param(1001, id='odd_length'),
+    ],
+)
+@pytest.mark.parametrize(
+    'deconv',
+    [
+        pytest.param(False, id='amplify'),
+        pytest.param(True, id='deconvolve'),
+    ],
+)
+def test_amplify_motion__cosine_at_an_FFT_bin(n: int, *, deconv: bool) -> None:
+    # A cosine whose frequency is exactly that of an FFT bin, so the result
+    # only depends on the transfer function at this frequency
+    dt = 0.01
+    f0 = 10 / (n * dt)  # frequency of FFT bin 10 (about 1 Hz)
+    time = np.arange(n) * dt
+    accel = np.cos(2 * np.pi * f0 * time)
+
+    # A transfer function whose amplitude changes with frequency (zero phase)
+    freq = np.linspace(0, 60, num=6001)
+    amp = 1.0 + freq
+    phase = np.zeros_like(freq)
+
+    motion_out = sr.amplify_motion(
+        np.column_stack((time, accel)),
+        (freq, (amp, phase)),
+        deconv=deconv,
+    )[0]
+
+    tf_at_f0 = 1.0 + f0
+    accel_out_bench = accel / tf_at_f0 if deconv else accel * tf_at_f0
+    assert np.allclose(motion_out[:, 0], time)
+    assert np.allclose(motion_out[:, 1], accel_out_bench, atol=1e-9, rtol=0)
+
+
+@pytest.mark.parametrize(
+    'n',
+    [
+        pytest.param(1000, id='even_length'),
+        pytest.param(1001, id='odd_length'),
+    ],
+)
+def test_amplify_motion__tf_up_to_the_Nyquist_frequency(n: int) -> None:
+    # Without `extrap_tf`, a transfer function from 0 Hz to the Nyquist
+    # frequency (50 Hz) is enough, so `input_motion` is not downsampled
+    dt = 0.01
+    f0 = 10 / (n * dt)  # frequency of FFT bin 10 (about 1 Hz)
+    time = np.arange(n) * dt
+    accel = np.cos(2 * np.pi * f0 * time)
+
+    freq = np.linspace(0, 0.5 / dt, num=5001)
+    amp = 1.0 + freq
+    phase = np.zeros_like(freq)
+
+    motion_out = sr.amplify_motion(
+        np.column_stack((time, accel)),
+        (freq, (amp, phase)),
+        extrap_tf=False,
+    )[0]
+
+    assert motion_out.shape == (n, 2)
+    assert np.allclose(motion_out[:, 0], time)
+    assert np.allclose(motion_out[:, 1], accel * (1.0 + f0), atol=1e-9, rtol=0)
+
+
+@pytest.mark.parametrize(
+    'n',
+    [
+        pytest.param(1000, id='even_length'),
+        pytest.param(1001, id='odd_length'),
+    ],
+)
+def test_get_freq_interval(n: int) -> None:
+    dt = 0.01
+    time = np.arange(n) * dt
+    input_motion = np.column_stack((time, np.ones(n)))
+
+    df, fmax, n_, half_n, f_array = sr._get_freq_interval(input_motion)
+
+    # `f_array` holds the frequencies of the FFT bins 0, 1, 2, ..., starting
+    # at 0 Hz, and `fmax` is the last one
+    f_bins = np.fft.rfftfreq(n, d=dt)
+    assert n_ == n
+    assert half_n == len(f_bins)
+    assert df == pytest.approx(f_bins[1])
+    assert np.allclose(f_array, f_bins, atol=1e-9, rtol=0)
+    assert fmax == pytest.approx(f_bins[-1])
+
+
 def test_gen_profile_plot_array() -> None:
     thk = np.array([1, 2, 3, 4])
     vs = np.array([5, 6, 7, 8])

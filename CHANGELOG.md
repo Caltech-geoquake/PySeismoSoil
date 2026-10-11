@@ -21,6 +21,11 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
+- Fixed
+  - `amplify_motion()` (also used by `linear_site_resp()`, `Ground_Motion`, and
+    `Site_Effect_Adjustment`) applying the transfer function one frequency bin
+    too high, and, with `extrap_tf=False`, downsampling the motion even if the
+    transfer function reached the Nyquist frequency (#78)
 
 ## [0.7.0] - 2026-10-06
 
