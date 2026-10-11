@@ -53,6 +53,8 @@ repos:
       - id: mdformat
         args: [--wrap=79, --number]
         additional_dependencies: [mdformat-gfm]
+        # The docs homepage is a generated copy of README.md.
+        exclude: ^docs/source/index\.md$
   - repo: https://github.com/jsh9/format-json
     rev: 0.1.2
     hooks:
@@ -67,12 +69,12 @@ repos:
     rev: 0.1.1
     hooks:
       - id: markdown-heading-numbering
-        exclude: ^CHANGELOG\.md$
+        exclude: ^CHANGELOG\.md$|^docs/source/index\.md$
   - repo: https://github.com/jsh9/markdown-toc-creator
     rev: 0.1.3
     hooks:
       - id: markdown-toc-creator
-        exclude: ^AGENTS\.md$|^CHANGELOG\.md$
+        exclude: ^AGENTS\.md$|^CHANGELOG\.md$|^docs/source/index\.md$
   - repo: https://github.com/jsh9/format-docstring
     rev: 0.4.0
     hooks:
@@ -105,3 +107,9 @@ repos:
         # Lets `zoneinfo` find the Pacific Time zone on Windows too
         additional_dependencies: [tzdata]
         files: ^examples/.*\.ipynb$
+      - id: copy_readme
+        name: copy_readme
+        entry: python .pre_commit_helper_scripts/copy_readme.py
+        language: system
+        files: ^README\.md$
+        pass_filenames: false

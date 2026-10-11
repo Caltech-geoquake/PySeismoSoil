@@ -115,3 +115,9 @@ pip install -r docs/requirements.txt
 To build the documentation HTML pages locally, navigate to the `docs` folder,
 and run `make clean html`. To view the generated HTML documentation, open the
 file `docs/build/html/index.html` in the browser.
+
+The documentation homepage (`docs/source/index.md`) is generated from
+`README.md`. The pre-commit hook `copy_readme` rewrites it whenever `README.md`
+is part of a commit, and appends a hidden table of contents so the class and
+module pages stay in the documentation sidebar. Edit the README; the hook
+refreshes the homepage.
