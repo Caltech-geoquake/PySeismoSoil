@@ -693,6 +693,12 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     ------
     TypeError
         When then type of ``filename_or_data`` is not valid
+    ValueError
+        When the 2nd row ("b") of the file or the 2D array is not 0 for some
+        layers. H4 files written by older versions of PySeismoSoil (with
+        ``MKZ_Param_Multi_Layer.save_txt()`` or
+        ``get_all_H4_x_params(save_txt=True)``) have the rows gamma_ref, s,
+        beta, Gmax instead, so they raise this error.
     """
 
     param_list: list[MKZ_Param]
@@ -704,14 +710,11 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             *,
             sep: str = '\t',
     ) -> None:
+        list_of_param_array: list[np.ndarray] | None = None
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
             params = np.genfromtxt(filename_or_data, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
-            list_of_param = [
-                mkz.deserialize_array_to_params(_, from_files=True)
-                for _ in list_of_param_array
-            ]
         elif isinstance(filename_or_data, np.ndarray):
             hlp.assert_2D_numpy_array(
                 filename_or_data, name='`filename_or_data`'
@@ -719,15 +722,32 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             list_of_param_array = hlp.extract_from_param_format(
                 filename_or_data
             )
-            list_of_param = [
-                mkz.deserialize_array_to_params(_, from_files=True)
-                for _ in list_of_param_array
-            ]
         elif isinstance(filename_or_data, list):
             self._filename = None
             list_of_param = filename_or_data
         else:
             raise TypeError('Unrecognized type for ``filename_or_data``.')
+
+        if list_of_param_array is not None:
+            list_of_param = [
+                mkz.deserialize_array_to_params(_, from_files=True)
+                for _ in list_of_param_array
+            ]
+            layers_with_nonzero_b = [
+                j
+                for j, array in enumerate(list_of_param_array)
+                if array[1] != 0
+            ]
+            if layers_with_nonzero_b:
+                msg = (
+                    'The 2nd row ("b") of H4 parameters must be 0 (the rows '
+                    'are gamma_ref, 0, s, beta), but it is not 0 for layer #'
+                    + ', #'.join(str(j) for j in layers_with_nonzero_b)
+                    + ' (0-based). H4 files written by older versions of '
+                    'PySeismoSoil have the rows gamma_ref, s, beta, Gmax '
+                    'instead.'
+                )
+                raise ValueError(msg)
 
         self._sep = sep
 

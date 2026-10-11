@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable
 from pathlib import Path
 
@@ -306,6 +307,39 @@ def test_mkz_param_multi_layer__save_txt_and_load_back(tmp_path: Path) -> None:
         expected = {**param, 'Gmax': 1.0}
         assert dict(params_from_file[j]) == pytest.approx(expected)
         assert dict(params_from_array[j]) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    ('data', 'expected_message'),
+    [
+        pytest.param(
+            # The rows written by older versions: gamma_ref, s, beta, Gmax
+            [[0.0005, 0.002], [0.9, 0.7], [1.2, 0.8], [1.0, 3.5e7]],
+            'it is not 0 for layer #0, #1 (0-based)',
+            id='old_format',
+        ),
+        pytest.param(
+            [[0.0005, 0.002], [0, 0.1], [0.9, 0.7], [1.2, 0.8]],
+            'it is not 0 for layer #1 (0-based)',
+            id='one_layer',
+        ),
+    ],
+)
+@pytest.mark.parametrize('from_file', [True, False], ids=['file', '2D_array'])
+def test_mkz_param_multi_layer__nonzero_b_raises_error(
+        tmp_path: Path,
+        data: list[list[float]],
+        expected_message: str,
+        *,
+        from_file: bool,
+) -> None:
+    filename_or_data: str | np.ndarray = np.array(data)
+    if from_file:
+        filename_or_data = str(tmp_path / 'H4_G_test.txt')
+        np.savetxt(filename_or_data, np.array(data), delimiter='\t')
+
+    with pytest.raises(ValueError, match=re.escape(expected_message)):
+        MKZ_Param_Multi_Layer(filename_or_data)
 
 
 def _HH_param_from_column(column: np.ndarray) -> HH_Param:
