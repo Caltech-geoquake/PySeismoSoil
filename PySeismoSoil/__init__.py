@@ -1,1 +1,3 @@
-__version__ = 'v0.7.0'
+import importlib.metadata
+
+__version__ = importlib.metadata.version('PySeismoSoil')
