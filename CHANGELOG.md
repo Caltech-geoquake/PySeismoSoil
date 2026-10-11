@@ -13,6 +13,9 @@
 - Changed
   - `PySeismoSoil.__version__` is read from the installed package metadata
     instead of a hard-coded string
+- Maintenance
+  - Re-ran the example notebooks so this branch satisfies
+    `check-notebooks-were-run`
   - `muff-check` and `muff-format` now run only as pre-commit hooks (removed
     the duplicate `tox` envs, which CI ran separately). CI now also
     format-checks `scripts/`, `docs/`, and the example notebooks. When a hook
