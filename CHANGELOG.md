@@ -5,15 +5,13 @@
 - Added
   - An introduction in the README to the main capabilities (linear,
     equivalent-linear, and nonlinear site response, the sediment velocity
-    model, site amplification factors, and goodness-of-fit scores), with
-    CaltechAUTHORS links to the papers behind them where those records exist
+    model, site amplification factors, and goodness-of-fit scores)
   - A pre-commit hook, `copy_readme`, that copies `README.md` into the
     documentation homepage (`docs/source/index.md`) so the published docs stay
     in step with the README
 - Changed
   - `PySeismoSoil.__version__` is read from the installed package metadata
     instead of a hard-coded string
-- Maintenance
   - `muff-check` and `muff-format` now run only as pre-commit hooks (removed
     the duplicate `tox` envs, which CI ran separately). CI now also
     format-checks `scripts/`, `docs/`, and the example notebooks. When a hook
