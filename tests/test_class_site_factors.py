@@ -127,84 +127,51 @@ def test_site_factors__assert_phase_starts_from_approx_0_at_small_freq() -> (
     assert np.allclose(phase.raw_data[0, 1], 0.0, atol=0.1, rtol=0.0)
 
 
-def test_site_factors__out_of_bound_Vs30_values__not_lenient() -> None:
-    with pytest.raises(ValueError, match='Vs30 should be between'):
-        SF(174, 125, 0.3, lenient=False)
+@pytest.mark.parametrize(
+    ('Vs30', 'z1', 'PGA', 'match'),
+    [
+        pytest.param(
+            174, 125, 0.3, 'Vs30 should be between', id='out_of_bound_Vs30'
+        ),
+        pytest.param(
+            180, 901, 0.3, 'z1_in_m should be between', id='out_of_bound_z1'
+        ),
+        pytest.param(
+            180, 650, 1.6, 'PGA should be between', id='out_of_bound_PGA'
+        ),
+        pytest.param(
+            650,
+            900,
+            1.0,
+            'combination not valid',
+            id='invalid_combination',
+        ),
+    ],
+)
+def test_site_factors__not_lenient(
+        Vs30: float, z1: float, PGA: float, match: str
+) -> None:
+    with pytest.raises(ValueError, match=match):
+        SF(Vs30, z1, PGA, lenient=False)
 
 
-def test_site_factors__out_of_bound_z1_values__not_lenient() -> None:
-    with pytest.raises(ValueError, match='z1_in_m should be between'):
-        SF(180, 901, 0.3, lenient=False)
-
-
-def test_site_factors__out_of_bount_PGA_values__not_lenient() -> None:
-    with pytest.raises(ValueError, match='PGA should be between'):
-        SF(180, 650, 1.6, lenient=False)
-
-
-def test_site_factors__invalid_combinations__not_lenient() -> None:
-    with pytest.raises(ValueError, match='combination not valid'):
-        SF(650, 900, 1.0, lenient=False)
-
-
-def test_site_factors__out_of_bound_Vs30__lenient_case_1() -> None:
-    sf1 = SF(170, 125, 0.3, lenient=True)
-    sf2 = SF(175, 125, 0.3)
-    assert np.allclose(
-        sf1.get_amplification().spectrum, sf2.get_amplification().spectrum
-    )
-    assert np.allclose(
-        sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum
-    )
-
-
-def test_site_factors__out_of_bound_Vs30__lenient_case_2() -> None:
-    sf1 = SF(980, 10, 0.3, lenient=True)
-    sf2 = SF(950, 10, 0.3)
-    assert np.allclose(
-        sf1.get_amplification().spectrum, sf2.get_amplification().spectrum
-    )
-    assert np.allclose(
-        sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum
-    )
-
-
-def test_site_factors__out_of_bound_z1__lenient_case_1() -> None:
-    sf1 = SF(275, 5, 0.3, lenient=True)
-    sf2 = SF(275, 8, 0.3)
-    assert np.allclose(
-        sf1.get_amplification().spectrum, sf2.get_amplification().spectrum
-    )
-    assert np.allclose(
-        sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum
-    )
-
-
-def test_site_factors__out_of_bound_z1__lenient_case_2() -> None:
-    sf1 = SF(275, 980, 0.3, lenient=True)
-    sf2 = SF(275, 900, 0.3)
-    assert np.allclose(
-        sf1.get_amplification().spectrum, sf2.get_amplification().spectrum
-    )
-    assert np.allclose(
-        sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum
-    )
-
-
-def test_site_factors__out_of_bound_PGA__lenient_case_1() -> None:
-    sf1 = SF(300, 120, 0.008, lenient=True)
-    sf2 = SF(300, 120, 0.01)
-    assert np.allclose(
-        sf1.get_amplification().spectrum, sf2.get_amplification().spectrum
-    )
-    assert np.allclose(
-        sf1.get_phase_shift().spectrum, sf2.get_phase_shift().spectrum
-    )
-
-
-def test_site_factors__out_of_bound_PGA__lenient_case_2() -> None:
-    sf1 = SF(300, 120, 1.75, lenient=True)
-    sf2 = SF(300, 120, 1.5)
+@pytest.mark.parametrize(
+    ('out_of_bound_values', 'values_at_the_bound'),
+    [
+        pytest.param((170, 125, 0.3), (175, 125, 0.3), id='Vs30_case_1'),
+        pytest.param((980, 10, 0.3), (950, 10, 0.3), id='Vs30_case_2'),
+        pytest.param((275, 5, 0.3), (275, 8, 0.3), id='z1_case_1'),
+        pytest.param((275, 980, 0.3), (275, 900, 0.3), id='z1_case_2'),
+        pytest.param((300, 120, 0.008), (300, 120, 0.01), id='PGA_case_1'),
+        pytest.param((300, 120, 1.75), (300, 120, 1.5), id='PGA_case_2'),
+    ],
+)
+def test_site_factors__out_of_bound__lenient(
+        out_of_bound_values: tuple[float, float, float],
+        values_at_the_bound: tuple[float, float, float],
+) -> None:
+    sf1 = SF(*out_of_bound_values, lenient=True)
+    sf2 = SF(*values_at_the_bound)
     assert np.allclose(
         sf1.get_amplification().spectrum, sf2.get_amplification().spectrum
     )

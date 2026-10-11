@@ -13,21 +13,19 @@ def test_init() -> None:
     assert svm.z1 == z1
 
 
-def test_Vs_cap_is_True() -> None:
+@pytest.mark.parametrize(
+    ('Vs_cap', 'bedrock_Vs'),
+    [
+        pytest.param(True, 1000, id='True'),
+        pytest.param(1234.5, 1234.5, id='user_defined'),
+    ],
+)
+def test_Vs_cap(*, Vs_cap: bool | float, bedrock_Vs: float) -> None:
     Vs30 = 256
     z1 = 10
-    svm = SVM(Vs30, z1=z1, Vs_cap=True)
-    assert svm.base_profile.vs_profile[-1, 0] == 0
-    assert svm.base_profile.vs_profile[-1, 1] == 1000
-
-
-def test_Vs_cap_is_user_defined() -> None:
-    Vs30 = 256
-    z1 = 10
-    Vs_cap = 1234.5
     svm = SVM(Vs30, z1=z1, Vs_cap=Vs_cap)
     assert svm.base_profile.vs_profile[-1, 0] == 0
-    assert svm.base_profile.vs_profile[-1, 1] == Vs_cap
+    assert svm.base_profile.vs_profile[-1, 1] == bedrock_Vs
 
 
 def test_Vs_cap_is_False() -> None:
@@ -40,42 +38,48 @@ def test_base_profile() -> None:
     assert isinstance(base_profile, Vs_Profile)
 
 
-def test_get_discretized_profile__fixed_thk() -> None:
+@pytest.mark.parametrize(
+    'kwargs',
+    [
+        pytest.param({'fixed_thk': 10}, id='fixed_thk'),
+        pytest.param({'Vs_increment': 100}, id='valid_Vs_increment'),
+    ],
+)
+def test_get_discretized_profile(kwargs: dict[str, float]) -> None:
     svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-    discr_profile = svm.get_discretized_profile(fixed_thk=10, show_fig=False)
+    discr_profile = svm.get_discretized_profile(**kwargs, show_fig=False)
     assert isinstance(discr_profile, Vs_Profile)
     if svm.has_bedrock_Vs:  # bedrock Vs must match
         assert svm.bedrock_Vs == discr_profile.vs_profile[-1, 1]
         assert discr_profile.vs_profile[-1, 0] == 0
 
 
-def test_get_discretized_profile__valid_Vs_increment() -> None:
+@pytest.mark.parametrize(
+    ('kwargs', 'match'),
+    [
+        pytest.param(
+            {'Vs_increment': 5000},
+            'max Vs of the smooth profile',
+            id='invalid_Vs_increment',
+        ),
+        pytest.param(
+            {'Vs_increment': None, 'fixed_thk': None},
+            'You need to provide either',
+            id='both_input_param_are_None',
+        ),
+        pytest.param(
+            {'Vs_increment': 1, 'fixed_thk': 2},
+            'do not provide both',
+            id='both_input_param_are_provided',
+        ),
+    ],
+)
+def test_get_discretized_profile__failure(
+        kwargs: dict[str, float | None], match: str
+) -> None:
     svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-    discr_profile = svm.get_discretized_profile(
-        Vs_increment=100, show_fig=False
-    )
-    assert isinstance(discr_profile, Vs_Profile)
-    if svm.has_bedrock_Vs:  # bedrock Vs must match
-        assert svm.bedrock_Vs == discr_profile.vs_profile[-1, 1]
-        assert discr_profile.vs_profile[-1, 0] == 0
-
-
-def test_get_discretized_profile__invalid_Vs_increment() -> None:
-    svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-    with pytest.raises(ValueError, match='max Vs of the smooth profile'):
-        svm.get_discretized_profile(Vs_increment=5000)
-
-
-def test_get_discretized_profile__both_input_param_are_None() -> None:
-    svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-    with pytest.raises(ValueError, match='You need to provide either'):
-        svm.get_discretized_profile(Vs_increment=None, fixed_thk=None)
-
-
-def test_get_discretized_profile__both_input_param_are_provided() -> None:
-    svm = SVM(target_Vs30=256, z1=100, show_fig=False)
-    with pytest.raises(ValueError, match='do not provide both'):
-        svm.get_discretized_profile(Vs_increment=1, fixed_thk=2)
+    with pytest.raises(ValueError, match=match):
+        svm.get_discretized_profile(**kwargs)
 
 
 def test_get_randomized_profile() -> None:

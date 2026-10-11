@@ -1,4 +1,5 @@
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -21,152 +22,115 @@ def prof() -> Vs_Profile:
     return Vs_Profile(data)
 
 
-def test_Vs_profile_format__case_1() -> None:
-    # Test `None` as `data`
-    data = None
-    with pytest.raises(
-        TypeError, match='must be a file name or a numpy array'
-    ):
-        Vs_Profile(data)
+DATA_2_COLUMNS = np.array(
+    [[10, 20, 30, 0], [100, 120, 160, 190]],
+    dtype=float,
+).T
+DATA_5_COLUMNS = np.array(
+    [
+        [10, 20, 30, 0],
+        [100, 120, 160, 190],
+        [0.01, 0.01, 0.01, 0.01],
+        [1600, 1600, 1600, 1600],
+        [1, 2, 3, 0],
+    ],
+    dtype=float,
+).T
 
 
-def test_Vs_profile_format__case_2() -> None:
-    # Test other type as `data`
-    data = 3.6
-    with pytest.raises(
-        TypeError, match='must be a file name or a numpy array'
-    ):
-        Vs_Profile(data)
-
-
-def test_Vs_profile_format__case_3() -> None:
-    # Test NaN values
-    data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
-    data[2, 1] = np.nan
-    with pytest.raises(ValueError, match='should contain no NaN values'):
-        Vs_Profile(data)
-
-
-def test_Vs_profile_format__case_4() -> None:
-    # Test non-positive values in thickness
-    data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
-    data[2, 0] = 0
-    with pytest.raises(ValueError, match='should be all positive, except'):
-        Vs_Profile(data)
-
-
-def test_Vs_profile_format__case_5() -> None:
-    # Test negative values in last layer thickness
-    data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
-    data[-1, 0] = -1
-    with pytest.raises(ValueError, match='last layer thickness should be'):
-        Vs_Profile(data)
-
-
-def test_Vs_profile_format__case_6() -> None:
-    # Test correct number of dimensions
-    data = np.array([[[1, 2, 3, 0], [1, 2, 3, 4]]]).T  # one more dimension
-    with pytest.raises(ValueError, match='should be a 2D numpy array'):
-        Vs_Profile(data)
-
-
-def test_Vs_profile_format__case_7() -> None:
-    # Test negative values in Vs
-    data = np.array([[10, 20, 30, 0], [100, 120, 160, 190]], dtype=float).T
-    data[2, 1] = -1
-    with pytest.raises(
-        ValueError, match=re.escape('Vs column should be all positive.')
-    ):
-        Vs_Profile(data)
-
-
-def test_Vs_profile_format__case_8() -> None:
-    # Test non-positive values in damping and density
-    data = np.array(
-        [
-            [10, 20, 30, 0],
-            [100, 120, 160, 190],
-            [0.01, 0.01, 0.01, 0.01],
-            [1600, 1600, 1600, 1600],
-            [1, 2, 3, 0],
-        ],
-        dtype=float,
-    ).T
+def _replace(
+        data: np.ndarray, index: tuple[int, int], value: float
+) -> np.ndarray:
+    """Return a copy of ``data`` with ``data[index]`` set to ``value``."""
     data_ = data.copy()
-    data_[2, 3] = 0
-    with pytest.raises(ValueError, match='damping and density columns'):
-        Vs_Profile(data_)
+    data_[index] = value
+    return data_
 
 
-def test_Vs_profile_format__case_9() -> None:
-    # Test "material number" column: all integers
-    data = np.array(
-        [
-            [10, 20, 30, 0],
-            [100, 120, 160, 190],
-            [0.01, 0.01, 0.01, 0.01],
-            [1600, 1600, 1600, 1600],
-            [1, 2, 3, 0],
-        ],
-        dtype=float,
-    ).T
-    data_ = data.copy()
-    data_[1, -1] = 2.2
-    with pytest.raises(ValueError, match='should be all integers'):
-        Vs_Profile(data_)
-
-
-def test_Vs_profile_format__case_10() -> None:
-    # Test "material number" column: all positive
-    data = np.array(
-        [
-            [10, 20, 30, 0],
-            [100, 120, 160, 190],
-            [0.01, 0.01, 0.01, 0.01],
-            [1600, 1600, 1600, 1600],
-            [1, 2, 3, 0],
-        ],
-        dtype=float,
-    ).T
-    data_ = data.copy()
-    data_[1, -1] = 0
-    with pytest.raises(ValueError, match='should be all positive'):
-        Vs_Profile(data_)
-
-
-def test_Vs_profile_format__case_11() -> None:
-    # Test "material number" column: last layer should >= 0
-    data = np.array(
-        [
-            [10, 20, 30, 0],
-            [100, 120, 160, 190],
-            [0.01, 0.01, 0.01, 0.01],
-            [1600, 1600, 1600, 1600],
-            [1, 2, 3, 0],
-        ],
-        dtype=float,
-    ).T
-    data_ = data.copy()
-    data_[-1, -1] = -1
-    with pytest.raises(ValueError, match='last layer should be non-negative'):
-        Vs_Profile(data_)
-
-
-def test_Vs_profile_format__case_12() -> None:
-    # Test correct number of columns
-    data = np.array(
-        [
-            [10, 20, 30, 0],
-            [100, 120, 160, 190],
-            [0.01, 0.01, 0.01, 0.01],
-            [1600, 1600, 1600, 1600],
-            [1, 2, 3, 0],
-        ],
-        dtype=float,
-    ).T
-    data_ = data[:, 0:-1]  # one fewer column
-    with pytest.raises(ValueError, match='either 2 or 5 columns'):
-        Vs_Profile(data_)
+@pytest.mark.parametrize(
+    ('data', 'exception', 'match'),
+    [
+        pytest.param(
+            None,
+            TypeError,
+            'must be a file name or a numpy array',
+            id='None_as_data',
+        ),
+        pytest.param(
+            3.6,
+            TypeError,
+            'must be a file name or a numpy array',
+            id='other_type_as_data',
+        ),
+        pytest.param(
+            _replace(DATA_2_COLUMNS, (2, 1), np.nan),
+            ValueError,
+            'should contain no NaN values',
+            id='NaN_values',
+        ),
+        pytest.param(
+            _replace(DATA_2_COLUMNS, (2, 0), 0),
+            ValueError,
+            'should be all positive, except',
+            id='non_positive_thickness',
+        ),
+        pytest.param(
+            _replace(DATA_2_COLUMNS, (-1, 0), -1),
+            ValueError,
+            'last layer thickness should be',
+            id='negative_last_layer_thickness',
+        ),
+        pytest.param(
+            np.array([[[1, 2, 3, 0], [1, 2, 3, 4]]]).T,  # one more dimension
+            ValueError,
+            'should be a 2D numpy array',
+            id='incorrect_number_of_dimensions',
+        ),
+        pytest.param(
+            _replace(DATA_2_COLUMNS, (2, 1), -1),
+            ValueError,
+            re.escape('Vs column should be all positive.'),
+            id='negative_Vs',
+        ),
+        pytest.param(
+            _replace(DATA_5_COLUMNS, (2, 3), 0),
+            ValueError,
+            'damping and density columns',
+            id='non_positive_density',
+        ),
+        pytest.param(
+            _replace(DATA_5_COLUMNS, (1, -1), 2.2),
+            ValueError,
+            'should be all integers',
+            id='material_number_not_integer',
+        ),
+        pytest.param(
+            _replace(DATA_5_COLUMNS, (1, -1), 0),
+            ValueError,
+            'should be all positive',
+            id='material_number_not_positive',
+        ),
+        pytest.param(
+            _replace(DATA_5_COLUMNS, (-1, -1), -1),
+            ValueError,
+            'last layer should be non-negative',
+            id='material_number_of_last_layer_negative',
+        ),
+        pytest.param(
+            DATA_5_COLUMNS[:, 0:-1].copy(),  # one fewer column
+            ValueError,
+            'either 2 or 5 columns',
+            id='incorrect_number_of_columns',
+        ),
+    ],
+)
+def test_Vs_profile_format(
+        data: np.ndarray | float | None,
+        exception: type[Exception],
+        match: str,
+) -> None:
+    with pytest.raises(exception, match=match):
+        Vs_Profile(data)
 
 
 def test_plot(prof: Vs_Profile) -> None:
@@ -178,33 +142,29 @@ def test_plot(prof: Vs_Profile) -> None:
     ax.legend(loc='best')
 
 
-def test_add_halfspace__case_1__already_a_half_space() -> None:
-    data = np.genfromtxt(
-        str(f_dir / 'sample_profile.txt'),
-    )  # already has halfspace
+@pytest.mark.parametrize(
+    ('file_name', 'n_layer', 'has_halfspace'),
+    [
+        pytest.param(
+            'sample_profile.txt', 12, True, id='already_a_half_space'
+        ),
+        pytest.param(
+            'two_column_data_example.txt', 15, False, id='no_half_space'
+        ),
+    ],
+)
+def test_add_halfspace(
+        file_name: str, n_layer: int, *, has_halfspace: bool
+) -> None:
+    data = np.genfromtxt(str(f_dir / file_name))
     prof_1 = Vs_Profile(data, add_halfspace=False)
     prof_2 = Vs_Profile(data, add_halfspace=True)
 
-    assert prof_1._thk[-1] == 0
+    assert (prof_1._thk[-1] == 0) == has_halfspace
     assert prof_2._thk[-1] == 0
     assert prof_1._thk[-2] != 0
     assert prof_2._thk[-2] != 0  # assert only one "halfspace"
-    assert prof_1.n_layer == 12
-    assert prof_1.n_layer == prof_2.n_layer
-
-
-def test_add_halfspace__case_1__no_half_space() -> None:
-    data = np.genfromtxt(
-        str(f_dir / 'two_column_data_example.txt'),
-    )  # no halfspace
-    prof_1 = Vs_Profile(data, add_halfspace=False)
-    prof_2 = Vs_Profile(data, add_halfspace=True)
-
-    assert prof_1._thk[-1] != 0
-    assert prof_2._thk[-1] == 0
-    assert prof_2._thk[-2] != 0  # assert only one "halfspace"
-    assert prof_1._thk[-2] != 0
-    assert prof_1.n_layer == 15
+    assert prof_1.n_layer == n_layer
     assert prof_1.n_layer == prof_2.n_layer
 
 
@@ -252,70 +212,63 @@ def test_get_amplif_function() -> None:
     assert np.allclose(af_RO.spectrum_2col, af_benchmark, atol=1e-9, rtol=0.0)
 
 
-def test_f0_BH(prof: Vs_Profile) -> None:
-    assert prof.get_f0_BH() == pytest.approx(1.05, abs=1e-2)
+@pytest.mark.parametrize(
+    ('get_f0', 'f0_benchmark'),
+    [
+        pytest.param(Vs_Profile.get_f0_BH, 1.05, id='BH'),
+        pytest.param(Vs_Profile.get_f0_RO, 1.10, id='RO'),
+    ],
+)
+def test_f0_BH_or_f0_RO(
+        prof: Vs_Profile,
+        get_f0: Callable[[Vs_Profile], float],
+        f0_benchmark: float,
+) -> None:
+    assert get_f0(prof) == pytest.approx(f0_benchmark, abs=1e-2)
 
 
-def test_f0_RO(prof: Vs_Profile) -> None:
-    assert prof.get_f0_RO() == pytest.approx(1.10, abs=1e-2)
-
-
-def test_truncate__case_1() -> None:
-    # Case 1: Truncation in the middle of a layer
-    data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
-    prof = Vs_Profile(data)
-    new_prof = prof.truncate(depth=8, Vs=2000)
-    benchmark = np.array([[5, 3, 0], [200, 500, 2000]]).T
-    assert np.allclose(new_prof.vs_profile[:, :2], benchmark)
-
-
-def test_truncate__case_2() -> None:
-    # Case 2: Truncation on the boundary of a layer
-    data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
-    prof = Vs_Profile(data)
-    new_prof = prof.truncate(depth=9, Vs=2000)
-    benchmark = np.array([[5, 4, 0], [200, 500, 2000]]).T
-    assert np.allclose(new_prof.vs_profile[:, :2], benchmark)
-
-
-def test_truncate__case_3() -> None:
-    # Case 3: Truncation beyond the total depth of original profile
-    data = np.array([[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]]).T
-    prof = Vs_Profile(data)
-    new_prof = prof.truncate(depth=30, Vs=2000)
-    benchmark = np.array([
-        [5, 4, 3, 2, 16, 0],
-        [200, 500, 700, 1000, 1200, 2000],
-    ]).T
-    assert np.allclose(new_prof.vs_profile[:, :2], benchmark)
-
-
-def test_truncate__case_3b() -> None:
-    # Case 3b: Truncation beyond the total depth of original profile
-    data_ = np.array([
-        [5, 4, 3, 2, 1, 0],
-        [200, 500, 700, 1000, 1200, 1500],
-    ]).T
-    prof = Vs_Profile(data_)
-    new_prof = prof.truncate(depth=30, Vs=2000)
-    benchmark = np.array(
-        [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1500, 2000]],
-    ).T
-    assert np.allclose(new_prof.vs_profile[:, :2], benchmark)
-
-
-def test_truncate__case_3c() -> None:
-    # Case 3c: Truncation beyond the total depth of original profile
-    data_ = np.array([
-        [5, 4, 3, 2, 1, 0],
-        [200, 500, 700, 1000, 1200, 1200],
-    ]).T
-    prof = Vs_Profile(data_)
-    new_prof = prof.truncate(depth=30, Vs=2000)
-    benchmark = np.array(
-        [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1200, 2000]],
-    ).T
-    assert np.allclose(new_prof.vs_profile[:, :2], benchmark)
+# The profiles and the benchmarks are transposed in the test.
+@pytest.mark.parametrize(
+    ('data', 'depth', 'benchmark'),
+    [
+        pytest.param(
+            [[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]],
+            8,
+            [[5, 3, 0], [200, 500, 2000]],
+            id='in_the_middle_of_a_layer',
+        ),
+        pytest.param(
+            [[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]],
+            9,
+            [[5, 4, 0], [200, 500, 2000]],
+            id='on_the_boundary_of_a_layer',
+        ),
+        pytest.param(
+            [[5, 4, 3, 2, 1], [200, 500, 700, 1000, 1200]],
+            30,
+            [[5, 4, 3, 2, 16, 0], [200, 500, 700, 1000, 1200, 2000]],
+            id='beyond_the_total_depth',
+        ),
+        pytest.param(
+            [[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1500]],
+            30,
+            [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1500, 2000]],
+            id='beyond_the_total_depth__with_a_half_space',
+        ),
+        pytest.param(
+            [[5, 4, 3, 2, 1, 0], [200, 500, 700, 1000, 1200, 1200]],
+            30,
+            [[5, 4, 3, 2, 1, 15, 0], [200, 500, 700, 1000, 1200, 1200, 2000]],
+            id='beyond_the_total_depth__with_a_half_space_of_the_same_Vs',
+        ),
+    ],
+)
+def test_truncate(
+        data: list[list[float]], depth: float, benchmark: list[list[float]]
+) -> None:
+    prof = Vs_Profile(np.array(data).T)
+    new_prof = prof.truncate(depth=depth, Vs=2000)
+    assert np.allclose(new_prof.vs_profile[:, :2], np.array(benchmark).T)
 
 
 def test_query_Vs_at_depth__query_numpy_array() -> None:

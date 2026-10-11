@@ -37,7 +37,15 @@ def test_check_layer_count() -> None:
         sim.check_layer_count(vs_profile, GGmax_and_damping_curves=mgdc_)
 
 
-def test_linear__elastic_boundary() -> None:
+@pytest.mark.parametrize(
+    ('boundary', 'min_correlation'),
+    [
+        pytest.param('elastic', 0.99, id='elastic'),
+        # rigid cases can lead to higher errors
+        pytest.param('rigid', 0.97, id='rigid'),
+    ],
+)
+def test_linear(boundary: str, min_correlation: float) -> None:
     """
     Test that ``helper_simulations.linear()`` produces identical results to
     ``helper_site_response.linear_site_resp()``.
@@ -45,50 +53,23 @@ def test_linear__elastic_boundary() -> None:
     vs_profile = np.genfromtxt(f_dir / 'profile_FKSH14.txt')
     accel_in = np.genfromtxt(f_dir / 'sample_accel.txt')
 
-    result_1 = sim.linear(vs_profile, accel_in, boundary='elastic')[3]
-    result_1_ = sr.linear_site_resp(vs_profile, accel_in, boundary='elastic')[
-        0
-    ]
+    result = sim.linear(vs_profile, accel_in, boundary=boundary)[3]
+    result_ = sr.linear_site_resp(vs_profile, accel_in, boundary=boundary)[0]
 
     # Time arrays need to match well
-    assert np.allclose(result_1[:, 0], result_1_[:, 0], rtol=0.0001, atol=0.0)
+    assert np.allclose(result[:, 0], result_[:, 0], rtol=0.0001, atol=0.0)
 
     # Only check correlation (more lenient). Because `sim.linear()`
     # re-discretizes soil profiles into finer layers, so numerical errors
     # may accumulate over the additional layers.
-    r_1 = np.corrcoef(result_1[:, 1], result_1_[:, 1])
-    assert r_1[0, 1] >= 0.99
+    r = np.corrcoef(result[:, 1], result_[:, 1])
+    assert r[0, 1] >= min_correlation
 
     plt.figure()
-    plt.plot(result_1[:, 0], result_1[:, 1], label='every layer', alpha=0.6)
-    plt.plot(result_1_[:, 0], result_1_[:, 1], label='surface only', alpha=0.6)
+    plt.plot(result[:, 0], result[:, 1], label='every layer', alpha=0.6)
+    plt.plot(result_[:, 0], result_[:, 1], label='surface only', alpha=0.6)
     plt.legend()
     plt.xlabel('Time [sec]')
     plt.ylabel('Acceleration')
     plt.grid(ls=':', lw=0.5)
-    plt.title('Elastic boundary')
-
-
-def test_linear__rigid_boundary() -> None:
-    """
-    Test that ``helper_simulations.linear()`` produces identical results to
-    ``helper_site_response.linear_site_resp()``.
-    """
-    vs_profile = np.genfromtxt(f_dir / 'profile_FKSH14.txt')
-    accel_in = np.genfromtxt(f_dir / 'sample_accel.txt')
-
-    result_2 = sim.linear(vs_profile, accel_in, boundary='rigid')[3]
-    result_2_ = sr.linear_site_resp(vs_profile, accel_in, boundary='rigid')[0]
-    assert np.allclose(result_2[:, 0], result_2_[:, 0], rtol=0.0001, atol=0.0)
-    r_2 = np.corrcoef(result_2[:, 1], result_2_[:, 1])
-
-    # rigid cases can lead to higher errors
-    assert r_2[0, 1] >= 0.97
-
-    plt.figure()
-    plt.plot(result_2[:, 0], result_2[:, 1], label='every layer', alpha=0.6)
-    plt.plot(result_2_[:, 0], result_2_[:, 1], label='surface only', alpha=0.6)
-    plt.legend()
-    plt.xlabel('Time [sec]')
-    plt.grid(ls=':', lw=0.5)
-    plt.title('Rigid boundary')
+    plt.title(f'{boundary.capitalize()} boundary')

@@ -64,17 +64,27 @@ def test_serialize_params_to_array__success() -> None:
     assert np.allclose(array, ARRAY)
 
 
-def test_serialize_params_to_array__incorrect_number_of_dict_items() -> None:
-    with pytest.raises(AssertionError, match=''):
-        mkz.serialize_params_to_array({'test': 2})
-
-
-def test_serialize_params_to_array__only_one_key_name_is_wrong() -> None:
-    with pytest.raises(KeyError, match=''):
-        mkz.serialize_params_to_array(
+@pytest.mark.parametrize(
+    ('param', 'exception'),
+    [
+        pytest.param(
+            {'test': 2},
+            AssertionError,
+            id='incorrect_number_of_dict_items',
+        ),
+        pytest.param(
             # should be "Gmax"
             {'gamma_ref': 1, 's': 1, 'beta': 1, 'Gmax__': 1},
-        )
+            KeyError,
+            id='only_one_key_name_is_wrong',
+        ),
+    ],
+)
+def test_serialize_params_to_array__failure(
+        param: dict[str, float], exception: type[Exception]
+) -> None:
+    with pytest.raises(exception):
+        mkz.serialize_params_to_array(param)
 
 
 def test_deserialize_array_to_params__success() -> None:
@@ -82,15 +92,30 @@ def test_deserialize_array_to_params__success() -> None:
     assert param == PARAM
 
 
-def test_deserialize_array_to_params__incorrect_input_data_type() -> None:
-    with pytest.raises(TypeError, match='must be a 1D numpy array'):
-        mkz.deserialize_array_to_params([1, 2, 3, 4])
-
-
-def test_deserialize_array_to_params__incorrect_number_of_parameters() -> None:
-    with pytest.raises(AssertionError, match=''):
-        # should be 4
-        mkz.deserialize_array_to_params(np.array([1, 2, 3, 4, 5]))
+@pytest.mark.parametrize(
+    ('array', 'exception', 'match'),
+    [
+        pytest.param(
+            [1, 2, 3, 4],
+            TypeError,
+            'must be a 1D numpy array',
+            id='incorrect_input_data_type',
+        ),
+        pytest.param(
+            np.array([1, 2, 3, 4, 5]),  # should be 4
+            AssertionError,
+            None,
+            id='incorrect_number_of_parameters',
+        ),
+    ],
+)
+def test_deserialize_array_to_params__failure(
+        array: list[float] | np.ndarray,
+        exception: type[Exception],
+        match: str | None,
+) -> None:
+    with pytest.raises(exception, match=match):
+        mkz.deserialize_array_to_params(array)
 
 
 def test_fit_MKZ() -> None:
