@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+- Fixed
+  - `MKZ_Param_Multi_Layer` reading H4 parameter files (and 2D arrays) in the
+    wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
+    Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
+    the file format (gamma_ref, 0, s, beta) (#79)
+
+## [0.7.1] - 2026-10-11
+
+- Added
+  - An introduction in the README to the main capabilities (linear,
+    equivalent-linear, and nonlinear site response, the sediment velocity
+    model, site amplification factors, and goodness-of-fit scores)
+  - A pre-commit hook, `copy_readme`, that copies `README.md` into the
+    documentation homepage (`docs/source/index.md`) so the published docs stay
+    in step with the README
 - Changed
+  - `PySeismoSoil.__version__` is read from the installed package metadata
+    instead of a hard-coded string
   - `muff-check` and `muff-format` now run only as pre-commit hooks (removed
     the duplicate `tox` envs, which CI ran separately). CI now also
     format-checks `scripts/`, `docs/`, and the example notebooks. When a hook
@@ -21,11 +38,8 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
-- Fixed
-  - `MKZ_Param_Multi_Layer` reading H4 parameter files (and 2D arrays) in the
-    wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
-    Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
-    the file format (gamma_ref, 0, s, beta) (#79)
+- Full diff
+  - https://github.com/Caltech-geoquake/PySeismoSoil/compare/0.7.0...0.7.1
 
 ## [0.7.0] - 2026-10-06
 
@@ -83,6 +97,8 @@
     (#40)
   - Made `test_get_randomized_profile` use a fixed seed, so that it no longer
     fails randomly (#48)
+- Full diff
+  - https://github.com/Caltech-geoquake/PySeismoSoil/compare/0.6.3...0.7.0
 
 ## [0.6.3] - 2025-10-15
 
