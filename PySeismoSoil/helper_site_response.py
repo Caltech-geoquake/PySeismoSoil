@@ -2524,7 +2524,8 @@ def fit_all_damping_curves(
         Delimiter to separate columns of data in the output file.
     func_serialize : Callable[[Any, ...], Any] | None, default=None
         The function to serialize the parameters from a dict into a list. Can
-        be hh.serialize_params_to_array or mkz.serialize_params_to_array.
+        be hh.serialize_params_to_array, or mkz.serialize_params_to_array with
+        ``to_files=True`` (for the format of "H4_x_SITE_NAME.txt" files).
 
     Returns
     -------

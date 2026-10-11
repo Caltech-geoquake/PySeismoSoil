@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -1186,9 +1187,12 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Number of CPU cores to use. If None, all cores are used. No effects
             if the parallelization options are set to ``False``.
         save_txt : bool, default=False
-            Whether to save the results as a "HH_x_STATION_NAME.txt" file.
+            Whether to save the results as a "H4_x_STATION_NAME.txt" file. The
+            file has one column per layer, with the rows gamma_ref, 0, s, beta
+            (the format that ``MKZ_Param_Multi_Layer`` reads). Gmax is not
+            saved.
         txt_filename : str | None, default=None
-            File name of the text file to save HH parameters. If the object is
+            File name of the text file to save H4 parameters. If the object is
             created via a "curve" text file, then ``txt_filename`` can be
             ``None`` and the output filename will be determined automatically.
         sep : str | None, default=None
@@ -1239,7 +1243,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
             save_txt=save_txt,
             txt_filename=txt_filename,
             sep=sep,
-            func_serialize=mkz.serialize_params_to_array,
+            func_serialize=functools.partial(
+                mkz.serialize_params_to_array, to_files=True
+            ),
         )
 
         return MKZ_Param_Multi_Layer(params)

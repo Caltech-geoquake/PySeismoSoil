@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -273,16 +274,51 @@ def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
         's',
         'Gmax',
     })
-    assert np.allclose(
-        mkz.serialize_params_to_array(H4_G_1),
-        [0.000856, 0, 0.88832, 1.7492],
-        atol=1e-6,
-        rtol=0.0,
-    )
+    # Column 1 of the file is: gamma_ref, b (always 0), s, beta. The file has
+    # no Gmax, so Gmax is 1.0.
+    assert dict(H4_G_1) == pytest.approx({
+        'gamma_ref': 0.00085636,
+        's': 0.88832,
+        'beta': 1.7492,
+        'Gmax': 1.0,
+    })
+
+
+def test_mkz_param_multi_layer__save_txt_and_load_back(tmp_path: Path) -> None:
+    params = MKZ_Param_Multi_Layer([
+        {'gamma_ref': 0.0005, 's': 0.9, 'beta': 1.2, 'Gmax': 1.0},
+        {'gamma_ref': 0.002, 's': 0.7, 'beta': 0.8, 'Gmax': 3.5e7},
+    ])
+
+    # Same format as the "H4_G_*.txt" and "H4_x_*.txt" files: one column per
+    # layer, with the rows gamma_ref, 0, s, beta (Gmax is not saved)
+    file_format = [[0.0005, 0.002], [0, 0], [0.9, 0.7], [1.2, 0.8]]
+    assert np.allclose(params.serialize_to_2D_array(), file_format)
+    file_name = str(tmp_path / 'H4_G_test.txt')
+    params.save_txt(file_name)
+    assert np.allclose(np.genfromtxt(file_name), file_format)
+
+    # Loading the file or the 2D array gives back the same parameters, except
+    # that Gmax is 1.0
+    params_from_file = MKZ_Param_Multi_Layer(file_name)
+    params_from_array = MKZ_Param_Multi_Layer(params.serialize_to_2D_array())
+    for j, param in enumerate(params.param_list):
+        expected = {**param, 'Gmax': 1.0}
+        assert dict(params_from_file[j]) == pytest.approx(expected)
+        assert dict(params_from_array[j]) == pytest.approx(expected)
+
+
+def _HH_param_from_column(column: np.ndarray) -> HH_Param:
+    return HH_Param(hh.deserialize_array_to_params(column))
+
+
+def _H4_param_from_column(column: np.ndarray) -> MKZ_Param:
+    # A column of an "H4_G_*.txt" or "H4_x_*.txt" file: gamma_ref, 0, s, beta
+    return MKZ_Param(mkz.deserialize_array_to_params(column, from_files=True))
 
 
 @pytest.mark.parametrize(
-    ('param_class', 'file_name', 'curves_index'),
+    ('param_class', 'file_name', 'curves_index', 'param_from_column'),
     [
         # `construct_curves()` returns the G/Gmax curves (index 0) and the
         # damping curves (index 1). Check the G/Gmax curves for the G
@@ -291,24 +327,28 @@ def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
             HH_Param_Multi_Layer,
             'HH_G_FKSH14.txt',
             0,
+            _HH_param_from_column,
             id='from_HH_G_parameters',
         ),
         pytest.param(
             HH_Param_Multi_Layer,
             'HH_X_FKSH14.txt',
             1,
+            _HH_param_from_column,
             id='from_HH_x_parameters',
         ),
         pytest.param(
             MKZ_Param_Multi_Layer,
             'H4_G_IWTH04.txt',
             0,
+            _H4_param_from_column,
             id='from_H4_G_parameters',
         ),
         pytest.param(
             MKZ_Param_Multi_Layer,
             'H4_x_IWTH04.txt',
             1,
+            _H4_param_from_column,
             id='from_H4_x_parameters',
         ),
     ],
@@ -317,12 +357,24 @@ def test_construct_curves(
         param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
         file_name: str,
         curves_index: int,
+        param_from_column: Callable[[np.ndarray], HH_Param | MKZ_Param],
 ) -> None:
     param = param_class(str(f_dir / file_name))
     curves_object = param.construct_curves()[curves_index]
     curves = curves_object.get_curve_matrix()
     assert curves_object.n_layer == param.n_layer
     assert curves.shape[1] == param.n_layer * 4
+
+    # The curve of a layer should be the same as the curve of the parameters
+    # in that layer's column of the file
+    layer = 1
+    param_of_layer = param_from_column(
+        np.genfromtxt(f_dir / file_name)[:, layer]
+    )
+    curve = curves_object[layer]
+    get_values = [param_of_layer.get_GGmax, param_of_layer.get_damping]
+    expected = get_values[curves_index](strain_in_pct=curve.strain)
+    assert np.allclose(curve.values, expected)
 
 
 @pytest.mark.parametrize(

@@ -236,6 +236,32 @@ def test_HH_x_or_H4_x_fit_multi_layer(
     assert params[0].keys() == param_names
 
 
+def test_get_all_H4_x_params__saved_file_loads_back(tmp_path: Path) -> None:
+    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))[:2]
+    txt_filename = str(tmp_path / 'H4_x_FKSH14.txt')
+    params = mdc.get_all_H4_x_params(
+        pop_size=1, n_gen=1, save_txt=True, txt_filename=txt_filename
+    )
+
+    # Same format as the "H4_x_*.txt" files: one column per layer, with the
+    # rows gamma_ref, 0, s, beta
+    saved = np.genfromtxt(txt_filename)
+    assert saved.shape == (4, 2)
+    for j, param in enumerate(params.param_list):
+        assert np.allclose(
+            saved[:, j],
+            [param['gamma_ref'], 0, param['s'], param['beta']],
+            rtol=1e-5,
+        )
+
+    # The file has no Gmax, and loads back with Gmax = 1.0, which is also the
+    # Gmax of the fitted parameters
+    params_loaded = MKZ_Param_Multi_Layer(txt_filename)
+    assert params_loaded.n_layer == 2
+    for j, param in enumerate(params.param_list):
+        assert dict(params_loaded[j]) == pytest.approx(dict(param), rel=1e-5)
+
+
 @pytest.mark.parametrize(
     ('curves_class', 'get_curve_matrix', 'filler_value', 'filled_column'),
     [

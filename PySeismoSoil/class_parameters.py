@@ -658,20 +658,26 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     Parameters
     ----------
     filename_or_data : MKZ_Param_Input
-        A file name of a validly formatted "parameter file", i.e., having the
+        A file name of a validly formatted "parameter file" (such as
+        "H4_G_SITE_NAME.txt" or "H4_x_SITE_NAME.txt"), i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
             |  param_layer_1 |  param_layer_2  |  param_layer_3  | ... |
             +================+=================+=================+=====+
-            |      1.1       |      2.2        |      3.3        | ... |
+            |   gamma_ref    |   gamma_ref     |   gamma_ref     | ... |
             +----------------+-----------------+-----------------+-----+
-            |      1.2       |      2.3        |      3.4        | ... |
+            |       0        |       0         |       0         | ... |
             +----------------+-----------------+-----------------+-----+
-            |      ...       |      ...        |      ...        | ... |
+            |       s        |       s         |       s         | ... |
+            +----------------+-----------------+-----------------+-----+
+            |      beta      |      beta       |      beta       | ... |
             +----------------+-----------------+-----------------+-----+
 
         or a 2D numpy array containing the data of the format above, or a list
         containing MKZ parameter data (dictionaries or ``MKZ_Param`` objects).
+        The 2nd row ("b") is always 0, for historical reasons. This format has
+        no Gmax, so when reading a file or a 2D array, Gmax of each layer is
+        set to 1.0 (Gmax does not affect the G/Gmax or damping curves).
     sep : str, default='\t'
         Delimiter of the file to be imported. If ``filename_or_data`` is not a
         file name, ``sep`` has no effect.
@@ -703,7 +709,8 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             params = np.genfromtxt(filename_or_data, delimiter=sep)
             list_of_param_array = hlp.extract_from_param_format(params)
             list_of_param = [
-                mkz.deserialize_array_to_params(_) for _ in list_of_param_array
+                mkz.deserialize_array_to_params(_, from_files=True)
+                for _ in list_of_param_array
             ]
         elif isinstance(filename_or_data, np.ndarray):
             hlp.assert_2D_numpy_array(
@@ -713,7 +720,8 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
                 filename_or_data
             )
             list_of_param = [
-                mkz.deserialize_array_to_params(_) for _ in list_of_param_array
+                mkz.deserialize_array_to_params(_, from_files=True)
+                for _ in list_of_param_array
             ]
         elif isinstance(filename_or_data, list):
             self._filename = None
@@ -727,3 +735,23 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             list_of_param,
             element_class=MKZ_Param,
         )
+
+    def serialize_to_2D_array(self) -> np.ndarray:
+        """
+        Serialize the parameter data to a 2D numpy array.
+
+        The array has the same format as the "parameter files" (see the class
+        docstring): each column is one layer, with the rows gamma_ref, 0, s,
+        beta. Gmax is not included, so a file written by ``save_txt()`` loads
+        back with Gmax = 1.0 for each layer.
+
+        Returns
+        -------
+        param_2D_array : np.ndarray
+            A 2D numpy array whose columns are parameters of each layer.
+        """
+        output = [
+            mkz.serialize_params_to_array(param.data, to_files=True)
+            for param in self.param_list
+        ]
+        return np.array(output).T

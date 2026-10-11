@@ -21,6 +21,11 @@
   - Test functions that differ only in their inputs and expected results are
     now combined into parametrized tests (`pytest.mark.parametrize`). Each case
     still runs (and is reported) as a separate test
+- Fixed
+  - `MKZ_Param_Multi_Layer` reading H4 parameter files (and 2D arrays) in the
+    wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
+    Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
+    the file format (gamma_ref, 0, s, beta) (#79)
 
 ## [0.7.0] - 2026-10-06
 
