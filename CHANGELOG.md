@@ -1,5 +1,12 @@
 # Change Log
 
+## [Unreleased]
+
+- Fixed
+  - `Damping_Calibration.get_H4_x_param()` returning HH parameters
+    (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
+    (`MKZ_Param_Multi_Layer`) (#60)
+
 ## [0.7.1] - 2026-10-11
 
 - Added
