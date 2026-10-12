@@ -1,3 +1,6 @@
+import re
+import warnings
+
 import numpy as np
 import pytest
 from scipy import stats
@@ -103,8 +106,11 @@ def test_deserialize_array_to_params__success() -> None:
         ),
         pytest.param(
             np.array([1, 2, 3, 4, 5]),  # should be 4
-            AssertionError,
-            None,
+            ValueError,
+            re.escape(
+                'MKZ parameters must have 4 values (gamma_ref, s, beta, '
+                'Gmax), but there are 5.'
+            ),
             id='incorrect_number_of_parameters',
         ),
     ],
@@ -116,6 +122,60 @@ def test_deserialize_array_to_params__failure(
 ) -> None:
     with pytest.raises(exception, match=match):
         mkz.deserialize_array_to_params(array)
+
+
+def test_serialize_params_to_array__to_files() -> None:
+    param = {**PARAM, 'Gmax': 1.0}
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')  # Gmax = 1.0: nothing is lost
+        array = mkz.serialize_params_to_array(param, to_files=True)
+
+    assert np.allclose(array, [0.1, 0, 0.2, 0.3])  # gamma_ref, 0, s, beta
+
+
+def test_serialize_params_to_array__to_files_warns_if_Gmax_is_not_1() -> None:
+    with pytest.warns(UserWarning, match='has no Gmax'):
+        array = mkz.serialize_params_to_array(PARAM, to_files=True)
+
+    assert np.allclose(array, [0.1, 0, 0.2, 0.3])
+
+
+@pytest.mark.parametrize('b', [0.0, 1e-12], ids=['b_is_0', 'b_is_close_to_0'])
+def test_deserialize_array_to_params__from_files(b: float) -> None:
+    param = mkz.deserialize_array_to_params(
+        np.array([0.1, b, 0.2, 0.3]), from_files=True
+    )
+    assert param == {'gamma_ref': 0.1, 's': 0.2, 'beta': 0.3, 'Gmax': 1.0}
+
+
+@pytest.mark.parametrize(
+    ('array', 'match'),
+    [
+        pytest.param(
+            np.array([0.1, 0.2, 0.3, 0.4]),  # gamma_ref, s, beta, Gmax
+            'The 2nd value ("b") of H4 parameters (gamma_ref, b, s, beta) '
+            'must be 0, but it is 0.2. H4 files written by PySeismoSoil 0.7.1 '
+            'or earlier',
+            id='old_layout',
+        ),
+        pytest.param(
+            np.array([0.1, 0, np.nan, 0.3]),
+            'H4 parameters must be finite numbers',
+            id='NaN',
+        ),
+        pytest.param(
+            np.array([0.1, 0, 0.2]),
+            'H4 parameters must have 4 values (gamma_ref, b, s, beta), but '
+            'there are 3.',
+            id='incorrect_number_of_parameters',
+        ),
+    ],
+)
+def test_deserialize_array_to_params__from_files_failure(
+        array: np.ndarray, match: str
+) -> None:
+    with pytest.raises(ValueError, match=re.escape(match)):
+        mkz.deserialize_array_to_params(array, from_files=True)
 
 
 def test_fit_MKZ() -> None:

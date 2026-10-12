@@ -20,6 +20,10 @@ AxesProjection = Literal[
 NDIM_2D_ARRAY = 2
 NUM_COLUMNS_TWO_COL_DATA = 2
 
+# Precision of the numbers in the parameter files (such as "HH_x_SITE.txt" or
+# "H4_x_SITE.txt") that PySeismoSoil writes
+PARAM_FILE_PRECISION = '%.6g'
+
 # A Vs profile has either 2 columns (thickness, Vs) or 5 columns (thickness,
 # Vs, damping, density, material number)
 NUM_COLUMNS_THICKNESS_AND_VS = 2

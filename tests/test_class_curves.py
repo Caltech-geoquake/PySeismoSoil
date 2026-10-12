@@ -261,6 +261,12 @@ def test_get_all_H4_x_params__saved_file_loads_back(tmp_path: Path) -> None:
     for j, param in enumerate(params.param_list):
         assert dict(params_loaded[j]) == pytest.approx(dict(param), rel=1e-5)
 
+    # `save_txt()` writes the same file (same layout and precision)
+    txt_filename_2 = tmp_path / 'H4_x_FKSH14_2.txt'
+    params.save_txt(str(txt_filename_2))
+    saved_text = Path(txt_filename).read_text(encoding='utf-8')
+    assert txt_filename_2.read_text(encoding='utf-8') == saved_text
+
 
 @pytest.mark.parametrize(
     ('curves_class', 'get_curve_matrix', 'filler_value', 'filled_column'),

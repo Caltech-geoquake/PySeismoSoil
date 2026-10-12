@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
@@ -11,6 +13,14 @@ from PySeismoSoil import helper_site_response as sr
 
 # Number of parameters in the MKZ model: gamma_ref, s, beta, Gmax
 NUM_MKZ_PARAMS = 4
+
+# The H4 file layout (gamma_ref, b, s, beta) has no Gmax, so Gmax is set to
+# this value when reading it
+H4_FILE_GMAX = 1.0
+
+# "b" in the H4 file layout is not used by any calculation, and must be 0.
+# Values this close to 0 (such as round-off errors) count as 0.
+H4_FILE_B_TOLERANCE = 1e-8
 
 
 def tau_MKZ(
@@ -243,12 +253,14 @@ def serialize_params_to_array(
         Gmax, is removed, and a dummy parameter, b, which is always 0, is
         inserted between gamma_ref and s. This is for historical reasons: the
         text files recognizable by MATLAB and Fortran functions have the
-        convention of "gamma_ref, 0.0, s, beta".
+        convention of "gamma_ref, 0.0, s, beta". If Gmax is not 1.0, a
+        ``UserWarning`` is issued, because the files cannot store it (it is
+        read back as 1.0).
 
     Returns
     -------
     param_array : np.ndarray
-        A numpy array of shape (9,) containing the parameters of the MKZ model
+        A numpy array of shape (4,) containing the parameters of the MKZ model
         in the order specified above.
     """
     assert len(param) == NUM_MKZ_PARAMS
@@ -256,6 +268,15 @@ def serialize_params_to_array(
     param_array = [param[key] for key in order]
 
     if to_files:
+        if param_array[3] != H4_FILE_GMAX:
+            warnings.warn(
+                'The H4 file layout (gamma_ref, 0, s, beta) has no Gmax, so a '
+                'Gmax other than 1.0 is not saved, and it is read back as '
+                '1.0. (Gmax does not affect the G/Gmax or damping curves.)',
+                UserWarning,
+                stacklevel=2,
+            )
+
         param_array = [param_array[0], 0.0, param_array[1], param_array[2]]
 
     return np.array(param_array)
@@ -284,24 +305,61 @@ def deserialize_array_to_params(
         beta, Gmax
     from_files : bool, default=False
         Whether the array was directly imported from a "H4_x_SITE_NAME.txt"
-        file. If so, the 1st (0-based indexing) element, "b", which is always
-        0, is neglected, and a dummy Gmax value (1.0) is padded at the end. The
+        file. If so, the 1st (0-based indexing) element, "b", which must be 0,
+        is neglected, and a dummy Gmax value (1.0) is padded at the end. The
         presence of "b" is due to historical reasons.
 
     Returns
     -------
     param : dict[str, float]
         The dictionary with parameter name as keys and values as values.
+
+    Raises
+    ------
+    ValueError
+        When ``array`` does not have 4 values. Or, if ``from_files`` is
+        ``True``, when a value is NaN or infinite, or when "b" is not 0 (as in
+        H4 files written by PySeismoSoil 0.7.1 or earlier, whose rows are
+        gamma_ref, s, beta, Gmax).
     """
     hlp.assert_1D_numpy_array(array)
-    assert len(array) == NUM_MKZ_PARAMS
+    if from_files:
+        name, layout = 'H4 parameters', 'gamma_ref, b, s, beta'
+    else:
+        name, layout = 'MKZ parameters', 'gamma_ref, s, beta, Gmax'
+
+    if len(array) != NUM_MKZ_PARAMS:
+        msg = (
+            f'{name} must have {NUM_MKZ_PARAMS} values ({layout}), but there '
+            f'are {len(array)}.'
+        )
+        raise ValueError(msg)
 
     if from_files:
+        if not np.all(np.isfinite(array)):
+            msg = (
+                f'H4 parameters must be finite numbers, but they are {array}. '
+                'Is there an empty cell or a trailing delimiter in the file?'
+            )
+            raise ValueError(msg)
+
+        if abs(array[1]) > H4_FILE_B_TOLERANCE:
+            msg = (
+                'The 2nd value ("b") of H4 parameters (gamma_ref, b, s, beta) '
+                f'must be 0, but it is {array[1]:g}. H4 files written by '
+                'PySeismoSoil 0.7.1 or earlier (with `save_txt()` or '
+                '`get_all_H4_x_params(save_txt=True)`) have the rows '
+                'gamma_ref, s, beta, Gmax instead. To convert such a file, '
+                'delete its 4th row (Gmax) and insert a row of zeros as its '
+                '2nd row.'
+            )
+            raise ValueError(msg)
+
         param = {}
         param['gamma_ref'] = array[0]
         param['s'] = array[2]
         param['beta'] = array[3]
-        param['Gmax'] = 1.0  # "H4_G_SITE_NAME.txt" files don't have Gmax info
+        param['Gmax'] = H4_FILE_GMAX  # H4 files don't have Gmax info
     else:
         param = {}
         param['gamma_ref'] = array[0]
