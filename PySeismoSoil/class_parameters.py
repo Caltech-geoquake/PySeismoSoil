@@ -777,7 +777,8 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
         Each column is one layer, with the rows gamma_ref, 0, s, beta (see the
         class docstring). This layout has no Gmax. If the Gmax of any layer is
-        not 1.0, one ``UserWarning`` names those layers.
+        not 1.0, one ``UserWarning`` names those layers (or says that it is
+        every layer).
 
         Returns
         -------
@@ -790,11 +791,18 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             if param['Gmax'] != mkz.H4_FILE_GMAX
         ]
         if layers:
-            msg = (
-                f'{mkz.H4_FILE_GMAX_WARNING} Layers with such a Gmax '
-                f'(0-based): {layers}'
+            if len(layers) == len(self.param_list):
+                which_layers = 'Gmax is not 1.0 in every layer.'
+            else:
+                which_layers = (
+                    f'Layers whose Gmax is not 1.0 (0-based): {layers}.'
+                )
+
+            warnings.warn(
+                f'{mkz.H4_FILE_GMAX_WARNING} {which_layers}',
+                UserWarning,
+                stacklevel=hlp._find_stack_level(),  # noqa: SLF001
             )
-            warnings.warn(msg, UserWarning, stacklevel=hlp.find_stack_level())
 
         return super().serialize_to_2D_array()
 

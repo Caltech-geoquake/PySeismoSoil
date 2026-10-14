@@ -43,7 +43,7 @@ CHECK_STATUS_NOT_FINITE = -2
 CHECK_STATUS_NEGATIVE = -3
 
 
-def find_stack_level() -> int:
+def _find_stack_level() -> int:
     """
     Find the ``stacklevel`` for ``warnings.warn()`` that points at user code.
 

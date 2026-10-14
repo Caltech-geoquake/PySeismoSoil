@@ -358,9 +358,26 @@ def test_mkz_param_multi_layer__one_Gmax_warning_at_the_caller(
     assert len(record) == 1
     assert issubclass(record[0].category, UserWarning)
     assert str(record[0].message).endswith(
-        'Layers with such a Gmax (0-based): [0, 2]'
+        'Layers whose Gmax is not 1.0 (0-based): [0, 2].'
     )
     assert record[0].filename == __file__
+
+
+@pytest.mark.parametrize('n_layer', [1, 3])
+def test_mkz_param_multi_layer__Gmax_warning_if_every_layer_is_affected(
+        n_layer: int,
+) -> None:
+    # For example, Gmax from a Vs profile: the warning does not list every
+    # layer number
+    params = MKZ_Param_Multi_Layer([
+        {'gamma_ref': 0.001, 's': 0.8, 'beta': 1.0, 'Gmax': 2.0e7 + j}
+        for j in range(n_layer)
+    ])
+    expected_end = re.escape('Gmax is not 1.0 in every layer.') + '$'
+    with pytest.warns(UserWarning, match=expected_end) as record:
+        params.serialize_to_2D_array()
+
+    assert len(record) == 1
 
 
 def test_mkz_param_multi_layer__save_txt_without_warning_if_Gmax_is_1(

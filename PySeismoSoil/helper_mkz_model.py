@@ -279,7 +279,7 @@ def serialize_params_to_array(
             warnings.warn(
                 H4_FILE_GMAX_WARNING,
                 UserWarning,
-                stacklevel=hlp.find_stack_level(),
+                stacklevel=hlp._find_stack_level(),  # noqa: SLF001
             )
 
         param_array = [param_array[0], 0.0, param_array[1], param_array[2]]
