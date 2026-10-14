@@ -49,9 +49,9 @@ def find_stack_level() -> int:
 
     A warning issued deep inside PySeismoSoil (for example, from
     ``serialize_to_2D_array()`` when it is called by ``save_txt()``) would
-    otherwise point at a line of this library. This function counts the
-    frames inside the PySeismoSoil package, starting from the function that
-    calls it, so that the warning points at the first line outside of it.
+    otherwise point at a line of this library. This function counts the frames
+    inside the PySeismoSoil package, starting from the function that calls it,
+    so that the warning points at the first line outside of it.
 
     Returns
     -------
