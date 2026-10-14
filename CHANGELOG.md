@@ -9,6 +9,11 @@
   - `helper_mkz_model.deserialize_array_to_params()` now raises a `ValueError`
     with a message when the array does not have 4 values, instead of a bare
     `AssertionError` (which `python -O` skips)
+  - `MKZ_Param_Multi_Layer.serialize_to_2D_array()` now returns the layout of
+    the H4 parameter files that the class reads (rows gamma_ref, 0, s, beta),
+    instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
+    result by position needs to change. Like `save_txt()`, it warns when it
+    drops a Gmax other than 1.0 (#79)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
