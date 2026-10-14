@@ -22,6 +22,13 @@ H4_FILE_GMAX = 1.0
 # Values this close to 0 (such as round-off errors) count as 0.
 H4_FILE_B_TOLERANCE = 1e-8
 
+# Warning when a Gmax other than 1.0 is dropped when writing the H4 file layout
+H4_FILE_GMAX_WARNING = (
+    'The H4 file layout (gamma_ref, 0, s, beta) has no Gmax, so a Gmax other '
+    'than 1.0 is not saved, and it is read back as 1.0. (Gmax does not affect '
+    'the G/Gmax or damping curves.)'
+)
+
 
 def tau_MKZ(
         gamma: np.ndarray,
@@ -270,11 +277,9 @@ def serialize_params_to_array(
     if to_files:
         if param_array[3] != H4_FILE_GMAX:
             warnings.warn(
-                'The H4 file layout (gamma_ref, 0, s, beta) has no Gmax, so a '
-                'Gmax other than 1.0 is not saved, and it is read back as '
-                '1.0. (Gmax does not affect the G/Gmax or damping curves.)',
+                H4_FILE_GMAX_WARNING,
                 UserWarning,
-                stacklevel=2,
+                stacklevel=hlp.find_stack_level(),
             )
 
         param_array = [param_array[0], 0.0, param_array[1], param_array[2]]

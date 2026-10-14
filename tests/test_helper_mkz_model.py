@@ -134,10 +134,11 @@ def test_serialize_params_to_array__to_files() -> None:
 
 
 def test_serialize_params_to_array__to_files_warns_if_Gmax_is_not_1() -> None:
-    with pytest.warns(UserWarning, match='has no Gmax'):
+    with pytest.warns(UserWarning, match='has no Gmax') as record:
         array = mkz.serialize_params_to_array(PARAM, to_files=True)
 
     assert np.allclose(array, [0.1, 0, 0.2, 0.3])
+    assert record[0].filename == __file__  # points at the caller
 
 
 @pytest.mark.parametrize('b', [0.0, 1e-12], ids=['b_is_0', 'b_is_close_to_0'])

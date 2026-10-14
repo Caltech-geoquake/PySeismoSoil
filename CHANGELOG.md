@@ -17,14 +17,14 @@
     wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
     Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
     the file format (gamma_ref, 0, s, beta). This format has no Gmax, so
-    `save_txt()` warns when it drops a Gmax other than 1.0. A file or 2D array
-    that is not valid H4 parameters now raises a `ValueError` that names the
-    layer: its 2nd row ("b") is not 0, it has NaN (for example, from a trailing
-    delimiter), or it does not have 4 rows. H4 files written by 0.7.1 or
-    earlier have the rows gamma_ref, s, beta, Gmax, so they raise this error.
-    To convert one, delete its 4th row and insert a row of zeros as its 2nd
-    row, e.g., `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)`
-    (#79)
+    `save_txt()` warns (once, naming the layers) when it drops a Gmax other
+    than 1.0. A file or 2D array that is not valid H4 parameters now raises a
+    `ValueError` that names the layer: its 2nd row ("b") is not 0, it has NaN
+    (for example, from a trailing delimiter), or it does not have 4 rows. H4
+    files written by 0.7.1 or earlier have the rows gamma_ref, s, beta, Gmax,
+    so they raise this error. To convert one, delete its 4th row and insert a
+    row of zeros as its 2nd row, e.g.,
+    `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
 

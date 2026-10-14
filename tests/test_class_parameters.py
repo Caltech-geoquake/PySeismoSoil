@@ -325,6 +325,44 @@ def test_mkz_param_multi_layer__save_txt_and_load_back(tmp_path: Path) -> None:
         assert dict(params_from_array[j]) == pytest.approx(expected)
 
 
+@pytest.mark.parametrize(
+    'serialize',
+    [
+        pytest.param(
+            lambda params, _: params.serialize_to_2D_array(),
+            id='serialize_to_2D_array',
+        ),
+        pytest.param(
+            lambda params, tmp_path: params.save_txt(
+                str(tmp_path / 'H4_G_test.txt')
+            ),
+            id='save_txt',
+        ),
+    ],
+)
+def test_mkz_param_multi_layer__one_Gmax_warning_at_the_caller(
+        tmp_path: Path,
+        serialize: Callable[[MKZ_Param_Multi_Layer, Path], object],
+) -> None:
+    params = MKZ_Param_Multi_Layer([
+        {'gamma_ref': 0.0005, 's': 0.9, 'beta': 1.2, 'Gmax': 2.0e7},
+        {'gamma_ref': 0.001, 's': 0.8, 'beta': 1.0, 'Gmax': 1.0},
+        {'gamma_ref': 0.002, 's': 0.7, 'beta': 0.8, 'Gmax': 3.5e7},
+    ])
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter('always')
+        serialize(params, tmp_path)
+
+    # One warning (not one per layer), which names the layers whose Gmax is
+    # dropped, and points at the line that called the method (this file)
+    assert len(record) == 1
+    assert issubclass(record[0].category, UserWarning)
+    assert str(record[0].message).endswith(
+        'Layers with such a Gmax (0-based): [0, 2]'
+    )
+    assert record[0].filename == __file__
+
+
 def test_mkz_param_multi_layer__save_txt_without_warning_if_Gmax_is_1(
         tmp_path: Path,
 ) -> None:

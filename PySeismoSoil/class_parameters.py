@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import json
+import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, TypeAlias
 
@@ -770,6 +771,33 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             element_class=MKZ_Param,
         )
 
+    def serialize_to_2D_array(self) -> np.ndarray:
+        """
+        Serialize the parameter data to a 2D numpy array in the H4 file layout.
+
+        Each column is one layer, with the rows gamma_ref, 0, s, beta (see the
+        class docstring). This layout has no Gmax. If the Gmax of any layer is
+        not 1.0, one ``UserWarning`` names those layers.
+
+        Returns
+        -------
+        param_2D_array : np.ndarray
+            A 2D numpy array whose columns are parameters of each layer.
+        """
+        layers = [
+            j
+            for j, param in enumerate(self.param_list)
+            if param['Gmax'] != mkz.H4_FILE_GMAX
+        ]
+        if layers:
+            msg = (
+                f'{mkz.H4_FILE_GMAX_WARNING} Layers with such a Gmax '
+                f'(0-based): {layers}'
+            )
+            warnings.warn(msg, UserWarning, stacklevel=hlp.find_stack_level())
+
+        return super().serialize_to_2D_array()
+
     @staticmethod
     def _serialize_layer(param: Parameter) -> np.ndarray:
         """
@@ -777,6 +805,8 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
 
         The layout is gamma_ref, 0, s, beta. Gmax is not included, so a file
         written by ``save_txt()`` loads back with Gmax = 1.0 for each layer.
+        (``serialize_to_2D_array()`` has already warned about the layers whose
+        Gmax is not 1.0.)
 
         Parameters
         ----------
@@ -788,4 +818,5 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
         np.ndarray
             The column of the 2D array for this layer.
         """
-        return mkz.serialize_params_to_array(param.data, to_files=True)
+        param_without_Gmax = {**param.data, 'Gmax': mkz.H4_FILE_GMAX}
+        return mkz.serialize_params_to_array(param_without_Gmax, to_files=True)
