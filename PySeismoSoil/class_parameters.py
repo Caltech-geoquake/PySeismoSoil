@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import json
+import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, TypeAlias
 
@@ -506,23 +507,43 @@ class Param_Multi_Layer:
         """
         Serialize the parameter data to a 2D numpy array.
 
+        The array has the layout of the parameter files that the subclass reads
+        (such as "HH_x_SITE_NAME.txt" or "H4_x_SITE_NAME.txt"; see the
+        docstring of the subclass), so ``save_txt()`` writes files that the
+        subclass can read back.
+
         Returns
         -------
         param_2D_array : np.ndarray
             A 2D numpy array whose columns are parameters of each layer.
         """
-        output = []
-        for param_single_layer in self.param_list:
-            param_array = param_single_layer.serialize()
-            output.append(param_array)
+        output = [self._serialize_layer(param) for param in self.param_list]
+        return np.array(output).T
 
-        param_2D_array = np.array(output).T
-        return param_2D_array  # noqa: RET504
+    @staticmethod
+    def _serialize_layer(param: Parameter) -> np.ndarray:
+        """
+        Serialize the parameters of one layer into one column of the 2D array.
+
+        Subclasses whose parameter files have a different layout than
+        ``Parameter.serialize()`` override this method.
+
+        Parameters
+        ----------
+        param : Parameter
+            The parameters of one layer.
+
+        Returns
+        -------
+        np.ndarray
+            The column of the 2D array for this layer.
+        """
+        return param.serialize()
 
     def save_txt(
             self,
             filename: str,
-            precision: str = '%.5g',
+            precision: str = hlp.PARAM_FILE_PRECISION,
             sep: str = '\t',
             **kw_to_savetxt: dict[Any, Any],
     ) -> None:
@@ -533,8 +554,10 @@ class Param_Multi_Layer:
         ----------
         filename : str
             File name (including path) of the output file.
-        precision : str, default='%.5g'
-            Precision of the numbers to be saved.
+        precision : str, default=hlp.PARAM_FILE_PRECISION
+            Precision of the numbers to be saved. The default (``'%.6g'``) is
+            the same as in the files that the curve-fitting methods (such as
+            ``get_all_HH_x_params()``) save.
         sep : str, default='\t'
             Delimiter identifier.
         **kw_to_savetxt : dict[Any, Any]
@@ -610,7 +633,8 @@ class HH_Param_Multi_Layer(Param_Multi_Layer):
     ) -> None:
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
-            params = np.genfromtxt(filename_or_data, delimiter=sep)
+            # ``ndmin=2`` keeps a one-layer file (one column) 2D
+            params = np.genfromtxt(filename_or_data, delimiter=sep, ndmin=2)
             list_of_param_array = hlp.extract_from_param_format(params)
             list_of_param = [
                 hh.deserialize_array_to_params(_) for _ in list_of_param_array
@@ -658,20 +682,26 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     Parameters
     ----------
     filename_or_data : MKZ_Param_Input
-        A file name of a validly formatted "parameter file", i.e., having the
+        A file name of a validly formatted "parameter file" (such as
+        "H4_G_SITE_NAME.txt" or "H4_x_SITE_NAME.txt"), i.e., having the
         following format:
             +----------------+-----------------+-----------------+-----+
             |  param_layer_1 |  param_layer_2  |  param_layer_3  | ... |
             +================+=================+=================+=====+
-            |      1.1       |      2.2        |      3.3        | ... |
+            |   gamma_ref    |   gamma_ref     |   gamma_ref     | ... |
             +----------------+-----------------+-----------------+-----+
-            |      1.2       |      2.3        |      3.4        | ... |
+            |       0        |       0         |       0         | ... |
             +----------------+-----------------+-----------------+-----+
-            |      ...       |      ...        |      ...        | ... |
+            |       s        |       s         |       s         | ... |
+            +----------------+-----------------+-----------------+-----+
+            |      beta      |      beta       |      beta       | ... |
             +----------------+-----------------+-----------------+-----+
 
         or a 2D numpy array containing the data of the format above, or a list
         containing MKZ parameter data (dictionaries or ``MKZ_Param`` objects).
+        The 2nd row ("b") is always 0, for historical reasons. This format has
+        no Gmax, so when reading a file or a 2D array, Gmax of each layer is
+        set to 1.0 (Gmax does not affect the G/Gmax or damping curves).
     sep : str, default='\t'
         Delimiter of the file to be imported. If ``filename_or_data`` is not a
         file name, ``sep`` has no effect.
@@ -687,6 +717,15 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     ------
     TypeError
         When then type of ``filename_or_data`` is not valid
+    ValueError
+        When a column of the file or the 2D array is not valid H4 parameters:
+        it does not have 4 values, it has NaN (for example, from an empty cell
+        or a trailing delimiter in the file), or its 2nd value ("b") is not 0.
+        H4 files written by PySeismoSoil 0.7.1 or earlier (with
+        ``MKZ_Param_Multi_Layer.save_txt()`` or
+        ``get_all_H4_x_params(save_txt=True)``) have the rows gamma_ref, s,
+        beta, Gmax instead, so they raise this error. The error message says
+        how to convert them.
     """
 
     param_list: list[MKZ_Param]
@@ -700,24 +739,28 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
     ) -> None:
         if isinstance(filename_or_data, str):  # file name
             self._filename = filename_or_data
-            params = np.genfromtxt(filename_or_data, delimiter=sep)
-            list_of_param_array = hlp.extract_from_param_format(params)
-            list_of_param = [
-                mkz.deserialize_array_to_params(_) for _ in list_of_param_array
-            ]
-        elif isinstance(filename_or_data, np.ndarray):
-            hlp.assert_2D_numpy_array(
-                filename_or_data, name='`filename_or_data`'
-            )
-            list_of_param_array = hlp.extract_from_param_format(
-                filename_or_data
-            )
-            list_of_param = [
-                mkz.deserialize_array_to_params(_) for _ in list_of_param_array
-            ]
-        elif isinstance(filename_or_data, list):
+            # ``ndmin=2`` keeps a one-layer file (one column) 2D
+            data = np.genfromtxt(filename_or_data, delimiter=sep, ndmin=2)
+        else:
+            data = filename_or_data
+
+        if isinstance(data, np.ndarray):
+            hlp.assert_2D_numpy_array(data, name='`filename_or_data`')
+            list_of_param = []
+            list_of_param_array = hlp.extract_from_param_format(data)
+            for j, param_array in enumerate(list_of_param_array):
+                try:
+                    param = mkz.deserialize_array_to_params(
+                        param_array, from_files=True
+                    )
+                except ValueError as e:
+                    msg = f'Layer #{j} (0-based): {e}'
+                    raise ValueError(msg) from e
+
+                list_of_param.append(param)
+        elif isinstance(data, list):
             self._filename = None
-            list_of_param = filename_or_data
+            list_of_param = data
         else:
             raise TypeError('Unrecognized type for ``filename_or_data``.')
 
@@ -727,3 +770,61 @@ class MKZ_Param_Multi_Layer(Param_Multi_Layer):
             list_of_param,
             element_class=MKZ_Param,
         )
+
+    def serialize_to_2D_array(self) -> np.ndarray:
+        """
+        Serialize the parameter data to a 2D numpy array in the H4 file layout.
+
+        Each column is one layer, with the rows gamma_ref, 0, s, beta (see the
+        class docstring). This layout has no Gmax. If the Gmax of any layer is
+        not 1.0, one ``UserWarning`` names those layers (or says that it is
+        every layer).
+
+        Returns
+        -------
+        param_2D_array : np.ndarray
+            A 2D numpy array whose columns are parameters of each layer.
+        """
+        layers = [
+            j
+            for j, param in enumerate(self.param_list)
+            if param['Gmax'] != mkz.H4_FILE_GMAX
+        ]
+        if layers:
+            if len(layers) == len(self.param_list):
+                which_layers = 'Gmax is not 1.0 in every layer.'
+            else:
+                which_layers = (
+                    f'Layers whose Gmax is not 1.0 (0-based): {layers}.'
+                )
+
+            warnings.warn(
+                f'{mkz.H4_FILE_GMAX_WARNING} {which_layers}',
+                UserWarning,
+                stacklevel=hlp._find_stack_level(),  # noqa: SLF001
+            )
+
+        return super().serialize_to_2D_array()
+
+    @staticmethod
+    def _serialize_layer(param: Parameter) -> np.ndarray:
+        """
+        Serialize the parameters of one layer into the H4 file layout.
+
+        The layout is gamma_ref, 0, s, beta. Gmax is not included, so a file
+        written by ``save_txt()`` loads back with Gmax = 1.0 for each layer.
+        (``serialize_to_2D_array()`` has already warned about the layers whose
+        Gmax is not 1.0.)
+
+        Parameters
+        ----------
+        param : Parameter
+            The MKZ parameters of one layer.
+
+        Returns
+        -------
+        np.ndarray
+            The column of the 2D array for this layer.
+        """
+        param_without_Gmax = {**param.data, 'Gmax': mkz.H4_FILE_GMAX}
+        return mkz.serialize_params_to_array(param_without_Gmax, to_files=True)
