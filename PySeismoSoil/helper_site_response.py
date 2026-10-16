@@ -2524,7 +2524,8 @@ def fit_all_damping_curves(
         Delimiter to separate columns of data in the output file.
     func_serialize : Callable[[Any, ...], Any] | None, default=None
         The function to serialize the parameters from a dict into a list. Can
-        be hh.serialize_params_to_array or mkz.serialize_params_to_array.
+        be hh.serialize_params_to_array, or mkz.serialize_params_to_array with
+        ``to_files=True`` (for the format of "H4_x_SITE_NAME.txt" files).
 
     Returns
     -------
@@ -2617,7 +2618,12 @@ def fit_all_damping_curves(
         data_for_file = [func_serialize(param) for param in params]
 
         data_for_file__ = np.column_stack(tuple(data_for_file))
-        np.savetxt(txt_filename, data_for_file__, fmt='%.6g', delimiter=sep)
+        np.savetxt(
+            txt_filename,
+            data_for_file__,
+            fmt=hlp.PARAM_FILE_PRECISION,
+            delimiter=sep,
+        )
 
     return params
 

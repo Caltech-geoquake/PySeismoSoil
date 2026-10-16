@@ -2,10 +2,36 @@
 
 ## [Unreleased]
 
+- Changed
+  - `save_txt()` of `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` now
+    writes 6 significant digits by default (was 5), the same as the files that
+    `get_all_HH_x_params()` and `get_all_H4_x_params()` save
+  - `helper_mkz_model.deserialize_array_to_params()` now raises a `ValueError`
+    with a message when the array does not have 4 values, instead of a bare
+    `AssertionError` (which `python -O` skips)
+  - `MKZ_Param_Multi_Layer.serialize_to_2D_array()` now returns the layout of
+    the H4 parameter files that the class reads (rows gamma_ref, 0, s, beta),
+    instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
+    result by position needs to change. Like `save_txt()`, it warns when it
+    drops a Gmax other than 1.0 (#79)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
     (`MKZ_Param_Multi_Layer`) (#60)
+  - `MKZ_Param_Multi_Layer` reading H4 parameter files (and 2D arrays) in the
+    wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
+    Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
+    the file format (gamma_ref, 0, s, beta). This format has no Gmax, so
+    `save_txt()` warns (once, naming the layers) when it drops a Gmax other
+    than 1.0. A file or 2D array that is not valid H4 parameters now raises a
+    `ValueError` that names the layer: its 2nd row ("b") is not 0, it has NaN
+    (for example, from a trailing delimiter), or it does not have 4 rows. H4
+    files written by 0.7.1 or earlier have the rows gamma_ref, s, beta, Gmax,
+    so they raise this error. To convert one, delete its 4th row and insert a
+    row of zeros as its 2nd row, e.g.,
+    `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
+  - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
+    one-layer parameter file, including one written by `save_txt()` (#86)
 
 ## [0.7.1] - 2026-10-11
 
