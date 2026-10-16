@@ -1,12 +1,21 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
 
 f_dir = Path(__file__).resolve().parent / 'files'
+
+FILTERS = [
+    pytest.param(sig.lowpass, 2.0, id='lowpass'),
+    pytest.param(sig.highpass, 0.5, id='highpass'),
+    pytest.param(sig.bandpass, (0.5, 5.0), id='bandpass'),
+    pytest.param(sig.bandstop, (0.5, 5.0), id='bandstop'),
+]
 
 
 def test_fourier_transform() -> None:
@@ -38,6 +47,37 @@ def test_fourier_transform() -> None:
 
     assert np.allclose(freq, freq_bench, atol=0.0001, rtol=0.0)
     assert np.allclose(FS, FS_bench, atol=0.0001, rtol=0.0)
+
+
+@pytest.mark.parametrize(('filter_signal', 'cutoff_freq'), FILTERS)
+def test_filter__zero_phase(
+        filter_signal: Callable[..., np.ndarray],
+        cutoff_freq: float | tuple[float, float],
+) -> None:
+    # A zero-phase filter does not delay the signal, so the peak of a
+    # symmetric pulse stays at the same time after filtering
+    t = np.arange(2001) * 0.01
+    pulse = np.exp(-(((t - 10.0) / 0.2) ** 2))  # peak at t = 10 s
+    filtered = filter_signal(np.column_stack((t, pulse)), cutoff_freq)
+
+    assert np.allclose(filtered[:, 0], t)
+    assert t[np.argmax(np.abs(filtered[:, 1]))] == pytest.approx(10.0)
+
+
+@pytest.mark.parametrize(('filter_signal', 'cutoff_freq'), FILTERS)
+def test_filter__padlen(
+        filter_signal: Callable[..., np.ndarray],
+        cutoff_freq: float | tuple[float, float],
+) -> None:
+    # The pad length changes how the ends of the signal are extended before
+    # filtering, so it changes the result (here, the signal is not zero at
+    # its ends)
+    t = np.arange(2001) * 0.01
+    signal = np.column_stack((t, np.cos(2 * np.pi * 0.3 * t)))
+    filtered_10 = filter_signal(signal, cutoff_freq, padlen=10)
+    filtered_1000 = filter_signal(signal, cutoff_freq, padlen=1000)
+
+    assert not np.allclose(filtered_10[:, 1], filtered_1000[:, 1])
 
 
 def test_calc_transfer_function() -> None:

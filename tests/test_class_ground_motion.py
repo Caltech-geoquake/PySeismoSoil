@@ -217,6 +217,30 @@ def test_filter(
     assert isinstance(filtered, GM)
 
 
+@pytest.mark.parametrize(
+    ('filter_motion', 'cutoff_freq'),
+    [
+        pytest.param(GM.highpass, 0.5, id='high_pass'),
+        pytest.param(GM.lowpass, 2.0, id='low_pass'),
+        pytest.param(GM.bandpass, [0.5, 5.0], id='band_pass'),
+        pytest.param(GM.bandstop, [0.5, 5.0], id='band_stop'),
+    ],
+)
+def test_filter__zero_phase(
+        filter_motion: Callable[..., GM], cutoff_freq: float | list[float]
+) -> None:
+    # The filters are zero-phase: the peak of a symmetric pulse stays at the
+    # same time after filtering
+    t = np.arange(2001) * 0.01
+    pulse = np.exp(-(((t - 10.0) / 0.2) ** 2))  # peak at t = 10 s
+    gm = GM(np.column_stack((t, pulse)), unit='m')
+    filtered = filter_motion(gm, cutoff_freq=cutoff_freq)
+
+    assert np.allclose(filtered.accel[:, 0], t)
+    t_peak = t[np.argmax(np.abs(filtered.accel[:, 1]))]
+    assert t_peak == pytest.approx(10.0)
+
+
 def test_amplify_via_profile() -> None:
     gm = GM(str(f_dir / 'sample_accel.txt'), unit='m')
     vs_prof = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
