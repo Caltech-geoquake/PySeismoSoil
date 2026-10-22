@@ -137,3 +137,15 @@ def test_get_HH_x_or_H4_x_param(
     assert param.n_layer == vs_profile.n_layer
     for layer_param in param.param_list:
         assert set(layer_param.keys()) == expected_keys
+
+
+def test_get_damping_curves__single_soil_layer_without_half_space() -> None:
+    vs_profile = Vs_Profile(np.array([[10.0, 200.0]]))
+    mdc = Damping_Calibration(vs_profile).get_damping_curves()
+    assert mdc.n_layer == 1
+
+
+def test_get_damping_curves__half_space_only_raises_value_error() -> None:
+    vs_profile = Vs_Profile(np.array([[0.0, 200.0]]))
+    with pytest.raises(ValueError, match='only a half space'):
+        Damping_Calibration(vs_profile).get_damping_curves()

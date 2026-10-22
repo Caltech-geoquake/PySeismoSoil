@@ -314,3 +314,26 @@ def test_hh_param_from_curves__case_2() -> None:
         show_fig=True,
         verbose=False,
     )
+
+
+def test_hh_param_from_profile__single_soil_layer_without_half_space() -> None:
+    one_layer = np.array([[10.0, 200.0]])
+    params = hhc.hh_param_from_profile(one_layer, verbose=False)
+    assert params.shape == (9, 1)
+
+
+def test_hh_param_from_profile__half_space_only_raises_value_error() -> None:
+    half_space_only = np.array([[0.0, 200.0]])
+    with pytest.raises(ValueError, match='only a half space'):
+        hhc.hh_param_from_profile(half_space_only, verbose=False)
+
+
+def test_hh_param_from_curves__half_space_only_raises_value_error() -> None:
+    half_space_only = np.array([[0.0, 200.0]])
+    with pytest.raises(ValueError, match='only a half space'):
+        hhc.hh_param_from_curves(half_space_only, np.zeros((2, 4)), verbose=False)
+
+
+def test_calc_vertical_stress__empty_input_raises_value_error() -> None:
+    with pytest.raises(ValueError, match='at least one soil layer'):
+        hhc._calc_vertical_stress(np.array([]), np.array([]))
