@@ -15,6 +15,12 @@
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
 - Fixed
+  - `hh_param_from_profile()`, `hh_param_from_curves()` and
+    `Damping_Calibration.get_damping_curves()` raising an `IndexError` for a
+    Vs profile with a single row. A single soil layer is now calibrated, and a
+    profile that is only a half space raises a `ValueError`. `thk2dep()` and
+    the vertical stress calculation also raise a `ValueError` for an empty
+    thickness array (#119)
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
     (`MKZ_Param_Multi_Layer`) (#60)
