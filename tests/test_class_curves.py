@@ -43,39 +43,45 @@ def test_init() -> None:
     assert np.allclose(damping_data, damping_bench)
 
 
-@pytest.mark.parametrize(
-    'interpolate', [False, True], ids=['not_interpolated', 'interpolated']
-)
-@pytest.mark.parametrize(
-    ('curve_class', 'unit_kwargs', 'columns', 'unit_factors'),
-    [
+CurveInUnit1Case = tuple[type[Curve], dict[str, str], slice, list[float]]
+
+
+# A curve class, its arguments for data in unit 1, the columns of
+# "curve_FKSH14.txt" (data in %) to use, and the factors from unit 1 to %
+@pytest.fixture(
+    params=[
         pytest.param(
-            Curve, {'strain_unit': '1'}, slice(0, 2), [100, 1], id='Curve'
+            (Curve, {'strain_unit': '1'}, slice(0, 2), [100, 1]), id='Curve'
         ),
         pytest.param(
-            GGmax_Curve,
-            {'strain_unit': '1'},
-            slice(0, 2),
-            [100, 1],
+            (GGmax_Curve, {'strain_unit': '1'}, slice(0, 2), [100, 1]),
             id='GGmax_Curve',
         ),
         pytest.param(
-            Damping_Curve,
-            {'strain_unit': '1', 'damping_unit': '1'},
-            slice(2, 4),
-            [100, 100],
+            (
+                Damping_Curve,
+                {'strain_unit': '1', 'damping_unit': '1'},
+                slice(2, 4),
+                [100, 100],
+            ),
             id='Damping_Curve',
         ),
     ],
 )
+def curve_in_unit_1_case(request: pytest.FixtureRequest) -> CurveInUnit1Case:
+    return request.param
+
+
+@pytest.mark.parametrize(
+    'interpolate', [False, True], ids=['not_interpolated', 'interpolated']
+)
 def test_init__units_converted_in_a_copy_of_the_input(
-        curve_class: type[Curve],
-        unit_kwargs: dict[str, str],
-        columns: slice,
-        unit_factors: list[float],
+        curve_in_unit_1_case: CurveInUnit1Case,
         *,
         interpolate: bool,
 ) -> None:
+    curve_class, unit_kwargs, columns, unit_factors = curve_in_unit_1_case
+
     # G/Gmax or damping data in %, passed in unit 1
     data_in_pct = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, columns]
     user_array = data_in_pct / unit_factors
@@ -89,6 +95,23 @@ def test_init__units_converted_in_a_copy_of_the_input(
 
     # `raw_data` holds the data points (not interpolated) in %, like `strain`
     assert np.allclose(curve.raw_data, data_in_pct)
+
+
+def test_init__interpolated_curve_same_in_unit_1_and_pct(
+        curve_in_unit_1_case: CurveInUnit1Case,
+) -> None:
+    curve_class, unit_kwargs, columns, unit_factors = curve_in_unit_1_case
+    data_in_pct = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, columns]
+    curve_in_1 = curve_class(
+        data_in_pct / unit_factors, interpolate=True, **unit_kwargs
+    )
+    curve_in_pct = curve_class(data_in_pct, interpolate=True)
+
+    # `min_strain` and `max_strain` (default: 1e-4 and 10) are in %, whatever
+    # the unit of the data
+    assert np.allclose(curve_in_1.strain, np.geomspace(1e-4, 10, num=50))
+    assert np.allclose(curve_in_1.strain, curve_in_pct.strain)
+    assert np.allclose(curve_in_1.values, curve_in_pct.values)
 
 
 @pytest.mark.parametrize(

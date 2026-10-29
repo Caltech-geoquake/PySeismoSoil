@@ -21,7 +21,9 @@
     unit 1 for `strain_unit='1'`), although `plot(plot_interpolated=False)`
     plots it on a "Strain [%]" axis and the damping fits take it in %. The
     other attributes (`strain`, `values`, `GGmax`, `damping`, `stress`) are no
-    longer views of `raw_data` (they were with `interpolate=False`) (#85)
+    longer views of `raw_data` (they were with `interpolate=False`).
+    `raw_data`, `strain` and `values` are now float arrays, even for integer
+    input (#85)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -49,6 +51,12 @@
     `Multiple_Damping_Curves.get_all_HH_x_params()`/`get_all_H4_x_params()`
     fitting strain (or damping) values 100 times too small for curves created
     with `interpolate=True` and `strain_unit='1'` (or `damping_unit='1'`) (#85)
+  - `Curve`, `GGmax_Curve` and `Damping_Curve` with `interpolate=True` and
+    `strain_unit='1'` reading `min_strain` and `max_strain` in unit 1 instead
+    of %, so the default range (1e-4 to 10) gave a strain array from 0.01% to
+    1000%, and the curve was cut off at small strains and flat at large
+    strains. The data is now converted to % before it is interpolated (related
+    to #85)
   - `helper_hh_model.fit_HH_x_single_layer()` and
     `helper_mkz_model.fit_H4_x_single_layer()` subtracting the initial damping
     inside the caller's array. Through `Damping_Curve.get_HH_x_param()`/
@@ -57,7 +65,12 @@
     down by their initial damping: `raw_data` (the caller's array) and, for
     curves that are not interpolated, also `damping` and `get_curve_matrix()`.
     So `show_fig=True` of `get_all_HH_x_params()`/`get_all_H4_x_params()` also
-    plotted the shifted data, unlike with `parallel=True` (#84)
+    plotted the shifted data, unlike with `parallel=True`. The figure of
+    `fit_HH_x_single_layer(show_fig=True)` and
+    `fit_H4_x_single_layer(show_fig=True)` (and so of
+    `Damping_Curve.get_HH_x_param()`/`get_H4_x_param()`) now also shows the
+    damping data as given (it showed the data shifted to start at 0), like
+    `get_all_HH_x_params()`/`get_all_H4_x_params()` (#84)
 
 ## [0.7.1] - 2026-10-11
 

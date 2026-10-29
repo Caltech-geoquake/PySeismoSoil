@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
@@ -201,3 +202,17 @@ def test_fit_HH_x_single_layer__input_array_unchanged() -> None:
 
     # The fit subtracts the initial damping from a copy of the data
     assert np.array_equal(damping_data_in_pct, damping_data_before)
+
+
+def test_fit_HH_x_single_layer__figure_shows_the_data_as_given() -> None:
+    strain_in_pct = np.geomspace(1e-4, 10, num=20)
+    damping_in_pct = np.linspace(1, 20, num=20)  # initial damping: 1%
+    damping_data_in_pct = np.column_stack((strain_in_pct, damping_in_pct))
+    hh.fit_HH_x_single_layer(
+        damping_data_in_pct, pop_size=1, n_gen=1, show_fig=True
+    )
+
+    # The figure shows the damping data as given, not shifted to start at 0
+    data_line = plt.gca().get_lines()[0]
+    assert data_line.get_label() == 'data'
+    assert np.array_equal(data_line.get_ydata(), damping_in_pct)
