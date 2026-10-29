@@ -23,7 +23,9 @@
     largest one plus 1, as `Vs_Profile.truncate()` does) to the old last layer
     when it has material number 0, because it is no longer the last layer. A
     simulation with such a profile needs G/Gmax and damping curves (or
-    parameters) for this material number too (#106)
+    parameters) for this material number too. (Before, an equivalent-linear
+    simulation silently used the curves of the last material for this layer)
+    (#106)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters

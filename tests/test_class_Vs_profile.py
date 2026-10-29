@@ -69,6 +69,12 @@ def _replace(
             id='NaN_values',
         ),
         pytest.param(
+            np.array([['10', 'x'], ['0', '800']]),
+            ValueError,
+            'should only contain numeric elements',
+            id='non_numeric_values',
+        ),
+        pytest.param(
             _replace(DATA_2_COLUMNS, (2, 0), 0),
             ValueError,
             'should be all positive, except',
