@@ -2,6 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
@@ -79,3 +80,71 @@ def test_sine_smooth__constant_spectrum() -> None:
     assert np.allclose(smoothed, smoothed[0])
 
     assert np.allclose(smoothed, 2.0, rtol=0.01)
+
+
+@pytest.mark.parametrize(
+    'df',
+    [
+        pytest.param(0.2, id='window_spans_1_bin_each_side'),
+        pytest.param(1.0, id='window_spans_0_bins_each_side'),
+    ],
+)
+def test_sine_smooth__long_coarse_spectrum(df: float) -> None:
+    # With a frequency spacing this coarse (relative to the default window
+    # span of 0.3 Hz), a spectrum of more than about 4490 bins used to raise
+    # IndexError
+    freq = df * np.arange(1, 5001)
+    spectrum = np.column_stack((freq, np.full_like(freq, 2.0)))
+    smoothed = sig.sine_smooth(spectrum)
+
+    assert smoothed.shape == freq.shape
+    assert np.all(np.isfinite(smoothed))
+    assert np.allclose(smoothed, smoothed[0])
+
+
+def test_sine_smooth__sample_accel() -> None:
+    # Values from the implementation before #44 (which used loops instead of a
+    # convolution). The window spans 14 bins on each side here, so the parts
+    # beyond the first and the last bins are folded back in to bins 1-14 and
+    # 2192-2205. The values are checked at the ends of these ranges, at the
+    # bins next to them, and in the middle.
+    accel = np.genfromtxt(f_dir / 'sample_accel.txt')
+    smoothed = sig.sine_smooth(sig.fourier_transform(accel))
+    expected = {
+        0: 3091.3729624401317,
+        1: 3213.388694077549,
+        14: 8961.687053541178,
+        15: 8949.681863763217,
+        1000: 356.9908478511785,
+        2191: 17.082260661834315,
+        2192: 16.739084914173507,
+        2205: 13.245827994033528,
+        2206: 13.210226204992246,
+    }
+
+    assert smoothed.shape == (2207,)
+    assert np.allclose(
+        smoothed[list(expected)],
+        list(expected.values()),
+        rtol=1e-10,
+        atol=0.0,
+    )
+
+
+def test_sine_smooth__window_wider_than_spectrum() -> None:
+    # The window spans 6 bins on each side, more than the 5 bins of the
+    # spectrum, so the parts of the window that are folded back in at one end
+    # reach beyond the other end (and are dropped). Values from the
+    # implementation before #44.
+    freq = 0.05 * np.arange(1, 6)
+    spectrum = np.column_stack((freq, [1.0, 2.0, 3.0, 4.0, 5.0]))
+    smoothed = sig.sine_smooth(spectrum)
+    expected = [
+        2.5008400082948876,
+        2.7300851645515656,
+        3.2311812398099264,
+        3.669964679436411,
+        3.8393909391275804,
+    ]
+
+    assert np.allclose(smoothed, expected, rtol=1e-10, atol=0.0)

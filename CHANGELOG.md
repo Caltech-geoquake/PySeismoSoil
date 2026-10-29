@@ -32,6 +32,17 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `str()` of a `GOF_Scores` object raising `ZeroDivisionError` when no score
+    has been calculated (e.g., before `calc_scores()` is run). It now shows the
+    average score as `nan` (#65)
+  - `helper_gof_scores.S_()` changing the caller's arrays (it clipped the
+    values below machine epsilon in place) (#45)
+  - `sine_smooth()` raising `IndexError` for spectra with more than about 4490
+    frequencies whose spacing is coarser than `window_span / 1.854305` (about
+    0.16 Hz at the default `window_span=0.3`). It now uses a convolution
+    instead of Python loops, which is also much faster on long spectra (such as
+    those that `GOF_Scores.calc_scores()` smooths), with the same results to
+    within rounding (#44)
 
 ## [0.7.1] - 2026-10-11
 

@@ -48,8 +48,9 @@ def S_(
 
         rela_diff = simu - meas if meas < eps2 else (simu - meas) / meas
     else:
-        meas[meas < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
-        simu[simu < np.finfo(np.float64).eps] = np.finfo(np.float64).eps
+        # Clip copies of the arrays, not the caller's arrays
+        meas = np.maximum(meas, np.finfo(np.float64).eps)
+        simu = np.maximum(simu, np.finfo(np.float64).eps)
 
         rela_diff = (simu - meas) / meas
         rela_diff[meas < eps2] = simu[meas < eps2] - meas[meas < eps2]

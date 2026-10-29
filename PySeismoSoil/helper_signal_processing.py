@@ -22,9 +22,6 @@ NUM_CUTOFF_FREQS_BAND_FILTER = 2
 # Smoothing windows shorter than this (number of points) have no effect
 MIN_SMOOTHING_WINDOW_LEN = 3
 
-# Minimum length of the work arrays used by ``sine_smooth()``
-SINE_SMOOTH_MIN_BUFFER_LEN = 4497
-
 
 def lowpass(
         orig_signal: np.ndarray,
@@ -928,16 +925,30 @@ def sine_smooth(
         window_span: float = 0.3,
 ) -> np.ndarray:
     """
-    Smooth a frequency spectrum using a sine-shaped window.
+    Smooth a Fourier amplitude spectrum using a sine-shaped window.
 
-    - data: two column signal, first column is frequency
-    - window_span: width of moving window in hz
+    The amplitudes are converted to a one-sided power spectrum, which is
+    convolved with a Parzen window (whose shape is ``(sin(u) / u) ** 4``) and
+    converted back to amplitudes. The parts of the window that fall beyond the
+    first and the last frequencies are folded back in, by mirroring them about
+    those frequencies.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        A 2D numpy array with 2 columns: evenly spaced frequencies (in Hz) and
+        the Fourier amplitudes.
+    window_span : float, default=0.3
+        Width (bandwidth) of the smoothing window, in Hz.
+
+    Returns
+    -------
+    sm_signal : np.ndarray
+        The smoothed Fourier amplitudes (a 1D numpy array), at the frequencies
+        of ``signal``.
     """
     x = signal[:, 1]
-    sm_signal = np.zeros_like(x)
-
-    nfold = x.shape[0]
-    g = np.zeros_like(x)
+    n = x.shape[0]
 
     freqs = signal[:, 0]
 
@@ -946,59 +957,38 @@ def sine_smooth(
 
     udf = 1.854305 / window_span * df
 
+    # One half of the symmetric window: ``w[l]`` is the weight at ``l`` bins
+    # from the center. The window spans ``pad`` bins on each side.
     lmax = int(np.floor(2 / udf) + 1)
+    pad = lmax - 1
     w = np.zeros(lmax)
 
     w[0] = 0.75 * udf
-    for llix in range(1, lmax):
-        dif = 1.570796 * llix * udf
-        w[llix] = w[0] * (np.sin(dif) / dif) ** 4
+    dif = 1.570796 * np.arange(1, lmax) * udf
+    w[1:] = w[0] * (np.sin(dif) / dif) ** 4
 
+    # One-sided power spectrum
+    g = 2 * x**2 / T
     g[0] = x[0] ** 2 / T
-    for k in range(1, nfold - 1):
-        g[k] = 2 * x[k] ** 2 / T
+    g[-1] = x[-1] ** 2 / T
 
-    g[nfold - 1] = x[nfold - 1] ** 2 / T
+    # ``g_conv[pad + k]`` is the convolution at the k-th bin. ``g_conv`` also
+    # has ``pad`` values beyond the first bin and beyond the last bin.
+    g_conv = np.convolve(g, np.concatenate((w[:0:-1], w)))
+    g_smoothed = g_conv[pad : pad + n].copy()
 
-    ll = lmax * 2 - 1
-    ln = ll - 1 + nfold
-    lt = (ll - 1) * 2 + nfold
-    le = lt - lmax + 1
+    # Fold the parts beyond the first bin and beyond the last bin back in, by
+    # mirroring them about those bins. If the window spans more bins than the
+    # spectrum has, the parts that this mirroring puts beyond the other end of
+    # the spectrum are dropped.
+    n_mirrored = min(pad, n - 1)
+    before_first = g_conv[pad - n_mirrored : pad]
+    after_last = g_conv[pad + n : pad + n + n_mirrored]
+    g_smoothed[1 : n_mirrored + 1] += before_first[::-1]
+    g_smoothed[n - 1 - n_mirrored : n - 1] += after_last[::-1]
 
-    if lt > SINE_SMOOTH_MIN_BUFFER_LEN:
-        g1 = np.zeros(lt)
-        g2 = np.zeros(lt)
-    else:
-        g1 = np.zeros(SINE_SMOOTH_MIN_BUFFER_LEN)
-        g2 = np.zeros(SINE_SMOOTH_MIN_BUFFER_LEN)
-
-    for k in range(nfold):
-        g1[ll - 1 + k] = g[k]
-
-    for k in range(lmax - 1, le):
-        s = w[0] * g1[k]
-        for lix in range(1, lmax):
-            s += w[lix] * (g1[k - lix] + g1[k + lix])
-
-        g2[k] = s
-
-    for k in range(le, ln + lmax + 1):
-        g2[k] = 0.0
-
-    # Fold the parts of the window that fall beyond the first data point
-    # (index ll - 1) and the last data point (index ln - 1) back in, by
-    # mirroring them about those points
-    for lix in range(1, lmax):
-        g2[ll - 1 + lix] += g2[ll - 1 - lix]
-        g2[ln - 1 - lix] += g2[ln - 1 + lix]
-
-    for k in range(nfold):
-        g[k] = g2[ll - 1 + k]
-
-    sm_signal[0] = np.sqrt(g[0] * T)
-    for k in range(1, nfold - 1):
-        sm_signal[k] = np.sqrt(g[k] * T / 2.0)
-
-    sm_signal[nfold - 1] = np.sqrt(g[nfold - 1] * T)
+    sm_signal = np.sqrt(g_smoothed * T / 2.0)
+    sm_signal[0] = np.sqrt(g_smoothed[0] * T)
+    sm_signal[-1] = np.sqrt(g_smoothed[-1] * T)
 
     return sm_signal
