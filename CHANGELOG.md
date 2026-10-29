@@ -19,6 +19,9 @@
     `MKZ_Param_Multi_Layer` object, which the docstrings said it accepted. The
     nonlinear kernel (NLHH) reads only HH parameters, so `run()` failed with
     MKZ parameters (#124)
+  - `Batch_Simulation.run(catch_errors=True)` now prints the message of each
+    `ValueError` that it catches (such as the error output of the nonlinear
+    kernel), instead of only "Warning: ValueError encountered." (#124)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from test_class_simulation import fail_next_kernel_run
+from test_class_simulation import KERNEL_ERROR, fail_next_kernel_run
 
 from PySeismoSoil.class_batch_simulation import Batch_Simulation
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
@@ -175,6 +175,7 @@ def test_run__options_of_the_caller_are_unchanged(
 def test_nonlinear__catch_errors_catches_a_kernel_failure(
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
 ) -> None:
     monkeypatch.chdir(tmp_path)
     accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
@@ -189,10 +190,14 @@ def test_nonlinear__catch_errors_catches_a_kernel_failure(
         base_output_dir='batch', catch_errors=True, options={'verbose': False}
     )
 
-    # The failure of the kernel is a `ValueError`, so it is caught. Then the
+    # The failure of the kernel is a `ValueError`, so it is caught, and its
+    # message (with the error output of the kernel) is shown. Then the
     # working directory is restored, so the 2nd simulation runs in its own
     # directory.
     assert sim_results[0] is None
+    warning = capsys.readouterr().out
+    assert 'Warning: ValueError encountered: The nonlinear kernel' in warning
+    assert KERNEL_ERROR in warning
     assert sim_results[1] is not None
     assert Path.cwd() == tmp_path
     assert sorted(p.name for p in (tmp_path / 'batch').iterdir()) == ['0', '1']

@@ -244,9 +244,9 @@ class Batch_Simulation:
         if catch_errors:
             try:
                 sim_result = sim_obj.run(**sim_options)
-            except ValueError:
+            except ValueError as e:
                 sim_result = None
-                print('Warning: ValueError encountered.')
+                print(f'Warning: ValueError encountered: {e}')
         else:
             sim_result = sim_obj.run(**sim_options)
 

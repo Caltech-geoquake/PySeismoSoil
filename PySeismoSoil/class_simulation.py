@@ -6,6 +6,7 @@ import pathlib
 import shutil
 import stat
 import subprocess  # noqa: S404
+import sys
 from typing import Literal
 
 import numpy as np
@@ -753,6 +754,12 @@ class Nonlinear_Simulation(Simulation):
                     f' results. Its files are kept in {sim_dir}. Error output'
                     f' of the kernel:\n{error_output or "(none)"}'
                 )
+
+            # After a successful run, show what the kernel wrote to stderr
+            # (such as a note from the Fortran runtime), unless its stdout is
+            # captured too (on Linux when not `verbose`)
+            if kernel.stderr and kernel.stdout is None:
+                sys.stderr.write(kernel.stderr.decode(errors='replace'))
 
             if verbose:
                 print('Simulation finished. Now post processing.')

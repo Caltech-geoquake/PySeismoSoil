@@ -182,6 +182,41 @@ def test_nonlinear_run__kernel_failure_raises_ValueError(
     assert (tmp_path / 'nonlinear_sim' / 'HH_G.dat').is_file()
 
 
+def test_nonlinear_run__kernel_stderr_is_shown_after_success(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
+    input_motion = Ground_Motion(accel_data[::50], unit='gal')
+    soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    sim = Nonlinear_Simulation(
+        soil_profile,
+        input_motion,
+        G_param=HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt')),
+        xi_param=HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt')),
+    )
+
+    # The kernel runs as usual, and also writes a note to stderr
+    run = class_simulation.subprocess.run
+    note = 'A note from the Fortran runtime\n'
+
+    def run_kernel_with_a_note(args: str, **kwargs: object) -> object:
+        kernel = run(args, **kwargs)
+        kernel.stderr += note.encode()
+        return kernel
+
+    monkeypatch.setattr(
+        class_simulation.subprocess, 'run', run_kernel_with_a_note
+    )
+    sim.run(sim_dir='nonlinear_sim', verbose=True)
+
+    # The kernel's stderr is captured (for the error message if the kernel
+    # fails), but still shown after it succeeds
+    assert note in capfd.readouterr().err
+
+
 def test_nonlinear_init() -> None:
     input_motion = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='m')
     soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
