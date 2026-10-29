@@ -1076,7 +1076,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
         sep : str | None, default=None
             Delimiter to separate columns of data in the output file.
         save_fig : bool, default=False
-            Whether to save damping fitting figures to hard drive.
+            Whether to save the figure of the curve fitting results (the figure
+            that ``show_fig`` shows) to hard drive, even if ``show_fig`` is
+            ``False``.
         fig_filename : str | None, default=None
             Full file name of the figure. If the object is created via a
             "curve" text file, then ``fig_filename`` can be None, and the
@@ -1198,7 +1200,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
         sep : str | None, default=None
             Delimiter to separate columns of data in the output file.
         save_fig : bool, default=False
-            Whether to save damping fitting figures to hard drive.
+            Whether to save the figure of the curve fitting results (the figure
+            that ``show_fig`` shows) to hard drive, even if ``show_fig`` is
+            ``False``.
         fig_filename : str | None, default=None
             Full file name of the figure. If the object is created via a
             "curve" text file, then ``fig_filename`` can be None, and the
