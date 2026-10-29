@@ -1,10 +1,11 @@
+import multiprocessing.pool
 from pathlib import Path
 
 import numpy as np
 import pytest
 from scipy.special import erf
 
-from PySeismoSoil.class_gof_scores import GOF_Scores
+from PySeismoSoil.class_gof_scores import Batch_GOF_Scores, GOF_Scores
 
 f_dir = Path(__file__).resolve().parent / 'files'
 
@@ -48,3 +49,24 @@ def test_calc_scores__scaled_simulation(meas: np.ndarray) -> None:
     assert np.allclose(scores[2:4], score_for_ratio_0p64, atol=1e-3)  # d3, d4
     assert np.allclose(scores[4:9], score_for_ratio_0p8, atol=1e-2)  # d5 to d9
     assert scores[9] == pytest.approx(0.1, abs=1e-7)  # d10
+
+
+def test_batch_gof_scores__parallel_closes_pool(
+        meas: np.ndarray,
+        created_pools: list[multiprocessing.pool.Pool],
+) -> None:
+    simu = np.column_stack((meas[:, 0], 0.8 * meas[:, 1]))
+    batch = Batch_GOF_Scores([
+        GOF_Scores(meas, meas.copy()),
+        GOF_Scores(meas, simu),
+    ])
+    results = batch.run(parallel=True, n_cores=2, options=ALL_SCORES)
+
+    assert len(created_pools) == 1
+    created_pools[0].join()  # raises `ValueError` if the pool is still running
+
+    # Same scores as without parallel computing
+    results_serial = batch.run(options=ALL_SCORES)
+    assert len(results) == 2
+    for result, result_serial in zip(results, results_serial, strict=True):
+        assert np.allclose(result.get_scores(), result_serial.get_scores())

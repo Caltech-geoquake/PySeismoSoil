@@ -1,6 +1,9 @@
+import multiprocessing.pool
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import scipy.stats
@@ -188,6 +191,38 @@ def test_response_spectra() -> None:
 
     assert np.allclose(Tn, Tn_bench)
     assert np.allclose(SA, SA_bench, rtol=0.0001, atol=0.0)
+
+
+@pytest.mark.parametrize(
+    't',
+    [
+        pytest.param(
+            [0.0, 0.01, 0.02, 0.03, 0.05, 0.07, 0.09], id='steps_grow'
+        ),
+        pytest.param(
+            [0.0, 0.01, 0.02, 0.03, 0.035, 0.04, 0.045], id='steps_shrink'
+        ),
+    ],
+)
+def test_response_spectra__time_steps_not_even(t: list[float]) -> None:
+    accel = np.column_stack((t, np.ones(len(t))))
+    with pytest.raises(ValueError, match='must be evenly spaced'):
+        sr.response_spectra(accel, T_min=0.01, T_max=1, n_pts=5)
+
+
+def test_response_spectra__parallel_closes_pool(
+        created_pools: list[multiprocessing.pool.Pool],
+) -> None:
+    accel = np.genfromtxt(f_dir / 'sample_accel.txt')
+    result = sr.response_spectra(accel, n_pts=4, parallel=True, n_cores=2)
+
+    assert len(created_pools) == 1
+    created_pools[0].join()  # raises `ValueError` if the pool is still running
+
+    # Same results as without parallel computing
+    result_serial = sr.response_spectra(accel, n_pts=4)
+    for array, array_serial in zip(result, result_serial, strict=True):
+        assert np.allclose(array, array_serial)
 
 
 def test_find_f0() -> None:
@@ -416,20 +451,44 @@ def test_fit_all_damping_curves__success() -> None:
     assert len(res[0]) == 9  # HH model: 9 parameters
 
 
+def _fit_single_layer__must_not_run(
+        *_args: Any, **_kwargs: Any
+) -> dict[str, float]:
+    # For errors that should be raised before any fitting runs
+    pytest.fail('The fitting ran before the error was raised.')
+
+
 @pytest.mark.parametrize(
-    ('kwargs', 'exception', 'match'),
+    ('kwargs', 'func_fit_single_layer', 'exception', 'match'),
     [
         pytest.param(
-            {'func_serialize': None},
+            {'save_txt': True, 'func_serialize': None},
+            _fit_single_layer__must_not_run,
             ValueError,
             'provide a function to serialize',
             id='no_func_serialize',
         ),
         pytest.param(
+            {'save_txt': True, 'func_serialize': hh.serialize_params_to_array},
+            _fit_single_layer__must_not_run,
+            ValueError,
+            'provide `txt_filename`',
+            id='no_txt_filename',
+        ),
+        pytest.param(
+            {'save_fig': True},
+            _fit_single_layer__must_not_run,
+            ValueError,
+            'provide `fig_filename`',
+            id='no_fig_filename',
+        ),
+        pytest.param(
             {
+                'save_txt': True,
                 'txt_filename': '1.txt',  # no effect anyways
                 'func_serialize': mkz.serialize_params_to_array,
             },
+            hh.fit_HH_x_single_layer,
             AssertionError,
             None,
             id='incorrect_func_serialize',
@@ -438,6 +497,7 @@ def test_fit_all_damping_curves__success() -> None:
 )
 def test_fit_all_damping_curves__exception(
         kwargs: dict[str, Any],
+        func_fit_single_layer: Callable[..., dict[str, float]],
         exception: type[Exception],
         match: str | None,
 ) -> None:
@@ -446,13 +506,74 @@ def test_fit_all_damping_curves__exception(
     with pytest.raises(exception, match=match):
         sr.fit_all_damping_curves(
             [curve],
-            hh.fit_HH_x_single_layer,
+            func_fit_single_layer,
             hh.tau_HH,
             pop_size=1,
             n_gen=1,
-            save_txt=True,
             **kwargs,
         )
+
+
+@pytest.mark.parametrize(
+    'show_fig',
+    [
+        pytest.param(False, id='save_only'),
+        pytest.param(True, id='show_and_save'),
+    ],
+)
+def test_fit_all_damping_curves__save_fig(
+        tmp_path: Path,
+        *,
+        show_fig: bool,
+) -> None:
+    curve = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, 2:4]
+    fig_filename = tmp_path / 'fit.png'
+    n_open_figs = len(plt.get_fignums())
+    sr.fit_all_damping_curves(
+        [curve],
+        hh.fit_HH_x_single_layer,
+        hh.tau_HH,
+        pop_size=1,
+        n_gen=1,
+        show_fig=show_fig,
+        save_fig=True,
+        fig_filename=str(fig_filename),
+    )
+    assert fig_filename.is_file()
+
+    # The figure stays open only if it is to be shown
+    n_new_figs = 1 if show_fig else 0
+    assert len(plt.get_fignums()) == n_open_figs + n_new_figs
+
+
+def test_fit_all_damping_curves__parallel_closes_pool(
+        created_pools: list[multiprocessing.pool.Pool],
+) -> None:
+    curve = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, 2:4]
+    params = sr.fit_all_damping_curves(
+        [curve.copy(), curve.copy()],
+        hh.fit_HH_x_single_layer,
+        hh.tau_HH,
+        pop_size=1,
+        n_gen=1,
+        parallel=True,
+        n_cores=2,
+    )
+
+    assert len(created_pools) == 1
+    created_pools[0].join()  # raises `ValueError` if the pool is still running
+
+    # Same results as without parallel computing
+    params_serial = sr.fit_all_damping_curves(
+        [curve.copy(), curve.copy()],
+        hh.fit_HH_x_single_layer,
+        hh.tau_HH,
+        pop_size=1,
+        n_gen=1,
+    )
+    assert len(params) == 2
+    for param, param_serial in zip(params, params_serial, strict=True):
+        assert param == pytest.approx(param_serial)
 
 
 def test_plot_site_amp() -> None:

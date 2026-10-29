@@ -32,6 +32,28 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `helper_site_response.fit_all_damping_curves()` failing only after all the
+    (possibly long) fitting when `save_txt=True` without `func_serialize` or
+    `txt_filename`, or when `save_fig=True` without `fig_filename`. It now
+    raises a `ValueError` before the fitting starts (#97)
+  - `save_fig=True` saving no figure unless `show_fig` was also `True`, in
+    `fit_all_damping_curves()` and in `get_all_HH_x_params()` and
+    `get_all_H4_x_params()` of `Multiple_Damping_Curves` (and so in
+    `Damping_Calibration.get_HH_x_param()` and `get_H4_x_param()`). The figure
+    is now saved; with `show_fig=False`, it is then closed instead of shown.
+    Without `fig_filename`, the `get_all_*()` methods of an object created from
+    a "curve" file save it as "HH_x_SITE_NAME.png" or "H4_x_SITE_NAME.png" in
+    the current working directory (#97)
+  - `fit_all_damping_curves()`, `response_spectra()` (and so
+    `Ground_Motion.get_response_spectra()`), and `Batch_GOF_Scores.run()` not
+    closing their multiprocessing pools when `parallel=True`. The worker
+    processes kept running until the pool was garbage-collected, which also
+    emitted a `ResourceWarning` (#99)
+  - `response_spectra()` accepting a time array whose steps shrink, and then
+    computing the spectra with the first time step for the whole record. Like a
+    time array whose steps grow, it now raises a `ValueError`. This also
+    applies to `Ground_Motion.get_response_spectra()` and to the spectra scores
+    (d8 and d9, `score_spectra=True`) of `GOF_Scores.calc_scores()` (#66)
 
 ## [0.7.1] - 2026-10-11
 
