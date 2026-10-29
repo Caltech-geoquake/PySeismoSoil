@@ -85,6 +85,31 @@ def test_loading_data(
             r"use '/s/s' instead of 's\^2'",
             id='s_squared_in_unit_name',
         ),
+        pytest.param(
+            {'unit': 'm/s', 'motion_type': 'accel', 'dt': 0.1},
+            "If unit is 'm/s', then `motion_type` must be 'veloc'",
+            id='velocity_unit_for_accel',
+        ),
+        pytest.param(
+            {'unit': 'cm/s', 'motion_type': 'accel', 'dt': 0.1},
+            "If unit is 'cm/s', then `motion_type` must be 'veloc'",
+            id='velocity_unit_in_cm_for_accel',
+        ),
+        pytest.param(
+            {'unit': 'm/s/s', 'motion_type': 'veloc', 'dt': 0.1},
+            "If unit is 'm/s/s', then `motion_type` must be 'accel'",
+            id='acceleration_unit_for_veloc',
+        ),
+        pytest.param(
+            {'unit': 'cm/s/s', 'motion_type': 'displ', 'dt': 0.1},
+            "If unit is 'cm/s/s', then `motion_type` must be 'accel'",
+            id='acceleration_unit_in_cm_for_displ',
+        ),
+        pytest.param(
+            {'unit': 'g', 'motion_type': 'veloc', 'dt': 0.1},
+            "If unit is 'g', then `motion_type` must be 'accel'",
+            id='g_for_veloc',
+        ),
     ],
 )
 def test_loading_data__invalid_input(
@@ -92,6 +117,50 @@ def test_loading_data__invalid_input(
 ) -> None:
     with pytest.raises(ValueError, match=match):
         GM(np.array([1, 2, 3, 4, 5]), **kwargs)
+
+
+@pytest.mark.parametrize(
+    ('unit', 'motion_type', 'factor_to_SI'),
+    [
+        pytest.param('gal', 'accel', 0.01, id='accel_in_gal'),
+        pytest.param('g', 'accel', 9.81, id='accel_in_g'),
+        pytest.param('m', 'accel', 1.0, id='accel_in_m'),
+        pytest.param('cm/s', 'veloc', 0.01, id='veloc_in_cm_s'),
+        pytest.param('cm', 'displ', 0.01, id='displ_in_cm'),
+    ],
+)
+@pytest.mark.parametrize(
+    'dtype',
+    [pytest.param(int, id='int_array'), pytest.param(float, id='float_array')],
+)
+def test_loading_data__input_array_is_copied(
+        unit: str,
+        motion_type: str,
+        factor_to_SI: float,
+        dtype: type,
+) -> None:
+    # The unit conversion must not change (or truncate) the caller's array,
+    # and the object must not share it
+    data = np.array([[0, 0], [1, 420], [2, 454], [3, 70]], dtype=dtype)
+    data_before = data.copy()
+    gm = GM(data, unit=unit, motion_type=motion_type)
+    motion = getattr(gm, motion_type)
+    assert np.array_equal(data, data_before)
+    assert not np.shares_memory(motion, data)
+    assert np.allclose(motion[:, 0], [0, 1, 2, 3])
+    assert np.allclose(
+        motion[:, 1], np.array([0, 420, 454, 70]) * factor_to_SI
+    )
+
+
+def test_loading_data__kwargs_to_genfromtxt(tmp_path: Path) -> None:
+    # The extra keyword arguments (here, `skip_header`) are passed on to
+    # `numpy.genfromtxt()`
+    file_name = tmp_path / 'accel_with_header.txt'
+    file_name.write_text('time\taccel\n0.01\t0.0\n0.02\t1.0\n0.03\t-2.0\n')
+    gm = GM(str(file_name), unit='m/s/s', skip_header=1)
+    assert np.allclose(gm.accel, [[0.01, 0.0], [0.02, 1.0], [0.03, -2.0]])
+    assert gm.pga == pytest.approx(2.0)
 
 
 def test_differentiation() -> None:
@@ -300,6 +369,29 @@ def test_amplify_by_tf__case_2_a_transfer_function_from_a_Vs_profile() -> None:
     # nearly identical results
     assert nearly_identical(gm_with_tf_RO.accel, gm_with_tf_RO_.accel)
     assert nearly_identical(gm_with_tf_BH.accel, gm_with_tf_BH_.accel)
+
+
+@pytest.mark.parametrize(
+    ('unit', 'factor_from_SI'),
+    [
+        pytest.param('m/s/s', 1.0, id='m_s_s'),
+        pytest.param('g', 1 / 9.81, id='g'),
+        pytest.param('gal', 100.0, id='gal'),
+        pytest.param('cm/s/s', 100.0, id='cm_s_s'),
+    ],
+)
+def test_save_accel(tmp_path: Path, unit: str, factor_from_SI: float) -> None:
+    gm = GM(str(f_dir / 'two_column_data_example.txt'), unit='m/s/s')
+    accel_before = gm.accel.copy()
+    file_name = tmp_path / 'accel.txt'
+    for _ in range(2):  # each save converts from the SI unit
+        gm.save_accel(str(file_name), unit=unit)
+        saved = np.genfromtxt(file_name)
+        assert np.allclose(saved[:, 0], accel_before[:, 0])
+        assert np.allclose(
+            saved[:, 1], accel_before[:, 1] * factor_from_SI, rtol=1e-4
+        )
+        assert np.array_equal(gm.accel, accel_before)  # not rescaled
 
 
 def nearly_identical(
