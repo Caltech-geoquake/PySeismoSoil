@@ -17,7 +17,8 @@
   - `Ground_Motion()` now raises a `ValueError` when `unit` is a velocity unit
     ('m/s', 'cm/s') and `motion_type` is not 'veloc', or an acceleration unit
     ('m/s/s', 'cm/s/s', 'gal', 'g') and `motion_type` is not 'accel'. The units
-    'm' and 'cm' are still accepted with every `motion_type` (#92)
+    'm' and 'cm' are still accepted with every `motion_type`. The docstring
+    already said so, but only 'g' and 'gal' were checked (#92)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -44,8 +45,6 @@
   - `Ground_Motion.save_accel()` rescaling the object's own `accel` when saving
     in g, gal, or cm/s/s, so that every later save and method used the rescaled
     data (#58)
-  - `Ground_Motion()` not raising the documented `ValueError` when `unit` does
-    not match `motion_type` (only 'g' and 'gal' were checked) (#92)
   - `Ground_Motion()` ignoring `**kwargs_to_genfromtxt` (such as `skip_header`)
     when reading a file. They are now passed to `numpy.genfromtxt()`. This
     fixes the first item of #64; the other parameters that #64 lists are still

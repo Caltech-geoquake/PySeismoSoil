@@ -63,7 +63,8 @@ class Ground_Motion:
         as a numpy array, this parameter is ignored.
     **kwargs_to_genfromtxt : dict[Any, Any]
         Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
-        function for loading the data from the hard drive (if applicable).
+        function for loading the data from the hard drive (if applicable). Use
+        ``sep`` (not ``delimiter``) to set the delimiter.
 
     Attributes
     ----------
