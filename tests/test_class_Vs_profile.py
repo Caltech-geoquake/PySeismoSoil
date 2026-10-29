@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import PySeismoSoil.helper_generic as hlp
+from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = Path(__file__).resolve().parent / 'files'
@@ -210,6 +211,48 @@ def test_get_amplif_function() -> None:
         ],
     )
     assert np.allclose(af_RO.spectrum_2col, af_benchmark, atol=1e-9, rtol=0.0)
+
+
+@pytest.mark.parametrize(
+    ('kwargs', 'n_freq', 'last_freq'),
+    [
+        pytest.param({}, 600, 30.0, id='defaults'),
+        pytest.param(
+            {'fmax': 10, 'freq_resolution': 0.1}, 100, 10.0, id='10_Hz'
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    'get_function',
+    [
+        pytest.param(Vs_Profile.get_ampl_function, id='ampl_function'),
+        pytest.param(Vs_Profile.get_transfer_function, id='transfer_function'),
+    ],
+)
+def test_get_ampl_or_transfer_function__frequencies_up_to_fmax(
+        get_function: Callable[..., tuple[FS, FS, FS]],
+        kwargs: dict[str, float],
+        n_freq: int,
+        last_freq: float,
+) -> None:
+    prof = Vs_Profile(np.array([[10.0, 0.0], [200.0, 1000.0]]).T)
+    for spectrum in get_function(prof, **kwargs):
+        assert len(spectrum.freq) == n_freq
+        assert spectrum.freq[-1] == pytest.approx(last_freq, abs=1e-9)
+
+
+@pytest.mark.parametrize(
+    'index',
+    [pytest.param(0, id='RO'), pytest.param(2, id='IN')],
+)
+def test_get_ampl_function__f0_after_a_small_dip(
+        prof: Vs_Profile, index: int
+) -> None:
+    # On this fine frequency grid, the amplification function first dips
+    # slightly (by about 1e-5) and then rises to its first peak at 1.106 Hz
+    af = prof.get_ampl_function(freq_resolution=0.002, fmax=3)[index]
+    assert af.amplitude[1] < af.amplitude[0]
+    assert af.get_f0() == pytest.approx(1.106, abs=1e-9)
 
 
 @pytest.mark.parametrize(
