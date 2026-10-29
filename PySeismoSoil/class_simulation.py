@@ -256,7 +256,7 @@ class Linear_Simulation(Simulation):
             sim_results = Simulation_Results(
                 self.input_motion,
                 Ground_Motion(accel_on_surface, unit='m'),
-                Vs_Profile(new_profile, density_unit='g/cm^3'),
+                Vs_Profile(new_profile),  # density unit: kg/m^3
                 max_a_v_d=max_avd,
                 max_strain_stress=max_gt,
                 trans_func=Frequency_Spectrum(
@@ -414,7 +414,7 @@ class Equiv_Linear_Simulation(Simulation):
         sim_results = Simulation_Results(
             self.input_motion,
             Ground_Motion(accel_on_surface, unit='m'),
-            Vs_Profile(new_profile, density_unit='g/cm^3'),
+            Vs_Profile(new_profile),  # density unit: kg/m^3
             max_a_v_d=max_avd,
             max_strain_stress=max_gt,
             trans_func=Frequency_Spectrum(

@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +13,7 @@ from PySeismoSoil.class_simulation import (
     Linear_Simulation,
     Nonlinear_Simulation,
 )
+from PySeismoSoil.class_simulation_results import Simulation_Results
 from PySeismoSoil.class_Vs_profile import Vs_Profile
 
 f_dir = Path(__file__).resolve().parent / 'files'
@@ -108,3 +110,60 @@ def test_nonlinear_init() -> None:
             G_param=HH_G,
             xi_param=HH_x_,
         )
+
+
+@pytest.mark.parametrize(
+    'run_simulation',
+    [
+        pytest.param(
+            lambda soil_profile, input_motion, _: Linear_Simulation(
+                soil_profile, input_motion
+            ).run(every_layer=True, verbose=False),
+            id='linear_every_layer',
+        ),
+        pytest.param(
+            lambda soil_profile, input_motion, _: Linear_Simulation(
+                soil_profile, input_motion
+            ).run(every_layer=False, verbose=False),
+            id='linear_surface_only',
+        ),
+        pytest.param(
+            lambda soil_profile, input_motion, _: Equiv_Linear_Simulation(
+                soil_profile,
+                input_motion,
+                Multiple_GGmax_Damping_Curves(
+                    data=str(f_dir / 'curve_FKSH14.txt')
+                ),
+            ).run(verbose=False),
+            id='equiv_linear',
+        ),
+        pytest.param(
+            lambda soil_profile, input_motion, tmp_path: Nonlinear_Simulation(
+                soil_profile,
+                input_motion,
+                G_param=HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt')),
+                xi_param=HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt')),
+            ).run(sim_dir=str(tmp_path / 'nonlinear_sim'), verbose=False),
+            id='nonlinear',
+        ),
+    ],
+)
+def test_run__rediscretized_profile_has_input_densities(
+        tmp_path: Path,
+        run_simulation: Callable[
+            [Vs_Profile, Ground_Motion, Path], Simulation_Results
+        ],
+) -> None:
+    accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
+    accel_downsample = accel_data[::50]  # for faster testing speed
+    input_motion = Ground_Motion(accel_downsample, unit='gal')
+    soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    sim_result = run_simulation(soil_profile, input_motion, tmp_path)
+    new_profile = sim_result.rediscretized_profile.vs_profile
+
+    # Every layer of this profile has its own material number, which the
+    # sub-layers of the re-discretized profile keep
+    _, _, _, rho, material_number = soil_profile.vs_profile.T
+    density_of_material = dict(zip(material_number, rho, strict=True))
+    expected_density = [density_of_material[mat] for mat in new_profile[:, 4]]
+    assert np.allclose(new_profile[:, 3], expected_density)
