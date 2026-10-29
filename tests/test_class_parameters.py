@@ -13,6 +13,7 @@ from PySeismoSoil.class_parameters import (
     HH_Param_Multi_Layer,
     MKZ_Param,
     MKZ_Param_Multi_Layer,
+    Parameter,
 )
 
 f_dir = Path(__file__).resolve().parent / 'files'
@@ -48,6 +49,56 @@ def test_init__querying_nonexistent_parameter_name_raises_KeyError() -> None:
     hhp = HH_Param(data)
     with pytest.raises(KeyError, match="'haha'"):
         hhp['haha']
+
+
+def test_init__allowable_keys_is_required() -> None:
+    with pytest.raises(
+        TypeError,
+        match="missing 1 required keyword-only argument: 'allowable_keys'",
+    ):
+        Parameter({'a': 1.0})
+
+    with pytest.raises(TypeError, match='should be a set of str'):
+        Parameter({'a': 1.0}, allowable_keys=None)
+
+    param = Parameter({'a': 1.0}, allowable_keys={'a'})
+    assert dict(param) == {'a': 1.0}
+
+
+@pytest.mark.parametrize(
+    ('values', 'expected'),
+    [
+        pytest.param(
+            [0.1, 2, 2.5, 1.0],
+            '{\n  gamma_ref: 0.1,\n  s: 2,\n  beta: 2.5,\n  Gmax: 1.0\n}',
+            id='Python_float_and_int',
+        ),
+        pytest.param(
+            np.array([0.1, 2, 2.5, 1.0]),
+            '{\n  gamma_ref: 0.1,\n  s: 2.0,\n  beta: 2.5,\n  Gmax: 1.0\n}',
+            id='float64_array',
+        ),
+        pytest.param(
+            np.array([0.25, 2, 2.5, 1.0], dtype=np.float32),
+            '{\n  gamma_ref: 0.25,\n  s: 2.0,\n  beta: 2.5,\n  Gmax: 1.0\n}',
+            id='float32_array',
+        ),
+        pytest.param(
+            np.array([1, 2, 3, 4], dtype=np.int64),
+            '{\n  gamma_ref: 1.0,\n  s: 2.0,\n  beta: 3.0,\n  Gmax: 4.0\n}',
+            id='int64_array',
+        ),
+    ],
+)
+def test_repr__python_and_numpy_numbers(
+        values: list[float] | np.ndarray,
+        expected: str,
+) -> None:
+    # The values from an array are NumPy scalars, as in the parameters from
+    # `deserialize_array_to_params()`. They print as floats.
+    keys = ['gamma_ref', 's', 'beta', 'Gmax']
+    param = MKZ_Param(dict(zip(keys, values, strict=True)))
+    assert repr(param) == expected
 
 
 def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01() -> None:
