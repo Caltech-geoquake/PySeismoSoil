@@ -47,7 +47,8 @@
     length to a slice of the parameter classes (`param[0:3] = []`). Then
     `obj[len(obj) - 1]` raised an `IndexError`, and `Nonlinear_Simulation`
     accepted too few sets of parameters for the material numbers of the Vs
-    profile, and gave the solver the wrong number of sets (#83)
+    profile, and told the solver the wrong number of sets (`n_ma` in
+    `control.dat`) (#83)
   - Indexing these four classes with a NumPy integer (such as `np.int64(0)`)
     raising a `TypeError` (#83)
 
