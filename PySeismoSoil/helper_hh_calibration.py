@@ -814,11 +814,12 @@ def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
 
     if np.mean(rho) < hlp.MIN_PLAUSIBLE_DENSITY_KG_M3:
         print(
-            'Warning in __calc_vertical_stress(): It looks like the unit '
+            'Warning in _calc_vertical_stress(): It looks like the unit '
             'of mass density is g/cm^3. The correct unit should be kg/m^3.',
         )
 
     if h[-1] == 0:  # zero thickness, i.e., half space
+        h = h.copy()  # don't change the caller's array
         h[-1] = 1
 
     stress[0] = rho[0] * g * h[0] / 2  # divided by 2: middle of layer
@@ -1022,7 +1023,7 @@ def produce_Darendeli_curves(
     # Confinine stress
     sigma_0 = _calc_mean_confining_stress(sigma_v0, K0)  # octahedral stress
     sigma_0 /= 101325.0  # unit: Pa --> atm
-    n_strain_pts = len(strain_in_pct)
+    n_strain_pts = len(gamma)
 
     # Reference strain for each layer (Eq 9.1a). Unit: percent
     gamma_r = (phi1 + phi2 * PI * OCR**phi3) * sigma_0**phi4
