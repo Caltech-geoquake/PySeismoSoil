@@ -51,7 +51,7 @@ class Parameter(collections.UserDict):
     ----------
     param_dict : dict[str, float]
         Name-value pairs of the parameters.
-    allowable_keys : set[str] | None, default=None
+    allowable_keys : set[str]
         The allowable parameter names of the constitutive model.
     func_stress : StressFunction | None, default=None
         A function to calculate shear stress from the parameters. It is called
@@ -62,7 +62,7 @@ class Parameter(collections.UserDict):
     ----------
     data : dict[str, float]
         The original data, stored as a regular dictionary.
-    allowable_keys : set[str] | None
+    allowable_keys : set[str]
         Same as the input parameter.
     func_stress : StressFunction | None
         A function to calculate shear stress from the parameters.
@@ -76,14 +76,14 @@ class Parameter(collections.UserDict):
     """
 
     data: dict[str, float]
-    allowable_keys: set[str] | None
+    allowable_keys: set[str]
     func_stress: StressFunction | None
 
     def __init__(
             self,
             param_dict: dict[str, float],
             *,
-            allowable_keys: set[str] | None = None,
+            allowable_keys: set[str],
             func_stress: StressFunction | None = None,
     ) -> None:
         if not isinstance(param_dict, dict):
@@ -105,7 +105,9 @@ class Parameter(collections.UserDict):
         super().__init__(param_dict)
 
     def __repr__(self) -> str:
-        return json.dumps(self.data, indent=2).replace('"', '')
+        # Convert the NumPy scalars that `json` cannot encode (such as
+        # `np.int64` and `np.float32`) to float
+        return json.dumps(self.data, indent=2, default=float).replace('"', '')
 
     def __setitem__(self, key: str, item: float) -> None:
         if key not in self.allowable_keys:

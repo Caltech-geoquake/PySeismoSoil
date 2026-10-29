@@ -32,6 +32,13 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Parameter()` documenting a default, `allowable_keys=None`, that always
+    raised a `TypeError`. `allowable_keys` is now a required keyword argument
+    (with no default), as `HH_Param` and `MKZ_Param` already pass it (#110)
+  - `repr()` and `print()` of `HH_Param` and `MKZ_Param` raising a `TypeError`
+    when a parameter value is a NumPy `int64` or `float32`, for example, in
+    `HH_Param_Multi_Layer` or `MKZ_Param_Multi_Layer` made from an integer or
+    float32 array. These values now print as floats, such as `1.0` (#88)
 
 ## [0.7.1] - 2026-10-11
 
