@@ -14,6 +14,15 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
+    `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` is now a read-only
+    property that returns the length of the list (`param_list` or `curves`), so
+    it can no longer be set (#83)
+  - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` now raise a `TypeError`
+    when an item assigned with `param[i] = ...` is not an `HH_Param` (or
+    `MKZ_Param`), and when any item assigned to a slice (`param[i:j] = [...]`)
+    is not. Before, any item was accepted, which made the object fail later
+    (for example, in `serialize_to_2D_array()`) (#83)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +41,16 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `len()` and `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
+    `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` being wrong after
+    deleting a slice (`del obj[1:4]`), or after assigning a list of a different
+    length to a slice of the parameter classes (`param[0:3] = []`). Then
+    `obj[len(obj) - 1]` raised an `IndexError`, and `Nonlinear_Simulation`
+    accepted too few sets of parameters for the material numbers of the Vs
+    profile, and told the solver the wrong number of sets (`n_ma` in
+    `control.dat`) (#83)
+  - Indexing these four classes with a NumPy integer (such as `np.int64(0)`)
+    raising a `TypeError` (#83)
 
 ## [0.7.1] - 2026-10-11
 
