@@ -52,11 +52,11 @@ class Curve:
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float, default=0.0001
-        Minimum strain value of the strain array. If ``interpolate`` is
+        Minimum strain value (in %) of the strain array. If ``interpolate`` is
         ``True``, the raw ``data`` will be internally interpolated at a strain
         array defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float, default=10.0
-        Maximum strain value of the strain array. Only effective when
+        Maximum strain value (in %) of the strain array. Only effective when
         ``interpolate`` is set to ``True``.
     n_pts : int, default=50
         Number of points of the desired strain array to do the interpolation.
@@ -71,7 +71,9 @@ class Curve:
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in
+        A copy of the data that the user passed in (not interpolated). The unit
+        of strain is percent (unit conversion happens internally if
+        applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -105,25 +107,29 @@ class Curve:
             data, '`curve`', ensure_non_negative=check_values
         )
 
+        if strain_unit not in {'1', '%'}:
+            raise ValueError("`strain_unit` must be '1' or '%'.")
+
+        # A copy, so that the unit conversions (here and in the subclasses) do
+        # not change the caller's array
+        raw_data = np.array(data, dtype=float)
+        if strain_unit == '1':  # strain values are internally stored in %
+            raw_data[:, 0] *= 100
+
+        # `min_strain` and `max_strain` are in %, so interpolate the data in %
         if interpolate:
             strain, values = hlp.interpolate(
                 min_strain,
                 max_strain,
                 n_pts,
-                data[:, 0],
-                data[:, 1],
+                raw_data[:, 0],
+                raw_data[:, 1],
                 log_scale=log_scale,
             )
         else:
-            strain, values = data[:, 0], data[:, 1]
+            strain, values = raw_data[:, 0].copy(), raw_data[:, 1].copy()
 
-        if strain_unit not in {'1', '%'}:
-            raise ValueError("`strain_unit` must be '1' or '%'.")
-
-        if strain_unit == '1':
-            strain *= 100  # strain values are internally stored in unit of %
-
-        self.raw_data = data
+        self.raw_data = raw_data
         self.strain = strain
         self.values = values
 
@@ -215,11 +221,11 @@ class GGmax_Curve(Curve):
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float, default=0.0001
-        Minimum strain value of the strain array. If ``interpolate`` is
+        Minimum strain value (in %) of the strain array. If ``interpolate`` is
         ``True``, the raw ``data`` will be internally interpolated at a strain
         array defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float, default=10.0
-        Maximum strain value of the strain array. Only effective when
+        Maximum strain value (in %) of the strain array. Only effective when
         ``interpolate`` is set to ``True``.
     n_pts : int, default=50
         Number of points of the desired strain array to do the interpolation.
@@ -234,7 +240,9 @@ class GGmax_Curve(Curve):
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in.
+        A copy of the data that the user passed in (not interpolated). The unit
+        of strain is percent (unit conversion happens internally if
+        applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -304,11 +312,11 @@ class Damping_Curve(Curve):
         following several parameters (``min_strain``, ``max_strain``,
         ``n_pts``, ``log_scale``) have no effects.
     min_strain : float, default=0.0001
-        Minimum strain value of the strain array. If ``interpolate`` is
+        Minimum strain value (in %) of the strain array. If ``interpolate`` is
         ``True``, the raw ``data`` will be internally interpolated at a strain
         array defined by ``min_strain``, ``max_strain``, and ``n_pts``.
     max_strain : float, default=10.0
-        Maximum strain value of the strain array. Only effective when
+        Maximum strain value (in %) of the strain array. Only effective when
         ``interpolate`` is set to ``True``.
     n_pts : int, default=50
         Number of points of the desired strain array to do the interpolation.
@@ -323,7 +331,9 @@ class Damping_Curve(Curve):
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in.
+        A copy of the data that the user passed in (not interpolated). The unit
+        of strain and damping is percent (unit conversion happens internally if
+        applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -376,6 +386,7 @@ class Damping_Curve(Curve):
 
         if damping_unit == '1':
             self.damping *= 100  # unit: 1 --> %
+            self.raw_data[:, 1] *= 100
 
         if check_values and (
             np.any(self.damping > MAX_POSSIBLE_DAMPING_PCT)
@@ -567,11 +578,11 @@ class Stress_Curve(Curve):
     stress_unit : Literal['Pa', 'kPa', 'MPa', 'GPa'], default='kPa'
         The unit of the stress.
     min_strain : float, default=0.0001
-        Minimum strain value of the strain array. The raw ``data`` is
+        Minimum strain value (in %) of the strain array. The raw ``data`` is
         internally interpolated at a strain array defined by ``min_strain``,
         ``max_strain``, and ``n_pts``.
     max_strain : float, default=10.0
-        Maximum strain value of the strain array.
+        Maximum strain value (in %) of the strain array.
     n_pts : int, default=50
         Number of points of the desired strain array to do the interpolation.
     log_scale : bool, default=True
@@ -583,7 +594,9 @@ class Stress_Curve(Curve):
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in
+        A copy of the data that the user passed in. The unit of strain is
+        percent, and the unit of stress is 'kPa' (unit conversion happens
+        internally if applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -632,12 +645,15 @@ class Stress_Curve(Curve):
 
         if stress_unit == 'Pa':
             self.stress /= 1e3
+            self.raw_data[:, 1] /= 1e3
         elif stress_unit == 'kPa':
             pass
         elif stress_unit == 'MPa':
             self.stress *= 1e3
+            self.raw_data[:, 1] *= 1e3
         else:  # GPa
             self.stress *= 1e6
+            self.raw_data[:, 1] *= 1e6
 
 
 class Multiple_Curves:
