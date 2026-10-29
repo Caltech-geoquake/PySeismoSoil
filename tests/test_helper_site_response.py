@@ -466,24 +466,70 @@ def test_plot_site_amp() -> None:
     sr._plot_site_amp(input_motion, output_motion, None, None)
 
 
+def test_compare_two_accel__time_histories_are_the_records() -> None:
+    # The record starts at t = 0, and the plotted time histories keep its
+    # first sample (#96)
+    accel = np.genfromtxt(f_dir / 'sample_accel.txt')
+    _, ax = sr.compare_two_accel(accel, accel)
+    lines = ax[0].get_lines()
+    assert len(lines) == 2  # the input and the output
+    for line in lines:
+        assert line.get_xdata().shape == accel[:, 0].shape
+        assert np.allclose(line.get_xdata(), accel[:, 0])
+        assert np.allclose(line.get_ydata(), accel[:, 1])
+
+
 T1 = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
+T2 = np.array([0.0, 0.02, 0.04])
 
 
 @pytest.mark.parametrize(
-    ('t2', 'benchmark'),
+    ('t1', 't2', 'benchmark'),
     [
         pytest.param(
+            T1,
             np.array([0.1, 0.2, 0.3]),
             np.linspace(0.01, 0.3, num=int(0.3 / 0.01)),
             id='not_identical_arrays',
         ),
-        pytest.param(T1.copy(), T1.copy(), id='identical_arrays'),
+        pytest.param(T1, T1, T1, id='identical_arrays'),
+        pytest.param(  # the last element is 0.30000000000000004 (#96)
+            np.arange(1, 4) * 0.1,
+            np.arange(1, 4) * 0.1,
+            np.array([0.1, 0.2, 0.3]),
+            id='identical_arrays_with_rounding_error',
+        ),
+        pytest.param(
+            np.array([0.0, 0.01, 0.02, 0.03]),
+            np.array([0.0, 0.01, 0.02, 0.03]),
+            np.array([0.0, 0.01, 0.02, 0.03]),
+            id='identical_arrays_starting_at_0',
+        ),
+        pytest.param(
+            np.array([5.0, 5.5, 6.0, 6.5]),
+            np.array([5.0, 5.5, 6.0, 6.5]),
+            np.array([5.0, 5.5, 6.0, 6.5]),
+            id='identical_arrays_starting_at_5',
+        ),
+        pytest.param(
+            T1,
+            T2,
+            np.linspace(0.0, 0.05, num=6),
+            id='different_start_times',
+        ),
+        pytest.param(
+            T2,
+            np.array([0.005, 0.015, 0.025, 0.035, 0.045]),
+            np.linspace(0.0, 0.05, num=6),
+            id='end_time_not_on_the_time_grid',
+        ),
     ],
 )
 def test_align_two_time_arrays__normal_case(
-        t2: np.ndarray, benchmark: np.ndarray
+        t1: np.ndarray, t2: np.ndarray, benchmark: np.ndarray
 ) -> None:
-    t_ = sr._align_two_time_arrays(T1.copy(), t2)
+    t_ = sr._align_two_time_arrays(t1.copy(), t2.copy())
+    assert t_.shape == benchmark.shape
     assert np.allclose(t_, benchmark)
 
 

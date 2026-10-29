@@ -2003,6 +2003,10 @@ def compare_two_accel(
     Compare two acceleration time histories: plot comparison figures showing
     two time histories and the transfer function between them.
 
+    Both time histories are first linearly interpolated onto a common time
+    array, which starts at the earlier start time of the two, has the smaller
+    time interval of the two, and ends at the later end time of the two.
+
     Parameters
     ----------
     input_accel : np.ndarray
@@ -2076,6 +2080,31 @@ def compare_two_accel(
 
 
 def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
+    """
+    Get a common time array for two evenly spaced time arrays.
+
+    The common time array starts at the earlier start time of the two, has the
+    smaller time interval of the two, and ends at the later end time of the
+    two. (If the later end time is not on this time grid, it ends at the first
+    time step after it.)
+
+    Parameters
+    ----------
+    t1 : np.ndarray
+        The first time array.
+    t2 : np.ndarray
+        The second time array.
+
+    Returns
+    -------
+    np.ndarray
+        The common time array.
+
+    Raises
+    ------
+    ValueError
+        When either time array has fewer than 2 elements
+    """
     hlp.assert_1D_numpy_array(t1)
     hlp.assert_1D_numpy_array(t2)
 
@@ -2095,11 +2124,14 @@ def _align_two_time_arrays(t1: np.ndarray, t2: np.ndarray) -> np.ndarray:
     tmax2 = t2[-1]
 
     dt = min(dt1, dt2)  # use the smaller time interval of the two time array
-    n_time = int(np.ceil(max(tmax1, tmax2) / dt))
-    tmax = dt * n_time  # use the larger end time of the two as the end time
+    t_start = min(t1[0], t2[0])  # use the earlier start time of the two
+    t_end = max(tmax1, tmax2)  # use the later end time of the two
 
-    t_output = np.linspace(dt, tmax, num=n_time)
-    return t_output  # noqa: RET504
+    # The small tolerance keeps floating-point rounding (a number of time
+    # steps slightly above a whole number, such as 2.0000000000000004) from
+    # adding a time step past `t_end`
+    n_time = int(np.ceil((t_end - t_start) / dt - 1e-6)) + 1
+    return t_start + dt * np.arange(n_time)
 
 
 def _get_freq_interval(
