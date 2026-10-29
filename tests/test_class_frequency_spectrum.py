@@ -27,3 +27,12 @@ def test_plot() -> None:
     fs = FS(txt_filename, fmin=0.1, fmax=2.5, n_pts=20, log_scale=False)
     _, ax = fs.plot()
     assert ax.title.get_text() == os.path.split(txt_filename)[1]
+
+
+def test_get_f0__peak_at_the_second_to_last_frequency() -> None:
+    # The end of an amplification function that rises to its first peak at
+    # 29.9 Hz, the second-to-last frequency
+    freq = np.array([29.8, 29.85, 29.9, 29.95])
+    ampl = np.array([4.8853, 4.8856, 4.8860, 4.8856])
+    fs = FS(np.column_stack((freq, ampl)))
+    assert fs.get_f0() == pytest.approx(29.9, abs=1e-9)

@@ -306,7 +306,9 @@ class Vs_Profile:
         freq_resolution : float, default=0.05
             Frequency resolution of the frequency spectrum.
         fmax : float, default=30.0
-            Maximum frequency of interest.
+            Maximum frequency of interest. The frequencies are from
+            ``freq_resolution`` up to ``fmax`` (included if it is a multiple of
+            ``freq_resolution``), in steps of ``freq_resolution``.
 
         Returns
         -------
@@ -345,7 +347,9 @@ class Vs_Profile:
         freq_resolution : float, default=0.05
             Frequency resolution of the frequency spectrum.
         fmax : float, default=30.0
-            Maximum frequency of interest.
+            Maximum frequency of interest. The frequencies are from
+            ``freq_resolution`` up to ``fmax`` (included if it is a multiple of
+            ``freq_resolution``), in steps of ``freq_resolution``.
 
         Returns
         -------

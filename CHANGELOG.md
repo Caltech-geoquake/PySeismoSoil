@@ -14,6 +14,16 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `linear_tf()`, and so `Vs_Profile.get_ampl_function()` and
+    `Vs_Profile.get_transfer_function()`, now return frequencies up to `fmax`:
+    with the defaults (`fmax=30`, `freq_resolution=0.05`), 600 frequencies
+    ending at 30 Hz, instead of 599 ending at 29.95 Hz.
+    `Vs_Profile.get_f0_RO()` and `get_f0_BH()` now also look at 30 Hz. The
+    transfer function that `linear_site_resp()` returns (and that
+    `Linear_Simulation` keeps) can also have one more frequency, above the
+    highest frequency of the input motion. This changes the output motions only
+    by rounding errors, except for very short input motions (such as 0.5 s)
+    (#98)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +42,16 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `find_f0()` (and so `Frequency_Spectrum.get_f0()`,
+    `Vs_Profile.get_f0_RO()`, and `Vs_Profile.get_f0_BH()`) returning the last
+    frequency instead of the peak when the first peak is at the second-to-last
+    frequency, returning the first frequency when the spectrum dips slightly
+    (or is flat) at the start before it rises to its first peak, and raising
+    `UnboundLocalError` for a spectrum with one frequency (#94)
+  - The frequency array of `linear_tf()` stopping one step short of `fmax` for
+    many inputs, including the defaults (`fmax=30`, `freq_resolution=0.05`),
+    because `np.floor_divide(fmax, freq_resolution)` rounds down the exact
+    quotient of the binary floats (599 for 30 / 0.05) (#98)
 
 ## [0.7.1] - 2026-10-11
 

@@ -205,6 +205,62 @@ def test_find_f0() -> None:
     assert f0_decr == pytest.approx(0.1, abs=1e-7)  # monotonically decreasing
 
 
+@pytest.mark.parametrize(
+    ('freq', 'ampl', 'f0_benchmark'),
+    [
+        pytest.param(
+            [0.1, 0.2, 0.3],
+            [1, 3, 2],
+            0.2,
+            id='peak_at_the_second_of_3_points',
+        ),
+        pytest.param(
+            [1, 2, 3, 4],
+            [0.5, 1, 2, 1],
+            3,
+            id='peak_at_the_second_to_last_point',
+        ),
+        pytest.param(
+            [1, 2, 3, 4], [1, 0.9, 2, 1], 3, id='small_dip_at_the_start'
+        ),
+        pytest.param([1, 2, 3, 4], [1, 1, 2, 1], 3, id='flat_at_the_start'),
+        pytest.param([1, 2, 3, 4], [1, 2, 2, 1], 2, id='flat_peak'),
+        pytest.param([1], [2], 1, id='one_point'),
+    ],
+)
+def test_find_f0__initial_peak(
+        freq: list[float], ampl: list[float], f0_benchmark: float
+) -> None:
+    f0 = sr.find_f0(np.array([freq, ampl], dtype=float).T)
+    assert f0 == pytest.approx(f0_benchmark, abs=1e-7)
+
+
+@pytest.mark.parametrize(
+    ('fmax', 'freq_resolution', 'n_freq', 'last_freq'),
+    [
+        pytest.param(30, 0.05, 600, 30, id='defaults'),
+        pytest.param(30, 0.1, 300, 30, id='30_Hz_in_steps_of_0.1'),
+        pytest.param(10, 0.1, 100, 10, id='10_Hz_in_steps_of_0.1'),
+        pytest.param(20, 0.2, 100, 20, id='20_Hz_in_steps_of_0.2'),
+        pytest.param(15, 0.5, 30, 15, id='15_Hz_in_steps_of_0.5'),
+        # 0.3 / 0.1 is 2.9999999999999996
+        pytest.param(0.3, 0.1, 3, 0.3, id='quotient_just_below_3'),
+        pytest.param(10.07, 0.1, 100, 10, id='fmax_not_a_multiple'),
+    ],
+)
+def test_linear_tf__frequency_array_up_to_fmax(
+        fmax: float, freq_resolution: float, n_freq: int, last_freq: float
+) -> None:
+    vs_profile = np.array([[10.0, 0.0], [200.0, 1000.0]]).T
+    freq = sr.linear_tf(
+        vs_profile, show_fig=False, fmax=fmax, freq_resolution=freq_resolution
+    )[0]
+
+    # `freq_resolution`, 2 * `freq_resolution`, ..., up to `fmax`
+    assert len(freq) == n_freq
+    assert np.allclose(freq, np.linspace(freq_resolution, last_freq, n_freq))
+
+
 def test_get_xi_rho() -> None:
     vs = np.array([100, 300, 500, 700, 900])
     xi, rho = sr.get_xi_rho(vs, formula_type=1)
