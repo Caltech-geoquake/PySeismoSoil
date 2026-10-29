@@ -3,6 +3,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 import PySeismoSoil.helper_generic as hlp
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum as FS
@@ -27,3 +29,26 @@ def test_plot() -> None:
     fs = FS(txt_filename, fmin=0.1, fmax=2.5, n_pts=20, log_scale=False)
     _, ax = fs.plot()
     assert ax.title.get_text() == os.path.split(txt_filename)[1]
+
+
+@pytest.mark.parametrize(
+    'show_fig',
+    [
+        pytest.param(False, id='without_figure'),
+        pytest.param(True, id='with_figure'),
+    ],
+)
+def test_get_smoothed(*, show_fig: bool) -> None:
+    freq = np.logspace(-1, 1.5, num=200)  # log-spaced (`log_scale=True`)
+    fs = FS(np.column_stack((freq, 1.0 + freq)))
+    smoothed, fig, ax = fs.get_smoothed(show_fig=show_fig)
+
+    assert smoothed.shape == fs.spectrum.shape
+    # `log_scale` is `True` by default
+    assert np.array_equal(smoothed, fs.get_smoothed(log_scale=True)[0])
+    if show_fig:
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
+    else:
+        assert fig is None
+        assert ax is None
