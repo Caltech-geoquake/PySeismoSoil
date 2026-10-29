@@ -14,6 +14,16 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `Vs_Profile()` no longer converts the units of the numpy array that it is
+    given. Code that used the array in SI units after building a profile from
+    it with `damping_unit='%'` or `density_unit='g/cm^3'` needs to pass these
+    units again when it builds another profile from the array (as the demo
+    notebook `Demo_02_Vs_Profile.ipynb` now does) (#95)
+  - `Vs_Profile(add_halfspace=True)` now gives a new material number (the
+    largest one plus 1, as `Vs_Profile.truncate()` does) to the old last layer
+    when it has material number 0, because it is no longer the last layer. A
+    simulation with such a profile needs G/Gmax and damping curves (or
+    parameters) for this material number too (#106)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +42,20 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Vs_Profile()` converting the damping (`damping_unit='%'`) and density
+    (`density_unit='g/cm^3'`) units of a 5-column numpy array inside the
+    caller's array, so that a second profile from the same array converted them
+    twice, and raising a `TypeError` for an integer array. The private arrays
+    of the profile (`_thk`, `_vs`, etc.) were also views of the caller's array
+    instead of `vs_profile`, so changing that array afterwards changed the
+    results of `get_depth_array()` and `truncate()` (#95)
+  - `Vs_Profile.truncate()` changing the layer thicknesses of the original
+    profile (#75)
+  - `Vs_Profile.to_txt()` raising a `TypeError` with its default `precision` (a
+    tuple). It now accepts a tuple or a list (#63)
+  - `Vs_Profile(add_halfspace=True)` leaving material number 0 on the old last
+    layer, so the new profile failed the format check, e.g.,
+    `Vs_Profile(prof.vs_profile)` raised a `ValueError` (#106)
 
 ## [0.7.1] - 2026-10-11
 

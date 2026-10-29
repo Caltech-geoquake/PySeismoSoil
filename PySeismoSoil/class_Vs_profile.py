@@ -35,7 +35,9 @@ class Vs_Profile:
     ----------
     data : str | np.ndarray
         - If str: the full file name on the hard drive containing the data.
-        - If np.ndarray: the numpy array containing the Vs profile data.
+        - If np.ndarray: the numpy array containing the Vs profile data. It
+          can have an integer type, and it is not changed (the unit
+          conversions are done on a copy).
 
         The provided data needs to have either 2 or 5 columns.
 
@@ -64,7 +66,9 @@ class Vs_Profile:
     add_halfspace : bool, default=False
         If ``True``, add a "half space" (represented by a layer of 0 m
         thickness) at the bottom of the profile, if such a layer does not
-        already exist.
+        already exist. The half space has material number 0. If the layer above
+        it has material number 0 too, that layer gets a new material number
+        (the largest one plus 1), as in ``truncate()``.
     xi_rho_formula : Literal[1, 2, 3], default=3
         The formula identifier to determine damping and mass density. See the
         documentation of ``helper_site_response.get_xi_rho()`` for the
@@ -129,6 +133,10 @@ class Vs_Profile:
 
         hlp.check_Vs_profile_format(data_)
 
+        # A float copy, so that the unit conversions below don't change the
+        # caller's array, and work for an integer array
+        data_ = np.array(data_, dtype=float)
+
         if damping_unit not in {'1', '%'}:
             raise ValueError("`damping_unit` must be '1' or '%'.")
 
@@ -186,8 +194,7 @@ class Vs_Profile:
             if damping_unit == '%':
                 data_[:, 2] /= 100.0  # percent --> 1
 
-            material_number = data_[:, 4]
-            full_data = data_.copy()
+            full_data = data_
         else:
             raise ValueError(
                 'The dimension of the input data is wrong. It '
@@ -199,8 +206,16 @@ class Vs_Profile:
             half_space = last_row.copy()
             half_space[0] = 0  # set thickness to 0 meters
             half_space[4] = 0  # set material number to 0
+
+            # The old last layer is no longer the last layer, so it needs a
+            # positive material number (as in `truncate()`)
+            if full_data[-1, 4] == 0:
+                full_data[-1, 4] = np.max(full_data[:, 4]) + 1
+
             full_data = np.vstack((full_data, half_space))
-            thk, vs, xi, rho, material_number = full_data.T
+
+        # The private arrays are views of `self.vs_profile`
+        thk, vs, xi, rho, material_number = full_data.T
 
         self._thk = thk
         self._vs = vs
@@ -422,7 +437,8 @@ class Vs_Profile:
         Returns
         -------
         truncated : Vs_Profile
-            The truncated Vs profile.
+            The truncated Vs profile, as a new object. This profile is not
+            changed.
 
         Raises
         ------
@@ -435,17 +451,19 @@ class Vs_Profile:
         if Vs is None or Vs <= 0:
             raise ValueError('`Vs` needs to be a positive number.')
 
+        # Copies of the rows, so that changing the thickness of the last row
+        # below does not change this profile
         profile_ = []
         total_depth = 0
         for j in range(len(self._vs)):
             if total_depth + self._thk[j] >= depth:
                 last_thk = depth - total_depth
-                last_row = self.vs_profile[j, :]
+                last_row = self.vs_profile[j, :].copy()
                 last_row[0] = last_thk
                 profile_.append(last_row)
                 break
 
-            profile_.append(self.vs_profile[j, :])
+            profile_.append(self.vs_profile[j, :].copy())
             total_depth += self._thk[j]
         else:  # `depth` > total depth of the current profile
             last_thk = profile_[-1][0]  # thickness of the original last layer
@@ -711,7 +729,7 @@ class Vs_Profile:
             self,
             fname: str,
             sep: str = '\t',
-            precision: PrecisionSpecifiers = DEFAULT_PRECISION,
+            precision: PrecisionSpecifiers | list[str] = DEFAULT_PRECISION,
     ) -> None:
         r"""
         Write Vs profile to a text file.
@@ -722,21 +740,21 @@ class Vs_Profile:
             File name (including path).
         sep : str, default='\t'
             Delimiter for the output file.
-        precision : PrecisionSpecifiers, default=DEFAULT_PRECISION
-            A list of precision specifiers, each for the five columns of the Vs
-            profile. Default is ``DEFAULT_PRECISION``: '%.2f' for thickness and
-            Vs, '%.4g' for damping, '%.5g' for density, and '%d' for material
-            number.
+        precision : PrecisionSpecifiers | list[str], default=DEFAULT_PRECISION
+            A tuple or list of precision specifiers, each for the five columns
+            of the Vs profile. Default is ``DEFAULT_PRECISION``: '%.2f' for
+            thickness and Vs, '%.4g' for damping, '%.5g' for density, and '%d'
+            for material number.
 
         Raises
         ------
         TypeError
-            When ``precision`` is not a list
+            When ``precision`` is not a tuple or a list
         ValueError
             When the length of ``precision`` is not 5
         """
-        if not isinstance(precision, list):
-            raise TypeError('precision must be a list.')
+        if not isinstance(precision, (tuple, list)):
+            raise TypeError('precision must be a tuple or a list.')
 
         if len(precision) != hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
             raise ValueError('Length of precision must be 5.')
