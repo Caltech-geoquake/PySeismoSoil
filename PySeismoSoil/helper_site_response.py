@@ -2005,7 +2005,9 @@ def compare_two_accel(
 
     Both time histories are first linearly interpolated onto a common time
     array, which starts at the earlier start time of the two, has the smaller
-    time interval of the two, and ends at the later end time of the two.
+    time interval of the two, and ends at the later end time of the two. Where
+    this array goes beyond one record's time range, that record's first or last
+    value is repeated (as ``numpy.interp()`` does).
 
     Parameters
     ----------
