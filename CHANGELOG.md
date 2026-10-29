@@ -51,7 +51,10 @@
   - The frequency array of `linear_tf()` stopping one step short of `fmax` for
     many inputs, including the defaults (`fmax=30`, `freq_resolution=0.05`),
     because `np.floor_divide(fmax, freq_resolution)` rounds down the exact
-    quotient of the binary floats (599 for 30 / 0.05) (#98)
+    quotient of the binary floats (599 for 30 / 0.05). When `fmax` is smaller
+    than `freq_resolution` (an empty frequency array), `linear_tf()` (and so
+    `Vs_Profile.get_ampl_function()` and `get_transfer_function()`) now raises
+    a `ValueError` with a message, instead of an `UnboundLocalError` (#98)
 
 ## [0.7.1] - 2026-10-11
 

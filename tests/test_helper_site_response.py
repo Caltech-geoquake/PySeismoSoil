@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Any
 
@@ -259,6 +260,30 @@ def test_linear_tf__frequency_array_up_to_fmax(
     # `freq_resolution`, 2 * `freq_resolution`, ..., up to `fmax`
     assert len(freq) == n_freq
     assert np.allclose(freq, np.linspace(freq_resolution, last_freq, n_freq))
+
+
+@pytest.mark.parametrize(
+    ('fmax', 'freq_resolution'),
+    [
+        pytest.param(0.03, 0.05, id='fmax_below_freq_resolution'),
+        pytest.param(30, 31, id='freq_resolution_above_fmax'),
+    ],
+)
+def test_linear_tf__empty_frequency_array_raises_error(
+        fmax: float, freq_resolution: float
+) -> None:
+    vs_profile = np.array([[10.0, 0.0], [200.0, 1000.0]]).T
+    expected_message = (
+        f'`fmax` ({fmax}) must not be smaller than `freq_resolution` '
+        f'({freq_resolution}).'
+    )
+    with pytest.raises(ValueError, match=re.escape(expected_message)):
+        sr.linear_tf(
+            vs_profile,
+            show_fig=False,
+            fmax=fmax,
+            freq_resolution=freq_resolution,
+        )
 
 
 def test_get_xi_rho() -> None:

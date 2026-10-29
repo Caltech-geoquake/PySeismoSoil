@@ -1301,7 +1301,9 @@ def linear_tf(  # noqa: PLR0915
     freq_resolution : float, default=0.05
         Frequency resolution of the frequency spectrum.
     fmax : float, default=30.0
-        Maximum frequency of interest.
+        Maximum frequency of interest. The frequencies are from
+        ``freq_resolution`` up to ``fmax`` (included if it is a multiple of
+        ``freq_resolution``), in steps of ``freq_resolution``.
 
     Returns
     -------
@@ -1325,6 +1327,12 @@ def linear_tf(  # noqa: PLR0915
         Transfer function (complex-valued) with respect to borehole motion.
     f0_bh : float
         Fundamental frequency of rock outcrop amplification.
+
+    Raises
+    ------
+    ValueError
+        When ``fmax`` is smaller than ``freq_resolution``, so that the
+        frequency array would be empty
 
     Notes
     -----
@@ -1357,6 +1365,11 @@ def linear_tf(  # noqa: PLR0915
     # tolerance keeps a quotient just below a whole number, such as
     # 0.3 / 0.1 = 2.9999999999999996, from losing a frequency.)
     TF_size = int(np.floor(fmax / freq_resolution + 1e-6))
+    if TF_size < 1:
+        raise ValueError(
+            f'`fmax` ({fmax}) must not be smaller than `freq_resolution` '
+            f'({freq_resolution}).'
+        )
 
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
