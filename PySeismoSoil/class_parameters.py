@@ -215,7 +215,7 @@ class Parameter(collections.UserDict):
             self,
             figsize: tuple[float, float] | None = None,
             dpi: float = 100,
-            **kwargs_to_matplotlib: dict[Any, Any],  # noqa: ARG002
+            **kwargs_to_matplotlib: dict[Any, Any],
     ) -> tuple[Figure, list[Axes]]:
         """
         Plot G/Gmax and damping curves from the model parameters
@@ -250,13 +250,13 @@ class Parameter(collections.UserDict):
         fig = plt.figure(figsize=figsize, dpi=dpi)
         ax = [None, None]
         ax[0] = plt.subplot(121)
-        ax[0].semilogx(strain, GGmax)
+        ax[0].semilogx(strain, GGmax, **kwargs_to_matplotlib)
         ax[0].grid(ls=':')
         ax[0].set_xlabel('Strain [%]')
         ax[0].set_ylabel('G/Gmax')
 
         ax[1] = plt.subplot(122)
-        ax[1].semilogx(strain, damping)
+        ax[1].semilogx(strain, damping, **kwargs_to_matplotlib)
         ax[1].grid(ls=':')
         ax[1].set_xlabel('Strain [%]')
         ax[1].set_ylabel('Damping [%]')

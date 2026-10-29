@@ -186,6 +186,42 @@ def test_plot_curves() -> None:
     mkzp.plot_curves()
 
 
+@pytest.mark.parametrize(
+    'param',
+    [
+        pytest.param(
+            HH_Param({
+                'gamma_t': 1e-3,
+                'a': 100,
+                'gamma_ref': 1e-4,
+                'beta': 1,
+                's': 1,
+                'Gmax': 6e7,
+                'mu': 1,
+                'Tmax': 1e5,
+                'd': 1,
+            }),
+            id='HH',
+        ),
+        pytest.param(
+            MKZ_Param({'gamma_ref': 5e-4, 's': 0.9, 'beta': 1.2, 'Gmax': 1}),
+            id='MKZ',
+        ),
+    ],
+)
+def test_plot_curves__pass_kwargs_to_matplotlib(
+        param: HH_Param | MKZ_Param,
+) -> None:
+    _, ax = param.plot_curves(color='red', lw=5)
+
+    # The G/Gmax curve and the damping curve
+    lines = [line for ax_ in ax for line in ax_.get_lines()]
+    assert len(lines) == 2
+    assert {(line.get_color(), line.get_linewidth()) for line in lines} == {
+        ('red', 5)
+    }
+
+
 MultiLayerParamClass = type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer]
 
 

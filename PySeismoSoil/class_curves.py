@@ -757,7 +757,7 @@ class Multiple_Curves:
             ylabel: str | None = None,
             figsize: tuple[float, float] = (3, 3),
             dpi: float = 100,
-            **kwargs_to_matplotlib: dict[Any, Any],  # noqa: ARG002
+            **kwargs_to_matplotlib: dict[Any, Any],
     ) -> tuple[Figure, Axes]:
         """
         Plot multiple curves together on one figure.
@@ -814,9 +814,91 @@ class Multiple_Curves:
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
+                **kwargs_to_matplotlib,
             )
 
         return fig, ax
+
+
+def _get_curve_matrix(
+        curves: list[GGmax_Curve] | list[Damping_Curve],
+        filler_value: float,
+        *,
+        save_to_file: bool,
+        full_file_name: str | None,
+        sep: str,
+) -> np.ndarray:
+    """
+    Produce a "curve matrix" from G/Gmax curves or from damping curves.
+
+    This is the shared implementation of ``get_curve_matrix()`` of
+    ``Multiple_GGmax_Curves`` and ``Multiple_Damping_Curves`` (see their
+    docstrings for the format). The values of the other kind of curve (damping
+    for G/Gmax curves, and vice versa) are filled with ``filler_value``.
+
+    Parameters
+    ----------
+    curves : list[GGmax_Curve] | list[Damping_Curve]
+        The G/Gmax curves or the damping curves of each layer.
+    filler_value : float
+        A dummy value to fill all the curves of the other kind.
+    save_to_file : bool
+        Whether to save the "curve matrix" as a text file.
+    full_file_name : str | None
+        Full file name to save to the hard drive. It can be ``None`` if
+        ``save_to_file`` is ``False``.
+    sep : str
+        Delimiter to separate columns of data in the output file.
+
+    Returns
+    -------
+    curve_matrix : np.ndarray
+        The "curve matrix".
+
+    Raises
+    ------
+    ValueError
+        When ``save_to_file`` is ``True`` but ``full_file_name`` is ``None``
+    """
+    if save_to_file and full_file_name is None:
+        raise ValueError(
+            'Please provide `full_file_name` when `save_to_file` is True.'
+        )
+
+    # The curves with fewer points are interpolated at `max_length` strains
+    max_length = max(len(curve.strain) for curve in curves)
+
+    layers = []
+    for curve in curves:
+        is_GGmax = isinstance(curve, GGmax_Curve)
+        strain = curve.strain
+        values = curve.GGmax if is_GGmax else curve.damping
+        if len(strain) < max_length:
+            if np.min(strain) > 0:
+                strain_ = np.geomspace(
+                    np.min(strain), np.max(strain), max_length
+                )
+            else:  # `np.geomspace()` cannot start at 0, so keep 0 separately
+                positive = strain[strain > 0]
+                strain_ = np.concatenate((
+                    [0.0],
+                    np.geomspace(
+                        np.min(positive), np.max(strain), max_length - 1
+                    ),
+                ))
+
+            values = np.interp(strain_, strain, values)
+            strain = strain_
+
+        filler = np.ones_like(strain) * filler_value
+        GGmax, damping = (values, filler) if is_GGmax else (filler, values)
+        layers.append(np.column_stack((strain, GGmax, strain, damping)))
+
+    curve_matrix = np.column_stack(layers)
+    if save_to_file:
+        np.savetxt(full_file_name, curve_matrix, delimiter=sep)
+
+    return curve_matrix
 
 
 class Multiple_Damping_Curves(Multiple_Curves):
@@ -949,8 +1031,8 @@ class Multiple_Damping_Curves(Multiple_Curves):
             self,
             GGmax_filler_value: float = 1.0,
             *,
-            save_to_file: bool = False,  # noqa: ARG002
-            full_file_name: str | None = None,  # noqa: ARG002
+            save_to_file: bool = False,
+            full_file_name: str | None = None,
     ) -> np.ndarray:
         """
         Produce a full "curve matrix" based on the damping data defined in
@@ -966,46 +1048,37 @@ class Multiple_Damping_Curves(Multiple_Curves):
         Since this class only defines damping curves, not G/Gmax curves, G/Gmax
         will be filled with some dummy values.
 
+        If the curves have different numbers of points, each shorter curve is
+        interpolated at as many strains as the longest curve has, evenly spaced
+        in log scale between its minimum and maximum strains. (If its minimum
+        strain is 0, the first strain stays 0, and the others start from its
+        smallest positive strain.)
+
         Parameters
         ----------
         GGmax_filler_value : float, default=1.0
             A dummy value to fill all the G/Gmax curves.
         save_to_file : bool, default=False
-            Whether to save the "curve matrix" as a text file.
+            Whether to save the "curve matrix" as a text file. The file uses
+            the same delimiter (``sep``) as the "curve file" that this object
+            was read from, or a tab if this object was not read from a file.
         full_file_name : str | None, default=None
             Full file name to save to the hard drive. It can be ``None`` if
-            ``save_to_file`` is set to ``False``.
+            ``save_to_file`` is set to ``False``. If ``save_to_file`` is
+            ``True``, it must not be ``None`` (or a ``ValueError`` is raised).
 
         Returns
         -------
         curve_matrix : np.ndarray
             A matrix containing damping curves in the above-mentioned format.
         """  # noqa: E501
-        # lengths of strain array of each layer
-        lengths = [len(curve_.strain) for curve_ in self.curves]
-
-        max_length = np.max(lengths)
-
-        curve_matrix = None
-        for curve_ in self.curves:
-            strain = curve_.strain
-            if len(curve_.strain) == max_length:
-                strain_ = strain  # we can use the original strain array
-                damping_ = curve_.damping
-            else:  # otherwise we need a new strain array to match `max_length`
-                strain_ = np.geomspace(
-                    np.min(strain), np.max(strain), max_length
-                )
-                damping_ = np.interp(strain_, strain, curve_.damping)
-
-            GGmax = np.ones_like(strain_) * GGmax_filler_value
-            tmp_matrix = np.column_stack((strain_, GGmax, strain_, damping_))
-            if curve_matrix is None:
-                curve_matrix = tmp_matrix
-            else:
-                curve_matrix = np.column_stack((curve_matrix, tmp_matrix))
-
-        return curve_matrix
+        return _get_curve_matrix(
+            self.curves,
+            GGmax_filler_value,
+            save_to_file=save_to_file,
+            full_file_name=full_file_name,
+            sep=self._sep,
+        )
 
     def get_all_HH_x_params(
             self,
@@ -1418,8 +1491,8 @@ class Multiple_GGmax_Curves(Multiple_Curves):
             self,
             damping_filler_value: float = 1.0,
             *,
-            save_to_file: bool = False,  # noqa: ARG002
-            full_file_name: str | None = None,  # noqa: ARG002
+            save_to_file: bool = False,
+            full_file_name: str | None = None,
     ) -> np.ndarray:
         """
         Produce a full "curve matrix" based on the G/Gmax data defined in
@@ -1435,46 +1508,37 @@ class Multiple_GGmax_Curves(Multiple_Curves):
         Since this class only defines G/Gmax curves, not damping curves,
         damping values will be filled with some dummy values.
 
+        If the curves have different numbers of points, each shorter curve is
+        interpolated at as many strains as the longest curve has, evenly spaced
+        in log scale between its minimum and maximum strains. (If its minimum
+        strain is 0, the first strain stays 0, and the others start from its
+        smallest positive strain.)
+
         Parameters
         ----------
         damping_filler_value : float, default=1.0
             A dummy value to fill all the damping curves.
         save_to_file : bool, default=False
-            Whether to save the "curve matrix" as a text file.
+            Whether to save the "curve matrix" as a text file. The file uses
+            the same delimiter (``sep``) as the "curve file" that this object
+            was read from, or a tab if this object was not read from a file.
         full_file_name : str | None, default=None
             Full file name to save to the hard drive. It can be ``None`` if
-            ``save_to_file`` is set to ``False``.
+            ``save_to_file`` is set to ``False``. If ``save_to_file`` is
+            ``True``, it must not be ``None`` (or a ``ValueError`` is raised).
 
         Returns
         -------
         curve_matrix : np.ndarray
             A matrix containing G/Gmax curves in the above-mentioned format.
         """  # noqa: E501
-        # lengths of strain array of each layer
-        lengths = [len(curve_.strain) for curve_ in self.curves]
-
-        max_length = np.max(lengths)
-
-        curve_matrix = None
-        for curve_ in self.curves:
-            strain = curve_.strain
-            if len(curve_.strain) == max_length:
-                strain_ = strain  # we can use the original strain array
-                GGmax_ = curve_.GGmax
-            else:  # otherwise we need a new strain array to match `max_length`
-                strain_ = np.geomspace(
-                    np.min(strain), np.max(strain), max_length
-                )
-                GGmax_ = np.interp(strain_, strain, curve_.GGmax)
-
-            damping = np.ones_like(strain_) * damping_filler_value
-            tmp_matrix = np.column_stack((strain_, GGmax_, strain_, damping))
-            if curve_matrix is None:
-                curve_matrix = tmp_matrix
-            else:
-                curve_matrix = np.column_stack((curve_matrix, tmp_matrix))
-
-        return curve_matrix
+        return _get_curve_matrix(
+            self.curves,
+            damping_filler_value,
+            save_to_file=save_to_file,
+            full_file_name=full_file_name,
+            sep=self._sep,
+        )
 
 
 # A tuple of the G/Gmax curves and the damping curves of the same soil layers
