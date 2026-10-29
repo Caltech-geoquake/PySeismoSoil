@@ -227,9 +227,9 @@ class Frequency_Spectrum:
             win_len: int = 15,
             *,
             show_fig: bool = False,
-            log_scale: bool,
+            log_scale: bool = True,
             **kwargs: dict[Any, Any],
-    ) -> tuple[np.ndarray | None, Figure, Axes]:
+    ) -> tuple[np.ndarray, Figure | None, Axes | None]:
         """
         Smooth the spectrum by calculating the convolution of the raw signal
         and the smoothing window.
@@ -241,7 +241,7 @@ class Frequency_Spectrum:
             smoothing.
         show_fig : bool, default=False
             Whether to show a before/after figure.
-        log_scale : bool
+        log_scale : bool, default=True
             Whether the frequency spacing of this frequency spectrum is in log
             scale (otherwise, linear scale). If this argument is incorrect, it
             could lead to strange smoothing results.
@@ -251,12 +251,14 @@ class Frequency_Spectrum:
 
         Returns
         -------
-        sm : np.ndarray | None
+        sm : np.ndarray
             The smoothed signal. 1D numpy array.
-        fig : Figure
-            The figure object being created or being passed into this function.
-        ax : Axes
-            The axes object being created or being passed into this function.
+        fig : Figure | None
+            The figure object being created, or ``None`` if ``show_fig`` is
+            ``False``.
+        ax : Axes | None
+            The axes object being created, or ``None`` if ``show_fig`` is
+            ``False``.
         """
         sm = sig.log_smooth(
             self.spectrum,
@@ -277,6 +279,9 @@ class Frequency_Spectrum:
             ax.set_xlabel('Frequency [Hz]')
             ax.set_ylabel('Spectrum')
             ax.legend(loc='best')
+        else:
+            fig = None
+            ax = None
 
         return sm, fig, ax
 

@@ -14,6 +14,9 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `log_scale` of `Frequency_Spectrum.get_smoothed()` now defaults to `True`
+    (the same default as in `Frequency_Spectrum()`), so it no longer needs to
+    be passed (#68)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +35,13 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `taper_Tukey()` raising an `AttributeError` on SciPy 1.13 and later (which
+    removed `scipy.signal.tukey()`), which also broke `taper=True` of
+    `amplify_motion()` and `Ground_Motion.amplify_by_tf()`, and raising a
+    `TypeError` for 2-column input (#69)
+  - `Frequency_Spectrum.get_smoothed()` raising an `UnboundLocalError` unless
+    `show_fig=True`. It now returns `None` as the figure and axes when
+    `show_fig` is `False` (#68)
 
 ## [0.7.1] - 2026-10-11
 

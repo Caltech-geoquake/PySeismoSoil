@@ -605,12 +605,16 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
     input_signal : np.ndarray
         Signal to be tapered. Can be 1D numpy array or 2D array with 2 columns.
     width : float, default=0.05
-        The width of the Tukey window.
+        The width of the Tukey window. The two tapered (cosine-shaped) ends
+        together span ``width / 2`` of the signal length (``width / 4`` at each
+        end), i.e., ``width / 2`` is the ``alpha`` parameter of
+        ``scipy.signal.windows.tukey()``.
 
     Returns
     -------
     output : np.ndarray
-        The tapered signal.
+        The tapered signal. If ``input_signal`` has 2 columns, the 0th column
+        (time) is unchanged.
 
     Raises
     ------
@@ -624,11 +628,12 @@ def taper_Tukey(input_signal: np.ndarray, width: float = 0.05) -> np.ndarray:
         time_array = input_signal[:, 0]
         second_col = input_signal[:, 1]
         ll = len(time_array)
-        output_second_col = second_col * scipy.signal.tukey(ll, width / 2.0)
-        output = np.column_stack(time_array, output_second_col)
+        window = scipy.signal.windows.tukey(ll, alpha=width / 2.0)
+        output = np.column_stack((time_array, second_col * window))
     elif input_signal.ndim == 1:
         ll = len(input_signal)
-        output = input_signal * scipy.signal.tukey(ll, width / 2.0)
+        window = scipy.signal.windows.tukey(ll, alpha=width / 2.0)
+        output = input_signal * window
     else:
         raise TypeError(
             '`input_signal` should be either 1 or 2 dimensional. '
