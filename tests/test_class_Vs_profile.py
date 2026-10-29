@@ -1,5 +1,5 @@
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -69,6 +69,12 @@ def _replace(
             id='NaN_values',
         ),
         pytest.param(
+            np.array([['10', 'x'], ['0', '800']]),
+            ValueError,
+            'should only contain numeric elements',
+            id='non_numeric_values',
+        ),
+        pytest.param(
             _replace(DATA_2_COLUMNS, (2, 0), 0),
             ValueError,
             'should be all positive, except',
@@ -133,6 +139,77 @@ def test_Vs_profile_format(
         Vs_Profile(data)
 
 
+# The profiles are transposed in the test.
+@pytest.mark.parametrize(
+    ('data', 'units', 'damping', 'density'),
+    [
+        pytest.param(
+            [[10, 0], [200, 500], [5, 3], [1.8, 2.0], [1, 0]],
+            {'damping_unit': '%', 'density_unit': 'g/cm^3'},
+            [0.05, 0.03],
+            [1800, 2000],
+            id='float_array',
+        ),
+        pytest.param(
+            [[10, 0], [200, 500], [5, 3], [1800, 2000], [1, 0]],
+            {'damping_unit': '%'},
+            [0.05, 0.03],
+            [1800, 2000],
+            id='integer_array_in_kg_per_m3',
+        ),
+        pytest.param(
+            [[10, 0], [200, 500], [5, 3], [2, 2], [1, 0]],
+            {'damping_unit': '%', 'density_unit': 'g/cm^3'},
+            [0.05, 0.03],
+            [2000, 2000],
+            id='integer_array_in_g_per_cm3',
+        ),
+    ],
+)
+def test_init__unit_conversion_does_not_change_the_input_array(
+        data: list[list[float]],
+        units: dict[str, str],
+        damping: list[float],
+        density: list[float],
+) -> None:
+    data_ = np.array(data).T
+    data_before = data_.copy()
+    prof_1 = Vs_Profile(data_, **units)
+    prof_2 = Vs_Profile(data_, **units)  # from the same array again
+
+    # The units are converted in a copy, so the input array is not changed,
+    # and the second profile is the same as the first one
+    assert np.array_equal(data_, data_before)
+    for prof in (prof_1, prof_2):
+        assert np.allclose(prof.vs_profile[:, 2], damping)
+        assert np.allclose(prof.vs_profile[:, 3], density)
+
+
+@pytest.mark.parametrize(
+    'data',
+    [
+        pytest.param(DATA_2_COLUMNS, id='2_columns'),
+        pytest.param(DATA_5_COLUMNS, id='5_columns'),
+    ],
+)
+def test_init__changing_the_input_array_does_not_change_the_profile(
+        data: np.ndarray,
+) -> None:
+    data_ = data.copy()
+    prof = Vs_Profile(data_)
+    vs_profile = prof.vs_profile.copy()
+    data_[:] = 999.0
+
+    # The private arrays are the columns of `vs_profile`, not views of `data_`
+    assert np.array_equal(prof.vs_profile, vs_profile)
+    private_arrays = ['_thk', '_vs', '_xi', '_rho', '_material_number']
+    for j, name in enumerate(private_arrays):
+        assert np.array_equal(getattr(prof, name), vs_profile[:, j])
+
+    # The thicknesses are 10, 20, 30, and 0 m
+    assert np.allclose(prof.get_depth_array(), [0, 10, 30, 60])
+
+
 def test_plot(prof: Vs_Profile) -> None:
     prof.plot(c='r', ls='--')
 
@@ -143,20 +220,42 @@ def test_plot(prof: Vs_Profile) -> None:
 
 
 @pytest.mark.parametrize(
-    ('file_name', 'n_layer', 'has_halfspace'),
+    ('data', 'n_layer', 'material_number', 'has_halfspace'),
     [
         pytest.param(
-            'sample_profile.txt', 12, True, id='already_a_half_space'
+            np.genfromtxt(f_dir / 'sample_profile.txt'),
+            12,
+            list(range(1, 14)),
+            True,
+            id='already_a_half_space',
         ),
         pytest.param(
-            'two_column_data_example.txt', 15, False, id='no_half_space'
+            np.genfromtxt(f_dir / 'two_column_data_example.txt'),
+            15,
+            [*range(1, 16), 0],
+            False,
+            id='no_half_space',
+        ),
+        pytest.param(
+            np.array([
+                [10, 200, 0.05, 1800, 1],
+                [20, 300, 0.05, 1800, 0],  # finite, with material number 0
+            ]),
+            2,
+            [1, 2, 0],  # the old last layer gets a new material number
+            False,
+            id='no_half_space__last_layer_with_material_number_0',
         ),
     ],
 )
 def test_add_halfspace(
-        file_name: str, n_layer: int, *, has_halfspace: bool
+        data: np.ndarray,
+        n_layer: int,
+        material_number: list[int],
+        *,
+        has_halfspace: bool,
 ) -> None:
-    data = np.genfromtxt(str(f_dir / file_name))
+    data_before = data.copy()
     prof_1 = Vs_Profile(data, add_halfspace=False)
     prof_2 = Vs_Profile(data, add_halfspace=True)
 
@@ -166,6 +265,13 @@ def test_add_halfspace(
     assert prof_2._thk[-2] != 0  # assert only one "halfspace"
     assert prof_1.n_layer == n_layer
     assert prof_1.n_layer == prof_2.n_layer
+    assert np.array_equal(prof_2.vs_profile[:, 4], material_number)
+    assert np.array_equal(prof_2._material_number, material_number)
+    assert np.array_equal(data, data_before)
+
+    # The new profile is a valid Vs profile
+    prof_3 = Vs_Profile(prof_2.vs_profile)
+    assert np.array_equal(prof_3.vs_profile, prof_2.vs_profile)
 
 
 def test_vs30(prof: Vs_Profile) -> None:
@@ -267,8 +373,15 @@ def test_truncate(
         data: list[list[float]], depth: float, benchmark: list[list[float]]
 ) -> None:
     prof = Vs_Profile(np.array(data).T)
+    vs_profile = prof.vs_profile.copy()
+    z_max = prof.z_max
     new_prof = prof.truncate(depth=depth, Vs=2000)
     assert np.allclose(new_prof.vs_profile[:, :2], np.array(benchmark).T)
+
+    # The original profile is not changed
+    assert np.array_equal(prof.vs_profile, vs_profile)
+    assert np.array_equal(prof._thk, vs_profile[:, 0])
+    assert prof.z_max == z_max
 
 
 def test_query_Vs_at_depth__query_numpy_array() -> None:
@@ -477,3 +590,56 @@ def test_query_Vs_given_thk__using_a_scalar_as_thk() -> None:
     )
     compare = np.allclose(result.vs_profile, benchmark.vs_profile)
     assert compare
+
+
+@pytest.mark.parametrize(
+    ('precision_kwargs', 'first_line'),
+    [
+        pytest.param({}, '10.00\t100.00\t0.01\t1600\t1', id='default'),
+        pytest.param(
+            {'precision': ('%.1f', '%.1f', '%.3f', '%.1f', '%d')},
+            '10.0\t100.0\t0.010\t1600.0\t1',
+            id='tuple',
+        ),
+        pytest.param(
+            {'precision': ['%.1f', '%.1f', '%.3f', '%.1f', '%d']},
+            '10.0\t100.0\t0.010\t1600.0\t1',
+            id='list',
+        ),
+    ],
+)
+def test_to_txt(
+        tmp_path: Path,
+        precision_kwargs: dict[str, Sequence[str]],
+        first_line: str,
+) -> None:
+    prof = Vs_Profile(DATA_5_COLUMNS)
+    file_name = tmp_path / 'profile.txt'
+    prof.to_txt(str(file_name), **precision_kwargs)
+
+    assert file_name.read_text(encoding='utf-8').splitlines()[0] == first_line
+    prof_from_file = Vs_Profile(str(file_name))
+    assert np.allclose(prof_from_file.vs_profile, prof.vs_profile)
+
+
+@pytest.mark.parametrize(
+    ('precision', 'exception', 'match'),
+    [
+        pytest.param('%.2f', TypeError, 'must be a tuple or a list', id='str'),
+        pytest.param(
+            ('%.2f', '%.2f', '%.4g', '%.5g'),
+            ValueError,
+            'Length of precision must be 5',
+            id='4_specifiers',
+        ),
+    ],
+)
+def test_to_txt__invalid_precision(
+        tmp_path: Path,
+        precision: str | tuple[str, ...],
+        exception: type[Exception],
+        match: str,
+) -> None:
+    prof = Vs_Profile(DATA_5_COLUMNS)
+    with pytest.raises(exception, match=match):
+        prof.to_txt(str(tmp_path / 'profile.txt'), precision=precision)
