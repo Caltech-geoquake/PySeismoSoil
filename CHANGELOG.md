@@ -32,6 +32,12 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `helper_hh_calibration.produce_Darendeli_curves()` raising a `TypeError`
+    when `strain_in_pct` is not given (the default, `None`, now uses
+    `numpy.geomspace(1e-4, 10, 400)` as documented) (#87)
+  - `helper_hh_calibration._calc_vertical_stress()` setting a 0 m last
+    thickness to 1 m in the caller's array (it now does this on a copy), and
+    its density-unit warning naming `__calc_vertical_stress()` (#120)
 
 ## [0.7.1] - 2026-10-11
 
