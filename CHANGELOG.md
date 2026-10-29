@@ -32,6 +32,11 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - The band-pass and band-stop filters (`helper_signal_processing.bandpass()`
+    and `bandstop()`, and the `Ground_Motion` methods) raising Python's generic
+    unpacking error, instead of their own `TypeError` or `ValueError` that
+    explains the problem, when `cutoff_freq` is a scalar or does not have 2
+    values (#67)
 
 ## [0.7.1] - 2026-10-11
 

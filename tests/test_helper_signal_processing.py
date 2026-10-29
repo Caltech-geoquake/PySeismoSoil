@@ -1,7 +1,9 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
@@ -79,3 +81,51 @@ def test_sine_smooth__constant_spectrum() -> None:
     assert np.allclose(smoothed, smoothed[0])
 
     assert np.allclose(smoothed, 2.0, rtol=0.01)
+
+
+@pytest.mark.parametrize(
+    'filter_signal',
+    [
+        pytest.param(sig.bandpass, id='bandpass'),
+        pytest.param(sig.bandstop, id='bandstop'),
+    ],
+)
+@pytest.mark.parametrize(
+    ('cutoff_freq', 'error', 'match'),
+    [
+        pytest.param(
+            5.0,
+            TypeError,
+            '`cutoff_freq` must be a list, tuple, or numpy array.',
+            id='scalar',
+        ),
+        pytest.param(
+            (1.0, 2.0, 3.0),
+            ValueError,
+            '`cutoff_freq` must have length 2.',
+            id='length_3',
+        ),
+        pytest.param(
+            [1.0],
+            ValueError,
+            '`cutoff_freq` must have length 2.',
+            id='length_1',
+        ),
+        pytest.param(
+            np.array([2.0, 1.0]),
+            ValueError,
+            '`cutoff_freq` must be two values from smaller to larger.',
+            id='descending',
+        ),
+    ],
+)
+def test_band_filters__invalid_cutoff_freq(
+        filter_signal: Callable[..., np.ndarray],
+        cutoff_freq: float | tuple[float, ...] | list[float] | np.ndarray,
+        error: type[Exception],
+        match: str,
+) -> None:
+    t = np.linspace(0, 10, 1001)
+    signal = np.column_stack((t, np.sin(t)))
+    with pytest.raises(error, match=match):
+        filter_signal(signal, cutoff_freq)

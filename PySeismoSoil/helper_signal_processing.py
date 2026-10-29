@@ -204,7 +204,6 @@ def _filter_kernel(  # noqa: C901, PLR0915
         padlen: int | None = None,
 ) -> np.ndarray:
     if filter_type in {'bandpass', 'bandstop'}:
-        fmin, fmax = cutoff_freq
         if not isinstance(cutoff_freq, (list, tuple, np.ndarray)):
             raise TypeError(
                 '`cutoff_freq` must be a list, tuple, or numpy array.'
@@ -220,6 +219,8 @@ def _filter_kernel(  # noqa: C901, PLR0915
             raise ValueError(
                 '`cutoff_freq` must be two values from smaller to larger.'
             )
+
+        fmin, fmax = cutoff_freq
 
     elif filter_type in {'highpass', 'lowpass'}:
         if not isinstance(cutoff_freq, (float, int, np.number)):
