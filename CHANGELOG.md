@@ -14,6 +14,11 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `Nonlinear_Simulation()` now raises a `TypeError` when `G_param` or
+    `xi_param` is not an `HH_Param_Multi_Layer` object, such as an
+    `MKZ_Param_Multi_Layer` object, which the docstrings said it accepted. The
+    nonlinear kernel (NLHH) reads only HH parameters, so `run()` failed with
+    MKZ parameters (#124)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +37,23 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Nonlinear_Simulation.run()` not checking the exit status of the nonlinear
+    kernel: when the kernel failed, `run()` read its empty output files and
+    failed with an unrelated `ValueError`. It now raises a `ValueError` that
+    includes the error output of the kernel (such as
+    `forrtl: severe (24): end-of-file during read`), and keeps the files of the
+    simulation in `sim_dir`. `Batch_Simulation(catch_errors=True)` still
+    catches this error (#124)
+  - `Nonlinear_Simulation.run()` leaving the working directory changed to
+    `sim_dir` when it failed. With `Batch_Simulation(catch_errors=True)`, the
+    next simulations then created their directories inside that `sim_dir`,
+    unless `base_output_dir` was an absolute path (#124)
+  - `Batch_Simulation.run()` adding an `output_dir` (or `sim_dir`) key to the
+    caller's `options` dict (with `parallel=False`), so that using the dict
+    again for a nonlinear batch raised a `TypeError` (#101)
+  - `Simulation_Results.plot(save_fig=True, output_dir=...)` saving the
+    max-profiles figure to the `output_dir` of the object instead of the given
+    `output_dir` (and failing when that directory did not exist) (#61)
 
 ## [0.7.1] - 2026-10-11
 
