@@ -1,12 +1,17 @@
 from pathlib import Path
+from sys import executable
 
 import numpy as np
 import pytest
 from test_class_ground_motion import nearly_identical
 
+from PySeismoSoil import class_simulation
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
 from PySeismoSoil.class_ground_motion import Ground_Motion
-from PySeismoSoil.class_parameters import HH_Param_Multi_Layer
+from PySeismoSoil.class_parameters import (
+    HH_Param_Multi_Layer,
+    MKZ_Param_Multi_Layer,
+)
 from PySeismoSoil.class_simulation import (
     Equiv_Linear_Simulation,
     Linear_Simulation,
@@ -71,6 +76,145 @@ def test_equiv_linear() -> None:
     # FFT of scipy and MATLAB are different, hence a lenient tolerance
     tol = 0.01
     assert np.allclose(max_v, max_v_benchmark, rtol=tol, atol=0.0)
+
+
+# The error output of the nonlinear kernel (NLHH) when it cannot read a
+# parameter file (for example, of MKZ parameters, which have 4 rows per layer,
+# while NLHH reads 9 HH parameters per layer)
+KERNEL_ERROR = (
+    'forrtl: severe (24): end-of-file during read, unit 27, file HH_G.dat'
+)
+
+
+def fail_next_kernel_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Make the next run of the nonlinear kernel fail (and only the next one).
+
+    Instead of the kernel, a Python script runs with the same arguments of
+    ``subprocess.run()``, so that its output is shown or captured in the same
+    way. Like NLHH, it shows its progress on stdout and its error on stderr
+    (``KERNEL_ERROR``), and exits with status 24.
+    """
+    run = class_simulation.subprocess.run
+    script = (
+        'import sys; '
+        "print('|---------------- Calculating --------------------|'); "
+        f'sys.stderr.write({KERNEL_ERROR!r}); '
+        'sys.exit(24)'
+    )
+
+    def run_failing_kernel(_args: str, **kwargs: object) -> object:
+        monkeypatch.setattr(class_simulation.subprocess, 'run', run)
+        return run([executable, '-c', script], **kwargs)
+
+    monkeypatch.setattr(class_simulation.subprocess, 'run', run_failing_kernel)
+
+
+@pytest.mark.parametrize(
+    ('MKZ_param_names', 'name_in_error'),
+    [
+        pytest.param(['G_param', 'xi_param'], 'G_param', id='both'),
+        pytest.param(['G_param'], 'G_param', id='G_param'),
+        pytest.param(['xi_param'], 'xi_param', id='xi_param'),
+    ],
+)
+def test_nonlinear_init__MKZ_params_raise_TypeError(
+        MKZ_param_names: list[str],
+        name_in_error: str,
+) -> None:
+    input_motion = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='m')
+    soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))  # 5 materials
+    params = {
+        'G_param': HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt')),
+        'xi_param': HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt')),
+    }
+    for name in MKZ_param_names:
+        params[name] = MKZ_Param_Multi_Layer([
+            {'gamma_ref': 0.0005 * (j + 1), 's': 0.9, 'beta': 1.2, 'Gmax': 1.0}
+            for j in range(5)
+        ])
+
+    # The nonlinear kernel would fail to read MKZ parameters in `run()`
+    expected = (
+        f'`{name_in_error}` must be an `HH_Param_Multi_Layer` object, not'
+        ' `MKZ_Param_Multi_Layer`: the nonlinear kernel supports only HH'
+        ' parameters.'
+    )
+    with pytest.raises(TypeError, match=expected):
+        Nonlinear_Simulation(soil_profile, input_motion, **params)
+
+
+@pytest.mark.parametrize('verbose', [True, False])
+def test_nonlinear_run__kernel_failure_raises_ValueError(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+        *,
+        verbose: bool,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
+    input_motion = Ground_Motion(accel_data[::50], unit='gal')
+    soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    sim = Nonlinear_Simulation(
+        soil_profile,
+        input_motion,
+        G_param=HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt')),
+        xi_param=HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt')),
+    )
+    fail_next_kernel_run(monkeypatch)
+    with pytest.raises(ValueError, match='failed with exit status 24') as e:
+        sim.run(sim_dir='nonlinear_sim', verbose=verbose)
+
+    # The error has the error output of the kernel (instead of an unrelated
+    # error from reading its empty output files)
+    assert str(e.value).endswith(
+        f'Error output of the kernel:\n{KERNEL_ERROR}'
+    )
+
+    # When `verbose`, the progress of the kernel is still shown as it runs
+    if verbose:
+        assert 'Calculating' in capfd.readouterr().out
+
+    # The working directory is restored, and the files of the simulation (such
+    # as the input files of the kernel) are kept
+    assert Path.cwd() == tmp_path
+    assert (tmp_path / 'nonlinear_sim' / 'HH_G.dat').is_file()
+
+
+def test_nonlinear_run__kernel_stderr_is_shown_after_success(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
+    input_motion = Ground_Motion(accel_data[::50], unit='gal')
+    soil_profile = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    sim = Nonlinear_Simulation(
+        soil_profile,
+        input_motion,
+        G_param=HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt')),
+        xi_param=HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt')),
+    )
+
+    # The kernel runs as usual, and also writes a note to stderr
+    run = class_simulation.subprocess.run
+    note = 'A note from the Fortran runtime\n'
+
+    def run_kernel_with_a_note(args: str, **kwargs: object) -> object:
+        kernel = run(args, **kwargs)
+        kernel.stderr += note.encode()
+        return kernel
+
+    monkeypatch.setattr(
+        class_simulation.subprocess, 'run', run_kernel_with_a_note
+    )
+    sim.run(sim_dir='nonlinear_sim', verbose=True)
+
+    # The kernel's stderr is captured (for the error message if the kernel
+    # fails), but still shown after it succeeds
+    assert note in capfd.readouterr().err
 
 
 def test_nonlinear_init() -> None:

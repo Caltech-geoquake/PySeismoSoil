@@ -133,10 +133,11 @@ class Batch_Simulation:
             The parent directory for saving the output files/figures of the
             current batch.
         catch_errors : bool, default=False
-            Optionally allows for ValueErrors to be caught during batch
-            simulation, so a single error simulation doesn't interrupt the
-            running of others in the batch. Simulations that have caught errors
-            will be replaced by ``None`` in the results list.
+            Optionally allows for ValueErrors (including a failure of the
+            nonlinear kernel) to be caught during batch simulation, so a single
+            error simulation doesn't interrupt the running of others in the
+            batch. Simulations that have caught errors will be replaced by
+            ``None`` in the results list.
         verbose : bool, default=True
             Whether to print the parallel computing progress info.
         options : dict[str, Any] | None, default=None
@@ -232,19 +233,21 @@ class Batch_Simulation:
         i, other_params = all_params  # unpack
         n_digits, base_output_dir, catch_errors, options = other_params
         output_dir = str(Path(base_output_dir) / str(i).rjust(n_digits, '0'))
+
+        # A new dict, so that the caller's `options` stays unchanged
         if self.sim_type == Nonlinear_Simulation:
-            options.update({'sim_dir': output_dir})
+            sim_options = {**options, 'sim_dir': output_dir}
         else:  # linear or equivalent linear
-            options.update({'output_dir': output_dir})
+            sim_options = {**options, 'output_dir': output_dir}
 
         sim_obj = self.list_of_simulations[i]
         if catch_errors:
             try:
-                sim_result = sim_obj.run(**options)
-            except ValueError:
+                sim_result = sim_obj.run(**sim_options)
+            except ValueError as e:
                 sim_result = None
-                print('Warning: ValueError encountered.')
+                print(f'Warning: ValueError encountered: {e}')
         else:
-            sim_result = sim_obj.run(**options)
+            sim_result = sim_obj.run(**sim_options)
 
         return sim_result

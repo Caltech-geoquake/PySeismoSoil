@@ -389,7 +389,7 @@ class Simulation_Results:
                 / f'{self.motion_name}_ground_motions.png'
             )
             fn_fig2 = (
-                pathlib.Path(self.output_dir)
+                pathlib.Path(output_dir)
                 / f'{self.motion_name}_max_profiles.png'
             )
             fig1.savefig(fn_fig1, dpi=dpi, bbox_inches='tight')

@@ -1,8 +1,10 @@
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
 import pytest
+from test_class_simulation import KERNEL_ERROR, fail_next_kernel_run
 
 from PySeismoSoil.class_batch_simulation import Batch_Simulation
 from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
@@ -132,3 +134,70 @@ def test_nonlinear() -> None:
     assert np.allclose(
         accel_out_0_non_par, accel_out_0_par, atol=0.0, rtol=1e-3
     )
+
+
+@pytest.mark.parametrize(
+    'make_sim',
+    [
+        pytest.param(Linear_Simulation, id='linear'),
+        pytest.param(
+            lambda prof, gm: Nonlinear_Simulation(
+                prof,
+                gm,
+                G_param=HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt')),
+                xi_param=HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt')),
+            ),
+            id='nonlinear',
+        ),
+    ],
+)
+def test_run__options_of_the_caller_are_unchanged(
+        tmp_path: Path,
+        make_sim: Callable[
+            [Vs_Profile, Ground_Motion],
+            Linear_Simulation | Nonlinear_Simulation,
+        ],
+) -> None:
+    accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
+    gm = Ground_Motion(accel_data[::50], unit='gal')  # for faster testing
+    prof = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    batch_sim = Batch_Simulation([make_sim(prof, gm), make_sim(prof, gm)])
+    options = {'show_fig': False, 'save_txt': False, 'verbose': False}
+    batch_sim.run(
+        parallel=False, base_output_dir=str(tmp_path), options=options
+    )
+
+    # The output directory of each simulation (`output_dir` or `sim_dir`) is
+    # not added to the dict, so it can be used again for another batch
+    assert options == {'show_fig': False, 'save_txt': False, 'verbose': False}
+
+
+def test_nonlinear__catch_errors_catches_a_kernel_failure(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    accel_data = np.genfromtxt(f_dir / 'sample_accel.txt')
+    gm = Ground_Motion(accel_data[::50], unit='gal')  # for faster testing
+    prof = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    hh_g = HH_Param_Multi_Layer(str(f_dir / 'HH_G_FKSH14.txt'))
+    hh_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
+    sim = Nonlinear_Simulation(prof, gm, G_param=hh_g, xi_param=hh_x)
+    batch_sim = Batch_Simulation([sim, sim])
+    fail_next_kernel_run(monkeypatch)  # only in the 1st simulation
+    sim_results = batch_sim.run(
+        base_output_dir='batch', catch_errors=True, options={'verbose': False}
+    )
+
+    # The failure of the kernel is a `ValueError`, so it is caught, and its
+    # message (with the error output of the kernel) is shown. Then the
+    # working directory is restored, so the 2nd simulation runs in its own
+    # directory.
+    assert sim_results[0] is None
+    warning = capsys.readouterr().out
+    assert 'Warning: ValueError encountered: The nonlinear kernel' in warning
+    assert KERNEL_ERROR in warning
+    assert sim_results[1] is not None
+    assert Path.cwd() == tmp_path
+    assert sorted(p.name for p in (tmp_path / 'batch').iterdir()) == ['0', '1']

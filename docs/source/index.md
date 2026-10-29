@@ -45,13 +45,14 @@ analysis.
   damping curves as "look up tables"), and iterates until the response and the
   soil properties converge. Suitable for moderate ground motions.
 - **Nonlinear simulations,** which utilizes advanced constitutive models and
-  propagates waves in the time domain. PySeismoSoil implements the hybrid
-  hyperbolic (HH) model
+  propagates waves in the time domain. The nonlinear kernel of PySeismoSoil
+  implements the hybrid hyperbolic (HH) model
   ([Shi & Asimaki, 2017](https://authors.library.caltech.edu/records/4naa9-fbd36)),
   which describes both the small-strain stiffness and the large-strain strength
-  from a velocity profile alone, or the MKZ (modified
+  from a velocity profile alone. The MKZ (modified
   [Kondner and Zelasko, 1963](https://www.scirp.org/reference/referencespapers?referenceid=2740984))
-  model.
+  model is available for curve fitting (e.g.,
+  `Damping_Calibration.get_H4_x_param()`), but not for nonlinear simulations.
 
 ### 1.2. Sediment velocity model (SVM)
 
