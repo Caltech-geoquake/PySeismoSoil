@@ -219,3 +219,14 @@ def test_fit_MKZ() -> None:
     r2_2 = stats.linregress(GGmax_2, GGmax_fitted_2)[2]
     assert r2_1 >= 0.99
     assert r2_2 >= 0.99
+
+
+def test_fit_H4_x_single_layer__input_array_unchanged() -> None:
+    strain_in_pct = np.geomspace(1e-4, 10, num=20)
+    damping_in_pct = np.linspace(1, 20, num=20)  # initial damping: 1%
+    damping_data_in_pct = np.column_stack((strain_in_pct, damping_in_pct))
+    damping_data_before = damping_data_in_pct.copy()
+    mkz.fit_H4_x_single_layer(damping_data_in_pct, pop_size=1, n_gen=1)
+
+    # The fit subtracts the initial damping from a copy of the data
+    assert np.array_equal(damping_data_in_pct, damping_data_before)

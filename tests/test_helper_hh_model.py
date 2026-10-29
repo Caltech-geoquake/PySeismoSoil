@@ -190,3 +190,14 @@ def test_deserialize_array_to_params__failure(
 ) -> None:
     with pytest.raises(exception, match=match):
         hh.deserialize_array_to_params(array)
+
+
+def test_fit_HH_x_single_layer__input_array_unchanged() -> None:
+    strain_in_pct = np.geomspace(1e-4, 10, num=20)
+    damping_in_pct = np.linspace(1, 20, num=20)  # initial damping: 1%
+    damping_data_in_pct = np.column_stack((strain_in_pct, damping_in_pct))
+    damping_data_before = damping_data_in_pct.copy()
+    hh.fit_HH_x_single_layer(damping_data_in_pct, pop_size=1, n_gen=1)
+
+    # The fit subtracts the initial damping from a copy of the data
+    assert np.array_equal(damping_data_in_pct, damping_data_before)

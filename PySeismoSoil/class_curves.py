@@ -71,7 +71,9 @@ class Curve:
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in
+        A copy of the data that the user passed in (not interpolated). The unit
+        of strain is percent (unit conversion happens internally if
+        applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -105,25 +107,29 @@ class Curve:
             data, '`curve`', ensure_non_negative=check_values
         )
 
+        # A copy, so that the unit conversions (here and in the subclasses) do
+        # not change the caller's array
+        raw_data = np.array(data, dtype=float)
         if interpolate:
             strain, values = hlp.interpolate(
                 min_strain,
                 max_strain,
                 n_pts,
-                data[:, 0],
-                data[:, 1],
+                raw_data[:, 0],
+                raw_data[:, 1],
                 log_scale=log_scale,
             )
         else:
-            strain, values = data[:, 0], data[:, 1]
+            strain, values = raw_data[:, 0].copy(), raw_data[:, 1].copy()
 
         if strain_unit not in {'1', '%'}:
             raise ValueError("`strain_unit` must be '1' or '%'.")
 
         if strain_unit == '1':
             strain *= 100  # strain values are internally stored in unit of %
+            raw_data[:, 0] *= 100
 
-        self.raw_data = data
+        self.raw_data = raw_data
         self.strain = strain
         self.values = values
 
@@ -234,7 +240,9 @@ class GGmax_Curve(Curve):
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in.
+        A copy of the data that the user passed in (not interpolated). The unit
+        of strain is percent (unit conversion happens internally if
+        applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -323,7 +331,9 @@ class Damping_Curve(Curve):
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in.
+        A copy of the data that the user passed in (not interpolated). The unit
+        of strain and damping is percent (unit conversion happens internally if
+        applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -376,6 +386,7 @@ class Damping_Curve(Curve):
 
         if damping_unit == '1':
             self.damping *= 100  # unit: 1 --> %
+            self.raw_data[:, 1] *= 100
 
         if check_values and (
             np.any(self.damping > MAX_POSSIBLE_DAMPING_PCT)
@@ -583,7 +594,9 @@ class Stress_Curve(Curve):
     Attributes
     ----------
     raw_data : np.ndarray
-        The raw data that the user passed in
+        A copy of the data that the user passed in. The unit of strain is
+        percent, and the unit of stress is 'kPa' (unit conversion happens
+        internally if applicable).
     strain : np.ndarray
         The strain array at which interpolation happens, a 1D numpy array of
         shape (``n_pts``, ). The unit is percent (unit conversion happens
@@ -632,12 +645,15 @@ class Stress_Curve(Curve):
 
         if stress_unit == 'Pa':
             self.stress /= 1e3
+            self.raw_data[:, 1] /= 1e3
         elif stress_unit == 'kPa':
             pass
         elif stress_unit == 'MPa':
             self.stress *= 1e3
+            self.raw_data[:, 1] *= 1e3
         else:  # GPa
             self.stress *= 1e6
+            self.raw_data[:, 1] *= 1e6
 
 
 class Multiple_Curves:

@@ -43,6 +43,91 @@ def test_init() -> None:
     assert np.allclose(damping_data, damping_bench)
 
 
+@pytest.mark.parametrize(
+    'interpolate', [False, True], ids=['not_interpolated', 'interpolated']
+)
+@pytest.mark.parametrize(
+    ('curve_class', 'unit_kwargs', 'columns', 'unit_factors'),
+    [
+        pytest.param(
+            Curve, {'strain_unit': '1'}, slice(0, 2), [100, 1], id='Curve'
+        ),
+        pytest.param(
+            GGmax_Curve,
+            {'strain_unit': '1'},
+            slice(0, 2),
+            [100, 1],
+            id='GGmax_Curve',
+        ),
+        pytest.param(
+            Damping_Curve,
+            {'strain_unit': '1', 'damping_unit': '1'},
+            slice(2, 4),
+            [100, 100],
+            id='Damping_Curve',
+        ),
+    ],
+)
+def test_init__units_converted_in_a_copy_of_the_input(
+        curve_class: type[Curve],
+        unit_kwargs: dict[str, str],
+        columns: slice,
+        unit_factors: list[float],
+        *,
+        interpolate: bool,
+) -> None:
+    # G/Gmax or damping data in %, passed in unit 1
+    data_in_pct = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, columns]
+    user_array = data_in_pct / unit_factors
+    user_array_before = user_array.copy()
+    curve = curve_class(user_array, interpolate=interpolate, **unit_kwargs)
+
+    # The caller's array is not changed, and the object does not share it
+    assert np.array_equal(user_array, user_array_before)
+    for attribute in [curve.raw_data, curve.strain, curve.values]:
+        assert not np.shares_memory(attribute, user_array)
+
+    # `raw_data` holds the data points (not interpolated) in %, like `strain`
+    assert np.allclose(curve.raw_data, data_in_pct)
+
+
+@pytest.mark.parametrize(
+    ('stress_unit', 'kPa_per_unit'),
+    [('Pa', 1e-3), ('kPa', 1.0), ('MPa', 1e3), ('GPa', 1e6)],
+)
+def test_stress_curve__units_converted_in_a_copy_of_the_input(
+        stress_unit: str, kPa_per_unit: float
+) -> None:
+    strain_in_pct = np.geomspace(1e-4, 10, num=20)
+    stress_in_kPa = 50 * strain_in_pct / (1 + strain_in_pct)
+
+    # The default `strain_unit` of `Stress_Curve` is '1'
+    user_array = np.column_stack((
+        strain_in_pct / 100,
+        stress_in_kPa / kPa_per_unit,
+    ))
+    user_array_before = user_array.copy()
+    curve = Stress_Curve(user_array, stress_unit=stress_unit)
+
+    # The caller's array is not changed, and the object does not share it
+    assert np.array_equal(user_array, user_array_before)
+    for attribute in [curve.raw_data, curve.strain, curve.stress]:
+        assert not np.shares_memory(attribute, user_array)
+
+    # `raw_data`, `strain` and `stress` are in % and kPa
+    expected = np.column_stack((strain_in_pct, stress_in_kPa))
+    assert np.allclose(curve.raw_data, expected)
+    assert np.allclose(np.column_stack((curve.strain, curve.stress)), expected)
+
+
+def test_stress_curve__integer_input_array() -> None:
+    # The conversion from Pa to kPa gives floats, even for integer input
+    user_array = np.array([[1, 1500], [2, 2500], [3, 3000]])
+    curve = Stress_Curve(user_array, strain_unit='%', stress_unit='Pa')
+    assert np.allclose(curve.stress, [1.5, 2.5, 3.0])
+    assert np.array_equal(user_array, [[1, 1500], [2, 2500], [3, 3000]])
+
+
 def test_plot() -> None:
     filename = str(f_dir / 'curve_FKSH14.txt')
     data = np.genfromtxt(filename)
@@ -102,6 +187,58 @@ def test_HH_x_or_H4_x_fit_single_layer(
     )
     assert len(param) == len(param_names)
     assert param.keys() == param_names
+
+
+@pytest.mark.parametrize(
+    'interpolate', [False, True], ids=['not_interpolated', 'interpolated']
+)
+@pytest.mark.parametrize(
+    'get_param',
+    [
+        pytest.param(Damping_Curve.get_HH_x_param, id='HH_x'),
+        pytest.param(Damping_Curve.get_H4_x_param, id='H4_x'),
+    ],
+)
+def test_HH_x_or_H4_x_fit_single_layer__same_result_in_unit_1_and_pct(
+        get_param: Callable[..., HH_Param | MKZ_Param],
+        *,
+        interpolate: bool,
+) -> None:
+    data_in_1 = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, 2:4] / 100.0
+    curve_in_1 = Damping_Curve(
+        data_in_1,
+        strain_unit='1',
+        damping_unit='1',
+        interpolate=interpolate,
+    )
+    curve_in_pct = Damping_Curve(data_in_1 * 100, interpolate=interpolate)
+
+    # Both curves fit the same data points, in %
+    assert np.array_equal(curve_in_1.raw_data, curve_in_pct.raw_data)
+    param_in_1 = get_param(curve_in_1, pop_size=1, n_gen=1)
+    param_in_pct = get_param(curve_in_pct, pop_size=1, n_gen=1)
+    assert dict(param_in_1) == pytest.approx(dict(param_in_pct))
+
+
+@pytest.mark.parametrize(
+    'get_param',
+    [
+        pytest.param(Damping_Curve.get_HH_x_param, id='HH_x'),
+        pytest.param(Damping_Curve.get_H4_x_param, id='H4_x'),
+    ],
+)
+def test_HH_x_or_H4_x_fit_single_layer__curve_unchanged(
+        get_param: Callable[..., HH_Param | MKZ_Param],
+) -> None:
+    user_array = np.genfromtxt(f_dir / 'curve_FKSH14.txt')[:, 2:4]
+    user_array_before = user_array.copy()
+    curve = Damping_Curve(user_array)
+    get_param(curve, pop_size=1, n_gen=1)
+
+    # The fit subtracts the initial damping from a copy of the data
+    assert np.array_equal(curve.damping, user_array_before[:, 1])
+    assert np.array_equal(curve.raw_data, user_array_before)
+    assert np.array_equal(user_array, user_array_before)
 
 
 def test_value_check() -> None:
@@ -234,6 +371,79 @@ def test_HH_x_or_H4_x_fit_multi_layer(
     assert len(params) == 2
     assert isinstance(params[0].data, dict)
     assert params[0].keys() == param_names
+
+
+@pytest.mark.parametrize(
+    'interpolate', [False, True], ids=['not_interpolated', 'interpolated']
+)
+@pytest.mark.parametrize(
+    'get_all_params',
+    [
+        pytest.param(Multiple_Damping_Curves.get_all_HH_x_params, id='HH_x'),
+        pytest.param(Multiple_Damping_Curves.get_all_H4_x_params, id='H4_x'),
+    ],
+)
+def test_HH_x_or_H4_x_fit_multi_layer__same_result_in_unit_1_and_pct(
+        get_all_params: Callable[
+            ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
+        ],
+        *,
+        interpolate: bool,
+) -> None:
+    curve_data = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
+    damping_data_in_1 = [
+        curve_data[:, 2:4] / 100.0,
+        curve_data[:, 6:8] / 100.0,
+    ]
+    mdc_in_1 = Multiple_Damping_Curves([
+        Damping_Curve(
+            data,
+            strain_unit='1',
+            damping_unit='1',
+            interpolate=interpolate,
+        )
+        for data in damping_data_in_1
+    ])
+    mdc_in_pct = Multiple_Damping_Curves([
+        Damping_Curve(data * 100, interpolate=interpolate)
+        for data in damping_data_in_1
+    ])
+
+    params_in_1 = get_all_params(mdc_in_1, pop_size=1, n_gen=1)
+    params_in_pct = get_all_params(mdc_in_pct, pop_size=1, n_gen=1)
+    for param_in_1, param_in_pct in zip(
+        params_in_1.param_list, params_in_pct.param_list, strict=True
+    ):
+        assert dict(param_in_1) == pytest.approx(dict(param_in_pct))
+
+
+@pytest.mark.parametrize(
+    'get_all_params',
+    [
+        pytest.param(Multiple_Damping_Curves.get_all_HH_x_params, id='HH_x'),
+        pytest.param(Multiple_Damping_Curves.get_all_H4_x_params, id='H4_x'),
+    ],
+)
+def test_HH_x_or_H4_x_fit_multi_layer__curves_unchanged(
+        get_all_params: Callable[
+            ..., HH_Param_Multi_Layer | MKZ_Param_Multi_Layer
+        ],
+) -> None:
+    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))[:2]
+    raw_data_before = [curve.raw_data.copy() for curve in mdc.curves]
+    damping_before = [curve.damping.copy() for curve in mdc.curves]
+    curve_matrix_before = mdc.get_curve_matrix()
+
+    # With `parallel=False`, the fit gets the curves' own arrays (the worker
+    # processes of `parallel=True` get copies)
+    get_all_params(mdc, pop_size=1, n_gen=1, parallel=False)
+    for curve, raw_data, damping in zip(
+        mdc.curves, raw_data_before, damping_before, strict=True
+    ):
+        assert np.array_equal(curve.raw_data, raw_data)
+        assert np.array_equal(curve.damping, damping)
+
+    assert np.array_equal(mdc.get_curve_matrix(), curve_matrix_before)
 
 
 def test_get_all_H4_x_params__saved_file_loads_back(tmp_path: Path) -> None:

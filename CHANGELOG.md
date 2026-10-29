@@ -14,6 +14,14 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `raw_data` of `Curve`, `GGmax_Curve`, `Damping_Curve` and `Stress_Curve` is
+    now a copy of the input array (not the array itself), in the same units as
+    the other attributes: strain and damping in %, and stress in kPa. With
+    `interpolate=True`, it used to keep the units of the input (e.g., strain in
+    unit 1 for `strain_unit='1'`), although `plot(plot_interpolated=False)`
+    plots it on a "Strain [%]" axis and the damping fits take it in %. The
+    other attributes (`strain`, `values`, `GGmax`, `damping`, `stress`) are no
+    longer views of `raw_data` (they were with `interpolate=False`) (#85)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +40,24 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Curve`, `GGmax_Curve`, `Damping_Curve` and `Stress_Curve` converting units
+    inside the caller's array: `strain_unit='1'` (the default of
+    `Stress_Curve`), `damping_unit='1'`, and a `stress_unit` other than 'kPa'.
+    `Stress_Curve` also no longer raises a `TypeError` for an integer array
+    with a `stress_unit` other than 'kPa' (#85)
+  - `Damping_Curve.get_HH_x_param()`/`get_H4_x_param()` and
+    `Multiple_Damping_Curves.get_all_HH_x_params()`/`get_all_H4_x_params()`
+    fitting strain (or damping) values 100 times too small for curves created
+    with `interpolate=True` and `strain_unit='1'` (or `damping_unit='1'`) (#85)
+  - `helper_hh_model.fit_HH_x_single_layer()` and
+    `helper_mkz_model.fit_H4_x_single_layer()` subtracting the initial damping
+    inside the caller's array. Through `Damping_Curve.get_HH_x_param()`/
+    `get_H4_x_param()` and `Multiple_Damping_Curves.get_all_HH_x_params()`/
+    `get_all_H4_x_params()` (with `parallel=False`), this shifted the curves
+    down by their initial damping: `raw_data` (the caller's array) and, for
+    curves that are not interpolated, also `damping` and `get_curve_matrix()`.
+    So `show_fig=True` of `get_all_HH_x_params()`/`get_all_H4_x_params()` also
+    plotted the shifted data, unlike with `parallel=True` (#84)
 
 ## [0.7.1] - 2026-10-11
 

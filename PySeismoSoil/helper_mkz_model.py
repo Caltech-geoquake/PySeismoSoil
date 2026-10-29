@@ -152,6 +152,8 @@ def fit_H4_x_single_layer(
     """
     hlp.check_two_column_format(damping_data_in_pct, ensure_non_negative=True)
 
+    # A copy, so that the offset below does not change the caller's array
+    damping_data_in_pct = np.array(damping_data_in_pct, dtype=float)
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
     damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
     damping_data_in_unit_1 = damping_data_in_pct / 100  # unit: percent --> 1
