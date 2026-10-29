@@ -53,6 +53,26 @@ def test_plot() -> None:
     curves.plot()
 
 
+@pytest.mark.parametrize(
+    'curves_class',
+    [
+        pytest.param(Multiple_GGmax_Curves, id='multiple_GGmax_curves'),
+        pytest.param(Multiple_Damping_Curves, id='multiple_damping_curves'),
+    ],
+)
+def test_plot__multiple_curves_pass_kwargs_to_matplotlib(
+        curves_class: type[Multiple_GGmax_Curves | Multiple_Damping_Curves],
+) -> None:
+    curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))
+    _, ax = curves.plot(color='red', lw=5)
+
+    lines = ax.get_lines()
+    assert len(lines) == curves.n_layer
+    assert {(line.get_color(), line.get_linewidth()) for line in lines} == {
+        ('red', 5)
+    }
+
+
 HH_X_PARAM_NAMES = {
     'gamma_t',
     'a',
@@ -309,6 +329,114 @@ def test_get_curve_matrix(
             curve_benchmark[:, j] = filler_value
 
     assert np.allclose(curve, curve_benchmark, rtol=1e-5, atol=0.0)
+
+
+@pytest.mark.parametrize(
+    ('curves_class', 'long_values', 'short_values', 'layer_columns'),
+    [
+        # `layer_columns` gives the 4 columns of one layer in the curve matrix
+        # from the strain, the values of the curve, and the filler values of
+        # the other kind of curve
+        pytest.param(
+            Multiple_GGmax_Curves,
+            [1.0, 0.98, 0.9, 0.6, 0.2],
+            [1.0, 0.9, 0.6, 0.2],
+            lambda strain, values, filler: (strain, values, strain, filler),
+            id='multiple_GGmax_curves',
+        ),
+        pytest.param(
+            Multiple_Damping_Curves,
+            [1.0, 1.2, 2.0, 6.0, 15.0],
+            [1.0, 2.0, 6.0, 15.0],
+            lambda strain, values, filler: (strain, filler, strain, values),
+            id='multiple_damping_curves',
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ('short_strain', 'expected_strain'),
+    [
+        # `np.geomspace()` cannot start at 0, so the first strain stays 0, and
+        # the others are evenly spaced in log scale from 0.01 to 1
+        pytest.param(
+            [0.0, 0.01, 0.1, 1.0],
+            [0.0, 0.01, 0.01 ** (2 / 3), 0.01 ** (1 / 3), 1.0],
+            id='shorter_curve_starts_at_0',
+        ),
+        pytest.param(
+            [0.001, 0.01, 0.1, 1.0],
+            np.geomspace(0.001, 1.0, 5),
+            id='shorter_curve_starts_above_0',
+        ),
+    ],
+)
+def test_get_curve_matrix__curves_of_different_lengths(
+        curves_class: type[Multiple_GGmax_Curves | Multiple_Damping_Curves],
+        long_values: list[float],
+        short_values: list[float],
+        layer_columns: Callable[..., tuple[np.ndarray, ...]],
+        short_strain: list[float],
+        expected_strain: list[float] | np.ndarray,
+) -> None:
+    long_strain = [0.0001, 0.001, 0.01, 0.1, 1.0]  # unit: %
+    curves = curves_class([
+        np.column_stack((long_strain, long_values)),
+        np.column_stack((short_strain, short_values)),
+    ])
+    filler_value = 0.5
+    curve_matrix = curves.get_curve_matrix(filler_value)
+
+    # The longer curve (5 points) is unchanged, and the shorter one (4 points)
+    # is interpolated at 5 strains
+    filler = np.full(5, filler_value)
+    expected_values = np.interp(expected_strain, short_strain, short_values)
+    expected = np.column_stack((
+        *layer_columns(np.array(long_strain), np.array(long_values), filler),
+        *layer_columns(np.array(expected_strain), expected_values, filler),
+    ))
+    assert curve_matrix.shape == (5, 8)
+    assert np.allclose(curve_matrix, expected)
+
+
+@pytest.mark.parametrize(
+    'curves_class',
+    [
+        pytest.param(Multiple_GGmax_Curves, id='multiple_GGmax_curves'),
+        pytest.param(Multiple_Damping_Curves, id='multiple_damping_curves'),
+    ],
+)
+@pytest.mark.parametrize(
+    'sep', [pytest.param('\t', id='tab'), pytest.param(',', id='comma')]
+)
+def test_get_curve_matrix__save_to_file(
+        curves_class: type[Multiple_GGmax_Curves | Multiple_Damping_Curves],
+        sep: str,
+        tmp_path: Path,
+) -> None:
+    curve_file = tmp_path / 'curve_FKSH14.txt'
+    np.savetxt(
+        curve_file, np.genfromtxt(f_dir / 'curve_FKSH14.txt'), delimiter=sep
+    )
+    curves = curves_class(str(curve_file), sep=sep)
+    full_file_name = tmp_path / 'curve_matrix.txt'
+
+    # Not saved by default, even with a file name
+    curves.get_curve_matrix(full_file_name=str(full_file_name))
+    assert not full_file_name.exists()
+
+    curve_matrix = curves.get_curve_matrix(
+        save_to_file=True, full_file_name=str(full_file_name)
+    )
+
+    # Same delimiter as the curve file that the object was read from, so the
+    # saved file loads back with the same `sep`
+    saved = np.genfromtxt(full_file_name, delimiter=sep)
+    assert np.allclose(saved, curve_matrix)
+    curves_from_file = curves_class(str(full_file_name), sep=sep)
+    assert np.allclose(curves_from_file.get_curve_matrix(), curve_matrix)
+
+    with pytest.raises(ValueError, match='Please provide `full_file_name`'):
+        curves.get_curve_matrix(save_to_file=True)
 
 
 def test_init_multiple_GGmax_damping_curves() -> None:
