@@ -14,6 +14,9 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `Site_Effect_Adjustment.run()` no longer accepts the undocumented keywords
+    `taper` and `deconv`, which it passed on to `amplify_motion()` through
+    `**kwargs_to_plot`. It now raises a `TypeError` for them (#90)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -32,6 +35,12 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Site_Effect_Adjustment.run()` documenting `**kwargs_to_plot` as keyword
+    arguments for `matplotlib.pyplot.plot()`, while matplotlib keywords such as
+    `color` raised a `TypeError` (from `amplify_motion()`, which received
+    them). `run()` now has a documented `dpi` parameter (the only plotting
+    option that worked) instead of `**kwargs_to_plot`, so matplotlib keywords
+    raise a `TypeError` from `run()` itself (#90)
 
 ## [0.7.1] - 2026-10-11
 
