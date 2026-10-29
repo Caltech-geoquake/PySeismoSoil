@@ -21,6 +21,41 @@ def meas() -> np.ndarray:
     return np.genfromtxt(f_dir / 'sample_accel.txt')
 
 
+@pytest.mark.parametrize(
+    'options',
+    [
+        pytest.param(None, id='before_calc_scores'),
+        pytest.param(
+            {'score_arias': False, 'score_rms': False, 'score_spectra': False},
+            id='no_score_groups',
+        ),
+    ],
+)
+def test_str__no_scores_calculated(
+        meas: np.ndarray,
+        options: dict[str, bool] | None,
+) -> None:
+    gof_scores = GOF_Scores(meas, meas.copy())
+    if options is not None:
+        gof_scores.calc_scores(**options)
+
+    text = str(gof_scores)  # used to raise ZeroDivisionError
+
+    assert '(S' not in text  # no score is listed
+    assert text.endswith('Average Score: nan\n')
+
+
+def test_str__after_calc_scores(meas: np.ndarray) -> None:
+    gof_scores = GOF_Scores(meas, meas.copy())
+    scores = gof_scores.calc_scores(**ALL_SCORES)
+    text = str(gof_scores)
+
+    assert text.count('(S') == 10  # every score is listed
+    assert 'Fourier Spectra (S9)' in text
+    assert 'Cross Correlation (S10)' in text
+    assert text.endswith(f'Average Score: {np.mean(scores):.3f}\n')
+
+
 def test_calc_scores__identical_signals(meas: np.ndarray) -> None:
     gof_scores = GOF_Scores(meas, meas.copy())
     scores = gof_scores.calc_scores(**ALL_SCORES, verbose=False)

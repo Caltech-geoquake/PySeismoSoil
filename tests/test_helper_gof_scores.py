@@ -2,10 +2,22 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.special import erf
 
 import PySeismoSoil.helper_gof_scores as gof
 
 f_dir = Path(__file__).resolve().parent / 'files'
+
+
+def test_S___does_not_modify_inputs() -> None:
+    meas = np.array([0.0, 1.0, 2.0])
+    simu = np.array([0.0, 1.5, 1.0])
+    score = gof.S_(meas, simu)
+
+    # The values below machine epsilon are clipped in copies of the arrays
+    assert np.array_equal(meas, [0.0, 1.0, 2.0])
+    assert np.array_equal(simu, [0.0, 1.5, 1.0])
+    assert np.allclose(score, [0.0, 10 * erf(0.5), 10 * erf(-0.5)])
 
 
 def test_calc_AriasIntensity__constant_accel() -> None:
