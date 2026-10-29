@@ -34,7 +34,9 @@ class Ground_Motion:
     ----------
     data : str | np.ndarray
         - If str: the full file name on the hard drive containing the data.
-        - If np.ndarray: the numpy array containing the motion data.
+        - If np.ndarray: the numpy array containing the motion data. It is
+          copied (as floats), so the object does not change it or share its
+          memory.
 
         The motion data can be acceleration, velocity, or displacement.
 
@@ -42,12 +44,16 @@ class Ground_Motion:
         (1st column: time; 2nd column: motion). If only one column is supplied,
         another input parameter ``dt`` must also be supplied.
     unit : str
-        Valid values include: ['m', 'cm', 'm/s', 'cm/s', 'm/s/s', 'cm/s/s',
-        'gal', 'g']
+        The unit of the motion in ``data``. Valid values include: ['m', 'cm',
+        'm/s', 'cm/s', 'm/s/s', 'cm/s/s', 'gal', 'g']. The velocity units
+        ('m/s', 'cm/s') require ``motion_type='veloc'``, and the acceleration
+        units ('m/s/s', 'cm/s/s', 'gal', 'g') require ``motion_type='accel'``.
+        The length units ('m', 'cm') are accepted for every ``motion_type``
+        (for example, 'm' means m/s/s for an acceleration).
     motion_type : Literal['accel', 'veloc', 'displ'], default='accel'
         Specifying what type of motion "data" contains. It needs to be
-        consistent with "unit". For example, if motion_type is "accel" and unit
-        is "m/s", an exception will be raised.
+        consistent with ``unit`` (see above). For example, if ``motion_type``
+        is 'accel' and ``unit`` is 'm/s', an exception will be raised.
     dt : float | None, default=None
         Recording time interval of the ground motion. If ``data`` has only one
         column, this parameter must be supplied. If ``data`` has two columns,
@@ -111,7 +117,8 @@ class Ground_Motion:
     Raises
     ------
     ValueError
-        When ``motion_type`` has invalid values
+        When ``unit`` or ``motion_type`` has invalid values, or when ``unit``
+        is a velocity or acceleration unit that does not match ``motion_type``
     """
 
     dt: float
@@ -143,14 +150,16 @@ class Ground_Motion:
             motion_type: Literal['accel', 'veloc', 'displ'] = 'accel',
             dt: float | None = None,
             sep: str = '\t',
-            **kwargs_to_genfromtxt: dict[Any, Any],  # noqa: ARG002
+            **kwargs_to_genfromtxt: dict[Any, Any],
     ) -> None:
         if isinstance(data, str):  # a file name
             self._path_name, self._file_name = os.path.split(data)
         else:
             self._path_name, self._file_name = None, None
 
-        data_, dt = hlp.read_two_column_stuff(data, delta=dt, sep=sep)
+        data_, dt = hlp.read_two_column_stuff(
+            data, delta=dt, sep=sep, **kwargs_to_genfromtxt
+        )
 
         valid_unit_name = [
             'm',
@@ -177,20 +186,24 @@ class Ground_Motion:
                 "`motion_type` must be in {'accel', 'veloc', 'displ'}"
             )
 
-        if (unit in {'g', 'gal'}) and motion_type != 'accel':
+        # The length units ('m' and 'cm') are accepted for every `motion_type`
+        if unit in {'m/s', 'cm/s'} and motion_type != 'veloc':
             raise ValueError(
-                "If unit is 'g' or 'gal', then `motion_type` must be 'accel'.",
+                f"If unit is '{unit}', then `motion_type` must be 'veloc'.",
             )
 
-        # Known bug (#59): `data_` can be the caller's own array, so this
-        # conversion also changes the caller's array, and truncates it if it
-        # is an integer array. (`/=` and `*=` would raise a `TypeError` for
-        # integer arrays instead, so the plain assignment stays until #59 is
-        # fixed.)
+        if unit in {'m/s/s', 'cm/s/s', 'gal', 'g'} and motion_type != 'accel':
+            raise ValueError(
+                f"If unit is '{unit}', then `motion_type` must be 'accel'.",
+            )
+
+        # A float copy, so that the unit conversion below neither changes the
+        # caller's array nor truncates integer data
+        data_ = np.array(data_, dtype=float)
         if unit in {'cm', 'cm/s', 'cm/s/s', 'gal'}:
-            data_[:, 1] = data_[:, 1] / 100.0  # noqa: PLR6104  # cm --> m
+            data_[:, 1] /= 100.0  # cm --> m
         elif unit == 'g':
-            data_[:, 1] = data_[:, 1] * 9.81  # noqa: PLR6104  # g --> m/s/s
+            data_[:, 1] *= 9.81  # g --> m/s/s
 
         self.dt = float(dt)  # float; unit: sec
         self.npts = len(data_[:, 0])  # int; how many time points
@@ -1173,17 +1186,13 @@ class Ground_Motion:
             What unit shall the exported acceleration be in.
         """
         fmt = [t_prec, motion_prec]
-        data = self.accel
+        data = self.accel.copy()  # so that `self.accel` is not rescaled
 
-        # Known bug (#58): `data` is `self.accel` itself, not a copy, so saving
-        # in another unit also rescales `self.accel`. (`/=` and `*=` would
-        # raise a `TypeError` for integer arrays, so the plain assignment stays
-        # until #58 is fixed.)
         if unit == 'm/s/s':
             pass
         elif unit == 'g':
-            data[:, 1] = data[:, 1] / 9.81  # noqa: PLR6104
+            data[:, 1] /= 9.81
         elif unit in {'gal', 'cm/s/s'}:
-            data[:, 1] = data[:, 1] * 100.0  # noqa: PLR6104
+            data[:, 1] *= 100.0
 
         np.savetxt(fname, data, fmt=fmt, delimiter=sep)
