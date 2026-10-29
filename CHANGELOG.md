@@ -14,9 +14,10 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
-  - `Site_Effect_Adjustment.run()` no longer accepts the undocumented keywords
-    `taper` and `deconv`, which it passed on to `amplify_motion()` through
-    `**kwargs_to_plot`. It now raises a `TypeError` for them (#90)
+  - `Site_Effect_Adjustment.run()` no longer accepts the undocumented keyword
+    `deconv`, which it passed on to `amplify_motion()` through
+    `**kwargs_to_plot`, nor `taper`, which always failed in `taper_Tukey()`
+    (#69). It now raises a `TypeError` for them (#90)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters

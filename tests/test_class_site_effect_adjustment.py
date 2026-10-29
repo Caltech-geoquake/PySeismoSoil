@@ -44,7 +44,7 @@ def test_run__dpi() -> None:
     ],
 )
 def test_run__unexpected_keyword_argument(
-        kwargs: dict[str, str | float],
+        kwargs: dict[str, str | float | bool],
 ) -> None:
     gm_in = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='gal')
     sea = Site_Effect_Adjustment(gm_in, 207, 892)
