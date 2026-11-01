@@ -27,6 +27,10 @@
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
     (`MKZ_Param_Multi_Layer`) (#60)
+  - `amplify_motion()` (also used by `linear_site_resp()`, `Ground_Motion`, and
+    `Site_Effect_Adjustment`) applying the transfer function one frequency bin
+    too high, and, with `extrap_tf=False`, downsampling the motion even if the
+    transfer function reached the Nyquist frequency (#78)
   - `MKZ_Param_Multi_Layer` reading H4 parameter files (and 2D arrays) in the
     wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
     Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
