@@ -60,7 +60,12 @@ class GOF_Scores:
         self.scores = np.full(10, None, dtype=np.float32)
 
     def __str__(self) -> str:
-        """Define a string representation of calculated scores."""
+        """
+        Define a string representation of calculated scores.
+
+        Scores that have not been calculated (NaN) are left out. If no score
+        has been calculated, the average score is NaN.
+        """
         sn = [
             'Normalized Arias Intensity (S1)',
             'Normalized Energy Integral (S2)',
@@ -86,7 +91,8 @@ class GOF_Scores:
                 count += 1
 
         text += '---------------------------------------\n'
-        text += f'Average Score: {total / count:.3f}\n'
+        average = total / count if count > 0 else np.nan
+        text += f'Average Score: {average:.3f}\n'
 
         return text
 
