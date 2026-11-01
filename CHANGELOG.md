@@ -37,6 +37,14 @@
     unpacking error, instead of their own `TypeError` or `ValueError` that
     explains the problem, when `cutoff_freq` is a scalar or does not have 2
     values (#67)
+  - The `rediscretized_profile` in the results of `Linear_Simulation.run()`
+    (with `every_layer=True`, the default) and `Equiv_Linear_Simulation.run()`
+    (also when run by `Batch_Simulation`) having densities 1000 times too
+    large, e.g., 1,900,000 instead of 1,900 kg/m^3. The re-discretized profile
+    file (`*_re-discretized_profile.txt`) that `Simulation_Results.to_txt()` or
+    `run(save_txt=True)` saves had the same error, so its density column
+    changes too. The simulations themselves used the correct densities, so the
+    other results do not change (#36)
 
 ## [0.7.1] - 2026-10-11
 
