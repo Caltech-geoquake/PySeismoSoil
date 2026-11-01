@@ -14,6 +14,10 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `get_curve_matrix()` of `Multiple_GGmax_Curves` and
+    `Multiple_Damping_Curves` now raises a `ValueError` when `save_to_file` is
+    `True` and `full_file_name` is `None`. Before, `save_to_file` was ignored
+    (#64)
   - `Ground_Motion()` now raises a `ValueError` when `unit` is a velocity unit
     ('m/s', 'cm/s') and `motion_type` is not 'veloc', or an acceleration unit
     ('m/s/s', 'cm/s/s', 'gal', 'g') and `motion_type` is not 'accel'. The units
@@ -49,6 +53,24 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `get_curve_matrix()` of `Multiple_GGmax_Curves` and
+    `Multiple_Damping_Curves` raising a `ValueError` ("Geometric sequence
+    cannot include zero") when the curves have different numbers of points, and
+    a shorter curve starts at a strain of 0. The shorter curves are
+    interpolated at strains evenly spaced in log scale. For such a curve, the
+    first strain now stays 0, and the others start from its smallest positive
+    strain (#109)
+  - Documented parameters that were accepted but ignored: `Ground_Motion()`
+    ignored `**kwargs_to_genfromtxt` (such as `skip_header`) when reading a
+    file; `Multiple_Curves.plot()` (and so `plot()` of `Multiple_GGmax_Curves`
+    and `Multiple_Damping_Curves`) and `Parameter.plot_curves()` (of `HH_Param`
+    and `MKZ_Param`) ignored `**kwargs_to_matplotlib` (such as `color`); and
+    `get_curve_matrix()` of `Multiple_GGmax_Curves` and
+    `Multiple_Damping_Curves` ignored `save_to_file` and `full_file_name`. The
+    keyword arguments are now passed to `numpy.genfromtxt()` and matplotlib,
+    and `save_to_file=True` now saves the curve matrix to `full_file_name`,
+    with the same delimiter (`sep`) as the curve file that the object was read
+    from (tab by default) (#64)
   - `helper_hh_calibration.produce_Darendeli_curves()` raising a `TypeError`
     when `strain_in_pct` is not given (the default, `None`, now uses
     `numpy.geomspace(1e-4, 10, 400)` as documented) (#87)

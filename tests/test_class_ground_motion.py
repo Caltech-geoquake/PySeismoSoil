@@ -120,6 +120,16 @@ def test_loading_data__invalid_input(
         GM(np.array([1, 2, 3, 4, 5]), **kwargs)
 
 
+def test_loading_data__kwargs_to_genfromtxt(tmp_path: Path) -> None:
+    # The extra keyword arguments (here, `skip_header`) are passed on to
+    # `numpy.genfromtxt()`
+    file_name = tmp_path / 'accel_with_header.txt'
+    file_name.write_text('time\taccel\n0.01\t0.0\n0.02\t1.0\n0.03\t-2.0\n')
+    gm = GM(str(file_name), unit='m/s/s', skip_header=1)
+    assert np.allclose(gm.accel, [[0.01, 0.0], [0.02, 1.0], [0.03, -2.0]])
+    assert gm.pga == pytest.approx(2.0)
+
+
 @pytest.mark.parametrize(
     ('unit', 'motion_type', 'factor_to_SI'),
     [
