@@ -244,8 +244,13 @@ def fit_HH_x_single_layer(
     )
 
     init_damping = damping_data_in_pct[0, 1]  # small-strain damping
-    damping_data_in_pct[:, 1] -= init_damping  # offset all dampings
-    damping_data_in_unit_1 = damping_data_in_pct / 100  # unit: percent --> 1
+
+    # Offset a copy, so that the caller's array is not changed, and the figure
+    # below shows the data as given (``_plot_damping_curve_fit()`` adds
+    # ``init_damping`` back to the fitted curve)
+    shifted_data_in_pct = np.array(damping_data_in_pct, dtype=float)
+    shifted_data_in_pct[:, 1] -= init_damping  # offset all dampings
+    damping_data_in_unit_1 = shifted_data_in_pct / 100  # unit: percent --> 1
 
     # number of HH model parameters; do not change this for HH model
     n_param = 9
