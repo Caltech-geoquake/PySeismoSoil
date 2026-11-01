@@ -14,6 +14,9 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `log_scale` of `Frequency_Spectrum.get_smoothed()` now defaults to `True`
+    (the same default as in `Frequency_Spectrum()`), so it no longer needs to
+    be passed (#68)
   - `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
     `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` is now a read-only
     property that returns the length of the list (`param_list` or `curves`), so
@@ -48,6 +51,13 @@
     when a parameter value is a NumPy `int64` or `float32`, for example, in
     `HH_Param_Multi_Layer` or `MKZ_Param_Multi_Layer` made from an integer or
     float32 array. These values now print as floats, such as `1.0` (#88)
+  - `taper_Tukey()` raising an `AttributeError` on SciPy 1.13 and later (which
+    removed `scipy.signal.tukey()`), which also broke `taper=True` of
+    `amplify_motion()` and `Ground_Motion.amplify_by_tf()`, and raising a
+    `TypeError` for 2-column input (#69)
+  - `Frequency_Spectrum.get_smoothed()` raising an `UnboundLocalError` unless
+    `show_fig=True`. It now returns `None` as the figure and axes when
+    `show_fig` is `False` (#68)
   - `len()` and `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
     `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` being wrong after
     deleting a slice (`del obj[1:4]`), or after assigning a list of a different
