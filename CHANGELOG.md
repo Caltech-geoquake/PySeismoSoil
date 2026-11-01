@@ -14,6 +14,10 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `Site_Effect_Adjustment.run()` no longer accepts the undocumented keyword
+    `deconv`, which it passed on to `amplify_motion()` through
+    `**kwargs_to_plot`, nor `taper`, which always failed in `taper_Tukey()`
+    (#69). It now raises a `TypeError` for them (#90)
   - `Ground_Motion()` now raises a `ValueError` when `unit` is a velocity unit
     ('m/s', 'cm/s') and `motion_type` is not 'veloc', or an acceleration unit
     ('m/s/s', 'cm/s/s', 'gal', 'g') and `motion_type` is not 'accel'. The units
@@ -49,6 +53,12 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Site_Effect_Adjustment.run()` documenting `**kwargs_to_plot` as keyword
+    arguments for `matplotlib.pyplot.plot()`, while matplotlib keywords such as
+    `color` raised a `TypeError` (from `amplify_motion()`, which received
+    them). `run()` now has a documented `dpi` parameter (the only plotting
+    option that worked) instead of `**kwargs_to_plot`, so matplotlib keywords
+    raise a `TypeError` from `run()` itself (#90)
   - `helper_hh_calibration.produce_Darendeli_curves()` raising a `TypeError`
     when `strain_in_pct` is not given (the default, `None`, now uses
     `numpy.geomspace(1e-4, 10, 400)` as documented) (#87)

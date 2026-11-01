@@ -25,6 +25,33 @@ def test_run__normal_case() -> None:
     assert isinstance(gm_out, Ground_Motion)
 
 
+def test_run__dpi() -> None:
+    gm_in = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='gal')
+    sea = Site_Effect_Adjustment(gm_in, 207, 892)
+    fig = sea.run(show_fig=True, return_fig_obj=True, dpi=150)[1]
+    assert fig.dpi == 150
+
+
+@pytest.mark.parametrize(
+    'kwargs',
+    [
+        # Plotting options (`run()` does not accept them)
+        pytest.param({'color': 'red'}, id='color'),
+        pytest.param({'lw': 2}, id='lw'),
+        # Options of `amplify_motion()` that `run()` used to pass on
+        pytest.param({'taper': True}, id='taper'),
+        pytest.param({'deconv': True}, id='deconv'),
+    ],
+)
+def test_run__unexpected_keyword_argument(
+        kwargs: dict[str, str | float | bool],
+) -> None:
+    gm_in = Ground_Motion(str(f_dir / 'sample_accel.txt'), unit='gal')
+    sea = Site_Effect_Adjustment(gm_in, 207, 892)
+    with pytest.raises(TypeError, match=r'run\(\) got an unexpected keyword'):
+        sea.run(show_fig=True, **kwargs)
+
+
 @pytest.mark.parametrize(
     ('out_of_bound_values', 'values_at_the_bound'),
     [

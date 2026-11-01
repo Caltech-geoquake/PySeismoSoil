@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 
@@ -114,8 +114,8 @@ class Site_Effect_Adjustment:
             self,
             *,
             show_fig: bool = False,
+            dpi: float = 100,
             return_fig_obj: bool = False,
-            **kwargs_to_plot: dict[Any, Any],
     ) -> tuple[Ground_Motion, Figure | None, Axes | None]:
         """
         Run the site effect adjustment by querying the SAG19 site factors.
@@ -124,10 +124,11 @@ class Site_Effect_Adjustment:
         ----------
         show_fig : bool, default=False
             Whether to show a figure demonstrating how the adjustment works.
+        dpi : float, default=100
+            Desired DPI for the figure; only effective when ``show_fig`` is
+            ``True``.
         return_fig_obj : bool, default=False
             Whether to return the figure and axes objects.
-        **kwargs_to_plot : dict[Any, Any]
-            Keyword arguments to pass to ``matplotlib.pyplot.plot()``.
 
         Returns
         -------
@@ -176,9 +177,9 @@ class Site_Effect_Adjustment:
             accel_in,
             (freq, (amp_tf, phase_tf)),
             show_fig=show_fig,
+            dpi=dpi,
             return_fig_obj=show_fig,
             extrap_tf=True,
-            **kwargs_to_plot,
         )
         if show_fig:
             accel_out, fig, ax = result
