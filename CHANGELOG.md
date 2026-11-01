@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+- Added
+  - A graphical user interface (`PySeismoSoil.gui`, written with PySide6) that
+    replicates MATLAB SeismoSoil: input file preparation, linear / equivalent
+    linear / nonlinear analyses, post processing, and the tools. Install it
+    with `pip install PySeismoSoil[gui]`, and start it with `seismosoil-gui` or
+    `python -m PySeismoSoil.gui`
+  - `helper_time_domain.time_domain_site_response()`: time-domain site response
+    with the linear, elastic-perfectly-plastic (EPP), H2, H4, and HH models. It
+    is a Python port (compiled with `numba`) of the time-domain solvers of
+    MATLAB SeismoSoil (`nlHH.m`, `nlH4.m`, `nlH2.m`, and `nlEPP.m`), so it does
+    not need the Fortran executables, and it runs on Linux too
+  - `helper_simulations.equiv_linear_freq_dependent()`: frequency-dependent
+    equivalent linear site response (Kausel & Assimaki, 2002)
 - Changed
   - `save_txt()` of `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` now
     writes 6 significant digits by default (was 5), the same as the files that

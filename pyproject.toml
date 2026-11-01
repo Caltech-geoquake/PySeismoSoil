@@ -25,6 +25,14 @@ description = "A Python library for performing 1D seismic site response analysis
 license = {text = "BSD-3-Clause"}
 readme = "README.md"
 
+[project.gui-scripts]
+seismosoil-gui = "PySeismoSoil.gui:main"
+
+[project.optional-dependencies]
+gui = [
+  "PySide6-Essentials>=6.5",
+]
+
 [project.urls]
 Homepage = "https://caltech-geoquake.github.io/PySeismoSoil/"
 
