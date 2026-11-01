@@ -14,6 +14,12 @@
     instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
     result by position needs to change. Like `save_txt()`, it warns when it
     drops a Gmax other than 1.0 (#79)
+  - `Ground_Motion.compare()` and `helper_site_response.compare_two_accel()`
+    now interpolate the two records onto a time array that starts at the
+    earlier start time of the two records, instead of at the time step. The
+    time histories in the figure now start there (e.g., at 0 for records that
+    start at 0), and the transfer function is computed from a different number
+    of samples, so its frequency points shift slightly (#96)
   - `Ground_Motion()` now raises a `ValueError` when `unit` is a velocity unit
     ('m/s', 'cm/s') and `motion_type` is not 'veloc', or an acceleration unit
     ('m/s/s', 'cm/s/s', 'gal', 'g') and `motion_type` is not 'accel'. The units
@@ -49,6 +55,11 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - `Ground_Motion.compare()` and `helper_site_response.compare_two_accel()`
+    dropping the first sample of records that start at 0, filling the time from
+    the time step to the start of records that start later with copies of their
+    first value, and (because of floating-point rounding) sometimes adding one
+    time step past the end of both records (#96)
   - `helper_hh_calibration.produce_Darendeli_curves()` raising a `TypeError`
     when `strain_in_pct` is not given (the default, `None`, now uses
     `numpy.geomspace(1e-4, 10, 400)` as documented) (#87)
