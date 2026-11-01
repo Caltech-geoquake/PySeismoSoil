@@ -2,6 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 import PySeismoSoil.helper_generic as hlp
 import PySeismoSoil.helper_signal_processing as sig
@@ -46,6 +47,43 @@ def test_calc_transfer_function() -> None:
     output_accel[:, 1] *= 2.3
     transfer_func = sig.calc_transfer_function(input_accel, output_accel)
     assert np.allclose(transfer_func[:, 1], 2.3)
+
+
+@pytest.mark.parametrize(
+    ('width', 'n_tapered'),
+    [
+        pytest.param(0.05, 13, id='default_width'),
+        pytest.param(0.2, 50, id='width_0.2'),
+    ],
+)
+def test_taper_Tukey__1D(width: float, n_tapered: int) -> None:
+    # A constant signal of 1001 points (1000 time steps). Each tapered end
+    # spans `width / 4` of the signal (12.5 or 50 time steps), so the first
+    # and the last `n_tapered` points are below the constant value.
+    signal = np.full(1001, 3.0)
+    tapered = sig.taper_Tukey(signal, width=width)
+
+    assert tapered.shape == signal.shape
+    assert tapered[0] == pytest.approx(0.0)
+    assert tapered[-1] == pytest.approx(0.0)
+    assert np.all(np.diff(tapered[:n_tapered]) > 0)
+    assert np.all(tapered[:n_tapered] < 3.0)
+    assert np.all(tapered[-n_tapered:] < 3.0)
+    assert np.allclose(tapered[n_tapered:-n_tapered], 3.0)
+    assert np.allclose(tapered, tapered[::-1])
+
+
+def test_taper_Tukey__2D() -> None:
+    # Only the 2nd column is tapered; the time column stays the same
+    time = np.arange(1001) * 0.01
+    accel = np.cos(2 * np.pi * time)
+    tapered = sig.taper_Tukey(np.column_stack((time, accel)))
+
+    assert tapered.shape == (1001, 2)
+    assert np.array_equal(tapered[:, 0], time)
+    assert np.allclose(tapered[:, 1], sig.taper_Tukey(accel))
+    assert tapered[0, 1] == pytest.approx(0.0)
+    assert tapered[-1, 1] == pytest.approx(0.0)
 
 
 def test_lin_smooth() -> None:
