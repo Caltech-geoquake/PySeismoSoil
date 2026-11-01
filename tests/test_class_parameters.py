@@ -1,3 +1,4 @@
+import operator
 import re
 import warnings
 from collections.abc import Callable
@@ -242,6 +243,114 @@ def test_HH_MKZ_param_multi_layer__list_operations(
     del param[3]
     assert len(param) == n_layer - 1
     assert param.n_layer == n_layer - 1
+
+
+@pytest.mark.parametrize(
+    'change_layers',
+    [
+        # Each slice operation is applied to the multi-layer object and to a
+        # plain list of its layers
+        pytest.param(
+            lambda layers: operator.delitem(layers, slice(1, 4)),
+            id='delete_a_slice',
+        ),
+        pytest.param(
+            lambda layers: operator.setitem(layers, slice(0, 3), []),
+            id='assign_an_empty_list_to_a_slice',
+        ),
+        pytest.param(
+            lambda layers: operator.setitem(layers, slice(0, 3), [layers[4]]),
+            id='assign_a_shorter_list_to_a_slice',
+        ),
+        pytest.param(
+            lambda layers: operator.setitem(
+                layers, slice(1, 2), [layers[0], layers[2], layers[4]]
+            ),
+            id='assign_a_longer_list_to_a_slice',
+        ),
+    ],
+)
+def test_HH_MKZ_param_multi_layer__n_layer_after_slice_operations(
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
+        change_layers: Callable[[object], None],
+) -> None:
+    param_class, file_name, _ = multi_layer_case
+    param = param_class(str(f_dir / file_name))
+    expected_layers = list(param.param_list)
+    change_layers(expected_layers)
+    change_layers(param)
+
+    assert param.param_list == expected_layers
+    assert len(param) == len(expected_layers)
+    assert param.n_layer == len(expected_layers)
+    assert param[len(param) - 1] is expected_layers[-1]
+
+
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'wrong_item'),
+    [
+        pytest.param(
+            HH_Param_Multi_Layer,
+            'HH_X_FKSH14.txt',
+            MKZ_Param({'gamma_ref': 1, 's': 2, 'beta': 3, 'Gmax': 4}),
+            id='MKZ_Param_into_HH',
+        ),
+        pytest.param(
+            HH_Param_Multi_Layer,
+            'HH_X_FKSH14.txt',
+            'not a parameter',
+            id='str_into_HH',
+        ),
+        pytest.param(
+            MKZ_Param_Multi_Layer,
+            'H4_G_IWTH04.txt',
+            HH_Param({
+                'gamma_t': 1,
+                'a': 2,
+                'gamma_ref': 3,
+                'beta': 4,
+                's': 5,
+                'Gmax': 6,
+                'mu': 7,
+                'Tmax': 8,
+                'd': 9,
+            }),
+            id='HH_Param_into_MKZ',
+        ),
+    ],
+)
+@pytest.mark.parametrize('use_slice', [False, True], ids=['index', 'slice'])
+def test_HH_MKZ_param_multi_layer__setitem_rejects_wrong_type(
+        param_class: MultiLayerParamClass,
+        file_name: str,
+        wrong_item: object,
+        *,
+        use_slice: bool,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    layers = list(param.param_list)
+    if use_slice:
+        # Only the 2nd new item has a wrong type
+        index, new_item = slice(0, 2), [param[0], wrong_item]
+    else:
+        index, new_item = 1, wrong_item
+
+    with pytest.raises(TypeError, match='must be of type'):
+        param[index] = new_item
+
+    assert param.param_list == layers  # unchanged
+
+
+def test_HH_MKZ_param_multi_layer__numpy_integer_index(
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
+) -> None:
+    param_class, file_name, _ = multi_layer_case
+    param = param_class(str(f_dir / file_name))
+    assert param[np.int64(1)] is param[1]
+    assert param[np.int32(-1)] is param[-1]
+
+    with pytest.raises(TypeError, match='Indices must be integers or slices'):
+        param[1.0]
 
 
 def test_hh_param_multi_layer__test_contents_of_list_elements() -> None:
