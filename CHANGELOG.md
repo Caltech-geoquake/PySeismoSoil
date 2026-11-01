@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+- Changed
+  - `save_txt()` of `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` now
+    writes 6 significant digits by default (was 5), the same as the files that
+    `get_all_HH_x_params()` and `get_all_H4_x_params()` save
+  - `helper_mkz_model.deserialize_array_to_params()` now raises a `ValueError`
+    with a message when the array does not have 4 values, instead of a bare
+    `AssertionError` (which `python -O` skips)
+  - `MKZ_Param_Multi_Layer.serialize_to_2D_array()` now returns the layout of
+    the H4 parameter files that the class reads (rows gamma_ref, 0, s, beta),
+    instead of the rows gamma_ref, s, beta, Gmax. Code that reads rows of its
+    result by position needs to change. Like `save_txt()`, it warns when it
+    drops a Gmax other than 1.0 (#79)
+  - `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
+    `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` is now a read-only
+    property that returns the length of the list (`param_list` or `curves`), so
+    it can no longer be set (#83)
+  - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` now raise a `TypeError`
+    when an item assigned with `param[i] = ...` is not an `HH_Param` (or
+    `MKZ_Param`), and when any item assigned to a slice (`param[i:j] = [...]`)
+    is not. Before, any item was accepted, which made the object fail later
+    (for example, in `serialize_to_2D_array()`) (#83)
 - Fixed
   - `Damping_Calibration.get_H4_x_param()` returning HH parameters
     (`HH_Param_Multi_Layer`) instead of H4 (MKZ) parameters
@@ -10,6 +31,38 @@
     `Site_Effect_Adjustment`) applying the transfer function one frequency bin
     too high, and, with `extrap_tf=False`, downsampling the motion even if the
     transfer function reached the Nyquist frequency (#78)
+  - `MKZ_Param_Multi_Layer` reading H4 parameter files (and 2D arrays) in the
+    wrong row order, which made `s` 0 and the G/Gmax and damping curves flat.
+    Its `save_txt()` and `get_all_H4_x_params(save_txt=True)` now also write
+    the file format (gamma_ref, 0, s, beta). This format has no Gmax, so
+    `save_txt()` warns (once, naming the layers) when it drops a Gmax other
+    than 1.0. A file or 2D array that is not valid H4 parameters now raises a
+    `ValueError` that names the layer: its 2nd row ("b") is not 0, it has NaN
+    (for example, from a trailing delimiter), or it does not have 4 rows. H4
+    files written by 0.7.1 or earlier have the rows gamma_ref, s, beta, Gmax,
+    so they raise this error. To convert one, delete its 4th row and insert a
+    row of zeros as its 2nd row, e.g.,
+    `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
+  - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
+    one-layer parameter file, including one written by `save_txt()` (#86)
+  - `len()` and `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
+    `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` being wrong after
+    deleting a slice (`del obj[1:4]`), or after assigning a list of a different
+    length to a slice of the parameter classes (`param[0:3] = []`). Then
+    `obj[len(obj) - 1]` raised an `IndexError`, and `Nonlinear_Simulation`
+    accepted too few sets of parameters for the material numbers of the Vs
+    profile, and told the solver the wrong number of sets (`n_ma` in
+    `control.dat`) (#83)
+  - Indexing these four classes with a NumPy integer (such as `np.int64(0)`)
+    raising a `TypeError` (#83)
+  - The `rediscretized_profile` in the results of `Linear_Simulation.run()`
+    (with `every_layer=True`, the default) and `Equiv_Linear_Simulation.run()`
+    (also when run by `Batch_Simulation`) having densities 1000 times too
+    large, e.g., 1,900,000 instead of 1,900 kg/m^3. The re-discretized profile
+    file (`*_re-discretized_profile.txt`) that `Simulation_Results.to_txt()` or
+    `run(save_txt=True)` saves had the same error, so its density column
+    changes too. The simulations themselves used the correct densities, so the
+    other results do not change (#36)
 
 ## [0.7.1] - 2026-10-11
 

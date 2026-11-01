@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import inspect
+import os
 import platform
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib.pyplot as plt
@@ -20,6 +23,10 @@ AxesProjection = Literal[
 NDIM_2D_ARRAY = 2
 NUM_COLUMNS_TWO_COL_DATA = 2
 
+# Precision of the numbers in the parameter files (such as "HH_x_SITE.txt" or
+# "H4_x_SITE.txt") that PySeismoSoil writes
+PARAM_FILE_PRECISION = '%.6g'
+
 # A Vs profile has either 2 columns (thickness, Vs) or 5 columns (thickness,
 # Vs, damping, density, material number)
 NUM_COLUMNS_THICKNESS_AND_VS = 2
@@ -34,6 +41,34 @@ DELTA_UNIFORMITY_REL_TOL = 1e-8
 CHECK_STATUS_NON_NUMERIC = -1
 CHECK_STATUS_NOT_FINITE = -2
 CHECK_STATUS_NEGATIVE = -3
+
+
+def _find_stack_level() -> int:
+    """
+    Find the ``stacklevel`` for ``warnings.warn()`` that points at user code.
+
+    A warning issued deep inside PySeismoSoil (for example, from
+    ``serialize_to_2D_array()`` when it is called by ``save_txt()``) would
+    otherwise point at a line of this library. This function counts the frames
+    inside the PySeismoSoil package, starting from the function that calls it,
+    so that the warning points at the first line outside of it.
+
+    Returns
+    -------
+    int
+        The ``stacklevel`` to pass to ``warnings.warn()``.
+    """
+    package_dir = f'{Path(__file__).parent}{os.sep}'
+    frame = inspect.currentframe()
+    frame = frame.f_back if frame is not None else None  # the caller
+    level = 1
+    while frame is not None and frame.f_code.co_filename.startswith(
+        package_dir
+    ):
+        frame = frame.f_back
+        level += 1
+
+    return level
 
 
 def detect_OS() -> str:

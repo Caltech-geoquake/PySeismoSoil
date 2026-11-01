@@ -186,6 +186,47 @@ def test_multiple_damping_curves() -> None:
 
 
 @pytest.mark.parametrize(
+    'curves_class',
+    [
+        pytest.param(Multiple_Damping_Curves, id='multiple_damping_curves'),
+        pytest.param(Multiple_GGmax_Curves, id='multiple_GGmax_curves'),
+    ],
+)
+def test_multiple_curves__n_layer_after_deleting_a_slice(
+        curves_class: type[Multiple_Damping_Curves | Multiple_GGmax_Curves],
+) -> None:
+    curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))  # 5 layers
+    last_curve = curves[-1]
+    del curves[1:4]
+    assert len(curves.curves) == 2
+    assert len(curves) == 2
+    assert curves.n_layer == 2
+    assert curves[len(curves) - 1] is last_curve
+
+    curves.append(last_curve)
+    assert len(curves) == 3
+    assert curves.n_layer == 3
+
+
+@pytest.mark.parametrize(
+    'curves_class',
+    [
+        pytest.param(Multiple_Damping_Curves, id='multiple_damping_curves'),
+        pytest.param(Multiple_GGmax_Curves, id='multiple_GGmax_curves'),
+    ],
+)
+def test_multiple_curves__numpy_integer_index(
+        curves_class: type[Multiple_Damping_Curves | Multiple_GGmax_Curves],
+) -> None:
+    curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))
+    assert curves[np.int64(1)] is curves[1]
+    assert curves[np.int32(-1)] is curves[-1]
+
+    with pytest.raises(TypeError, match='Indices must be integers or slices'):
+        curves[1.0]
+
+
+@pytest.mark.parametrize(
     'use_scipy',
     [
         pytest.param(True, id='differential_evolution'),
@@ -234,6 +275,38 @@ def test_HH_x_or_H4_x_fit_multi_layer(
     assert len(params) == 2
     assert isinstance(params[0].data, dict)
     assert params[0].keys() == param_names
+
+
+def test_get_all_H4_x_params__saved_file_loads_back(tmp_path: Path) -> None:
+    mdc = Multiple_Damping_Curves(str(f_dir / 'curve_FKSH14.txt'))[:2]
+    txt_filename = str(tmp_path / 'H4_x_FKSH14.txt')
+    params = mdc.get_all_H4_x_params(
+        pop_size=1, n_gen=1, save_txt=True, txt_filename=txt_filename
+    )
+
+    # Same format as the "H4_x_*.txt" files: one column per layer, with the
+    # rows gamma_ref, 0, s, beta
+    saved = np.genfromtxt(txt_filename)
+    assert saved.shape == (4, 2)
+    for j, param in enumerate(params.param_list):
+        assert np.allclose(
+            saved[:, j],
+            [param['gamma_ref'], 0, param['s'], param['beta']],
+            rtol=1e-5,
+        )
+
+    # The file has no Gmax, and loads back with Gmax = 1.0, which is also the
+    # Gmax of the fitted parameters
+    params_loaded = MKZ_Param_Multi_Layer(txt_filename)
+    assert params_loaded.n_layer == 2
+    for j, param in enumerate(params.param_list):
+        assert dict(params_loaded[j]) == pytest.approx(dict(param), rel=1e-5)
+
+    # `save_txt()` writes the same file (same layout and precision)
+    txt_filename_2 = tmp_path / 'H4_x_FKSH14_2.txt'
+    params.save_txt(str(txt_filename_2))
+    saved_text = Path(txt_filename).read_text(encoding='utf-8')
+    assert txt_filename_2.read_text(encoding='utf-8') == saved_text
 
 
 @pytest.mark.parametrize(

@@ -1,3 +1,7 @@
+import operator
+import re
+import warnings
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +17,15 @@ from PySeismoSoil.class_parameters import (
 )
 
 f_dir = Path(__file__).resolve().parent / 'files'
+
+
+def _HH_param_from_column(column: np.ndarray) -> HH_Param:
+    return HH_Param(hh.deserialize_array_to_params(column))
+
+
+def _H4_param_from_column(column: np.ndarray) -> MKZ_Param:
+    # A column of an "H4_G_*.txt" or "H4_x_*.txt" file: gamma_ref, 0, s, beta
+    return MKZ_Param(mkz.deserialize_array_to_params(column, from_files=True))
 
 
 def test_init__ensure_invalid_parameter_names_are_blocked() -> None:
@@ -53,7 +66,7 @@ def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01() -> None:
             0.731508,
         ],
     )
-    HH_G = HH_Param(hh.deserialize_array_to_params(params))
+    HH_G = _HH_param_from_column(params)
     GGmax = HH_G.get_GGmax(strain_in_pct=np.logspace(-4, 1, num=50))
 
     # fmt: off
@@ -76,7 +89,7 @@ def test_get_GGmax__actual_HH_G_param_from_profile_350_750_01() -> None:
 
 def test_get_GGmax__the_0th_layer_of_actual_H4_G_parameter_of_IBRH17() -> None:
     params = np.array([0.00028511, 0, 0.919, 1.7522])
-    H4_G = MKZ_Param(mkz.deserialize_array_to_params(params, from_files=True))
+    H4_G = _H4_param_from_column(params)
     GGmax = H4_G.get_GGmax(strain_in_pct=np.geomspace(0.0001, 6, num=50))
 
     # fmt: off
@@ -110,7 +123,7 @@ def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01() -> None:
             1,
         ],
     )
-    HH_x = HH_Param(hh.deserialize_array_to_params(params))
+    HH_x = _HH_param_from_column(params)
     damping = HH_x.get_damping(strain_in_pct=np.logspace(-4, 1, num=50))
 
     # fmt: off
@@ -134,7 +147,7 @@ def test_get_damping__actual_HH_x_parameter_from_profile_350_750_01() -> None:
 
 def test_get_damping__0th_layer_of_actual_H4_x_param_from_IBTH17() -> None:
     params = np.array([0.00062111, 0, 0.60001, 1.797])
-    H4_x = MKZ_Param(mkz.deserialize_array_to_params(params, from_files=True))
+    H4_x = _H4_param_from_column(params)
     damping = H4_x.get_damping(strain_in_pct=np.geomspace(0.0001, 6, num=50))
 
     # fmt: off
@@ -232,6 +245,114 @@ def test_HH_MKZ_param_multi_layer__list_operations(
     assert param.n_layer == n_layer - 1
 
 
+@pytest.mark.parametrize(
+    'change_layers',
+    [
+        # Each slice operation is applied to the multi-layer object and to a
+        # plain list of its layers
+        pytest.param(
+            lambda layers: operator.delitem(layers, slice(1, 4)),
+            id='delete_a_slice',
+        ),
+        pytest.param(
+            lambda layers: operator.setitem(layers, slice(0, 3), []),
+            id='assign_an_empty_list_to_a_slice',
+        ),
+        pytest.param(
+            lambda layers: operator.setitem(layers, slice(0, 3), [layers[4]]),
+            id='assign_a_shorter_list_to_a_slice',
+        ),
+        pytest.param(
+            lambda layers: operator.setitem(
+                layers, slice(1, 2), [layers[0], layers[2], layers[4]]
+            ),
+            id='assign_a_longer_list_to_a_slice',
+        ),
+    ],
+)
+def test_HH_MKZ_param_multi_layer__n_layer_after_slice_operations(
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
+        change_layers: Callable[[object], None],
+) -> None:
+    param_class, file_name, _ = multi_layer_case
+    param = param_class(str(f_dir / file_name))
+    expected_layers = list(param.param_list)
+    change_layers(expected_layers)
+    change_layers(param)
+
+    assert param.param_list == expected_layers
+    assert len(param) == len(expected_layers)
+    assert param.n_layer == len(expected_layers)
+    assert param[len(param) - 1] is expected_layers[-1]
+
+
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'wrong_item'),
+    [
+        pytest.param(
+            HH_Param_Multi_Layer,
+            'HH_X_FKSH14.txt',
+            MKZ_Param({'gamma_ref': 1, 's': 2, 'beta': 3, 'Gmax': 4}),
+            id='MKZ_Param_into_HH',
+        ),
+        pytest.param(
+            HH_Param_Multi_Layer,
+            'HH_X_FKSH14.txt',
+            'not a parameter',
+            id='str_into_HH',
+        ),
+        pytest.param(
+            MKZ_Param_Multi_Layer,
+            'H4_G_IWTH04.txt',
+            HH_Param({
+                'gamma_t': 1,
+                'a': 2,
+                'gamma_ref': 3,
+                'beta': 4,
+                's': 5,
+                'Gmax': 6,
+                'mu': 7,
+                'Tmax': 8,
+                'd': 9,
+            }),
+            id='HH_Param_into_MKZ',
+        ),
+    ],
+)
+@pytest.mark.parametrize('use_slice', [False, True], ids=['index', 'slice'])
+def test_HH_MKZ_param_multi_layer__setitem_rejects_wrong_type(
+        param_class: MultiLayerParamClass,
+        file_name: str,
+        wrong_item: object,
+        *,
+        use_slice: bool,
+) -> None:
+    param = param_class(str(f_dir / file_name))
+    layers = list(param.param_list)
+    if use_slice:
+        # Only the 2nd new item has a wrong type
+        index, new_item = slice(0, 2), [param[0], wrong_item]
+    else:
+        index, new_item = 1, wrong_item
+
+    with pytest.raises(TypeError, match='must be of type'):
+        param[index] = new_item
+
+    assert param.param_list == layers  # unchanged
+
+
+def test_HH_MKZ_param_multi_layer__numpy_integer_index(
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
+) -> None:
+    param_class, file_name, _ = multi_layer_case
+    param = param_class(str(f_dir / file_name))
+    assert param[np.int64(1)] is param[1]
+    assert param[np.int32(-1)] is param[-1]
+
+    with pytest.raises(TypeError, match='Indices must be integers or slices'):
+        param[1.0]
+
+
 def test_hh_param_multi_layer__test_contents_of_list_elements() -> None:
     HH_x = HH_Param_Multi_Layer(str(f_dir / 'HH_X_FKSH14.txt'))
     HH_x_1 = HH_x[1]
@@ -273,16 +394,209 @@ def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
         's',
         'Gmax',
     })
+    # Column 1 of the file is: gamma_ref, b (always 0), s, beta. The file has
+    # no Gmax, so Gmax is 1.0.
+    assert dict(H4_G_1) == pytest.approx({
+        'gamma_ref': 0.00085636,
+        's': 0.88832,
+        'beta': 1.7492,
+        'Gmax': 1.0,
+    })
+
+
+def test_mkz_param_multi_layer__save_txt_and_load_back(tmp_path: Path) -> None:
+    params = MKZ_Param_Multi_Layer([
+        {'gamma_ref': 0.0005, 's': 0.9, 'beta': 1.2, 'Gmax': 1.0},
+        {'gamma_ref': 0.002, 's': 0.7, 'beta': 0.8, 'Gmax': 3.5e7},
+    ])
+
+    # Same format as the "H4_G_*.txt" and "H4_x_*.txt" files: one column per
+    # layer, with the rows gamma_ref, 0, s, beta. Gmax is not saved, so the
+    # Gmax of layer 1 (not 1.0) gives a warning.
+    file_format = [[0.0005, 0.002], [0, 0], [0.9, 0.7], [1.2, 0.8]]
+    file_name = str(tmp_path / 'H4_G_test.txt')
+    with pytest.warns(UserWarning, match='has no Gmax'):
+        param_2D_array = params.serialize_to_2D_array()
+
+    with pytest.warns(UserWarning, match='has no Gmax'):
+        params.save_txt(file_name)
+
+    assert np.allclose(param_2D_array, file_format)
+    assert np.allclose(np.genfromtxt(file_name), file_format)
+
+    # Loading the file or the 2D array gives back the same parameters, except
+    # that Gmax is 1.0
+    params_from_file = MKZ_Param_Multi_Layer(file_name)
+    params_from_array = MKZ_Param_Multi_Layer(param_2D_array)
+    for j, param in enumerate(params.param_list):
+        expected = {**param, 'Gmax': 1.0}
+        assert dict(params_from_file[j]) == pytest.approx(expected)
+        assert dict(params_from_array[j]) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    'serialize',
+    [
+        pytest.param(
+            lambda params, _: params.serialize_to_2D_array(),
+            id='serialize_to_2D_array',
+        ),
+        pytest.param(
+            lambda params, tmp_path: params.save_txt(
+                str(tmp_path / 'H4_G_test.txt')
+            ),
+            id='save_txt',
+        ),
+    ],
+)
+def test_mkz_param_multi_layer__one_Gmax_warning_at_the_caller(
+        tmp_path: Path,
+        serialize: Callable[[MKZ_Param_Multi_Layer, Path], object],
+) -> None:
+    params = MKZ_Param_Multi_Layer([
+        {'gamma_ref': 0.0005, 's': 0.9, 'beta': 1.2, 'Gmax': 2.0e7},
+        {'gamma_ref': 0.001, 's': 0.8, 'beta': 1.0, 'Gmax': 1.0},
+        {'gamma_ref': 0.002, 's': 0.7, 'beta': 0.8, 'Gmax': 3.5e7},
+    ])
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter('always')
+        serialize(params, tmp_path)
+
+    # One warning (not one per layer), which names the layers whose Gmax is
+    # dropped, and points at the line that called the method (this file)
+    assert len(record) == 1
+    assert issubclass(record[0].category, UserWarning)
+    assert str(record[0].message).endswith(
+        'Layers whose Gmax is not 1.0 (0-based): [0, 2].'
+    )
+    assert record[0].filename == __file__
+
+
+@pytest.mark.parametrize('n_layer', [1, 3])
+def test_mkz_param_multi_layer__Gmax_warning_if_every_layer_is_affected(
+        n_layer: int,
+) -> None:
+    # For example, Gmax from a Vs profile: the warning does not list every
+    # layer number
+    params = MKZ_Param_Multi_Layer([
+        {'gamma_ref': 0.001, 's': 0.8, 'beta': 1.0, 'Gmax': 2.0e7 + j}
+        for j in range(n_layer)
+    ])
+    expected_end = re.escape('Gmax is not 1.0 in every layer.') + '$'
+    with pytest.warns(UserWarning, match=expected_end) as record:
+        params.serialize_to_2D_array()
+
+    assert len(record) == 1
+
+
+def test_mkz_param_multi_layer__save_txt_without_warning_if_Gmax_is_1(
+        tmp_path: Path,
+) -> None:
+    # Parameters read from an H4 file have Gmax = 1.0, so nothing is lost
+    params = MKZ_Param_Multi_Layer(str(f_dir / 'H4_G_IWTH04.txt'))
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        params.save_txt(str(tmp_path / 'H4_G_test.txt'))
+
+
+def test_HH_MKZ_param_multi_layer__one_layer_file_loads_back(
+        tmp_path: Path,
+        multi_layer_case: tuple[MultiLayerParamClass, str, int],
+) -> None:
+    param_class, file_name, _ = multi_layer_case
+    param = param_class(str(f_dir / file_name))[:1]
+
+    # A one-layer file has one column, which `np.genfromtxt()` reads as 1D
+    one_layer_file = str(tmp_path / 'one_layer.txt')
+    param.save_txt(one_layer_file)
+    assert np.genfromtxt(one_layer_file).ndim == 1
+
+    param_from_file = param_class(one_layer_file)
+    assert param_from_file.n_layer == 1
     assert np.allclose(
-        mkz.serialize_params_to_array(H4_G_1),
-        [0.000856, 0, 0.88832, 1.7492],
-        atol=1e-6,
-        rtol=0.0,
+        param_from_file.serialize_to_2D_array(),
+        param.serialize_to_2D_array(),
     )
 
 
 @pytest.mark.parametrize(
-    ('param_class', 'file_name', 'curves_index'),
+    ('data', 'expected_message'),
+    [
+        pytest.param(
+            # The rows written by older versions: gamma_ref, s, beta, Gmax
+            [[0.0005, 0.002], [0.9, 0.7], [1.2, 0.8], [1.0, 3.5e7]],
+            'Layer #0 (0-based): The 2nd value ("b") of H4 parameters '
+            '(gamma_ref, b, s, beta) must be 0, but it is 0.9. H4 files '
+            'written by PySeismoSoil 0.7.1 or earlier',
+            id='old_format',
+        ),
+        pytest.param(
+            [[0.0005, 0.002], [0, 0.1], [0.9, 0.7], [1.2, 0.8]],
+            'Layer #1 (0-based): The 2nd value ("b") of H4 parameters '
+            '(gamma_ref, b, s, beta) must be 0, but it is 0.1.',
+            id='one_layer_with_nonzero_b',
+        ),
+        pytest.param(
+            [[0.0005, 0.002], [0, 0], [0.9, np.nan], [1.2, 0.8]],
+            'Layer #1 (0-based): H4 parameters must be finite numbers',
+            id='NaN',
+        ),
+        pytest.param(
+            [[0.0005, 0.002], [0, 0], [0.9, 0.7]],
+            'Layer #0 (0-based): H4 parameters must have 4 values (gamma_ref, '
+            'b, s, beta), but there are 3.',
+            id='too_few_rows',
+        ),
+        pytest.param(
+            np.genfromtxt(f_dir / 'HH_G_FKSH14.txt'),  # HH: 9 rows
+            'Layer #0 (0-based): H4 parameters must have 4 values (gamma_ref, '
+            'b, s, beta), but there are 9.',
+            id='HH_parameters',
+        ),
+    ],
+)
+@pytest.mark.parametrize('from_file', [True, False], ids=['file', '2D_array'])
+def test_mkz_param_multi_layer__invalid_H4_parameters_raise_error(
+        tmp_path: Path,
+        data: list[list[float]] | np.ndarray,
+        expected_message: str,
+        *,
+        from_file: bool,
+) -> None:
+    filename_or_data: str | np.ndarray = np.array(data)
+    if from_file:
+        filename_or_data = str(tmp_path / 'H4_G_test.txt')
+        np.savetxt(filename_or_data, np.array(data), delimiter='\t')
+
+    with pytest.raises(ValueError, match=re.escape(expected_message)):
+        MKZ_Param_Multi_Layer(filename_or_data)
+
+
+def test_mkz_param_multi_layer__trailing_delimiter_raises_error(
+        tmp_path: Path,
+) -> None:
+    # A trailing tab on each line gives an extra column of NaN
+    lines = (f_dir / 'H4_G_IWTH04.txt').read_text().splitlines()
+    file_name = tmp_path / 'H4_G_test.txt'
+    file_name.write_text(''.join(f'{line}\t\n' for line in lines))
+    expected_message = (
+        'Layer #14 (0-based): H4 parameters must be finite numbers, but they '
+        'are [nan nan nan nan]. Is there an empty cell or a trailing '
+        'delimiter in the file?'
+    )
+    with pytest.raises(ValueError, match=re.escape(expected_message)):
+        MKZ_Param_Multi_Layer(str(file_name))
+
+
+def test_mkz_param_multi_layer__b_close_to_0_is_accepted() -> None:
+    data = np.genfromtxt(f_dir / 'H4_G_IWTH04.txt')
+    data[1, :] = 1e-12  # for example, round-off errors
+    params = MKZ_Param_Multi_Layer(data)
+    assert params.n_layer == data.shape[1]
+
+
+@pytest.mark.parametrize(
+    ('param_class', 'file_name', 'curves_index', 'param_from_column'),
     [
         # `construct_curves()` returns the G/Gmax curves (index 0) and the
         # damping curves (index 1). Check the G/Gmax curves for the G
@@ -291,24 +605,28 @@ def test_mkz_param_multi_layer__test_contents_of_list_elements() -> None:
             HH_Param_Multi_Layer,
             'HH_G_FKSH14.txt',
             0,
+            _HH_param_from_column,
             id='from_HH_G_parameters',
         ),
         pytest.param(
             HH_Param_Multi_Layer,
             'HH_X_FKSH14.txt',
             1,
+            _HH_param_from_column,
             id='from_HH_x_parameters',
         ),
         pytest.param(
             MKZ_Param_Multi_Layer,
             'H4_G_IWTH04.txt',
             0,
+            _H4_param_from_column,
             id='from_H4_G_parameters',
         ),
         pytest.param(
             MKZ_Param_Multi_Layer,
             'H4_x_IWTH04.txt',
             1,
+            _H4_param_from_column,
             id='from_H4_x_parameters',
         ),
     ],
@@ -317,12 +635,24 @@ def test_construct_curves(
         param_class: type[HH_Param_Multi_Layer | MKZ_Param_Multi_Layer],
         file_name: str,
         curves_index: int,
+        param_from_column: Callable[[np.ndarray], HH_Param | MKZ_Param],
 ) -> None:
     param = param_class(str(f_dir / file_name))
     curves_object = param.construct_curves()[curves_index]
     curves = curves_object.get_curve_matrix()
     assert curves_object.n_layer == param.n_layer
     assert curves.shape[1] == param.n_layer * 4
+
+    # The curve of a layer should be the same as the curve of the parameters
+    # in that layer's column of the file
+    layer = 1
+    param_of_layer = param_from_column(
+        np.genfromtxt(f_dir / file_name)[:, layer]
+    )
+    curve = curves_object[layer]
+    get_values = [param_of_layer.get_GGmax, param_of_layer.get_damping]
+    expected = get_values[curves_index](strain_in_pct=curve.strain)
+    assert np.allclose(curve.values, expected)
 
 
 @pytest.mark.parametrize(

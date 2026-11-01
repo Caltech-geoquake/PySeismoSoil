@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import functools
+import numbers
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -702,7 +704,11 @@ class Multiple_Curves:
 
         self.element_class = element_class
         self.curves = curves
-        self.n_layer = len(curves)
+
+    @property
+    def n_layer(self) -> int:
+        """The number of soil layers (i.e., the length of the list)."""
+        return len(self.curves)
 
     def __repr__(self) -> str:
         return f'n_layers = {self.n_layer}, type: {type(self.curves[0])}'
@@ -713,7 +719,7 @@ class Multiple_Curves:
     def __len__(self) -> int:
         return self.n_layer
 
-    def __setitem__(self, i: int, item: Curve) -> None:
+    def __setitem__(self, i: int | np.integer, item: Curve) -> None:
         if not isinstance(item, self.element_class):
             raise TypeError(
                 f'The new `item` must be of type {self.element_class}.'
@@ -721,8 +727,10 @@ class Multiple_Curves:
 
         self.curves[i] = item
 
-    def __getitem__(self, i: int | slice) -> Curve | Multiple_Curves:
-        if isinstance(i, int):
+    def __getitem__(
+            self, i: int | np.integer | slice
+    ) -> Curve | Multiple_Curves:
+        if isinstance(i, numbers.Integral):  # including NumPy integers
             return self.curves[i]
 
         if isinstance(i, slice):
@@ -731,9 +739,8 @@ class Multiple_Curves:
 
         raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
-    def __delitem__(self, i: int | slice) -> None:
+    def __delitem__(self, i: int | np.integer | slice) -> None:
         del self.curves[i]
-        self.n_layer -= 1
 
     def append(self, item: Curve) -> None:
         """Append another curve item to the curves."""
@@ -743,7 +750,6 @@ class Multiple_Curves:
             )
 
         self.curves.append(item)
-        self.n_layer += 1
 
     def plot(
             self,
@@ -1186,9 +1192,12 @@ class Multiple_Damping_Curves(Multiple_Curves):
             Number of CPU cores to use. If None, all cores are used. No effects
             if the parallelization options are set to ``False``.
         save_txt : bool, default=False
-            Whether to save the results as a "HH_x_STATION_NAME.txt" file.
+            Whether to save the results as a "H4_x_STATION_NAME.txt" file. The
+            file has one column per layer, with the rows gamma_ref, 0, s, beta
+            (the format that ``MKZ_Param_Multi_Layer`` reads). Gmax is not
+            saved.
         txt_filename : str | None, default=None
-            File name of the text file to save HH parameters. If the object is
+            File name of the text file to save H4 parameters. If the object is
             created via a "curve" text file, then ``txt_filename`` can be
             ``None`` and the output filename will be determined automatically.
         sep : str | None, default=None
@@ -1239,7 +1248,9 @@ class Multiple_Damping_Curves(Multiple_Curves):
             save_txt=save_txt,
             txt_filename=txt_filename,
             sep=sep,
-            func_serialize=mkz.serialize_params_to_array,
+            func_serialize=functools.partial(
+                mkz.serialize_params_to_array, to_files=True
+            ),
         )
 
         return MKZ_Param_Multi_Layer(params)
