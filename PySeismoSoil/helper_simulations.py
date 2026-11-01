@@ -10,6 +10,11 @@ import scipy.fftpack
 from PySeismoSoil import helper_generic as hlp
 from PySeismoSoil import helper_site_response as sr
 
+# Weight of the newly calculated effective strains (vs. those of the previous
+# iteration) in each iteration of the frequency-dependent equivalent linear
+# simulation
+FD_EQL_RELAXATION = 0.5
+
 if TYPE_CHECKING:
     from PySeismoSoil.class_curves import Multiple_GGmax_Damping_Curves
     from PySeismoSoil.class_parameters import (
@@ -459,6 +464,337 @@ def equiv_linear(
         max_avd,
         max_gt,
     )
+
+
+def equiv_linear_freq_dependent(
+        vs_profile: np.ndarray,
+        input_motion: np.ndarray,
+        curve_matrix: np.ndarray,
+        boundary: Literal['elastic', 'rigid'] = 'elastic',
+        tol: float = 0.075,
+        R_gamma: float = 0.65,
+        max_iter: int = 10,
+        *,
+        verbose: bool = True,
+) -> tuple[np.ndarray, ...]:
+    """
+    Frequency-dependent equivalent linear site response simulation.
+
+    In each iteration, the shear modulus and the damping of each layer depend
+    on frequency: they are interpolated from the G/Gmax and damping curves at a
+    frequency-dependent effective strain, which follows the smoothed shape of
+    the Fourier spectrum of the strain proposed by Kausel & Assimaki (2002).
+    The shape is 1 below the "average frequency" of the strain spectrum and
+    decays as ``exp(-a * f) / f**b`` above it. Its peak is ``R_gamma`` times
+    the maximum strain.
+
+    Parameters
+    ----------
+    vs_profile : np.ndarray
+        Shear-wave velocity profile, as a 2D numpy array with 5 columns
+        (thickness, Vs, damping, density, and material number). The damping
+        unit is 1, and the density unit is kg/m^3.
+    input_motion : np.ndarray
+        Input acceleration (unit: m/s/s), with two columns (time and
+        acceleration). It should be the "rock outcrop" motion if ``boundary``
+        is ``"elastic"``, and the recorded motion at the bottom of the Vs
+        profile (i.e., the "borehole" motion) if ``boundary`` is ``"rigid"``.
+    curve_matrix : np.ndarray
+        G/Gmax and damping curves of each material, in the "curve" format
+        (strain [%], G/Gmax, strain [%], damping [%], strain [%], ...).
+    boundary : Literal['elastic', 'rigid'], default='elastic'
+        Boundary condition.
+    tol : float, default=0.075
+        Tolerance level for convergence checking: the largest relative change
+        of the maximum strain of any layer between two iterations.
+    R_gamma : float, default=0.65
+        Ratio of the effective strain (at the low frequencies) to the maximum
+        strain in the strain time history.
+    max_iter : int, default=10
+        Maximum number of iteration to run.
+    verbose : bool, default=True
+        Whether to show the iteration progress on the console.
+
+    Returns
+    -------
+    tuple[np.ndarray, ...]
+        A tuple of 11 numpy arrays, the same as those of ``equiv_linear()``.
+
+    References
+    ----------
+    1. Kausel & Assimaki (2002) "Seismic simulation of inelastic soils via
+       frequency-dependent moduli and damping." Journal of Engineering
+       Mechanics, 128(1), 34-47.
+    """
+    hlp.check_Vs_profile_format(vs_profile)
+    hlp.assert_2D_numpy_array(input_motion, name='`input_motion`')
+    hlp.assert_2D_numpy_array(curve_matrix, name='`curve_matrix`')
+
+    (
+        flag,
+        N,
+        _freq,
+        new_profile,
+        h,
+        _vs,
+        D,
+        rho,
+        mat_nr,
+        n_layer,
+        Gmax,
+        _G,
+        t,
+        dt,
+        ACCEL_IN,
+    ) = _prepare_inputs(vs_profile=vs_profile, input_motion=input_motion)
+
+    half_N = (N + 1) // 2  # `N` is odd
+    freq = np.arange(N) / (N * dt)  # frequencies of the FFT bins
+
+    # Curves of every layer (strain and damping in unit of 1). The damping
+    # curves start from the damping of the Vs profile.
+    log_strain_G, G_vector, log_strain_D, D_vector = [], [], [], []
+    for k in range(n_layer - 1):
+        col = mat_nr[k] * 4
+        log_strain_G.append(np.log10(curve_matrix[:, col] / 100.0))
+        G_vector.append(curve_matrix[:, col + 1])
+        log_strain_D.append(np.log10(curve_matrix[:, col + 2] / 100.0))
+        damping = curve_matrix[:, col + 3] / 100.0
+        D_vector.append(damping - damping[0] + D[k])
+
+    # Modulus and damping: shape (half_N, n_layer)
+    G_f = np.tile(Gmax, (half_N, 1))
+    D_f = np.tile(D, (half_N, 1))
+    eff_strain = np.zeros((half_N, n_layer - 1))
+    max_strain_prev = np.zeros(n_layer - 1)
+
+    for i_iter in range(max_iter):
+        if verbose:
+            print(f'Iteration No.{i_iter + 1}.', end='')
+
+        _, _, _, _, strain = _freq_dependent_response(
+            freq=freq,
+            dt=dt,
+            h=h,
+            G_f=G_f,
+            D_f=D_f,
+            rho=rho,
+            boundary=boundary,
+            ACCEL_IN=ACCEL_IN,
+        )
+        max_strain = np.max(np.abs(strain), axis=0)
+        strain_diff = np.max(np.abs(max_strain - max_strain_prev) / max_strain)
+        max_strain_prev = max_strain
+
+        for k in range(n_layer - 1):
+            strain_fas = np.abs(scipy.fftpack.fft(strain[:, k]))[:half_N]
+            eff_strain_new = (
+                R_gamma
+                * max_strain[k]
+                * _ka02_strain_shape(freq[:half_N], strain_fas)
+            )
+            # Under-relaxation, to damp out the oscillation between two
+            # states that this iteration is prone to
+            eff_strain[:, k] = (
+                eff_strain_new
+                if i_iter == 0
+                else FD_EQL_RELAXATION * eff_strain_new
+                + (1 - FD_EQL_RELAXATION) * eff_strain[:, k]
+            )
+            log_eff_strain = np.log10(np.maximum(eff_strain[:, k], 1e-12))
+            G_f[:, k] = Gmax[k] * np.interp(
+                log_eff_strain, log_strain_G[k], G_vector[k]
+            )
+            D_f[:, k] = np.interp(log_eff_strain, log_strain_D[k], D_vector[k])
+
+        if verbose:
+            print(f'  max. strain diff = {strain_diff * 100:7.2f}%')
+
+        if i_iter > 0 and strain_diff < tol:
+            if verbose:
+                print('---------- Convergence achieved ---------------')
+
+            break
+
+    # The response with the final modulus and damping
+    H, accel_out, veloc, displ, strain = _freq_dependent_response(
+        freq=freq,
+        dt=dt,
+        h=h,
+        G_f=G_f,
+        D_f=D_f,
+        rho=rho,
+        boundary=boundary,
+        ACCEL_IN=ACCEL_IN,
+    )
+
+    # Stress: complex modulus (at each frequency) times strain
+    modulus = (G_f * (1 + 2j * D_f))[:, :-1]
+    strain_fft = scipy.fftpack.fft(strain, axis=0)
+    stress_fft = np.zeros_like(strain_fft)
+    stress_fft[:half_N] = strain_fft[:half_N] * modulus
+    stress_fft[half_N:] = np.flipud(np.conj(stress_fft[1:half_N]))
+    stress_fft[0] = np.real(stress_fft[0])
+    stress = np.real(scipy.fftpack.ifft(stress_fft, axis=0))
+
+    (
+        freq_array,
+        tf,
+        accel_on_surface,
+        out_a,
+        out_v,
+        out_d,
+        out_gamma,
+        out_tau,
+        max_avd,
+        max_gt,
+    ) = _post_processing(
+        flag=flag,
+        freq=freq[1:],  # skip the DC component
+        half_N=half_N - 1,
+        H=H[1:],
+        t=t,
+        accel_out=accel_out,
+        veloc=veloc,
+        displ=displ,
+        strain=strain,
+        stress=stress,
+        h=h,
+    )
+
+    return (
+        new_profile,
+        freq_array,
+        tf,
+        accel_on_surface,
+        out_a,
+        out_v,
+        out_d,
+        out_gamma,
+        out_tau,
+        max_avd,
+        max_gt,
+    )
+
+
+def _ka02_strain_shape(freq: np.ndarray, strain_fas: np.ndarray) -> np.ndarray:
+    """
+    Smoothed shape of a strain Fourier spectrum (Kausel & Assimaki, 2002).
+
+    Parameters
+    ----------
+    freq : np.ndarray
+        Frequencies (single-sided, starting from 0).
+    strain_fas : np.ndarray
+        Fourier amplitude of the strain at ``freq``.
+
+    Returns
+    -------
+    np.ndarray
+        The shape at ``freq``, from 0 to 1: 1 at frequencies lower than the
+        "average frequency" of the spectrum, and ``exp(-a * f) / f**b`` (with
+        the frequency normalized by the average frequency) above it.
+    """
+    area = np.trapezoid(strain_fas, x=freq)
+    if area <= 0:
+        return np.ones_like(freq)
+
+    freq_avg = np.trapezoid(freq * strain_fas, x=freq) / area
+    below = freq < freq_avg
+    strain_avg = np.trapezoid(strain_fas[below], x=freq[below]) / freq_avg
+    f_norm = freq / freq_avg
+    s_norm = strain_fas / strain_avg
+    above = ~below & (s_norm > 0)
+    if np.count_nonzero(above) < 2:  # noqa: PLR2004
+        return np.ones_like(freq)
+
+    A = np.column_stack((-f_norm[above], -np.log(f_norm[above])))
+    a, b = np.linalg.lstsq(A, np.log(s_norm[above]), rcond=None)[0]
+    with np.errstate(divide='ignore', over='ignore'):
+        shape = np.exp(-a * f_norm) / np.maximum(
+            np.finfo(float).eps, f_norm**b
+        )
+
+    return np.minimum(1.0, shape)
+
+
+def _freq_dependent_response(
+        *,
+        freq: np.ndarray,
+        dt: float,
+        h: np.ndarray,
+        G_f: np.ndarray,
+        D_f: np.ndarray,
+        rho: np.ndarray,
+        boundary: Literal['elastic', 'rigid'],
+        ACCEL_IN: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Linear response of every layer, with frequency-dependent properties.
+
+    Parameters
+    ----------
+    freq : np.ndarray
+        Frequencies of all the FFT bins. Shape: ``(N, )`` (``N`` is odd).
+    dt : float
+        Recording time interval.
+    h : np.ndarray
+        Layer thickness. Shape: ``(n_layer, )``.
+    G_f : np.ndarray
+        Shear modulus of every layer at every single-sided frequency. Shape:
+        ``(half_N, n_layer)``.
+    D_f : np.ndarray
+        Damping ratio (unit: 1), in the same shape as ``G_f``.
+    rho : np.ndarray
+        Mass density of every layer. Shape: ``(n_layer, )``.
+    boundary : Literal['elastic', 'rigid']
+        Boundary condition.
+    ACCEL_IN : np.ndarray
+        Fourier spectrum of the incident motion. Shape: ``(N, )``.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+        The transfer functions (relative to the incident motion) of every
+        layer, and the acceleration, velocity, displacement, and strain time
+        histories of every layer.
+    """
+    N = len(freq)
+    half_N = (N + 1) // 2
+    n_layer = len(h)
+    omega = 2 * np.pi * freq[:half_N]
+    modulus = G_f * (1 + 2j * D_f)  # (half_N, n_layer)
+    impedance = np.sqrt(modulus * rho)  # rho * vs_star
+    alpha = impedance[:, :-1] / impedance[:, 1:]
+    if boundary == 'rigid':
+        alpha[:, -1] = 0  # no energy transmission past the boundary
+
+    k_star = omega[:, None] / np.sqrt(modulus / rho)
+    A = np.ones((half_N, n_layer), dtype=np.complex128)
+    B = np.ones((half_N, n_layer), dtype=np.complex128)
+    for k in range(n_layer - 1):
+        e_pos = np.exp(1j * k_star[:, k] * h[k])
+        e_neg = np.exp(-1j * k_star[:, k] * h[k])
+        A[:, k + 1] = 0.5 * (
+            A[:, k] * (1 + alpha[:, k]) * e_pos
+            + B[:, k] * (1 - alpha[:, k]) * e_neg
+        )
+        B[:, k + 1] = 0.5 * (
+            A[:, k] * (1 - alpha[:, k]) * e_pos
+            + B[:, k] * (1 + alpha[:, k]) * e_neg
+        )
+
+    H_ss = (A + B) / A[:, -1:]
+    H_ss[0] = np.real(H_ss[0])
+    H = np.vstack((H_ss, np.conj(np.flipud(H_ss[1:]))))
+
+    accel_out = np.real(scipy.fftpack.ifft(H * ACCEL_IN[:, None], axis=0))
+    veloc = np.cumsum(accel_out, axis=0) * dt
+    displ = np.cumsum(veloc, axis=0) * dt
+    offset = np.outer(np.arange(1, N + 1) / (N + 1.0), displ[-1, :])
+    displ -= offset
+    strain = (displ[:, :-1] - displ[:, 1:]) / h[:-1]
+    return H, accel_out, veloc, displ, strain
 
 
 def _prepare_inputs(
