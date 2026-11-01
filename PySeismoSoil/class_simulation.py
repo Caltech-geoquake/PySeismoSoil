@@ -6,6 +6,7 @@ import pathlib
 import shutil
 import stat
 import subprocess  # noqa: S404
+import sys
 from typing import Literal
 
 import numpy as np
@@ -49,11 +50,15 @@ class Simulation:
         back to the soil medium.
     G_param : HH_Or_MKZ_Param_Multi_Layer | None, default=None
         Parameters that describe the G/Gmax curves: an ``HH_Param_Multi_Layer``
-        or ``MKZ_Param_Multi_Layer`` object (or ``None``).
+        or ``MKZ_Param_Multi_Layer`` object (or ``None``). The only subclass
+        that uses it, ``Nonlinear_Simulation``, accepts only
+        ``HH_Param_Multi_Layer``, because its kernel supports only HH
+        parameters.
     xi_param : HH_Or_MKZ_Param_Multi_Layer | None, default=None
         Parameters that describe the damping curves: an
         ``HH_Param_Multi_Layer`` or ``MKZ_Param_Multi_Layer`` object (or
-        ``None``).
+        ``None``). As for ``G_param``, ``Nonlinear_Simulation`` accepts only
+        ``HH_Param_Multi_Layer``.
     GGmax_and_damping_curves : Multiple_GGmax_Damping_Curves | None, default=None
         G/Gmax and damping curves of every soil layer: a
         ``Multiple_GGmax_Damping_Curves`` object (or ``None``).
@@ -454,12 +459,14 @@ class Nonlinear_Simulation(Simulation):
         ``boundary`` is set to ``"elastic"``, and it should be the recorded
         motion at the bottom of the Vs profile (i.e., the "borehole" motion) if
         ``boundary`` is set to ``"rigid"``.
-    G_param : HH_Or_MKZ_Param_Multi_Layer | None
+    G_param : HH_Param_Multi_Layer | None
         Parameters that describe the G/Gmax curves: an ``HH_Param_Multi_Layer``
-        or ``MKZ_Param_Multi_Layer`` object.
-    xi_param : HH_Or_MKZ_Param_Multi_Layer | None
+        object. The nonlinear kernel supports only HH parameters, so
+        ``MKZ_Param_Multi_Layer`` objects are not accepted.
+    xi_param : HH_Param_Multi_Layer | None
         Parameters that describe the damping curves: an
-        ``HH_Param_Multi_Layer`` or ``MKZ_Param_Multi_Layer`` object.
+        ``HH_Param_Multi_Layer`` object (as for ``G_param``,
+        ``MKZ_Param_Multi_Layer`` objects are not accepted).
     boundary : Literal['elastic', 'rigid'], default='elastic'
         Boundary condition. "Elastic" means that the boundary allows waves to
         propagate through. "Rigid" means that all downgoing waves are reflected
@@ -471,9 +478,9 @@ class Nonlinear_Simulation(Simulation):
         Same as the input parameter ``soil_profile``.
     input_motion : Ground_Motion
         Same as the input parameter ``input_motion``.
-    G_param : HH_Or_MKZ_Param_Multi_Layer | None
+    G_param : HH_Param_Multi_Layer | None
         Same as the input parameter ``G_param``.
-    xi_param : HH_Or_MKZ_Param_Multi_Layer | None
+    xi_param : HH_Param_Multi_Layer | None
         Same as the input parameter ``xi_param``.
     boundary : Literal['elastic', 'rigid']
         Same as the input parameter ``boundary``.
@@ -481,13 +488,15 @@ class Nonlinear_Simulation(Simulation):
     Raises
     ------
     TypeError
-        When ``G_param`` or ``xi_param`` is ``None``
+        When ``G_param`` or ``xi_param`` is ``None``, or is not an
+        ``HH_Param_Multi_Layer`` object (for example, an
+        ``MKZ_Param_Multi_Layer`` object)
     """
 
     soil_profile: Vs_Profile
     input_motion: Ground_Motion
-    G_param: HH_Or_MKZ_Param_Multi_Layer | None
-    xi_param: HH_Or_MKZ_Param_Multi_Layer | None
+    G_param: HH_Param_Multi_Layer | None
+    xi_param: HH_Param_Multi_Layer | None
     boundary: Literal['elastic', 'rigid']
 
     def __init__(
@@ -495,8 +504,8 @@ class Nonlinear_Simulation(Simulation):
             soil_profile: Vs_Profile,
             input_motion: Ground_Motion,
             *,
-            G_param: HH_Or_MKZ_Param_Multi_Layer | None,
-            xi_param: HH_Or_MKZ_Param_Multi_Layer | None,
+            G_param: HH_Param_Multi_Layer | None,
+            xi_param: HH_Param_Multi_Layer | None,
             boundary: Literal['elastic', 'rigid'] = 'elastic',
     ) -> None:
         if G_param is None:
@@ -504,6 +513,15 @@ class Nonlinear_Simulation(Simulation):
 
         if xi_param is None:
             raise TypeError('`xi_param` cannot be None.')
+
+        # NLHH, the only nonlinear kernel in PySeismoSoil, reads HH parameters
+        for name, param in [('G_param', G_param), ('xi_param', xi_param)]:
+            if not isinstance(param, HH_Param_Multi_Layer):
+                raise TypeError(
+                    f'`{name}` must be an `HH_Param_Multi_Layer` object, not'
+                    f' `{type(param).__name__}`: the nonlinear kernel'
+                    ' supports only HH parameters.'
+                )
 
         super().__init__(
             soil_profile,
@@ -565,7 +583,10 @@ class Nonlinear_Simulation(Simulation):
         Raises
         ------
         ValueError
-            When unknown operating system is encountered
+            When unknown operating system is encountered, or when the nonlinear
+            kernel fails (exits with a non-zero status). The error message
+            includes the error output of the kernel, and the files of the
+            simulation are kept in ``sim_dir``.
         """
         if verbose:
             print('Nonlinear simulation running...')
@@ -683,52 +704,89 @@ class Nonlinear_Simulation(Simulation):
         )
 
         # ------- Execute Fortran kernel --------------------------------------
+        # The kernel shows its progress on stdout (captured only on Linux when
+        # not `verbose`), and its errors (such as "forrtl: severe ...") on
+        # stderr, which is captured for the error message below.
         cwd = pathlib.Path.cwd()
         os.chdir(sim_dir)
-        if hlp.detect_OS() == 'Windows':
-            subprocess.run('NLHH.exe', check=False)  # noqa: S607
-        elif hlp.detect_OS() == 'Darwin':
-            current_status = pathlib.Path('NLHH.mac').stat().st_mode
-            pathlib.Path('NLHH.mac').chmod(
-                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-            )
-            subprocess.run('./NLHH.mac', stdout=True, check=False)
-        elif hlp.detect_OS() == 'Linux':
-            current_status = pathlib.Path('NLHH.unix').stat().st_mode
-            pathlib.Path('NLHH.unix').chmod(
-                current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-            )
-            if verbose:
-                subprocess.run('./NLHH.unix', stdout=True, check=False)
+        try:
+            if hlp.detect_OS() == 'Windows':
+                kernel = subprocess.run(
+                    'NLHH.exe',  # noqa: S607
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+            elif hlp.detect_OS() == 'Darwin':
+                current_status = pathlib.Path('NLHH.mac').stat().st_mode
+                pathlib.Path('NLHH.mac').chmod(
+                    current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+                )
+                kernel = subprocess.run(
+                    './NLHH.mac',
+                    stdout=True,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+            elif hlp.detect_OS() == 'Linux':
+                current_status = pathlib.Path('NLHH.unix').stat().st_mode
+                pathlib.Path('NLHH.unix').chmod(
+                    current_status | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+                )
+                if verbose:
+                    kernel = subprocess.run(
+                        './NLHH.unix',
+                        stdout=True,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                else:
+                    kernel = subprocess.run(
+                        './NLHH.unix', capture_output=True, check=False
+                    )
             else:
-                subprocess.run('./NLHH.unix', capture_output=True, check=False)
-        else:
-            raise ValueError('Unknown operating system.')
+                raise ValueError('Unknown operating system.')
 
-        if verbose:
-            print('Simulation finished. Now post processing.')
+            if kernel.returncode != 0:
+                error_output = kernel.stderr.decode(errors='replace').strip()
+                raise ValueError(
+                    f'The nonlinear kernel (NLHH.{exec_ext}) failed with exit'
+                    f' status {kernel.returncode}, so the simulation has no'
+                    f' results. Its files are kept in {sim_dir}. Error output'
+                    f' of the kernel:\n{error_output or "(none)"}'
+                )
 
-        # ------------ Post-process files -------------------------------------
-        layer_boundary_depth = np.genfromtxt('node_depth.dat').T
-        layer_midpoint_depth = np.genfromtxt('layer_depth.dat').T
-        out_a = np.genfromtxt('out_a.dat')
-        out_v = np.genfromtxt('out_v.dat')
-        out_d = np.genfromtxt('out_d.dat')
-        out_gamma = np.genfromtxt('out_gamma.dat')
-        out_tau = np.genfromtxt('out_tau.dat')
+            # After a successful run, show what the kernel wrote to stderr
+            # (such as a note from the Fortran runtime), unless its stdout is
+            # captured too (on Linux when not `verbose`)
+            if kernel.stderr and kernel.stdout is None:
+                sys.stderr.write(kernel.stderr.decode(errors='replace'))
 
-        dat_files = pathlib.Path().glob('*.dat')
-        for dat_file in dat_files:
-            pathlib.Path(dat_file).unlink()
+            if verbose:
+                print('Simulation finished. Now post processing.')
 
-        if hlp.detect_OS() == 'Windows':
-            pathlib.Path('NLHH.exe').unlink()
-        elif hlp.detect_OS() == 'Darwin':
-            pathlib.Path('NLHH.mac').unlink()
-        elif hlp.detect_OS() == 'Linux':
-            pathlib.Path('NLHH.unix').unlink()
-        else:
-            raise ValueError('Unknown operating system.')
+            # ------------ Post-process files ---------------------------------
+            layer_boundary_depth = np.genfromtxt('node_depth.dat').T
+            layer_midpoint_depth = np.genfromtxt('layer_depth.dat').T
+            out_a = np.genfromtxt('out_a.dat')
+            out_v = np.genfromtxt('out_v.dat')
+            out_d = np.genfromtxt('out_d.dat')
+            out_gamma = np.genfromtxt('out_gamma.dat')
+            out_tau = np.genfromtxt('out_tau.dat')
+
+            dat_files = pathlib.Path().glob('*.dat')
+            for dat_file in dat_files:
+                pathlib.Path(dat_file).unlink()
+
+            if hlp.detect_OS() == 'Windows':
+                pathlib.Path('NLHH.exe').unlink()
+            elif hlp.detect_OS() == 'Darwin':
+                pathlib.Path('NLHH.mac').unlink()
+            elif hlp.detect_OS() == 'Linux':
+                pathlib.Path('NLHH.unix').unlink()
+            else:
+                raise ValueError('Unknown operating system.')
+        finally:
+            os.chdir(cwd)
 
         # max of every column (i.e., layer)
         max_a = np.max(np.abs(out_a), axis=0).T
@@ -753,7 +811,6 @@ class Nonlinear_Simulation(Simulation):
             amplitude_only=True,
             smooth_signal=True,
         )
-        os.chdir(cwd)
 
         # ------------ Create sim_results object and plot and/or save ---------
         sim_results = Simulation_Results(
