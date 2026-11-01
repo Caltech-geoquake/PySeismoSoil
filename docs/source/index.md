@@ -11,6 +11,7 @@ ______________________________________________________________________
   - [1.2. Sediment velocity model (SVM)](#12-sediment-velocity-model-svm)
   - [1.3. Site amplification factors](#13-site-amplification-factors)
   - [1.4. Useful utilities for ground motion analysis](#14-useful-utilities-for-ground-motion-analysis)
+  - [1.5. Graphical user interface (GUI)](#15-graphical-user-interface-gui)
 - [2. Copyright and license](#2-copyright-and-license)
 - [3. Authors](#3-authors)
 - [4. Installation](#4-installation)
@@ -89,6 +90,29 @@ motions.
   model.
 - **Goodness-of-fit scores.** Compare a simulated motion with a recording.
 
+### 1.5. Graphical user interface (GUI)
+
+PySeismoSoil comes with a GUI, written with PySide6 (Qt), that replicates
+[MATLAB SeismoSoil](https://github.com/Caltech-geoquake/SeismoSoil). It has the
+same panels and workflows:
+
+- **Input files preparation:** enter a _V<sub>S</sub>_ profile, calculate
+  G/G<sub>max</sub> and damping curves (Darendeli, 2001), and fit the
+  parameters of the MKZ ("H2" and "H4") and the HH models
+- **Analyses:** linear (frequency and time domain), equivalent linear (Seed &
+  Idriss, 1970; and frequency dependent, Kausel & Assimaki, 2002), and
+  nonlinear (EPP, H2, H4, and HH models), for many input motions at once, with
+  the same output files and figures as MATLAB SeismoSoil
+- **Post processing:** stress-strain loops of each layer, and animations of the
+  ground displacement
+- **Tools:** plot motions and _V<sub>S</sub>_ profiles, linear amplification
+  factors, filters, baseline correction, Fourier and response spectra, unit
+  conversion, PEER and SMC file conversion, deconvolution, and goodness-of-fit
+  scores
+
+The time-domain solvers are Python ports (compiled with `numba`) of the MATLAB
+solvers of SeismoSoil, so they run on every operating system.
+
 ## 2. Copyright and license
 
 Copyright (c) 2024, California Institute of Technology, based on research
@@ -117,6 +141,15 @@ pip install PySeismoSoil
 
 If you already have an older version installed and want to upgrade to the
 newest version, use `pip install --upgrade PySeismoSoil`.
+
+To use the GUI, install PySeismoSoil with its optional dependency (PySide6):
+
+```bash
+pip install "PySeismoSoil[gui]"
+```
+
+Then start the GUI with the `seismosoil-gui` command (or
+`python -m PySeismoSoil.gui`).
 
 ## 5. API Documentation
 

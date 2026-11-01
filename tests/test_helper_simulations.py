@@ -73,3 +73,66 @@ def test_linear(boundary: str, min_correlation: float) -> None:
     plt.ylabel('Acceleration')
     plt.grid(ls=':', lw=0.5)
     plt.title(f'{boundary.capitalize()} boundary')
+
+
+def _scaled_motion(pga: float) -> np.ndarray:
+    accel = np.genfromtxt(f_dir / 'sample_accel.txt')[:2000]
+    accel[:, 1] *= pga / np.max(np.abs(accel[:, 1]))
+    return accel
+
+
+@pytest.mark.parametrize('boundary', ['elastic', 'rigid'])
+def test_equiv_linear_freq_dependent__weak_motion_is_linear(
+        boundary: str,
+) -> None:
+    profile = np.genfromtxt(f_dir / 'profile_FKSH14.txt')
+    curve = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
+    motion = _scaled_motion(0.001)
+    linear = sim.linear(profile, motion, boundary=boundary)
+    fd_eql = sim.equiv_linear_freq_dependent(
+        profile, motion, curve, boundary=boundary, verbose=False
+    )
+    assert len(fd_eql) == 11
+    surface_lin = linear[3][:, 1]
+    surface_eql = fd_eql[3][:, 1]
+    assert surface_eql.shape == surface_lin.shape
+    assert np.corrcoef(surface_lin, surface_eql)[0, 1] > 0.999
+    assert np.isclose(
+        np.max(np.abs(surface_eql)), np.max(np.abs(surface_lin)), rtol=0.02
+    )
+
+
+def test_equiv_linear_freq_dependent__strong_motion() -> None:
+    profile = np.genfromtxt(f_dir / 'profile_FKSH14.txt')
+    curve = np.genfromtxt(f_dir / 'curve_FKSH14.txt')
+    motion = _scaled_motion(3.0)
+    eql = sim.equiv_linear(profile, motion, curve, verbose=False)
+    fd_eql = sim.equiv_linear_freq_dependent(
+        profile, motion, curve, verbose=False
+    )
+    for result in fd_eql:
+        assert np.all(np.isfinite(result))
+
+    # The frequency-dependent method keeps more high-frequency amplification
+    # than the classic equivalent linear method
+    def high_freq_tf(results: tuple) -> float:
+        freq, tf = results[1], np.abs(results[2])
+        return float(np.mean(tf[(freq > 10) & (freq < 20)]))
+
+    assert high_freq_tf(fd_eql) > high_freq_tf(eql)
+    # ... and the peak strains are of the same order of magnitude
+    ratio = fd_eql[10][:, 1] / eql[10][:, 1]
+    assert np.all((ratio > 0.1) & (ratio < 10))
+
+
+def test_ka02_strain_shape() -> None:
+    freq = np.linspace(0, 25, 1001)
+    spectrum = np.exp(-freq / 3.0) + 1e-3
+    shape = sim._ka02_strain_shape(freq, spectrum)
+    assert shape.shape == freq.shape
+    assert np.all(shape <= 1)
+    assert np.all(shape > 0)
+    assert np.isclose(shape[1], 1.0)  # flat below the average frequency
+    assert shape[-1] < 0.1  # decays above it
+    assert np.all(np.diff(shape[freq > 5]) <= 1e-12)
+    assert np.all(sim._ka02_strain_shape(freq, np.zeros_like(freq)) == 1)

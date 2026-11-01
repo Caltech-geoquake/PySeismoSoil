@@ -16,3 +16,4 @@ Here are the documentations of the helper modules:
    api_docs/helper_signal_processing
    api_docs/helper_simulations
    api_docs/helper_site_response
+   api_docs/helper_time_domain
