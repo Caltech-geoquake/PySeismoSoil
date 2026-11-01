@@ -480,6 +480,12 @@ def find_f0(x: np.ndarray) -> float:
     Find f_0 in a frequency spectrum (i.e., the frequency corresponding to the
     initial peak).
 
+    The initial peak is where the values first stop rising, after they start to
+    rise. A flat or falling part at the start (such as a small dip of an
+    amplification function at low frequencies) is skipped. If the values never
+    rise, the initial peak is the first one; if they rise until the end, it is
+    the last one.
+
     Parameters
     ----------
     x : np.ndarray
@@ -498,29 +504,17 @@ def find_f0(x: np.ndarray) -> float:
     freq = x[:, 0]
     ampl = x[:, 1]
 
-    ll = len(freq)
+    d_ampl = np.diff(ampl)
+    rising = np.flatnonzero(d_ampl > 0)
+    if rising.size == 0:  # never rises: the first value is the peak
+        return freq[0]
 
-    current_flag = 0  # 1 means d(ampl)/d(freq) > 0; -1 means < 0
-    previous_flag = 1
+    start = rising[0]  # skip a flat or falling part at the start
+    not_rising = np.flatnonzero(d_ampl[start:] <= 0)
+    if not_rising.size == 0:  # rises until the last value
+        return freq[-1]
 
-    for i in range(ll - 1):
-        incre = ampl[i + 1] - ampl[i]
-        if incre > 0:
-            current_flag = 1
-        elif incre == 0:
-            current_flag = 0
-        else:  # incre < 0
-            current_flag = -1
-
-        if (current_flag <= 0) and (previous_flag == 1):
-            break
-
-        previous_flag = current_flag
-
-    if i == ll - 2:  # if the loop above finishes without breaking
-        i += 1
-
-    return freq[i]
+    return freq[start + not_rising[0]]
 
 
 def response_spectra(  # noqa: PLR0915
@@ -1307,12 +1301,16 @@ def linear_tf(  # noqa: PLR0915
     freq_resolution : float, default=0.05
         Frequency resolution of the frequency spectrum.
     fmax : float, default=30.0
-        Maximum frequency of interest.
+        Maximum frequency of interest. The frequencies are from
+        ``freq_resolution`` up to ``fmax`` (included if it is a multiple of
+        ``freq_resolution``), in steps of ``freq_resolution``.
 
     Returns
     -------
     freq_array : np.ndarray
-        Frequency array, in linear scale.
+        Frequency array, in linear scale: from ``freq_resolution`` up to
+        ``fmax`` (included if it is a multiple of ``freq_resolution``), in
+        steps of ``freq_resolution``.
     AF_ro : np.ndarray
         Amplification with respect to rock outcrop.
     TF_ro : np.ndarray
@@ -1329,6 +1327,12 @@ def linear_tf(  # noqa: PLR0915
         Transfer function (complex-valued) with respect to borehole motion.
     f0_bh : float
         Fundamental frequency of rock outcrop amplification.
+
+    Raises
+    ------
+    ValueError
+        When ``fmax`` is smaller than ``freq_resolution``, so that the
+        frequency array would be empty
 
     Notes
     -----
@@ -1356,8 +1360,16 @@ def linear_tf(  # noqa: PLR0915
             float(rho[k]) * vs_star[k] / (rho[k + 1] * vs_star[k + 1])
         )
 
-    # length of transfer function
-    TF_size = int(np.floor_divide(fmax, freq_resolution))
+    # Length of transfer function. (``np.floor_divide()`` would round down the
+    # exact quotient of the binary floats, e.g., 599 for 30 / 0.05. The small
+    # tolerance keeps a quotient just below a whole number, such as
+    # 0.3 / 0.1 = 2.9999999999999996, from losing a frequency.)
+    TF_size = int(np.floor(fmax / freq_resolution + 1e-6))
+    if TF_size < 1:
+        raise ValueError(
+            f'`fmax` ({fmax}) must not be smaller than `freq_resolution` '
+            f'({freq_resolution}).'
+        )
 
     freq_array = np.linspace(
         freq_resolution, freq_resolution * TF_size, num=TF_size
