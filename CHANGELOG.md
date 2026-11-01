@@ -52,16 +52,17 @@
     interpolated at strains evenly spaced in log scale. For such a curve, the
     first strain now stays 0, and the others start from its smallest positive
     strain (#109)
-  - `Multiple_Curves.plot()` (and so `plot()` of `Multiple_GGmax_Curves` and
-    `Multiple_Damping_Curves`) and `Parameter.plot_curves()` (of `HH_Param` and
-    `MKZ_Param`) ignoring `**kwargs_to_matplotlib` (such as `color`), and
+  - Documented parameters that were accepted but ignored: `Ground_Motion()`
+    ignored `**kwargs_to_genfromtxt` (such as `skip_header`) when reading a
+    file; `Multiple_Curves.plot()` (and so `plot()` of `Multiple_GGmax_Curves`
+    and `Multiple_Damping_Curves`) and `Parameter.plot_curves()` (of `HH_Param`
+    and `MKZ_Param`) ignored `**kwargs_to_matplotlib` (such as `color`); and
     `get_curve_matrix()` of `Multiple_GGmax_Curves` and
-    `Multiple_Damping_Curves` ignoring `save_to_file` and `full_file_name`. The
-    keyword arguments are now passed to matplotlib, and `save_to_file=True` now
-    saves the curve matrix to `full_file_name`, with the same delimiter (`sep`)
-    as the curve file that the object was read from (tab by default). This
-    fixes items 2-4 of #64; item 1 (`Ground_Motion(**kwargs_to_genfromtxt)`) is
-    fixed in #129 (part of #64)
+    `Multiple_Damping_Curves` ignored `save_to_file` and `full_file_name`. The
+    keyword arguments are now passed to `numpy.genfromtxt()` and matplotlib,
+    and `save_to_file=True` now saves the curve matrix to `full_file_name`,
+    with the same delimiter (`sep`) as the curve file that the object was read
+    from (tab by default) (#64)
   - `len()` and `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
     `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` being wrong after
     deleting a slice (`del obj[1:4]`), or after assigning a list of a different
