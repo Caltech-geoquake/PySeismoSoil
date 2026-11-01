@@ -26,6 +26,11 @@
     parameters) for this material number too. (Before, an equivalent-linear
     simulation silently used the curves of the last material for this layer)
     (#106)
+  - `Ground_Motion()` now raises a `ValueError` when `unit` is a velocity unit
+    ('m/s', 'cm/s') and `motion_type` is not 'veloc', or an acceleration unit
+    ('m/s/s', 'cm/s/s', 'gal', 'g') and `motion_type` is not 'accel'. The units
+    'm' and 'cm' are still accepted with every `motion_type`. The docstring
+    already said so, but only 'g' and 'gal' were checked (#92)
   - `log_scale` of `Frequency_Spectrum.get_smoothed()` now defaults to `True`
     (the same default as in `Frequency_Spectrum()`), so it no longer needs to
     be passed (#68)
@@ -70,6 +75,20 @@
   - `Vs_Profile(add_halfspace=True)` leaving material number 0 on the old last
     layer, so the new profile failed the format check, e.g.,
     `Vs_Profile(prof.vs_profile)` raised a `ValueError` (#106)
+  - `helper_hh_calibration.produce_Darendeli_curves()` raising a `TypeError`
+    when `strain_in_pct` is not given (the default, `None`, now uses
+    `numpy.geomspace(1e-4, 10, 400)` as documented) (#87)
+  - `helper_hh_calibration._calc_vertical_stress()` setting a 0 m last
+    thickness to 1 m in the caller's array (it now does this on a copy), and
+    its density-unit warning naming `__calc_vertical_stress()` (#120)
+  - `Ground_Motion()` converting the unit inside the caller's two-column array,
+    and keeping that array as its `accel` (or `veloc`/`displ`), so that later
+    changes to one changed the other. For an integer array, the conversion also
+    truncated the values (e.g., 420 gal became 4 m/s/s instead of 4.2). It now
+    converts a float copy (#59)
+  - `Ground_Motion.save_accel()` rescaling the object's own `accel` when saving
+    in g, gal, or cm/s/s, so that every later save and method used the rescaled
+    data (#58)
   - `taper_Tukey()` raising an `AttributeError` on SciPy 1.13 and later (which
     removed `scipy.signal.tukey()`), which also broke `taper=True` of
     `amplify_motion()` and `Ground_Motion.amplify_by_tf()`, and raising a
