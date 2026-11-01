@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 import scipy as sp
 
+import PySeismoSoil.helper_signal_processing as sig
 from PySeismoSoil.class_frequency_spectrum import Frequency_Spectrum
 from PySeismoSoil.class_ground_motion import Ground_Motion as GM
 from PySeismoSoil.class_Vs_profile import Vs_Profile
@@ -300,6 +301,26 @@ def test_amplify_by_tf__case_2_a_transfer_function_from_a_Vs_profile() -> None:
     # nearly identical results
     assert nearly_identical(gm_with_tf_RO.accel, gm_with_tf_RO_.accel)
     assert nearly_identical(gm_with_tf_BH.accel, gm_with_tf_BH_.accel)
+
+
+def test_amplify_by_tf__taper() -> None:
+    # `taper=True` tapers the input acceleration before amplifying it, which
+    # is the same as amplifying the tapered input without `taper`
+    gm = GM(str(f_dir / 'sample_accel.txt'), unit='gal')
+    vs_prof = Vs_Profile(str(f_dir / 'profile_FKSH14.txt'))
+    tf_RO = vs_prof.get_transfer_function()[0]
+    gm_tapered = GM(sig.taper_Tukey(gm.accel), unit='m')
+
+    output_motion = gm.amplify_by_tf(tf_RO, taper=True)[0]
+    output_motion_bench = gm_tapered.amplify_by_tf(tf_RO, taper=False)[0]
+    output_motion_no_taper = gm.amplify_by_tf(tf_RO, taper=False)[0]
+
+    assert output_motion.accel.shape == gm.accel.shape
+    assert np.array_equal(output_motion.accel[:, 0], gm.accel[:, 0])
+    assert np.allclose(output_motion.accel, output_motion_bench.accel)
+    assert not np.allclose(
+        output_motion.accel[:, 1], output_motion_no_taper.accel[:, 1]
+    )
 
 
 def nearly_identical(
