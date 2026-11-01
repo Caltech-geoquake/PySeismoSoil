@@ -35,6 +35,25 @@ def test_calc_vertical_stress() -> None:
     assert np.allclose(sigma, sigma_, rtol=1e-3, atol=0.0)
 
 
+def test_calc_vertical_stress__zero_last_thickness() -> None:
+    # A 0 m last layer (half space) is counted as 1 m thick, without changing
+    # the caller's array
+    h = np.array([5.0, 0.0])
+    rho = np.array([1800.0, 2000.0])
+    sigma = hhc._calc_vertical_stress(h, rho)
+    assert np.allclose(sigma, [44145.0, 98100.0], rtol=1e-12, atol=0.0)
+    assert np.array_equal(h, [5.0, 0.0])
+
+
+def test_calc_vertical_stress__density_unit_warning(
+        capsys: pytest.CaptureFixture[str],
+) -> None:
+    h = np.array([80.0, 90.0])
+    rho = np.array([1.6, 1.7])  # g/cm^3 instead of kg/m^3
+    hhc._calc_vertical_stress(h, rho)
+    assert 'Warning in _calc_vertical_stress():' in capsys.readouterr().out
+
+
 @pytest.mark.parametrize(
     ('kwargs', 'OCR_bench'),
     [
@@ -149,6 +168,19 @@ def test_produce_Darendeli_curves__an_input_has_incorrect_length() -> None:
             K0=K0,
             strain_in_pct=strain * 100,
         )
+
+
+def test_produce_Darendeli_curves__default_strain() -> None:
+    sigma_v0 = np.array([3000.0, 6000.0, 9000.0])
+    GGmax, D, gamma_ref = hhc.produce_Darendeli_curves(sigma_v0)
+    GGmax_, D_, gamma_ref_ = hhc.produce_Darendeli_curves(
+        sigma_v0,
+        strain_in_pct=np.geomspace(1e-4, 10, 400),
+    )
+    assert GGmax.shape == (400, 3)
+    assert np.array_equal(GGmax, GGmax_)
+    assert np.array_equal(D, D_)
+    assert np.array_equal(gamma_ref, gamma_ref_)
 
 
 # Comparing results with MATLAB for different test cases
