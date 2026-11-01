@@ -54,10 +54,6 @@
   - `Ground_Motion.save_accel()` rescaling the object's own `accel` when saving
     in g, gal, or cm/s/s, so that every later save and method used the rescaled
     data (#58)
-  - `Ground_Motion()` ignoring `**kwargs_to_genfromtxt` (such as `skip_header`)
-    when reading a file. They are now passed to `numpy.genfromtxt()`. This
-    fixes the first item of #64; the other parameters that #64 lists are still
-    ignored (part of #64)
   - `len()` and `n_layer` of `HH_Param_Multi_Layer`, `MKZ_Param_Multi_Layer`,
     `Multiple_Damping_Curves` and `Multiple_GGmax_Curves` being wrong after
     deleting a slice (`del obj[1:4]`), or after assigning a list of a different

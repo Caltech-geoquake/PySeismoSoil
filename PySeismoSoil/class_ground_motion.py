@@ -63,8 +63,7 @@ class Ground_Motion:
         as a numpy array, this parameter is ignored.
     **kwargs_to_genfromtxt : dict[Any, Any]
         Any extra keyword arguments will be passed to ``numpy.genfromtxt()``
-        function for loading the data from the hard drive (if applicable). Use
-        ``sep`` (not ``delimiter``) to set the delimiter.
+        function for loading the data from the hard drive (if applicable).
 
     Attributes
     ----------
@@ -151,16 +150,14 @@ class Ground_Motion:
             motion_type: Literal['accel', 'veloc', 'displ'] = 'accel',
             dt: float | None = None,
             sep: str = '\t',
-            **kwargs_to_genfromtxt: dict[Any, Any],
+            **kwargs_to_genfromtxt: dict[Any, Any],  # noqa: ARG002
     ) -> None:
         if isinstance(data, str):  # a file name
             self._path_name, self._file_name = os.path.split(data)
         else:
             self._path_name, self._file_name = None, None
 
-        data_, dt = hlp.read_two_column_stuff(
-            data, delta=dt, sep=sep, **kwargs_to_genfromtxt
-        )
+        data_, dt = hlp.read_two_column_stuff(data, delta=dt, sep=sep)
 
         valid_unit_name = [
             'm',
