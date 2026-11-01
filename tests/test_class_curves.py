@@ -186,6 +186,47 @@ def test_multiple_damping_curves() -> None:
 
 
 @pytest.mark.parametrize(
+    'curves_class',
+    [
+        pytest.param(Multiple_Damping_Curves, id='multiple_damping_curves'),
+        pytest.param(Multiple_GGmax_Curves, id='multiple_GGmax_curves'),
+    ],
+)
+def test_multiple_curves__n_layer_after_deleting_a_slice(
+        curves_class: type[Multiple_Damping_Curves | Multiple_GGmax_Curves],
+) -> None:
+    curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))  # 5 layers
+    last_curve = curves[-1]
+    del curves[1:4]
+    assert len(curves.curves) == 2
+    assert len(curves) == 2
+    assert curves.n_layer == 2
+    assert curves[len(curves) - 1] is last_curve
+
+    curves.append(last_curve)
+    assert len(curves) == 3
+    assert curves.n_layer == 3
+
+
+@pytest.mark.parametrize(
+    'curves_class',
+    [
+        pytest.param(Multiple_Damping_Curves, id='multiple_damping_curves'),
+        pytest.param(Multiple_GGmax_Curves, id='multiple_GGmax_curves'),
+    ],
+)
+def test_multiple_curves__numpy_integer_index(
+        curves_class: type[Multiple_Damping_Curves | Multiple_GGmax_Curves],
+) -> None:
+    curves = curves_class(str(f_dir / 'curve_FKSH14.txt'))
+    assert curves[np.int64(1)] is curves[1]
+    assert curves[np.int32(-1)] is curves[-1]
+
+    with pytest.raises(TypeError, match='Indices must be integers or slices'):
+        curves[1.0]
+
+
+@pytest.mark.parametrize(
     'use_scipy',
     [
         pytest.param(True, id='differential_evolution'),
