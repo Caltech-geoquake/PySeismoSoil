@@ -579,7 +579,8 @@ def response_spectra(  # noqa: PLR0915
     Raises
     ------
     ValueError
-        When the value of input parameters are incorrect
+        When the value of input parameters are incorrect, such as when the time
+        array in ``accel`` is not evenly spaced
     """
     hlp.check_two_column_format(accel, name='`accel`')
 
@@ -588,7 +589,7 @@ def response_spectra(  # noqa: PLR0915
 
     t_shift = np.roll(t, 1)
     t_step_deviation = (t - t_shift)[1:] - (t - t_shift)[1]
-    if not np.all(t_step_deviation < TIME_STEP_UNIFORMITY_TOL_SEC):
+    if not np.all(np.abs(t_step_deviation) < TIME_STEP_UNIFORMITY_TOL_SEC):
         raise ValueError('Time array within "accel" must be evenly spaced.')
 
     dt = float(t[1] - t[0])
@@ -673,26 +674,26 @@ def response_spectra(  # noqa: PLR0915
     )
 
     if parallel:
-        p = mp.Pool(n_cores)
-        result = p.map(
-            _time_stepping,
-            itertools.product(
-                range(len_wd),
-                [len_a],
-                [A],
-                [B],
-                [C],
-                [D],
-                [A_],
-                [B_],
-                [C_],
-                [D_],
-                [wn],
-                [wd],
-                [xi],
-                [a],
-            ),
-        )
+        with mp.Pool(n_cores) as p:
+            result = p.map(
+                _time_stepping,
+                itertools.product(
+                    range(len_wd),
+                    [len_a],
+                    [A],
+                    [B],
+                    [C],
+                    [D],
+                    [A_],
+                    [B_],
+                    [C_],
+                    [D_],
+                    [wn],
+                    [wd],
+                    [xi],
+                    [a],
+                ),
+            )
     else:
         result = []
         for i in range(len_wd):
@@ -2430,6 +2431,46 @@ def _plot_damping_curve_fit(
     return fig, ax
 
 
+def _plot_all_damping_curve_fits(
+        curves_list: list[np.ndarray],
+        params: list[dict[str, float]],
+        func_stress: Callable[[Any, ...], Any],
+) -> Figure:
+    """
+    Plot damping data and curve-fit results of all layers, one per subplot.
+
+    Parameters
+    ----------
+    curves_list : list[np.ndarray]
+        Damping data of each layer. Each needs to have 2 columns (strain and
+        damping ratio), both using % as unit.
+    params : list[dict[str, float]]
+        Fitted parameters of each layer.
+    func_stress : Callable[[Any, ...], Any]
+        The function to calculate stress from strain and model parameters.
+
+    Returns
+    -------
+    Figure
+        The figure
+    """
+    ncol = 4
+    nrow = int(np.ceil(len(curves_list) / ncol))
+    fig = plt.figure(figsize=(ncol * 3, nrow * 3))
+    for j, curve in enumerate(curves_list):
+        ax = plt.subplot(nrow, ncol, j + 1)
+        _plot_damping_curve_fit(
+            curve,
+            params[j],
+            func_stress,
+            fig=fig,
+            ax=ax,
+        )
+
+    fig.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
+    return fig
+
+
 def fit_all_damping_curves(
         curves: np.ndarray | list[np.ndarray],
         func_fit_single_layer: Callable[[Any, ...], Any],
@@ -2510,22 +2551,26 @@ def fit_all_damping_curves(
         Number of CPU cores to use. If None, all cores are used. No effects if
         ``parallel`` is set to False.
     save_fig : bool, default=False
-        Whether to save damping fitting figures to hard drive.
+        Whether to save the figure of the curve fitting results (the figure
+        that ``show_fig`` shows) to hard drive, even if ``show_fig`` is
+        ``False``.
     fig_filename : str | None, default=None
-        Full file name of the figure.
+        Full file name of the figure. Required if ``save_fig`` is ``True``.
     dpi : float, default=100
-        Desired figure resolution. Only effective when ``show_fig`` is
+        Desired figure resolution. Only effective when ``save_fig`` is
         ``True``.
     save_txt : bool, default=False
         Whether to save the fitted parameters as a text file.
     txt_filename : str | None, default=None
-        The name of the text file to save the parameters to.
+        The name of the text file to save the parameters to. Required if
+        ``save_txt`` is ``True``.
     sep : str, default='\t'
         Delimiter to separate columns of data in the output file.
     func_serialize : Callable[[Any, ...], Any] | None, default=None
         The function to serialize the parameters from a dict into a list. Can
         be hh.serialize_params_to_array, or mkz.serialize_params_to_array with
         ``to_files=True`` (for the format of "H4_x_SITE_NAME.txt" files).
+        Required if ``save_txt`` is ``True``.
 
     Returns
     -------
@@ -2537,7 +2582,10 @@ def fit_all_damping_curves(
     TypeError
         The type of the input parameter is incorrect
     ValueError
-        No function for serialization
+        When ``save_txt`` is ``True`` but ``func_serialize`` or
+        ``txt_filename`` is ``None``, or when ``save_fig`` is ``True`` but
+        ``fig_filename`` is ``None``. These are checked before the fitting
+        starts.
     """  # noqa: E501
     if isinstance(curves, np.ndarray):
         _, curves_list = hlp.extract_from_curve_format(curves)
@@ -2563,6 +2611,21 @@ def fit_all_damping_curves(
             'Please check the documentation of this function.',
         )
 
+    # Check the options to save the results before the (possibly long) fitting
+    if save_txt and func_serialize is None:
+        raise ValueError(
+            'Please provide a function to serialize the parameters into a'
+            ' list.',
+        )
+
+    if save_txt and txt_filename is None:
+        raise ValueError(
+            'Please provide `txt_filename` to save the parameters.'
+        )
+
+    if save_fig and fig_filename is None:
+        raise ValueError('Please provide `fig_filename` to save the figure.')
+
     other_params = [
         (
             func_fit_single_layer,
@@ -2579,42 +2642,25 @@ def fit_all_damping_curves(
     ]
 
     if parallel:
-        p = mp.Pool(n_cores)
-        params = p.map(
-            _fit_single_layer_loop,
-            itertools.product(curves_list, other_params),
-        )
+        with mp.Pool(n_cores) as p:
+            params = p.map(
+                _fit_single_layer_loop,
+                itertools.product(curves_list, other_params),
+            )
     else:
         params = []
         for curve in curves_list:
             params.append(_fit_single_layer_loop((curve, other_params[0])))
 
-    if show_fig:
-        ncol = 4
-        nrow = int(np.ceil(len(curves_list) / ncol))
-        fig = plt.figure(figsize=(ncol * 3, nrow * 3))
-        for j, curve in enumerate(curves_list):
-            ax = plt.subplot(nrow, ncol, j + 1)
-            _plot_damping_curve_fit(
-                curve,
-                params[j],
-                func_stress,
-                fig=fig,
-                ax=ax,
-            )
+    if show_fig or save_fig:
+        fig = _plot_all_damping_curve_fits(curves_list, params, func_stress)
+        if save_fig:
+            fig.savefig(fig_filename, dpi=dpi)
 
-        fig.tight_layout(pad=0.5, h_pad=0.5, w_pad=0.5)
-
-    if show_fig and save_fig:
-        fig.savefig(fig_filename, dpi=dpi)
+        if not show_fig:
+            plt.close(fig)  # only created to be saved; don't show it
 
     if save_txt:
-        if func_serialize is None:
-            raise ValueError(
-                'Please provide a function to serialize the parameters into a'
-                ' list.',
-            )
-
         data_for_file = [func_serialize(param) for param in params]
 
         data_for_file__ = np.column_stack(tuple(data_for_file))
