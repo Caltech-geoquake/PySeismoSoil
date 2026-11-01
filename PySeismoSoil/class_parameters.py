@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import collections
 import json
+import numbers
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import matplotlib.pyplot as plt
@@ -379,6 +380,8 @@ class Param_Multi_Layer:
 
     Attributes
     ----------
+    element_class : type[Parameter]
+        Same as the input parameter.
     param_list : list[Parameter]
         A list of param objects whose type is specified by the user.
     n_layer : int
@@ -390,6 +393,7 @@ class Param_Multi_Layer:
         When an element in ``list_of_param_data`` has invalid type
     """
 
+    element_class: type[Parameter]
     param_list: list[Parameter]
     n_layer: int
 
@@ -410,8 +414,13 @@ class Param_Multi_Layer:
                     'An element in ``list_of_param_data`` has invalid type.',
                 )
 
+        self.element_class = element_class
         self.param_list = param_list
-        self.n_layer = len(param_list)
+
+    @property
+    def n_layer(self) -> int:
+        """The number of soil layers (i.e., the length of the list)."""
+        return len(self.param_list)
 
     def __contains__(self, item: Any) -> bool:
         return item in self.param_list
@@ -419,11 +428,28 @@ class Param_Multi_Layer:
     def __len__(self) -> int:
         return self.n_layer
 
-    def __setitem__(self, i: int, item: Parameter) -> None:
+    def __setitem__(
+            self,
+            i: int | np.integer | slice,
+            item: Parameter | Iterable[Parameter],
+    ) -> None:
+        if isinstance(i, slice):
+            item = list(item)  # an iterable of new items
+            if not all(isinstance(_, self.element_class) for _ in item):
+                raise TypeError(
+                    f'Each new item must be of type {self.element_class}.'
+                )
+        elif not isinstance(item, self.element_class):
+            raise TypeError(
+                f'The new `item` must be of type {self.element_class}.'
+            )
+
         self.param_list[i] = item
 
-    def __getitem__(self, i: int | slice) -> Parameter | Param_Multi_Layer:
-        if isinstance(i, int):
+    def __getitem__(
+            self, i: int | np.integer | slice
+    ) -> Parameter | Param_Multi_Layer:
+        if isinstance(i, numbers.Integral):  # including NumPy integers
             return self.param_list[i]
 
         if isinstance(i, slice):
@@ -432,9 +458,8 @@ class Param_Multi_Layer:
 
         raise TypeError(f'Indices must be integers or slices, not {type(i)}')
 
-    def __delitem__(self, i: int | slice) -> None:
+    def __delitem__(self, i: int | np.integer | slice) -> None:
         del self.param_list[i]
-        self.n_layer -= 1
 
     def construct_curves(
             self,
