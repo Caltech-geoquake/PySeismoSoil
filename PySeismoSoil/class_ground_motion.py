@@ -1026,7 +1026,7 @@ class Ground_Motion:
             Pad length (the number of elements by which to extend x at both
             ends of axis before applying the filter). If None, use the default
             value
-            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html).
 
         Returns
         -------
@@ -1065,7 +1065,7 @@ class Ground_Motion:
             Pad length (the number of elements by which to extend x at both
             ends of axis before applying the filter). If None, use the default
             value
-            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html).
 
         Returns
         -------
@@ -1104,7 +1104,7 @@ class Ground_Motion:
             Pad length (the number of elements by which to extend x at both
             ends of axis before applying the filter). If None, use the default
             value
-            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html).
 
         Returns
         -------
@@ -1143,7 +1143,7 @@ class Ground_Motion:
             Pad length (the number of elements by which to extend x at both
             ends of axis before applying the filter). If None, use the default
             value
-            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html).
+            (https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html).
 
         Returns
         -------
