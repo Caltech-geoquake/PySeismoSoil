@@ -32,6 +32,14 @@
     `np.insert(np.genfromtxt(old_file, ndmin=2)[:3], 1, 0, axis=0)` (#79)
   - `HH_Param_Multi_Layer` and `MKZ_Param_Multi_Layer` failing to load a
     one-layer parameter file, including one written by `save_txt()` (#86)
+  - The `rediscretized_profile` in the results of `Linear_Simulation.run()`
+    (with `every_layer=True`, the default) and `Equiv_Linear_Simulation.run()`
+    (also when run by `Batch_Simulation`) having densities 1000 times too
+    large, e.g., 1,900,000 instead of 1,900 kg/m^3. The re-discretized profile
+    file (`*_re-discretized_profile.txt`) that `Simulation_Results.to_txt()` or
+    `run(save_txt=True)` saves had the same error, so its density column
+    changes too. The simulations themselves used the correct densities, so the
+    other results do not change (#36)
 
 ## [0.7.1] - 2026-10-11
 
