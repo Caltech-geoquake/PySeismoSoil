@@ -107,7 +107,10 @@ def _replace(
         pytest.param(
             _replace(DATA_5_COLUMNS, (1, -1), 0),
             ValueError,
-            'should be all positive',
+            re.escape(
+                'The "material number" column should be all positive, '
+                'except for the last layer.'
+            ),
             id='material_number_not_positive',
         ),
         pytest.param(
