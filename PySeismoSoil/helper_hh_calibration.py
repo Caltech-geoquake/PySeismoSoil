@@ -134,8 +134,9 @@ def hh_param_from_profile(
     phi = 30.0
 
     hlp.check_Vs_profile_format(vs_profile)
-    h = vs_profile[:-1, 0]
-    Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
+    soil = _soil_layers_slice(vs_profile)
+    h = vs_profile[soil, 0]
+    Vs = vs_profile[soil, 1]  # exclude the last layer (i.e., half space)
 
     n_layer = len(Vs)
     if Tmax is not None:
@@ -261,13 +262,14 @@ def hh_param_from_curves(
     phi = 30.0
 
     hlp.check_Vs_profile_format(vs_profile)
-    h = vs_profile[:-1, 0]
-    Vs = vs_profile[:-1, 1]  # exclude the last layer (i.e., half space)
+    soil = _soil_layers_slice(vs_profile)
+    h = vs_profile[soil, 0]
+    Vs = vs_profile[soil, 1]  # exclude the last layer (i.e., half space)
     n_layer = len(Vs)
 
     if vs_profile.shape[1] == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
-        mat = vs_profile[:-1, -1]
-        rho = vs_profile[:-1, 3]
+        mat = vs_profile[soil, -1]
+        rho = vs_profile[soil, 3]
     else:  # only 2 columns
         mat = np.arange(1, n_layer + 1)
         rho = _calc_rho(h, Vs)
@@ -792,6 +794,29 @@ def _calc_OCR(
     )
 
 
+def _soil_layers_slice(vs_profile: np.ndarray) -> slice:
+    """
+    Return the slice that selects the soil layers of a Vs profile, i.e., all
+    the rows except for the rock half space at the bottom.
+
+    A profile of a single row with a positive thickness is one soil layer
+    without a half space, so that row is kept.
+
+    Raises
+    ------
+    ValueError
+        When the profile has no soil layer (only a half space).
+    """
+    if vs_profile.shape[0] == 1:
+        if vs_profile[0, 0] > 0:
+            return slice(0, 1)
+        raise ValueError(
+            'The Vs profile has only a half space; at least one soil layer '
+            'is needed.',
+        )
+    return slice(0, -1)
+
+
 def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
     """
     Calculate vertical overburden stress at the mid-point of each layer.
@@ -810,6 +835,8 @@ def _calc_vertical_stress(h: np.ndarray, rho: np.ndarray) -> np.ndarray:
     """
     g = 9.81  # unit: m/s/s
     n = len(h)
+    if n == 0:
+        raise ValueError('`h` must have at least one soil layer.')
     stress = np.zeros_like(h)
 
     if np.mean(rho) < hlp.MIN_PLAUSIBLE_DENSITY_KG_M3:

@@ -278,6 +278,11 @@ def test_thk2dep_and_dep2thk() -> None:
     assert np.allclose(sr.thk2dep(thk), dep_top)
 
 
+def test_thk2dep__empty_input_raises_value_error() -> None:
+    with pytest.raises(ValueError, match='at least one element'):
+        sr.thk2dep(np.array([]))
+
+
 def test_amplify_motion() -> None:
     time = np.linspace(0, np.pi * 4, num=1000)
     accel = np.sin(time) + np.cos(2 * time + 1) + np.sin(4 * time + 2)

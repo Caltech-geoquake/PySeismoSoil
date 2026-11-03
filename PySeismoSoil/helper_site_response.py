@@ -1208,6 +1208,8 @@ def thk2dep(thk: np.ndarray, *, midpoint: bool = False) -> np.ndarray:
     hlp.assert_1D_numpy_array(thk, name='`thk`')
 
     L = len(thk)
+    if L == 0:
+        raise ValueError('`thk` must have at least one element.')
     z_top = np.zeros(L)  # create an array with same length as h
     z_mid = np.zeros(L)
 

@@ -59,14 +59,15 @@ class Damping_Calibration:
             Damping curves for all the soil layers (i.e., not including the
             rock halfspace at the bottom).
         """
-        h = self.vs_profile.vs_profile[:-1, 0]
-        Vs = self.vs_profile.vs_profile[:-1, 1]
+        soil = hhc._soil_layers_slice(self.vs_profile.vs_profile)  # noqa: SLF001
+        h = self.vs_profile.vs_profile[soil, 0]
+        Vs = self.vs_profile.vs_profile[soil, 1]
         n_layer = len(Vs)
 
         # there can only be 5 or 2 columns
         n_columns = self.vs_profile.vs_profile.shape[1]
         if n_columns == hlp.NUM_COLUMNS_OF_FULL_VS_PROFILE:
-            rho = self.vs_profile.vs_profile[:-1, 3]
+            rho = self.vs_profile.vs_profile[soil, 3]
         else:  # only 2 columns
             rho = hhc._calc_rho(h, Vs)  # noqa: SLF001
 
